@@ -49,17 +49,23 @@ export const useStore = create<RootState>((set) => ({
 }));
 
 // 导出选择器，方便组件使用
-export const useUser = () => useStore((state) => ({
-  user: state.user,
-  isLoggedIn: state.isLoggedIn,
-  login: state.login,
-  logout: state.logout,
-  updateUser: state.updateUser,
-}));
+export const useUser = () => {
+  const store = useStore();
+  return {
+    user: store.user,
+    isLoggedIn: store.isLoggedIn,
+    login: store.login,
+    logout: store.logout,
+    updateUser: store.updateUser,
+  };
+};
 
-export const useApp = () => useStore((state) => ({
-  theme: state.theme,
-  isLoading: state.isLoading,
-  toggleTheme: state.toggleTheme,
-  setLoading: state.setLoading,
-}));
+export const useApp = () => {
+  const store = useStore();
+  return {
+    theme: store.theme,
+    isLoading: store.isLoading,
+    toggleTheme: store.toggleTheme,
+    setLoading: store.setLoading,
+  };
+};
