@@ -4,8 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import AuthLayout from './AuthLayout';
-import SmoothSliderCaptcha from './SmoothSliderCaptcha';
+import AuthLayout from '../../layouts/AuthLayout';
+import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
 import { useUser } from '../../store';
 
 // 注册表单数据类型
@@ -277,16 +277,22 @@ const Register: React.FC = () => {
             注册
           </Button>
         </Form.Item>
-        
-        {/* 流畅滑动验证码模态框 */}
-        <SmoothSliderCaptcha
-          visible={captchaModalVisible}
-          onClose={() => {
-            setCaptchaModalVisible(false);
-            setFormData(null);
-          }}
-          onSuccess={handleCaptchaSuccess}
-        />
+
+          {/* 流畅滑动验证码模态框 */}
+          <SlideCaptchaModal
+              visible={captchaModalVisible}
+              onClose={() => {
+                  setCaptchaModalVisible(false);
+                  setFormData(null);
+              }}
+              onSuccess={handleCaptchaSuccess}
+              imgUrl="https://picsum.photos/320/200"
+              captchaProps={{
+                  gapShape: 'trapezoid', // 梯形缺口
+                  gapTolerance: 6, // 更严格的对齐精度
+                  tipText: '拖动滑块完成拼图',
+              }}
+          />
       </Form>
     </AuthLayout>
   );

@@ -1,8 +1,8 @@
 import React, { type ReactNode } from 'react';
 import { Card } from 'antd';
 import { Link } from 'react-router-dom';
-import Header from '../Common/Header';
-import Footer from '../Common/Footer';
+import Header from '../components/common/Header';
+import Footer from '../components/common/Footer';
 
 interface AuthLayoutProps {
   children: ReactNode;
