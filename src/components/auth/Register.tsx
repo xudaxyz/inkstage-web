@@ -25,20 +25,34 @@ type PasswordStrength = 'weak' | 'medium' | 'strong';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useUser();
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, sendCode, isLoading } = useUser();
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>('weak');
   const [registerType, setRegisterType] = useState<'password' | 'code'>('code');
   const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
   const [formData, setFormData] = useState<RegisterFormData | null>(null);
+  const [codeCountdown, setCodeCountdown] = useState(0);
   const [form] = Form.useForm<RegisterFormData>();
+
+  // 开始倒计时
+  const startCountdown = () => {
+    setCodeCountdown(60);
+    const timer = setInterval(() => {
+      setCodeCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   // 检查密码强度
   const checkPasswordStrength = (password: string): PasswordStrength => {
     if (!password) return 'weak';
-    if (password.length < 8) return 'weak';
-    if (password.length < 12) return 'medium';
+    if (password.length < 6) return 'weak';
+    if (password.length < 10) return 'medium';
     return 'strong';
   };
 
@@ -58,33 +72,58 @@ const Register: React.FC = () => {
   const handleCaptchaSuccess = async () => {
     if (!formData) return;
     
-    setIsLoading(true);
     try {
-      // 模拟注册请求
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // 注册成功，自动登录
-      login({
-        id: '1',
-        name: formData.account || '新用户',
-        email: formData.account || 'new@example.com'
+      await register({
+        ...formData,
+        registerType,
+        agreeTerms: formData.agreeTerms || false,
       });
       
-      message.success('注册成功');
-      navigate('/');
-    } catch (error) {
-      message.error('注册失败，请稍后重试');
-      console.log(error);
+      message.success('注册成功，欢迎加入InkStage！');
+      // 延迟跳转，让用户看到成功提示
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.message || error?.message || '注册失败，请稍后重试';
+      message.error(errorMsg);
+      console.error('注册失败:', error);
     } finally {
-      setIsLoading(false);
       setCaptchaModalVisible(false);
       setFormData(null);
     }
   };
 
   // 发送验证码
-  const handleSendCode = () => {
-    message.success('验证码已发送，有效期5分钟');
+  const handleSendCode = async () => {
+    const account = form.getFieldValue('account');
+    if (!account) {
+      message.error('请先输入邮箱或手机号');
+      return;
+    }
+
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account);
+    const isPhone = /^1[3-9]\d{9}$/.test(account);
+    
+    if (!isEmail && !isPhone) {
+      message.error('请输入有效的邮箱或手机号');
+      return;
+    }
+
+    const type = isEmail ? 'email' : 'phone';
+
+    try {
+      await sendCode({
+        target: account,
+        type,
+        purpose: 'register',
+      });
+      message.success('验证码已发送，有效期5分钟');
+      startCountdown();
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.message || error?.message || '验证码发送失败，请稍后重试';
+      message.error(errorMsg);
+    }
   };
 
   return (
@@ -111,7 +150,21 @@ const Register: React.FC = () => {
         <Form.Item
           name="account"
           rules={[
-            { required: true, message: '请输入用户名、邮箱或手机号' }
+            { required: true, message: '请输入用户名、邮箱或手机号' },
+            {
+              validator: (_, value) => {
+                if (!value) return Promise.resolve();
+                // 简单的邮箱或手机号验证
+                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                const isPhone = /^1[3-9]\d{9}$/.test(value);
+                const isUsername = /^[a-zA-Z0-9_]{3,50}$/.test(value);
+                
+                if (isEmail || isPhone || isUsername) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(new Error('请输入有效的用户名、邮箱或手机号'));
+              }
+            }
           ]}
           className="mb-4"
         >
@@ -130,7 +183,7 @@ const Register: React.FC = () => {
               name="password"
               rules={[
                 { required: true, message: '请输入密码' },
-                { min: 6, message: '密码长度不能少于6位' }
+                { min: 6, max: 50, message: '密码长度必须在6-50个字符之间' }
               ]}
               className="mb-2"
             >
@@ -228,8 +281,9 @@ const Register: React.FC = () => {
                 size="large"
                 className="rounded-md bg-primary-600 hover:bg-primary-700 text-white font-medium px-6 py-2.5 transition-all duration-200 hover:shadow-sm"
                 onClick={handleSendCode}
+                disabled={isLoading || codeCountdown > 0}
               >
-                获取验证码
+                {codeCountdown > 0 ? `${codeCountdown}s后重发` : '获取验证码'}
               </Button>
             </div>
           </Form.Item>
