@@ -1,10 +1,11 @@
 import apiClient from './apiClient';
 import type {
-  SendCodeParams,
   SendCodeResponse,
   RegisterParams,
+  LoginParams,
   TokenResponse,
   ApiResponse,
+  UserInfo,
 } from '../types/auth';
 
 /**
@@ -14,32 +15,49 @@ const authService = {
   /**
    * 发送验证码
    */
-  sendCode: async (params: SendCodeParams): Promise<ApiResponse<SendCodeResponse>> => {
-    return apiClient.post('/v1/front/auth/send-code', params);
+  sendCode: async (params: {
+      account: string;
+      type: "email" | "phone";
+      purpose: string
+  }): Promise<ApiResponse<SendCodeResponse>> => {
+    return apiClient.post('/front/auth/send-code', params);
   },
 
   /**
    * 用户注册
    */
   register: async (params: RegisterParams): Promise<ApiResponse<TokenResponse>> => {
-    // 构造符合OAuth2规范的请求
-    const oauthParams = {
-      grant_type: 'password',
-      username: params.account,
+    const authParams = {
+      operationType: 'REGISTER',
+      account: params.account,
+      authType: params.authType,
       password: params.password || '',
-      client_id: import.meta.env.VITE_CLIENT_ID,
-      client_secret: import.meta.env.VITE_CLIENT_SECRET,
+      code: params.code || '',
+      agreeTerms: params.agreeTerms,
+      clientId: import.meta.env.VITE_CLIENT_ID,
+      clientSecret: import.meta.env.VITE_CLIENT_SECRET,
       scope: 'read write',
-      register_type: params.registerType,
-      agree_terms: params.agreeTerms,
     };
 
-    // 验证码注册时，将code作为password传递（后端处理逻辑）
-    if (params.registerType === 'code' && params.code) {
-      oauthParams.password = params.code;
-    }
+    return apiClient.post('/front/auth/register', authParams);
+  },
 
-    return apiClient.post('/api/v1/front/auth/register', oauthParams);
+  /**
+   * 用户登录
+   */
+  login: async (params: LoginParams): Promise<ApiResponse<TokenResponse>> => {
+    const authParams = {
+      operationType: 'LOGIN',
+      account: params.account,
+      authType: params.authType,
+      password: params.password || '',
+      code: params.code || '',
+      clientId: import.meta.env.VITE_CLIENT_ID,
+      clientSecret: import.meta.env.VITE_CLIENT_SECRET,
+      scope: 'read write',
+    };
+
+    return apiClient.post('/front/auth/login', authParams);
   },
 
   /**
@@ -54,7 +72,21 @@ const authService = {
       scope: 'read write',
     };
 
-    return apiClient.post('/v1/front/auth/token', oauthParams);
+    return apiClient.post('/auth/token', oauthParams);
+  },
+
+  /**
+   * 获取个人资料
+   */
+  getProfile: async (): Promise<ApiResponse<UserInfo>> => {
+    return apiClient.get('/front/user/profile');
+  },
+
+  /**
+   * 更新个人资料
+   */
+  updateProfile: async (params: Partial<UserInfo>): Promise<ApiResponse<UserInfo>> => {
+    return apiClient.put('/front/user/profile', params);
   },
 };
 

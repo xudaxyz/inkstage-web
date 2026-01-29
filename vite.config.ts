@@ -11,7 +11,7 @@ export default defineConfig({
                 changeOrigin: true,
                 rewrite: (path) => {
                     if (path.startsWith('/api/auth')) {
-                        return path.replace(/^\/api\/auth/, '/api/v1/front/auth');
+                        return path.replace(/^\/api\/auth/, '/front/auth');
                     }
                     return path;
                 }

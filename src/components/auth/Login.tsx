@@ -14,17 +14,15 @@ interface LoginFormData {
     account: string;
     password?: string;
     code?: string;
-
     // 通用
     remember?: boolean;
 }
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
-    const {login} = useUser();
-    const [isLoading, setIsLoading] = useState(false);
+    const {login, isLoading, sendCode} = useUser();
     const [showPassword, setShowPassword] = useState(false);
-    const [loginType, setLoginType] = useState<'password' | 'code'>('password');
+    const [loginType, setLoginType] = useState<'password' | 'code'>('code');
     const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
     const [formData, setFormData] = useState<LoginFormData | null>(null);
     const [form] = Form.useForm<LoginFormData>();
@@ -40,33 +38,91 @@ const Login: React.FC = () => {
     const handleCaptchaSuccess = async () => {
         if (!formData) return;
 
-        setIsLoading(true);
         try {
-            // 模拟登录请求
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // 显示加载状态
+            const successMessage = message.loading('登录中，请稍候...', 0);
 
-            // 登录成功，更新用户状态
-            login({
-                id: '1',
-                name: formData.account || '测试用户',
-                email: formData.account || 'test@example.com'
+            const response = await login({
+                account: formData.account,
+                authType: loginType,
+                password: formData.password || '',
+                code: formData.code || '',
+                remember: formData.remember || false
             });
 
-            message.success('登录成功');
-            navigate('/');
-        } catch (error) {
-            message.error('登录失败，请检查您的账号和密码');
-            console.error(error);
+            if (response.code === 200) {
+                // 关闭加载状态，显示成功提示
+                successMessage(); // 关闭loading
+                message.success({
+                    content: response.message || '登录成功，欢迎回来！',
+                    duration: 3,
+                    className: 'text-lg font-medium',
+                });
+                // 延迟跳转，让用户看到成功提示
+                setTimeout(() => {
+                    navigate('/');
+                }, 1000);
+            } else {
+                successMessage(); // 关闭loading
+                message.error(response.message || "登录失败，请稍后重试！")
+            }
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                message.error({
+                    content: error.message || "登录失败，请稍后重试！",
+                    duration: 5,
+                });
+            }
+            console.error('登录失败:', error);
         } finally {
-            setIsLoading(false);
             setCaptchaModalVisible(false);
             setFormData(null);
         }
     };
 
     // 发送验证码
-    const handleSendCode = () => {
-        message.success('验证码已发送，有效期5分钟');
+    const handleSendCode = async () => {
+        const account = form.getFieldValue('account');
+        if (!account) {
+            message.error('请输入邮箱或手机号');
+            return;
+        }
+
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account);
+        const isPhone = /^1[3-9]\d{9}$/.test(account);
+
+        if (!isEmail && !isPhone) {
+            message.error('请输入有效的邮箱或手机号');
+            return;
+        }
+
+        const type = isEmail ? 'email' : 'phone';
+
+        try {
+            const response = await sendCode({
+                account: account,
+                type,
+                purpose: 'login',
+            });
+            if (response.code === 200) {
+                message.success(response.message || '验证码已发送，有效期5分钟');
+                // 开始倒计时
+                let countdown = 60;
+                const timer = setInterval(() => {
+                    countdown--;
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                    }
+                }, 1000);
+            } else {
+                message.error(response.message);
+            }
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                message.error(error.message || '验证码发送失败，请稍后重试');
+            }
+            console.error('验证码发送失败:', error);
+        }
     };
 
     return (
@@ -78,9 +134,9 @@ const Login: React.FC = () => {
                 layout="vertical"
                 className="w-full"
             >
-                {/* 第一层：左侧登录，右侧注册链接 */}
+                {/* 左侧登录，右侧注册链接 */}
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">登录</h2>
+                    <h2 className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">请登录</h2>
                     <div className="text-sm">
                         <span className="text-gray-600">没有账号？</span>
                         <Link to="/register"
@@ -90,7 +146,7 @@ const Login: React.FC = () => {
                     </div>
                 </div>
 
-                {/* 第二层：用户名/邮箱/手机号输入 */}
+                {/* 用户名/邮箱/手机号输入 */}
                 <Form.Item
                     name="account"
                     rules={[
@@ -159,7 +215,7 @@ const Login: React.FC = () => {
                     </Form.Item>
                 )}
 
-                {/* 第三层：记住我和登录方式切换 */}
+                {/* 记住我和登录方式切换 */}
                 <div className="flex justify-between items-center mb-6">
                     <Form.Item name="remember" valuePropName="checked" noStyle>
                         <Checkbox className="text-sm text-gray-600">记住我</Checkbox>
@@ -178,7 +234,7 @@ const Login: React.FC = () => {
                     </a>
                 </div>
 
-                {/* 第四层：登录按钮 */}
+                {/* 登录按钮 */}
                 <Form.Item className="mb-4">
                     <Button
                         type="primary"
@@ -207,7 +263,7 @@ const Login: React.FC = () => {
                     }}
                 />
 
-                {/* 第五层：忘记密码 */}
+                {/* 忘记密码 */}
                 <div className="text-center">
                     <a href="#"
                        className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200">
