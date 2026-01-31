@@ -11,11 +11,16 @@ const apiClient: AxiosInstance = axios.create({
     },
 });
 
+// 防重入标志
+let isRefreshing = false;
+// 存储等待刷新令牌的请求队列
+let refreshSubscribers: ((token: string) => void)[] = [];
+
 // 请求拦截器
 apiClient.interceptors.request.use(
     (config) => {
-        // 对于 /auth/token 端点，不添加访问令牌，因为这是用于刷新令牌的公开端点
-        if (config.url !== '/auth/token') {
+        // 对于 /oauth2/token 端点，不添加访问令牌，因为这是用于刷新令牌的公开端点
+        if (config.url !== '/oauth2/token') {
             const token = localStorage.getItem('access_token');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
@@ -34,44 +39,87 @@ apiClient.interceptors.response.use(
         return response.data;
     },
     async (error) => {
-        // 处理401错误，刷新令牌
         const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
 
-            const refreshToken = localStorage.getItem('refresh_token');
-            if (refreshToken) {
-                try {
-                    const response = await apiClient.post('/auth/token', {
-                        grant_type: 'refresh_token',
-                        refresh_token: refreshToken,
-                        client_id: import.meta.env.VITE_CLIENT_ID,
-                        client_secret: import.meta.env.VITE_CLIENT_SECRET,
-                    }) as {
-                        access_token: string;
-                        refresh_token: string;
-                    };
+        // 处理401错误
+        if (error.response?.status === 401) {
+            // 检查是否是刷新令牌请求本身失败
+            if (originalRequest.url === '/oauth2/token') {
+                // 刷新令牌请求失败，清理本地存储并跳转到登录页面
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                errorHandler.handleAuthError('登录已过期，请重新登录');
+                // 跳转到登录页面
+                window.location.href = '/login';
+                // 终止Promise链，避免无限循环
+                return new Promise(() => {
+                });
+            }
 
-                    localStorage.setItem('access_token', response.access_token);
-                    localStorage.setItem('refresh_token', response.refresh_token);
+            // 检查是否已经在处理刷新令牌
+            if (!isRefreshing) {
+                isRefreshing = true;
 
-                    originalRequest.headers.Authorization = `Bearer ${response.access_token}`;
-                    return apiClient(originalRequest);
-                } catch (refreshError: unknown) {
-                    if (refreshError instanceof Error) {
-                        errorHandler.handleAuthError(refreshError.message);
-                    } else {
-                        // 刷新令牌失败，使用全局错误处理
-                        errorHandler.handleAuthError('登录已过期，请重新登录');
+                const refreshToken = localStorage.getItem('refresh_token');
+                if (refreshToken) {
+                    try {
+                        const response = await apiClient.post('/oauth2/token', {
+                            grant_type: 'refresh_token',
+                            refresh_token: refreshToken,
+                            client_id: import.meta.env.VITE_CLIENT_ID,
+                            client_secret: import.meta.env.VITE_CLIENT_SECRET,
+                        }) as {
+                            access_token: string;
+                            refresh_token: string;
+                        };
+
+                        localStorage.setItem('access_token', response.access_token);
+                        localStorage.setItem('refresh_token', response.refresh_token);
+
+                        // 处理等待刷新令牌的请求队列
+                        refreshSubscribers.forEach(callback => callback(response.access_token));
+                        refreshSubscribers = [];
+
+                        originalRequest.headers.Authorization = `Bearer ${response.access_token}`;
+                        isRefreshing = false;
+                        return apiClient(originalRequest);
+                    } catch (refreshError: unknown) {
+                        // 刷新令牌失败，清理本地存储并跳转到登录页面
+                        localStorage.removeItem('access_token');
+                        localStorage.removeItem('refresh_token');
+                        if (refreshError instanceof Error) {
+                            errorHandler.handleAuthError(refreshError.message);
+                        } else {
+                            errorHandler.handleAuthError('登录已过期，请重新登录');
+                        }
+                        // 跳转到登录页面
+                        window.location.href = '/login';
+                        // 终止Promise链，避免无限循环
+                        isRefreshing = false;
+                        refreshSubscribers = [];
+                        return new Promise(() => {
+                        });
                     }
-                    // 不再返回错误，避免重复处理
-                    return new Promise(() => {});
+                } else {
+                    // 没有刷新令牌，清理本地存储并跳转到登录页面
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    errorHandler.handleAuthError('登录状态无效，请重新登录');
+                    // 跳转到登录页面
+                    window.location.href = '/login';
+                    // 终止Promise链，避免无限循环
+                    isRefreshing = false;
+                    return new Promise(() => {
+                    });
                 }
             } else {
-                // 没有刷新令牌，使用全局错误处理
-                errorHandler.handleAuthError('登录状态无效，请重新登录');
-                // 不再返回错误，避免重复处理
-                return new Promise(() => {});
+                // 已经在处理刷新令牌，将当前请求加入队列
+                return new Promise((resolve) => {
+                    refreshSubscribers.push((token: string) => {
+                        originalRequest.headers.Authorization = `Bearer ${token}`;
+                        resolve(apiClient(originalRequest));
+                    });
+                });
             }
         }
 

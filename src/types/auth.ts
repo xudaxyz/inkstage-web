@@ -1,3 +1,5 @@
+import { GenderEnum } from './enums';
+
 // API响应基础类型
 export interface ApiResponse<T = unknown> {
     code: number;
@@ -50,7 +52,7 @@ export interface UserInfo {
     nickname: string,
     coverImage: string,
     signature: string,
-    gender: "male" | "female" | "secret" | undefined,
+    gender: GenderEnum | undefined,
     birthDate: string,
     location: string,
 }

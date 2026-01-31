@@ -1,0 +1,54 @@
+// 文章状态枚举
+export const ArticleStatusEnum = {
+    DRAFT: 'DRAFT',
+    PENDING: 'PENDING',
+    PUBLISHED: 'PUBLISHED'
+} as const;
+
+// 文章原创性枚举
+export const ArticleOriginalEnum = {
+    ORIGINAL: 'ORIGINAL',
+    REPRINT: 'REPRINT'
+} as const;
+
+// 文章可见性枚举
+export const ArticleVisibleEnum = {
+    PRIVATE: 'PRIVATE',
+    PUBLIC: 'PUBLIC',
+    FOLLOWERS_ONLY: 'FOLLOWERS_ONLY'
+} as const;
+
+// 是否允许
+export const AllowStatusEnum = {
+    ALLOWED: 'ALLOWED',
+    PROHIBITED: 'PROHIBITED'
+} as const;
+
+// 导出类型
+export type ArticleStatusEnum = typeof ArticleStatusEnum[keyof typeof ArticleStatusEnum];
+export type ArticleOriginalEnum = typeof ArticleOriginalEnum[keyof typeof ArticleOriginalEnum];
+export type ArticleVisibleEnum = typeof ArticleVisibleEnum[keyof typeof ArticleVisibleEnum];
+export type AllowStatusEnum = typeof AllowStatusEnum[keyof typeof AllowStatusEnum];
+
+// 枚举映射（用于UI显示）
+export const ArticleStatusMap = {
+    [ArticleStatusEnum.DRAFT]: '草稿',
+    [ArticleStatusEnum.PENDING]: '待审核',
+    [ArticleStatusEnum.PUBLISHED]: '已发布'
+};
+
+export const ArticleOriginalMap = {
+    [ArticleOriginalEnum.ORIGINAL]: '原创',
+    [ArticleOriginalEnum.REPRINT]: '转载'
+};
+
+export const ArticleVisibleMap = {
+    [ArticleVisibleEnum.PRIVATE]: '私有',
+    [ArticleVisibleEnum.PUBLIC]: '公开',
+    [ArticleVisibleEnum.FOLLOWERS_ONLY]: '仅粉丝可见'
+};
+
+export const AllowStatusMap = {
+    [AllowStatusEnum.ALLOWED]: '允许',
+    [AllowStatusEnum.PROHIBITED]: '禁止',
+};

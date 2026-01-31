@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, message, Space, Empty, Tag } from 'antd';
-import { DeleteOutlined, EyeOutlined, HistoryOutlined } from '@ant-design/icons';
+import { Card, Table, Button, message, Space, Empty } from 'antd';
+import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 
 // 阅读历史类型定义
 interface ReadingHistory {
@@ -70,7 +70,7 @@ const ReadingHistory: React.FC = () => {
   ]);
 
   // 按日期分组
-  const groupedHistories = histories.reduce((groups: any, history) => {
+  const groupedHistories = histories.reduce((groups: Record<string, ReadingHistory[]>, history) => {
     const date = history.readDate;
     if (!groups[date]) {
       groups[date] = [];
@@ -85,7 +85,7 @@ const ReadingHistory: React.FC = () => {
   };
 
   // 删除单个历史
-  const handleDeleteSingle = (id: string) => {
+  const handleDeleteSingle = () => {
     message.success('已删除阅读历史');
   };
 
@@ -135,7 +135,7 @@ const ReadingHistory: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: (_: any, record: ReadingHistory) => (
+      render: () => (
         <Space size="middle">
           <Button icon={<EyeOutlined />} size="small">
             继续阅读
@@ -144,7 +144,7 @@ const ReadingHistory: React.FC = () => {
             icon={<DeleteOutlined />}
             size="small"
             danger
-            onClick={() => handleDeleteSingle(record.id)}
+            onClick={() => handleDeleteSingle()}
           >
             删除
           </Button>

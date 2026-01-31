@@ -12,13 +12,14 @@ import {useUser} from '../../store';
 import authService from '../../services/authService';
 import type {UploadProps} from 'antd';
 import dayjs, {type Dayjs} from 'dayjs';
+import { GenderEnum } from '../../types/enums';
 
 // 表单值类型定义
 type ProfileFormValues = {
     name: string;
     email: string;
     nickname: string;
-    gender: 'male' | 'female' | 'secret' | undefined;
+    gender: GenderEnum | undefined;
     birthDate: string | Dayjs | undefined;
     location: string;
     signature: string;
@@ -64,13 +65,13 @@ const ProfileInfo: React.FC = () => {
             // 调用后端接口更新个人资料
             const response = await authService.updateProfile(submitData);
             if (response.code === 200) {
-                // 更新前端状态，确保birthDate映射到birthDate，并转换gender格式
-                const updatedUserData = {
-                    ...response.data,
-                    birthDate: response.data.birthDate,
-                    gender: response.data.gender ? String(response.data.gender).toLowerCase() : undefined,
-                    name: user.name, // 保留原始的登录账号，避免被覆盖
-                };
+                // 更新前端状态，确保birthDate映射到birthDate
+            const updatedUserData = {
+                ...response.data,
+                birthDate: response.data.birthDate,
+                gender: response.data.gender,
+                name: user.name, // 保留原始的登录账号，避免被覆盖
+            };
                 void updateUser(updatedUserData);
                 message.success('个人资料更新成功');
                 setIsModified(false); // 重置修改状态
@@ -86,7 +87,7 @@ const ProfileInfo: React.FC = () => {
     // 头像上传配置
     const avatarUploadProps: UploadProps = {
         name: 'avatar',
-        action: '/api/upload/avatar',
+        action: '/upload/avatar',
         headers: {
             authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -95,7 +96,7 @@ const ProfileInfo: React.FC = () => {
         },
         showUploadList: false,
         onChange(info) {
-            let loadingMessage: any;
+            let loadingMessage: (() => void) | undefined;
             if (info.file.status === 'uploading') {
                 loadingMessage = message.loading('上传中...');
             } else if (info.file.status === 'done') {
@@ -123,7 +124,7 @@ const ProfileInfo: React.FC = () => {
     // 背景图片上传配置
     const coverUploadProps: UploadProps = {
         name: 'cover',
-        action: '/api/upload/cover',
+        action: '/upload/cover',
         headers: {
             authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -132,7 +133,7 @@ const ProfileInfo: React.FC = () => {
         },
         showUploadList: false,
         onChange(info) {
-            let loadingMessage: any;
+            let loadingMessage: (() => void) | undefined;
             if (info.file.status === 'uploading') {
                 loadingMessage = message.loading('上传中...');
             } else if (info.file.status === 'done') {
@@ -200,10 +201,10 @@ const ProfileInfo: React.FC = () => {
                         <div className="text-purple-600 text-shadow">
                             <div className="flex items-center gap-2 mb-1">
                                 <h2 className="text-xl font-semibold">{user?.nickname}</h2>
-                                {user?.gender === 'male' && (
+                                {user?.gender === GenderEnum.MALE && (
                                     <span>♂</span>
                                 )}
-                                {user?.gender === 'female' && (
+                                {user?.gender === GenderEnum.FEMALE && (
                                     <span>♀</span>
                                 )}
                             </div>

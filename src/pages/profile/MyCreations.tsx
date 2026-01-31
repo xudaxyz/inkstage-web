@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Table, Button, Tag, message, Space, Statistic, Row, Col } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 
 // 文章类型定义
 interface Article {
@@ -14,6 +15,8 @@ interface Article {
 }
 
 const MyCreations: React.FC = () => {
+  const navigate = useNavigate();
+  
   // 模拟文章数据
   const [articles] = useState<Article[]>([
     {
@@ -122,7 +125,7 @@ const MyCreations: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: (_: any, record: Article) => (
+      render: () => (
         <Space size="middle">
           <Button icon={<EyeOutlined />} size="small">
             查看
@@ -153,6 +156,7 @@ const MyCreations: React.FC = () => {
           type="primary"
           icon={<PlusOutlined />}
           className="bg-primary-600 hover:bg-primary-700"
+          onClick={() => navigate('/create-article')}
         >
           写文章
         </Button>

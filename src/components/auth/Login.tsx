@@ -39,9 +39,6 @@ const Login: React.FC = () => {
         if (!formData) return;
 
         try {
-            // 显示加载状态
-            const successMessage = message.loading('登录中，请稍候...', 0);
-
             const response = await login({
                 account: formData.account,
                 authType: loginType,
@@ -52,7 +49,6 @@ const Login: React.FC = () => {
 
             if (response.code === 200) {
                 // 关闭加载状态，显示成功提示
-                successMessage(); // 关闭loading
                 message.success({
                     content: response.message || '登录成功，欢迎回来！',
                     duration: 3,
@@ -63,7 +59,6 @@ const Login: React.FC = () => {
                     navigate('/');
                 }, 1000);
             } else {
-                successMessage(); // 关闭loading
                 message.error(response.message || "登录失败，请稍后重试！")
             }
         } catch (error: unknown) {

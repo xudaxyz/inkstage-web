@@ -17,6 +17,7 @@
     "@sentry/react": "^10.36.0",
     "@sentry/vite-plugin": "^4.7.0",
     "@tailwindcss/vite": "^4.1.18",
+    "@tiptap/extension-placeholder": "^3.18.0",
     "@tiptap/react": "^3.17.1",
     "@tiptap/starter-kit": "^3.17.1",
     "antd": "^6.2.1",

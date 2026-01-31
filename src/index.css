@@ -33,3 +33,13 @@ body {
     background-size: 200% 200%;
     animation: gradient-x 15s ease infinite;
 }
+
+/* 富文本编辑器 placeholder 样式 */
+.ProseMirror p.is-editor-empty:first-child::before {
+    color: #8b8d8d;
+    font-size: 18px;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+}

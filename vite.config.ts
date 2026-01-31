@@ -9,12 +9,8 @@ export default defineConfig({
             '/api': {
                 target: 'http://localhost:8080',
                 changeOrigin: true,
-                rewrite: (path) => {
-                    if (path.startsWith('/api/auth')) {
-                        return path.replace(/^\/api\/auth/, '/front/auth');
-                    }
-                    return path;
-                }
+                rewrite: (path) => path.replace('/api', '')
+
             }
         }
     },

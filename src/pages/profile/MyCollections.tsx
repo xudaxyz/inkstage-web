@@ -78,7 +78,7 @@ const MyCollections: React.FC = () => {
   };
 
   // 取消单个收藏
-  const handleSingleDelete = (id: string) => {
+  const handleSingleDelete = () => {
     message.success('已取消收藏');
   };
 
@@ -132,7 +132,7 @@ const MyCollections: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: (_: any, record: Collection) => (
+      render: (_: unknown, record: Collection) => (
         <Space size="middle">
           <Button icon={<EyeOutlined />} size="small">
             查看

@@ -2,6 +2,7 @@ import {create} from 'zustand';
 import {persist} from 'zustand/middleware';
 import authService from '../services/authService';
 import type {UserInfo as AuthUserInfo, ApiResponse, TokenResponse} from '../types/auth';
+import type { GenderEnum } from '../types/enums';
 
 // 用户状态接口
 export interface UserState {
@@ -13,7 +14,7 @@ export interface UserState {
         nickname?: string;
         coverImage?: string;
         signature?: string;
-        gender?: 'male' | 'female' | 'secret';
+        gender?: GenderEnum;
         birthDate?: string;
         location?: string;
     };
@@ -28,7 +29,7 @@ export interface UserState {
         nickname?: string;
         coverImage?: string;
         signature?: string;
-        gender?: 'male' | 'female' | 'secret';
+        gender?: GenderEnum;
         birthDate?: string;
         location?: string;
     }, accessToken?: string, refreshToken?: string, expiresIn?: number) => void;
@@ -55,7 +56,7 @@ export interface UserState {
                 nickname?: string;
                 coverImage?: string;
                 signature?: string;
-                gender?: 'male' | 'female' | 'secret';
+                gender?: GenderEnum;
                 birthDate?: string;
                 location?: string;
             };
@@ -82,7 +83,7 @@ export interface UserState {
                 nickname?: string;
                 coverImage?: string;
                 signature?: string;
-                gender?: 'male' | 'female' | 'secret';
+                gender?: GenderEnum;
                 birthDate?: string;
                 location?: string;
             };
@@ -106,14 +107,7 @@ export interface UserState {
 
 // 辅助函数：标准化用户数据
   const normalizeUserData = (userInfo: AuthUserInfo) => {
-    // 转换性别值为小写
-    let normalizedGender: 'male' | 'female' | 'secret' | undefined;
-    if (userInfo.gender) {
-        const gender = userInfo.gender.toLowerCase();
-        if (gender === 'male' || gender === 'female' || gender === 'secret') {
-            normalizedGender = gender;
-        }
-    }
+    const normalizedGender = userInfo.gender;
 
     return {
         id: userInfo.id,

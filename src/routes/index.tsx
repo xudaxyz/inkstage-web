@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 // 导入页面组件
 import Home from '../pages/Home';
 import Profile from '../pages/Profile';
+import CreateArticle from '../pages/CreateArticle';
 import ProfileLayout from '../layouts/ProfileLayout';
 import ProfileInfo from '../pages/profile/ProfileInfo';
 import MyCreations from '../pages/profile/MyCreations';
@@ -23,6 +24,8 @@ const AppRoutes = () => {
       {/* 登录注册路由 */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      {/* 写文章路由 */}
+      <Route path="/create-article" element={<CreateArticle />} />
       {/* 个人中心路由 */}
       <Route path="/profile" element={<ProfileLayout />}>
         <Route index element={<Profile />} />
