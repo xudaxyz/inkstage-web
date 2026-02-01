@@ -31,7 +31,7 @@ const HotTags: React.FC<HotTagsProps> = ({
                         key={index}
                         className="cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-sm"
                     >
-                        <a href="#" className="text-sm font-medium">
+                        <a href={`/tag/${tag.name}`} className="text-sm font-medium">
                             {tag.name}
                         </a>
                     </Tag>

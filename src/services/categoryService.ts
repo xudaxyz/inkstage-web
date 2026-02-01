@@ -7,8 +7,6 @@ export interface Category {
     name: string;
     description?: string;
     status?: number;
-    createTime?: string;
-    updateTime?: string;
 }
 
 // 分类服务

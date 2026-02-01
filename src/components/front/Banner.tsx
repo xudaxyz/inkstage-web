@@ -1,12 +1,6 @@
 import React, {useRef} from 'react';
 import Carousel, {type CarouselRef} from 'antd/es/carousel';
-
-interface BannerArticle {
-    id: number;
-    title: string;
-    summary: string;
-    coverImage: string;
-}
+import type { BannerArticle } from '../../services/articleService.ts';
 
 interface BannerProps {
     articles?: BannerArticle[];

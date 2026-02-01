@@ -1,14 +1,9 @@
 import React from 'react';
 import { Card } from 'antd';
-
-interface Article {
-  id: number;
-  title: string;
-  publishTime: string;
-}
+import type { LatestArticle } from '../../services/articleService.ts';
 
 interface LatestArticlesProps {
-  articles?: Article[];
+  articles?: LatestArticle[];
 }
 
 const LatestArticles: React.FC<LatestArticlesProps> = ({ 
@@ -34,7 +29,7 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <a
-                  href="#" 
+                  href={`/article/${article.id}`} 
                   className="text-[#696868] hover:text-blue-500 text-sm font-medium transition-colors truncate no-underline"
                   style={{ color: '#696868', textDecoration: 'none' }}
                 >

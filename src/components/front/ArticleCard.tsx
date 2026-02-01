@@ -1,24 +1,16 @@
 import React from 'react';
 import {Avatar} from 'antd';
 
-interface User {
-    avatar?: string;
-    name: string;
-}
-
-interface Stats {
-    likes: number;
-    views: number;
-    comments: number;
-}
-
 interface Article {
     id: number;
     title: string;
     summary: string;
     coverImage?: string;
-    user: User;
-    stats: Stats;
+    authorName: string;
+    avatar: string;
+    likeCount: number;
+    readCount: number;
+    commentCount: number;
     publishTime: string;
 }
 
@@ -27,13 +19,13 @@ interface ArticleCardProps {
 }
 
 const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
-    const {title, summary, coverImage, user, stats, publishTime} = article;
+    const {title, summary, coverImage,authorName, avatar, likeCount, readCount, commentCount,  publishTime} = article;
 
     return (
-        <div className="border-b border-gray-200 pb-6 mb-6 hover:bg-gray-50 transition-colors duration-200">
-            <div className="flex flex-col md:flex-row gap-6">
+        <div className="border-b border-gray-200 pb-6 mb-4 hover:bg-gray-50 transition-colors duration-200 w-full">
+            <div className="flex flex-col md:flex-row gap-6 w-full">
                 {/* 左侧内容 */}
-                <div className={`flex-1 ${coverImage ? 'md:pr-4' : ''} flex flex-col`}>
+                <div className={`flex-1 ${coverImage ? 'md:pr-4' : ''} flex flex-col min-w-10`}>
                     {/* 文章标题 */}
                     <h3 className="text-xl font-semibold mb-2 text-gray-800 hover:text-blue-600 transition-colors cursor-pointer leading-tight">
                         {title}
@@ -48,10 +40,10 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                     <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap mt-auto">
                         {/* 用户信息 */}
                         <div className="flex items-center gap-2">
-                            <Avatar src={user.avatar} alt={user.name} className="w-6 h-6"/>
-                            <a href={`/user/${user.name.toLowerCase().replace(/\s+/g, '-')}`}
+                            <Avatar src={avatar || undefined} alt={authorName} className="w-6 h-6"/>
+                            <a href={`/user/${authorName}`}
                                className="font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                                {user.name}
+                                {authorName}
                             </a>
                         </div>
 
@@ -61,7 +53,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
               </svg>
-                            {stats.likes}
+                            {likeCount}
             </span>
 
                         {/* 浏览量 */}
@@ -72,7 +64,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
               </svg>
-                            {stats.views}
+                            {readCount}
             </span>
 
 
@@ -82,7 +74,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.21-.802A13.985 13.985 0 013 12c0-4.418 4.03-8 9-8a9.863 9.863 0 014.21.802A13.985 13.985 0 0121 12z"/>
               </svg>
-                            {stats.comments}
+                            {commentCount}
             </span>
 
                         {/* 发布时间 */}

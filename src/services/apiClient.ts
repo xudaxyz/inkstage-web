@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type {AxiosInstance} from 'axios';
 import errorHandler from './errorHandler';
+import {API_ENDPOINTS, PUBLIC_ENDPOINTS} from './apiEndpoints';
 
 // 创建axios实例
 const apiClient: AxiosInstance = axios.create({
@@ -19,8 +20,8 @@ let refreshSubscribers: ((token: string) => void)[] = [];
 // 请求拦截器
 apiClient.interceptors.request.use(
     (config) => {
-        // 对于 /oauth2/token 端点，不添加访问令牌，因为这是用于刷新令牌的公开端点
-        if (config.url !== '/oauth2/token') {
+        // 对于刷新令牌端点，不添加访问令牌，因为这是用于刷新令牌的公开端点
+        if (config.url !== API_ENDPOINTS.AUTH.TOKEN) {
             const token = localStorage.getItem('access_token');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
@@ -44,7 +45,7 @@ apiClient.interceptors.response.use(
         // 处理401错误
         if (error.response?.status === 401) {
             // 检查是否是刷新令牌请求本身失败
-            if (originalRequest.url === '/oauth2/token') {
+            if (originalRequest.url === API_ENDPOINTS.AUTH.TOKEN) {
                 // 刷新令牌请求失败，清理本地存储并跳转到登录页面
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
@@ -54,8 +55,7 @@ apiClient.interceptors.response.use(
                     window.location.href = '/login';
                 }, 1000);
                 // 终止Promise链，避免无限循环
-                return new Promise(() => {
-                });
+                return new Promise(() => {new Error("用户未登录")});
             }
 
             // 检查是否已经在处理刷新令牌
@@ -65,7 +65,7 @@ apiClient.interceptors.response.use(
                 const refreshToken = localStorage.getItem('refresh_token');
                 if (refreshToken) {
                     try {
-                        const response = await apiClient.post('/oauth2/token', {
+                        const response = await apiClient.post(API_ENDPOINTS.AUTH.TOKEN, {
                             grant_type: 'refresh_token',
                             refresh_token: refreshToken,
                             client_id: import.meta.env.VITE_CLIENT_ID,
@@ -94,29 +94,44 @@ apiClient.interceptors.response.use(
                         } else {
                             errorHandler.handleAuthError('登录已过期，请重新登录');
                         }
-                        // 1秒后跳转到登录页面
-                        setTimeout(() => {
-                            window.location.href = '/login';
-                        }, 1000);
+                        // 检查是否是公开端点
+                        const isPublicEndpoint = PUBLIC_ENDPOINTS.some(endpoint =>
+                            originalRequest.url.includes(endpoint)
+                        );
+
+                        if (!isPublicEndpoint) {
+                            // 非公开端点，跳转到登录页面
+                            setTimeout(() => {
+                                window.location.href = '/login';
+                            }, 1000);
+                        }
+
                         // 终止Promise链
                         isRefreshing = false;
                         refreshSubscribers = [];
-                        return new Promise(() => {
-                        });
+                        return new Promise(() => {new Error("用户未登录")});
                     }
                 } else {
-                    // 没有刷新令牌，清理本地存储并跳转到登录页面
+                    // 没有刷新令牌，清理本地存储并判断跳转到首页还是登录页面
                     localStorage.removeItem('access_token');
                     localStorage.removeItem('refresh_token');
-                    errorHandler.handleAuthError('登录状态无效，请重新登录');
-                    // 1秒后跳转到登录页面
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 1000);
+
+                    // 检查是否是公开端点
+                    const isPublicEndpoint = PUBLIC_ENDPOINTS.some((endpoint: string) =>
+                        originalRequest.url.includes(endpoint)
+                    );
+
+                    if (!isPublicEndpoint) {
+                        // 非公开端点，跳转到登录页面
+                        errorHandler.handleAuthError('登录状态无效，请重新登录');
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 1000);
+
+                    }
                     // 终止Promise链
                     isRefreshing = false;
-                    return new Promise(() => {
-                    });
+                    return new Promise(() => {new Error("用户未登录")});
                 }
             } else {
                 // 已经在处理刷新令牌，将当前请求加入队列
