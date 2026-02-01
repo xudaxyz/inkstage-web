@@ -1,10 +1,10 @@
 // 性别枚举，对应后端 GenderEnum
 
 export const GenderEnum = {
-    UNKNOWN: 0,
-    MALE: 1,
-    FEMALE: 2,
-    SECRET: 3,
+    UNKNOWN: 'UNKNOWN',
+    MALE: 'MALE',
+    FEMALE: 'FEMALE',
+    SECRET: 'SECRET',
 } as const;
 
 export type GenderEnum = typeof GenderEnum[keyof typeof GenderEnum];
@@ -24,11 +24,6 @@ export const GenderLabel: Record<GenderEnum, string> = {
     [GenderEnum.FEMALE]: '女',
     [GenderEnum.SECRET]: '保密',
 };
-
-// 从代码获取性别枚举
-export function getGenderByCode(code: number): GenderEnum | undefined {
-    return Object.values(GenderEnum).find((value) => value === code) as GenderEnum | undefined;
-}
 
 // 获取性别枚举的显示文本
 export function getGenderLabel(gender: GenderEnum): string {

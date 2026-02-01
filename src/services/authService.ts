@@ -88,6 +88,40 @@ const authService = {
   updateProfile: async (params: Partial<UserInfo>): Promise<ApiResponse<UserInfo>> => {
     return apiClient.put('/front/user/profile', params);
   },
+
+  /**
+   * 上传头像
+   */
+  uploadAvatar: async (file: File, expiry?: number): Promise<ApiResponse<string>> => {
+    const formData = new FormData();
+    formData.append('avatar', file as File);
+    if (expiry) {
+      formData.append('expiry', expiry.toString());
+    }
+
+    return await apiClient.post('/upload/user/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+
+  /**
+   * 上传封面图
+   */
+  uploadCoverImage: async (file: File, expiry?: number): Promise<ApiResponse<string>> => {
+    const formData = new FormData();
+    formData.append('image', file as File);
+    if (expiry) {
+      formData.append('expiry', expiry.toString());
+    }
+
+    return await apiClient.post('/upload/user/cover-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
 };
 
 export default authService;

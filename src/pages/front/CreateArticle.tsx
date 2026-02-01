@@ -9,12 +9,12 @@ import {
     InboxOutlined,
 } from '@ant-design/icons';
 import {useNavigate} from 'react-router-dom';
-import articleService from '../services/articleService';
-import tagService from '../services/tagService.ts';
-import categoryService from '../services/categoryService.ts';
-import {useUser} from '../store';
-import {ArticleStatusEnum, ArticleOriginalEnum, ArticleVisibleEnum, AllowStatusEnum} from '../types/enums';
-import RichTextEditor from '../components/editor/RichTextEditor';
+import articleService from '../../services/articleService.ts';
+import tagService from '../../services/tagService.ts';
+import categoryService from '../../services/categoryService.ts';
+import {useUser} from '../../store';
+import {ArticleStatusEnum, ArticleOriginalEnum, ArticleVisibleEnum, AllowStatusEnum} from '../../types/enums';
+import RichTextEditor from '../../components/editor/RichTextEditor.tsx';
 import './CreateArticle.css';
 
 const {Option} = Select;
@@ -475,9 +475,9 @@ const CreateArticle: React.FC = () => {
                                             return Upload.LIST_IGNORE;
                                         }
                                         // 验证文件大小
-                                        const isLt5M = file.size / 1024 / 1024 < 5;
-                                        if (!isLt5M) {
-                                            void message.error('图片大小不能超过 5MB！');
+                                        const isLt10M = file.size / 1024 / 1024 < 10;
+                                        if (!isLt10M) {
+                                            void message.error('图片大小不能超过 10MB！');
                                             return Upload.LIST_IGNORE;
                                         }
                                         return true;

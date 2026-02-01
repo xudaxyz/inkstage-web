@@ -49,8 +49,10 @@ apiClient.interceptors.response.use(
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
                 errorHandler.handleAuthError('登录已过期，请重新登录');
-                // 跳转到登录页面
-                window.location.href = '/login';
+                // 1秒后跳转到登录页面
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1000);
                 // 终止Promise链，避免无限循环
                 return new Promise(() => {
                 });
@@ -92,9 +94,11 @@ apiClient.interceptors.response.use(
                         } else {
                             errorHandler.handleAuthError('登录已过期，请重新登录');
                         }
-                        // 跳转到登录页面
-                        window.location.href = '/login';
-                        // 终止Promise链，避免无限循环
+                        // 1秒后跳转到登录页面
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 1000);
+                        // 终止Promise链
                         isRefreshing = false;
                         refreshSubscribers = [];
                         return new Promise(() => {
@@ -105,9 +109,11 @@ apiClient.interceptors.response.use(
                     localStorage.removeItem('access_token');
                     localStorage.removeItem('refresh_token');
                     errorHandler.handleAuthError('登录状态无效，请重新登录');
-                    // 跳转到登录页面
-                    window.location.href = '/login';
-                    // 终止Promise链，避免无限循环
+                    // 1秒后跳转到登录页面
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 1000);
+                    // 终止Promise链
                     isRefreshing = false;
                     return new Promise(() => {
                     });

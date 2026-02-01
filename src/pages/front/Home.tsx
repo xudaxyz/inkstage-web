@@ -1,11 +1,11 @@
 import React from 'react';
-import Header from '../common/Header.tsx';
-import Footer from '../common/Footer.tsx';
-import Banner from './Banner.tsx';
-import Categories from './Categories.tsx';
-import ArticleCard from './ArticleCard.tsx';
-import LatestArticles from './LatestArticles.tsx';
-import HotTags from './HotTags.tsx';
+import Header from '../../components/common/Header.tsx';
+import Footer from '../../components/common/Footer.tsx';
+import Banner from '../../components/front/Banner.tsx';
+import Categories from '../../components/front/Categories.tsx';
+import ArticleCard from '../../components/front/ArticleCard.tsx';
+import LatestArticles from '../../components/front/LatestArticles.tsx';
+import HotTags from '../../components/front/HotTags.tsx';
 
 // 模拟文章数据
 const mockArticles = [

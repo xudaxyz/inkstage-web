@@ -48,8 +48,8 @@ const articleService = {
     },
 
     // 删除文章
-    deleteArticle: async (id: string): Promise<void> => {
-        await apiClient.delete(`/article/${id}`);
+    deleteArticle: async (id: string): Promise<ApiResponse<void>> => {
+        return await apiClient.delete(`/article/${id}`);
     },
 
     // 上传图片

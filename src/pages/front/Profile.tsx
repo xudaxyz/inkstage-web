@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../store';
+import { useUser } from '../../store';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();

@@ -8,11 +8,11 @@ import {
     WomanOutlined,
     LockOutlined
 } from '@ant-design/icons';
-import {useUser} from '../../store';
-import authService from '../../services/authService';
+import {useUser} from '../../../store';
+import authService from '../../../services/authService.ts';
 import type {UploadProps} from 'antd';
 import dayjs, {type Dayjs} from 'dayjs';
-import { GenderEnum } from '../../types/enums';
+import {GenderEnum} from '../../../types/enums';
 
 // 表单值类型定义
 type ProfileFormValues = {
@@ -45,7 +45,7 @@ const ProfileInfo: React.FC = () => {
                 name: user.name,
                 email: user.email,
                 nickname: user.nickname || user.name,
-                gender: user.gender,
+                gender: user.gender || GenderEnum.UNKNOWN,
                 birthDate: user.birthDate ? dayjs(user.birthDate) : null,
                 location: user.location,
                 signature: user.signature
@@ -56,9 +56,10 @@ const ProfileInfo: React.FC = () => {
     // 处理表单提交
     const handleSubmit = async (values: ProfileFormValues) => {
         try {
-            // 转换生日字段格式和名称
             const submitData = {
                 ...values,
+                gender: values.gender || GenderEnum.UNKNOWN,
+                // 转换生日字段格式
                 birthDate: values.birthDate ? (typeof values.birthDate === 'string' ? values.birthDate : values.birthDate.format('YYYY-MM-DD')) : undefined,
             };
 
@@ -66,12 +67,14 @@ const ProfileInfo: React.FC = () => {
             const response = await authService.updateProfile(submitData);
             if (response.code === 200) {
                 // 更新前端状态，确保birthDate映射到birthDate
-            const updatedUserData = {
-                ...response.data,
-                birthDate: response.data.birthDate,
-                gender: response.data.gender,
-                name: user.name, // 保留原始的登录账号，避免被覆盖
-            };
+                const updatedUserData = {
+                    ...response.data,
+                    birthDate: response.data.birthDate,
+                    gender: response.data.gender || GenderEnum.UNKNOWN,
+                    name: user.name, // 保留原始的登录账号，避免被覆盖
+                    avatar: user.avatar,
+                    coverImage: user.coverImage,
+                };
                 void updateUser(updatedUserData);
                 message.success('个人资料更新成功');
                 setIsModified(false); // 重置修改状态
@@ -79,7 +82,6 @@ const ProfileInfo: React.FC = () => {
                 message.error('个人资料更新失败: ' + (response.message || ''));
             }
         } catch (error: unknown) {
-            // 认证错误和网络错误已由全局错误处理服务处理，这里只处理业务逻辑错误
             console.error('个人资料更新失败:', error);
         }
     };
@@ -87,74 +89,86 @@ const ProfileInfo: React.FC = () => {
     // 头像上传配置
     const avatarUploadProps: UploadProps = {
         name: 'avatar',
-        action: '/upload/avatar',
-        headers: {
-            authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        data: {
-            expiry: 604800, // 7天有效期（秒）
-        },
+        multiple: false,
         showUploadList: false,
-        onChange(info) {
-            let loadingMessage: (() => void) | undefined;
-            if (info.file.status === 'uploading') {
-                loadingMessage = message.loading('上传中...');
-            } else if (info.file.status === 'done') {
-                if (loadingMessage) {
-                    loadingMessage();
-                }
-                // 处理后端返回的响应格式
-                const response = info.file.response;
-                if (response && response.code === 200) {
-                    void message.success(response.message || '头像上传成功');
+        customRequest: async (options) => {
+            const {file, onSuccess, onError} = options;
+            try {
+                // 调用服务层上传方法
+                const result = await authService.uploadAvatar(file as File, 604800);
+                if (result.code === 200) {
+                    onSuccess?.(result.data);
+                    message.success('头像上传成功');
                     // 上传成功后刷新个人资料
                     void getProfile();
                 } else {
-                    void message.error(response?.message || '头像上传失败');
+                    const errorMsg = result.message || '头像上传失败';
+                    onError?.(new Error(errorMsg));
+                    message.error(errorMsg);
                 }
-            } else if (info.file.status === 'error') {
-                if (loadingMessage) {
-                    loadingMessage();
-                }
-                void message.error('头像上传失败');
+            } catch (error) {
+                const errorMsg = error instanceof Error ? error.message : '上传失败，请重试';
+                onError?.(new Error(errorMsg));
+                message.error(errorMsg);
             }
+        },
+        beforeUpload: (file) => {
+            // 验证文件类型
+            const isImage = file.type.startsWith('image/');
+            if (!isImage) {
+                void message.error('只能上传图片文件！');
+                return Upload.LIST_IGNORE;
+            }
+            // 验证文件大小
+            const isLt5M = file.size / 1024 / 1024 < 5;
+            if (!isLt5M) {
+                void message.error('图片大小不能超过 5MB！');
+                return Upload.LIST_IGNORE;
+            }
+            return true;
         },
     };
 
     // 背景图片上传配置
     const coverUploadProps: UploadProps = {
         name: 'cover',
-        action: '/upload/cover',
-        headers: {
-            authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        data: {
-            expiry: 604800, // 7天有效期（秒）
-        },
+        multiple: false,
         showUploadList: false,
-        onChange(info) {
-            let loadingMessage: (() => void) | undefined;
-            if (info.file.status === 'uploading') {
-                loadingMessage = message.loading('上传中...');
-            } else if (info.file.status === 'done') {
-                if (loadingMessage) {
-                    loadingMessage();
-                }
-                // 处理后端返回的响应格式
-                const response = info.file.response;
-                if (response && response.code === 200) {
-                    void message.success('封面上传成功');
+        customRequest: async (options) => {
+            const {file, onSuccess, onError} = options;
+            try {
+                // 调用服务层上传方法
+                const result = await authService.uploadCoverImage(file as File, 604800);
+                if (result.code === 200) {
+                    onSuccess?.(result.data);
+                    message.success('封面上传成功');
                     // 上传成功后刷新个人资料
                     void getProfile();
                 } else {
-                    void message.error(response?.message || '封面上传失败');
+                    const errorMsg = result.message || '封面上传失败';
+                    onError?.(new Error(errorMsg));
+                    message.error(errorMsg);
                 }
-            } else if (info.file.status === 'error') {
-                if (loadingMessage) {
-                    loadingMessage();
-                }
-                void message.error('封面上传失败');
+            } catch (error) {
+                const errorMsg = error instanceof Error ? error.message : '上传失败，请重试';
+                onError?.(new Error(errorMsg));
+                message.error(errorMsg);
             }
+        },
+        beforeUpload: (file) => {
+            // 验证文件类型
+            const isImage = file.type.startsWith('image/');
+            if (!isImage) {
+                void message.error('请上传图片文件！');
+                return Upload.LIST_IGNORE;
+            }
+            // 验证文件大小
+            const isLt10M = file.size / 1024 / 1024 < 10;
+            if (!isLt10M) {
+                void message.error('图片大小不能超过 10MB！');
+                return Upload.LIST_IGNORE;
+            }
+            return true;
         },
     };
 
@@ -178,7 +192,7 @@ const ProfileInfo: React.FC = () => {
                     {/* 用户信息叠加在封面图片上 */}
                     <div className="absolute bottom-6 left-6 flex items-end gap-4">
                         {/* 头像 */}
-                        <div className="flex-shrink-0 relative">
+                        <div className="shrink-0 relative">
                             <div className="relative">
                                 <Avatar
                                     size={100}
@@ -202,13 +216,13 @@ const ProfileInfo: React.FC = () => {
                             <div className="flex items-center gap-2 mb-1">
                                 <h2 className="text-xl font-semibold">{user?.nickname}</h2>
                                 {user?.gender === GenderEnum.MALE && (
-                                    <span>♂</span>
+                                    <span><ManOutlined/></span>
                                 )}
                                 {user?.gender === GenderEnum.FEMALE && (
-                                    <span>♀</span>
+                                    <span><WomanOutlined/></span>
                                 )}
                             </div>
-                            <p className="text-gray-400">{user?.signature || '暂无简介'}</p>
+                            <p className="text-gray-400 truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px]">{user?.signature || '暂无简介'}</p>
                         </div>
                     </div>
 
@@ -267,13 +281,13 @@ const ProfileInfo: React.FC = () => {
                                 label="性别"
                             >
                                 <Radio.Group className="h-12 flex items-center">
-                                    <Radio value="male" className="mr-6 flex items-center">
+                                    <Radio value={GenderEnum.MALE} className="mr-6 flex items-center">
                                         <ManOutlined/> 男
                                     </Radio>
-                                    <Radio value="female" className="mr-6 flex items-center">
+                                    <Radio value={GenderEnum.FEMALE} className="mr-6 flex items-center">
                                         <WomanOutlined/> 女
                                     </Radio>
-                                    <Radio value="secret" className="flex items-center">
+                                    <Radio value={GenderEnum.SECRET} className="flex items-center">
                                         <LockOutlined/> 保密
                                     </Radio>
                                 </Radio.Group>
@@ -328,7 +342,7 @@ const ProfileInfo: React.FC = () => {
                             disabled={!isModified}
                             className={`h-12 px-10 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                                 isModified
-                                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-none shadow-lg shadow-blue-500/30'
+                                    ? 'bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-none shadow-lg shadow-blue-500/30'
                                     : 'bg-gray-300 text-gray-500 cursor-not-allowed border-none'
                             }`}
                         >

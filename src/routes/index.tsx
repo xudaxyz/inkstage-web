@@ -1,16 +1,16 @@
 import { Routes, Route } from 'react-router-dom';
 
 // 导入页面组件
-import Home from '../pages/Home';
-import Profile from '../pages/Profile';
-import CreateArticle from '../pages/CreateArticle';
+import Home from '../pages/front/Home.tsx';
+import Profile from '../pages/front/Profile.tsx';
+import CreateArticle from '../pages/front/CreateArticle.tsx';
 import ProfileLayout from '../layouts/ProfileLayout';
-import ProfileInfo from '../pages/profile/ProfileInfo';
-import MyCreations from '../pages/profile/MyCreations';
-import MyCollections from '../pages/profile/MyCollections';
-import ReadingHistory from '../pages/profile/ReadingHistory';
-import Notifications from '../pages/profile/Notifications';
-import AccountSettings from '../pages/profile/AccountSettings';
+import ProfileInfo from '../pages/front/profile/ProfileInfo';
+import MyCreations from '../pages/front/profile/MyCreations';
+import MyCollections from '../pages/front/profile/MyCollections';
+import ReadingHistory from '../pages/front/profile/ReadingHistory';
+import Notifications from '../pages/front/profile/Notifications';
+import AccountSettings from '../pages/front/profile/AccountSettings';
 
 // 导入认证组件
 import Login from '../components/auth/Login';

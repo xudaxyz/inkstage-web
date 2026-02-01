@@ -18,8 +18,7 @@ const categoryService = {
      * @returns 分类列表
      */
     getAllCategories: async (): Promise<ApiResponse<Category[]>> => {
-        const response = await apiClient.get('/front/category');
-        return response.data || [];
+        return await apiClient.get('/front/category');
     },
 
     /**
@@ -36,8 +35,7 @@ const categoryService = {
      * @returns 分类信息
      */
     getCategoryById: async (id: number): Promise<ApiResponse<Category>> => {
-        const response = await apiClient.get(`/front/category/${id}`);
-        return response.data;
+        return await apiClient.get(`/front/category/${id}`);
     },
 
 };

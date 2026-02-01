@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Input, Button, Switch } from 'antd';
-import { SearchOutlined, MoonOutlined, SunOutlined, UserOutlined, FileTextOutlined, LogoutOutlined, BellOutlined } from '@ant-design/icons';
+import { SearchOutlined, MoonOutlined, SunOutlined, UserOutlined, FileTextOutlined, LogoutOutlined, BellOutlined, EditOutlined } from '@ant-design/icons';
 import { useUser } from '../../store';
 
 const Header: React.FC = () => {
@@ -76,12 +76,9 @@ const Header: React.FC = () => {
                         专栏
                     </Link>
                 </nav>
-            </div>
-
-            {/* 右侧区域：搜索框 + 主题切换 + 通知 + 用户信息/登录注册 */}
-            <div className="flex items-center gap-6 ml-auto">
+                
                 {/* 搜索框 */}
-                <div className="hidden md:block mr-8 w-85">
+                <div className="hidden md:block ml-8 w-90">
                     <Input
                         placeholder="搜索..."
                         prefix={<SearchOutlined/>}
@@ -89,6 +86,24 @@ const Header: React.FC = () => {
                         className="rounded-4xl bg-gray-100 border border-gray-200 hover:border-primary-300 focus:border-primary-500 focus:ring-0 transition-all duration-200"
                     />
                 </div>
+            </div>
+
+            {/* 右侧区域：写文章按钮（登录后） + 主题切换 + 通知 + 用户信息/登录注册 */}
+            <div className="flex items-center gap-6 ml-auto">
+                {/* 写文章按钮（仅登录后显示） */}
+                {isLoggedIn && (
+                    <Link to="/create-article">
+
+                        <Button
+                            type="primary"
+                            size="middle"
+                            shape="round"
+                            className="rounded-4xl px-6 bg-linear-to-r from-green-500 to-green-600 text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
+                        >
+                            <EditOutlined />写文章
+                        </Button>
+                    </Link>
+                )}
                 
                 {/* 主题切换按钮 */}
                 <div className="flex items-center gap-2">
@@ -101,7 +116,7 @@ const Header: React.FC = () => {
                 </div>
 
                 {/* 通知图标 */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center">
                     <BellOutlined />
                 </div>
 
