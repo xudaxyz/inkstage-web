@@ -1,12 +1,18 @@
 // 导出所有API端点
 export const API_ENDPOINTS = {
-    // 文章相关
-    ARTICLE: {
+    // 首页相关
+    INDEX: {
         INDEX: '/',
         LIST: '/index/articles',        // 获取首页文章列表
         BANNER: '/index/banner',      // 获取轮播图文章
         LATEST: '/index/latest-article',      // 获取最新文章
         CREATE: '/article',             // 创建文章
+
+    },
+
+    // 文章相关
+    ARTICLE: {
+        DETAIL: '/front/article',
         SAVE_DRAFT: (id?: number) => `/article/${id}/draft`, // 保存草稿
         DELETE: (id: number) => `/article/${id}`, // 删除文章
     },
@@ -42,10 +48,10 @@ export const API_ENDPOINTS = {
 
 // 公开端点列表（不需要身份认证的端点）
 export const PUBLIC_ENDPOINTS = [
-    API_ENDPOINTS.ARTICLE.INDEX,
-    API_ENDPOINTS.ARTICLE.LIST,
-    API_ENDPOINTS.ARTICLE.BANNER,
-    API_ENDPOINTS.ARTICLE.LATEST,
+    API_ENDPOINTS.INDEX.INDEX,
+    API_ENDPOINTS.INDEX.LIST,
+    API_ENDPOINTS.INDEX.BANNER,
+    API_ENDPOINTS.INDEX.LATEST,
     API_ENDPOINTS.TAG.ACTIVE,
     API_ENDPOINTS.CATEGORY.ACTIVE,
 ];

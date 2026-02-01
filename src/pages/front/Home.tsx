@@ -51,7 +51,6 @@ const Home: React.FC = () => {
                 sortBy: 'publishTime',
                 sortOrder: 'desc'
             });
-            console.log("文章列表", response);
             if (response.code !== 200) {
                 message.error(response.message || '文章列表加载失败');
                 return;
@@ -218,12 +217,6 @@ const Home: React.FC = () => {
                 <main className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <p className="text-red-600 mb-4">{error}</p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                        >
-                            重试
-                        </button>
                     </div>
                 </main>
                 <Footer/>

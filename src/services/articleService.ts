@@ -1,7 +1,13 @@
 import apiClient from './apiClient';
-import { API_ENDPOINTS } from './apiEndpoints';
+import {API_ENDPOINTS} from './apiEndpoints';
 import type {ApiResponse} from "../types/auth.ts";
-import {ArticleStatusEnum, ArticleOriginalEnum, ArticleVisibleEnum, AllowStatusEnum} from '../types/enums';
+import {
+    ArticleStatusEnum,
+    ArticleOriginalEnum,
+    ArticleVisibleEnum,
+    AllowStatusEnum,
+    GenderEnum
+} from '../types/enums';
 
 // 文章类型定义
 export interface Article {
@@ -58,16 +64,49 @@ export interface ArticleListResponse {
     pages: number;
 }
 
+// 文章详情类型
+export interface ArticleDetailInfo {
+    id: number;
+    title: string;
+    content: string;
+    contentHtml: string;
+    summary: string;
+    coverImage: string;
+    allowComment: AllowStatusEnum;
+    allowForward: AllowStatusEnum;
+    original: ArticleOriginalEnum;
+    originalUrl: string;
+    publishTime: string;
+    lastEditTime: string;
+    readCount: number;
+    likeCount: number;
+    commentCount: number;
+    collectionCount: number;
+    shareCount: number;
+    isLiked: boolean;
+    isCollected: boolean;
+    userId: number;
+    authorName: string;
+    avatar: string;
+    signature: string;
+    gender: GenderEnum;
+    articleCount: number;
+    followerCount: number;
+    categoryId: number;
+    categoryName: string;
+    tags: []
+}
+
 // 文章 API 服务
 const articleService = {
     // 创建文章
     createArticle: async (article: Omit<Article, 'id' | 'createdTime' | 'updatedTime'>): Promise<ApiResponse<Article>> => {
-        return await apiClient.post('/article', article);
+        return await apiClient.post('/front/article', article);
     },
 
     // 更新文章
     updateArticle: async (id: string, article: Partial<Article>): Promise<ApiResponse<Article>> => {
-        return await apiClient.put(`/article/${id}`, article);
+        return await apiClient.put(`/front/article/${id}`, article);
     },
 
     // 保存草稿
@@ -88,7 +127,7 @@ const articleService = {
 
     // 删除文章
     deleteArticle: async (id: string): Promise<ApiResponse<void>> => {
-        return await apiClient.delete(`/article/${id}`);
+        return await apiClient.delete(`/front/article/${id}`);
     },
 
     // 上传图片
@@ -104,7 +143,14 @@ const articleService = {
     },
 
     // 获取文章列表
-    getArticles: async (query: { page?: number; pageSize?: number; categoryId?: number; keyword?: string; sortBy?: string; sortOrder?: string } = {}): Promise<ApiResponse<ArticleListResponse>> => {
+    getArticles: async (query: {
+        page?: number;
+        pageSize?: number;
+        categoryId?: number;
+        keyword?: string;
+        sortBy?: string;
+        sortOrder?: string
+    } = {}): Promise<ApiResponse<ArticleListResponse>> => {
         const queryDTO = {
             page: query.page || 1,
             pageSize: query.pageSize || 10,
@@ -114,17 +160,22 @@ const articleService = {
             sortBy: query.sortBy || 'publishTime',
             sortOrder: query.sortOrder || 'desc'
         };
-        return await apiClient.post(API_ENDPOINTS.ARTICLE.LIST, queryDTO);
+        return await apiClient.post(API_ENDPOINTS.INDEX.LIST, queryDTO);
     },
 
     // 获取轮播图文章
     getBannerArticles: async (limit: number = 3): Promise<ApiResponse<BannerArticle[]>> => {
-        return await apiClient.get(API_ENDPOINTS.ARTICLE.BANNER, { params: { limit } });
+        return await apiClient.get(API_ENDPOINTS.INDEX.BANNER, {params: {limit}});
     },
 
     // 获取最新文章
     getLatestArticles: async (limit: number = 5): Promise<ApiResponse<LatestArticle[]>> => {
-        return await apiClient.get(API_ENDPOINTS.ARTICLE.LATEST, { params: { limit } });
+        return await apiClient.get(API_ENDPOINTS.INDEX.LATEST, {params: {limit}});
+    },
+
+    // 获取文章详情
+    getArticleDetail: async (id: number): Promise<ApiResponse<ArticleDetailInfo>> => {
+        return await apiClient.get(`${API_ENDPOINTS.ARTICLE.DETAIL}/${id}`);
     }
 };
 

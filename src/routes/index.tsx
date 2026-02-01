@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import Home from '../pages/front/Home.tsx';
 import Profile from '../pages/front/Profile.tsx';
 import CreateArticle from '../pages/front/CreateArticle.tsx';
+import ArticleDetail from '../pages/front/ArticleDetail.tsx';
 import ProfileLayout from '../layouts/ProfileLayout';
 import ProfileInfo from '../pages/front/profile/ProfileInfo';
 import MyCreations from '../pages/front/profile/MyCreations';
@@ -26,6 +27,8 @@ const AppRoutes = () => {
       <Route path="/register" element={<Register />} />
       {/* 写文章路由 */}
       <Route path="/create-article" element={<CreateArticle />} />
+      {/* 文章详情路由 */}
+      <Route path="/article/:id" element={<ArticleDetail />} />
       {/* 个人中心路由 */}
       <Route path="/profile" element={<ProfileLayout />}>
         <Route index element={<Profile />} />
