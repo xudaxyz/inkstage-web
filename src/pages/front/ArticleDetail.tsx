@@ -15,6 +15,8 @@ import {
 } from '@ant-design/icons';
 import Header from '../../components/common/Header.tsx';
 import Footer from '../../components/common/Footer.tsx';
+import CommentSection from '../../components/front/CommentSection.tsx';
+import {useUser} from '../../store';
 import type {ArticleDetailInfo} from '../../services/articleService.ts';
 import articleService from '../../services/articleService.ts';
 import MarkdownIt from 'markdown-it';
@@ -51,6 +53,9 @@ const ArticleDetail: React.FC = () => {
     const [collectionCount, setCollectionCount] = useState(0);
     const [toc, setToc] = useState<Array<{ id: string; text: string; level: number }>>([]);
     const contentRef = useRef<HTMLDivElement>(null);
+    
+    // 获取当前用户信息
+    const {user, isLoggedIn} = useUser();
 
     // 先定义fetchArticleDetail函数
     const fetchArticleDetail = useCallback(async () => {
@@ -392,19 +397,12 @@ const ArticleDetail: React.FC = () => {
                             </div>
 
                             {/* 评论区 */}
-                            <div className="mb-12">
-                                <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                                    <MessageOutlined className="text-gray-400"/>
-                                    评论 ({article.commentCount || 0})
-                                </h3>
-                                <div className="border rounded-lg p-8 bg-gray-50">
-                                    <div className="text-center py-12">
-                                        <div className="text-gray-300 text-6xl mb-4">💬</div>
-                                        <h4 className="text-lg font-medium text-gray-800 mb-2">评论功能即将上线</h4>
-                                        <p className="text-gray-500">感谢您的支持，评论功能正在开发中，敬请期待！</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <CommentSection 
+                                articleId={Number(id)} 
+                                currentUserId={isLoggedIn ? Number(user.id) : undefined}
+                                currentUserNickname={user.nickname}
+                                currentUserAvatar={user.avatar}
+                            />
                         </div>
                     </div>
 

@@ -32,6 +32,14 @@ export const API_ENDPOINTS = {
         ACTIVE: '/front/category/active', // 获取激活状态的分类
     },
 
+    // 评论相关
+    COMMENT: {
+        LIST: '/front/comment/list', // 获取评论列表
+        CREATE: '/front/comment/create', // 创建评论
+        UPDATE: '/front/comment/update', // 更新评论
+        DELETE: '/front/comment/delete', // 删除评论
+    },
+
     // 文件上传相关
     UPLOAD: {
         COVER: '/upload/user/cover-image',        // 上传用户封面图
@@ -54,4 +62,5 @@ export const PUBLIC_ENDPOINTS = [
     API_ENDPOINTS.INDEX.LATEST,
     API_ENDPOINTS.TAG.ACTIVE,
     API_ENDPOINTS.CATEGORY.ACTIVE,
+    API_ENDPOINTS.COMMENT.LIST,
 ];
