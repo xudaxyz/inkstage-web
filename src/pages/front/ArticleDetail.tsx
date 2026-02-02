@@ -53,7 +53,7 @@ const ArticleDetail: React.FC = () => {
     const [collectionCount, setCollectionCount] = useState(0);
     const [toc, setToc] = useState<Array<{ id: string; text: string; level: number }>>([]);
     const contentRef = useRef<HTMLDivElement>(null);
-    
+
     // 获取当前用户信息
     const {user, isLoggedIn} = useUser();
 
@@ -397,8 +397,8 @@ const ArticleDetail: React.FC = () => {
                             </div>
 
                             {/* 评论区 */}
-                            <CommentSection 
-                                articleId={Number(id)} 
+                            <CommentSection
+                                articleId={Number(id)}
                                 currentUserId={isLoggedIn ? Number(user.id) : undefined}
                                 currentUserNickname={user.nickname}
                                 currentUserAvatar={user.avatar}
