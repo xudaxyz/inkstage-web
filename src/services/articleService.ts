@@ -101,12 +101,12 @@ export interface ArticleDetailInfo {
 const articleService = {
     // 创建文章
     createArticle: async (article: Omit<Article, 'id' | 'createdTime' | 'updatedTime'>): Promise<ApiResponse<Article>> => {
-        return await apiClient.post('/front/article', article);
+        return await apiClient.post('/front/article/create', article);
     },
 
     // 更新文章
     updateArticle: async (id: string, article: Partial<Article>): Promise<ApiResponse<Article>> => {
-        return await apiClient.put(`/front/article/${id}`, article);
+        return await apiClient.put(`/front/article/update/${id}`, article);
     },
 
     // 保存草稿
@@ -127,7 +127,7 @@ const articleService = {
 
     // 删除文章
     deleteArticle: async (id: string): Promise<ApiResponse<void>> => {
-        return await apiClient.delete(`/front/article/${id}`);
+        return await apiClient.delete(`/front/article/delete/${id}`);
     },
 
     // 上传图片
