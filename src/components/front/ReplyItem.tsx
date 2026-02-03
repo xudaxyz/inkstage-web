@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Avatar } from 'antd';
-import { LikeOutlined, DislikeOutlined, MessageOutlined, FlagOutlined } from '@ant-design/icons';
+import { Avatar, Dropdown } from 'antd';
+import { LikeOutlined, DislikeOutlined, MessageOutlined, FlagOutlined, EllipsisOutlined } from '@ant-design/icons';
 import type { ArticleComment } from '../../services/commentService';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
@@ -29,7 +29,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
   };
 
   return (
-    <div key={`reply-${reply.id}`} className="pb-4 border-b border-gray-50 relative">
+    <div key={`reply-${reply.id}`} className="pb-4 border-b border-gray-50 relative group">
       <div className="flex items-start gap-3">
         <Avatar
           src={reply.avatar || undefined}
@@ -45,7 +45,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
           <div className="mb-2 text-gray-600 text-sm leading-relaxed">
             {reply.content}
           </div>
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          <div className="flex items-center gap-3 text-xs text-gray-500 relative">
             <span>{reply.createTime}</span>
             <button
               className={`flex items-center min-w-8 gap-1 ${reply.isLiked ? 'text-red-500' : 'text-gray-500'}`}
@@ -72,12 +72,29 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
               <MessageOutlined/>
               回复
             </button>
-            <button
-              className="flex items-center gap-1 text-gray-500 hover:text-blue-600"
-            >
-              <FlagOutlined/>
-              举报
-            </button>
+            {/* 更多操作按钮 */}
+            <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'report',
+                      label: (
+                        <button className="flex items-center gap-1 text-gray-500 hover:text-blue-600 w-full text-left px-2 py-1">
+                          <FlagOutlined/>
+                          举报
+                        </button>
+                      )
+                    }
+                  ]
+                }}
+                placement="bottomRight"
+              >
+                <button className="flex items-center min-w-6 text-gray-500 hover:text-gray-700">
+                  <EllipsisOutlined/>
+                </button>
+              </Dropdown>
+            </div>
           </div>
 
           {/* 回复输入框 */}

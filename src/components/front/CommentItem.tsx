@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Avatar, Popconfirm } from 'antd';
-import { LikeOutlined, DislikeOutlined, MessageOutlined, EditOutlined, DeleteOutlined, FlagOutlined } from '@ant-design/icons';
+import { Avatar, Popconfirm, Dropdown } from 'antd';
+import { LikeOutlined, DislikeOutlined, MessageOutlined, EditOutlined, DeleteOutlined, FlagOutlined, EllipsisOutlined } from '@ant-design/icons';
 import type { ArticleComment } from '../../services/commentService';
 import { CommentTopStatus } from '../../types/enums/CommentEnum.ts';
 import ReplyItem from './ReplyItem';
@@ -49,7 +49,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const displayContent = isLongComment && !isExpanded ? `${comment.content.substring(0, 300)}...` : comment.content;
 
   return (
-    <div key={comment.id} className="border-b border-gray-50 pb-6">
+    <div key={comment.id} className="border-b border-gray-50 pb-6 group">
       {/* 用户信息 */}
       <div className="flex items-center gap-2 mb-2">
         <Avatar
@@ -78,7 +78,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
       </div>
 
       {/* 评论操作 */}
-      <div className="ml-12 flex items-center gap-4 text-sm text-gray-500">
+      <div className="ml-12 flex items-center gap-4 text-sm text-gray-500 relative">
         <span className="flex items-center gap-1">
           {comment.createTime}
         </span>
@@ -107,34 +107,56 @@ const CommentItem: React.FC<CommentItemProps> = ({
           <MessageOutlined/>
           回复
         </button>
-        <button
-          className="flex items-center min-w-10 mr-1 gap-1 text-gray-500 hover:text-blue-600"
-        >
-          <FlagOutlined/>
-          举报
-        </button>
-        {currentUserId === comment.userId && (
-          <>
-            <button
-              className="flex items-center min-w-10 mr-1 gap-1 text-gray-500 hover:text-blue-600"
-            >
-              <EditOutlined/>
-              编辑
+        {/* 更多操作按钮 */}
+        <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'report',
+                  label: (
+                    <button className="flex items-center gap-1 text-gray-500 hover:text-blue-600 w-full text-left px-2 py-1">
+                      <FlagOutlined/>
+                      举报
+                    </button>
+                  )
+                },
+                ...(currentUserId === comment.userId ? [
+                  {
+                    key: 'edit',
+                    label: (
+                      <button className="flex items-center gap-1 text-gray-500 hover:text-blue-600 w-full text-left px-2 py-1">
+                        <EditOutlined/>
+                        编辑
+                      </button>
+                    )
+                  },
+                  {
+                    key: 'delete',
+                    label: (
+                      <Popconfirm
+                        title="确定要删除这条评论吗？"
+                        onConfirm={() => handleDelete(comment.id)}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <button className="flex items-center gap-1 text-gray-500 hover:text-red-600 w-full text-left px-2 py-1">
+                          <DeleteOutlined/>
+                          删除
+                        </button>
+                      </Popconfirm>
+                    )
+                  }
+                ] : [])
+              ]
+            }}
+            placement="bottomRight"
+          >
+            <button className="flex items-center min-w-7 text-gray-500 hover:text-gray-700">
+              <EllipsisOutlined/>
             </button>
-            <Popconfirm
-              title="确定要删除这条评论吗？"
-              onConfirm={() => handleDelete(comment.id)}
-              okText="确定"
-              cancelText="取消"
-            >
-              <button
-                className="flex items-center min-w-10 mr-1 gap-1 text-gray-500 hover:text-red-600">
-                <DeleteOutlined/>
-                删除
-              </button>
-            </Popconfirm>
-          </>
-        )}
+          </Dropdown>
+        </div>
       </div>
 
       {/* 回复输入框 */}

@@ -338,20 +338,21 @@ const ArticleDetail: React.FC = () => {
 
                             {/* 作者信息和统计数据 */}
                             <div
-                                className="flex flex-wrap items-center justify-between gap-5 md:gap-6 mb-8 text-gray-500 pb-4 border-b border-gray-100">
-                                <div className="flex flex-wrap items-center gap-5 md:gap-6">
+                                className="flex flex-wrap items-center justify-between gap-5 md:gap-5 mb-8 text-gray-500 pb-4 border-b border-gray-100">
+                                <div className="flex flex-wrap items-center gap-5 md:gap-5">
                                     <div className="flex items-center gap-3">
                                         <Avatar size={40} src={article.avatar || undefined} alt={article.authorName}/>
                                         <div>
                                             <span
                                                 className="font-medium text-gray-700">{article.authorName || '未知作者'}</span>
-                                            {article.category?.name && (
-                                                <span className="ml-2 text-sm text-gray-500">
-                                                    · {article.category.name}
-                                                </span>
-                                            )}
                                         </div>
                                     </div>
+                                    {article.categoryName && (
+                                        <span className="text-gray-500 mr-2 flex items-center">
+                                                <span className="w-px h-4 bg-gray-300 mr-3"></span>
+                                            {article.categoryName}
+                                            </span>
+                                    )}
                                     <div className="flex items-center gap-4">
                                         <Tooltip title="阅读量">
                                             <div className="flex items-center gap-2">

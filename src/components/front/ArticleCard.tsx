@@ -24,7 +24,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
     const {title, summary, coverImage, authorName, avatar, likeCount, readCount, commentCount, publishTime} = article;
 
     return (
-        <div className="border-b border-gray-200 pb-6 mb-4 hover:bg-gray-50 transition-colors duration-200 w-full">
+        <div className="border-b border-gray-200 pt-2 pb-4 mb-4 hover:bg-gray-50 transition-colors duration-200 w-full">
             <div className="flex flex-col md:flex-row gap-6 w-full">
                 {/* 左侧内容 */}
                 <div className={`flex-1 ${coverImage ? 'md:pr-4' : ''} flex flex-col min-w-10`}>

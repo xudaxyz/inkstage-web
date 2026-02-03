@@ -9,7 +9,6 @@ import {
     AllowStatusEnum,
     GenderEnum
 } from '../types/enums';
-import type {Category} from "./categoryService.ts";
 
 // 文章类型定义
 export interface Article {
@@ -95,7 +94,8 @@ export interface ArticleDetailInfo {
     gender: GenderEnum;
     articleCount: number;
     followerCount: number;
-    category: Category;
+    categoryId: number;
+    categoryName: string;
     tags: Tag
 }
 
