@@ -1,21 +1,59 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { Input, Button, Switch } from 'antd';
-import { SearchOutlined, MoonOutlined, SunOutlined, UserOutlined, FileTextOutlined, LogoutOutlined, BellOutlined, EditOutlined } from '@ant-design/icons';
+import { Link, useLocation } from 'react-router-dom';
+import { Button, Input, Switch } from 'antd';
+import { BellOutlined, EditOutlined, MenuOutlined, CloseOutlined, SearchOutlined, SunOutlined, MoonOutlined, UserOutlined, FileTextOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useUser } from '../../store';
 
 const Header: React.FC = () => {
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    // 从localStorage中读取初始主题
+    const getInitialTheme = () => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            return true;
+        }
+        return false;
+    };
+
+    const [isDarkMode, setIsDarkMode] = useState(getInitialTheme);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
+    const location = useLocation();
+    
+    // 根据路由路径计算活跃导航项
+    const activeNavItem = React.useMemo(() => {
+        const path = location.pathname;
+        if (path === '/' || path === '/recommend') {
+            return 'recommend';
+        } else if (path === '/hot') {
+            return 'hot';
+        } else if (path === '/following') {
+            return 'following';
+        } else if (path === '/columns') {
+            return 'columns';
+        } else {
+            // 其他路径默认选中推荐
+            return 'recommend';
+        }
+    }, [location.pathname]);
     
     // 获取用户状态
     const { isLoggedIn, user, logout } = useUser();
 
     // 切换主题模式
     const toggleTheme = () => {
-        setIsDarkMode(!isDarkMode);
-        // 这里可以添加实际的主题切换逻辑
+        const newTheme = !isDarkMode;
+        setIsDarkMode(newTheme);
+        // 保存主题到localStorage
+        localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+        // 更新文档根元素的类名
+        if (newTheme) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     };
 
     // 切换下拉菜单
@@ -34,11 +72,24 @@ const Header: React.FC = () => {
         closeDropdown();
     };
 
-    // 监听点击事件，点击外部区域关闭下拉菜单
+    // 切换移动端菜单
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    // 关闭移动端菜单
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
+
+    // 监听点击事件，点击外部区域关闭下拉菜单和移动端菜单
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 closeDropdown();
+            }
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+                closeMobileMenu();
             }
         };
 
@@ -50,9 +101,9 @@ const Header: React.FC = () => {
 
     return (
         <header
-            className="h-18 bg-white/80 backdrop-blur-sm border-b border-[#dfe1e6] flex items-center px-[5%] sticky top-0 z-10 shadow-sm">
+            className="h-18 bg-white/80 backdrop-blur-sm border-b border-gray-200 flex items-center px-4 sm:px-6 lg:px-[5%] sticky top-0 z-10 shadow-sm">
             {/* 左侧：Logo和导航 */}
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-6 sm:gap-8 flex-1">
                 {/* Logo */}
                 <Link to="/" className="flex items-center transition-colors duration-200">
                     <div className="flex items-center gap-3">
@@ -62,52 +113,75 @@ const Header: React.FC = () => {
                 </Link>
 
                 {/* 导航项 */}
-                <nav className="hidden md:flex items-center gap-10">
-                    <Link to="/" className="text-gray-700 hover:text-primary-600 font-medium transition-colors duration-200">
-                        推荐
-                    </Link>
-                    <Link to="/hot" className="text-gray-700 hover:text-primary-600 font-medium transition-colors duration-200">
-                        热门
-                    </Link>
-                    <Link to="/following" className="text-gray-700 hover:text-primary-600 font-medium transition-colors duration-200">
-                        关注
-                    </Link>
-                    <Link to="/columns" className="text-gray-700 hover:text-primary-600 font-medium transition-colors duration-200">
-                        专栏
-                    </Link>
+                <nav className="hidden md:flex items-center gap-10 whitespace-nowrap">
+                    <div className="relative">
+                        <Link to="/"
+                              className={`font-medium transition-colors duration-200 ${activeNavItem === 'recommend' ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
+                            推荐
+                        </Link>
+                        {activeNavItem === 'recommend' && (
+                            <div className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+                        )}
+                    </div>
+                    <div className="relative">
+                        <Link to="/hot"
+                              className={`font-medium transition-colors duration-200 ${activeNavItem === 'hot' ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
+                            热门
+                        </Link>
+                        {activeNavItem === 'hot' && (
+                            <div className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+                        )}
+                    </div>
+                    <div className="relative">
+                        <Link to="/following"
+                              className={`font-medium transition-colors duration-200 ${activeNavItem === 'following' ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
+                            关注
+                        </Link>
+                        {activeNavItem === 'following' && (
+                            <div className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+                        )}
+                    </div>
+                    <div className="relative">
+                        <Link to="/columns"
+                              className={`font-medium transition-colors duration-200 ${activeNavItem === 'columns' ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
+                            专栏
+                        </Link>
+                        {activeNavItem === 'columns' && (
+                            <div className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+                        )}
+                    </div>
                 </nav>
-                
+
                 {/* 搜索框 */}
-                <div className="hidden md:block ml-8 w-90">
+                <div className="hidden md:block ml-6 sm:ml-8 w-80 sm:w-96">
                     <Input
                         placeholder="搜索..."
-                        prefix={<SearchOutlined/>}
+                        prefix={<SearchOutlined />}
                         size="middle"
-                        className="rounded-4xl bg-gray-100 border border-gray-200 hover:border-primary-300 focus:border-primary-500 focus:ring-0 transition-all duration-200"
+                        className="rounded-full bg-gray-100 border border-gray-200 hover:border-primary-300 focus:border-primary-500 focus:ring-0 transition-all duration-200"
                     />
                 </div>
             </div>
 
-            {/* 右侧区域：写文章按钮（登录后） + 主题切换 + 通知 + 用户信息/登录注册 */}
-            <div className="flex items-center gap-6 ml-auto">
-                {/* 写文章按钮（仅登录后显示） */}
+            {/* 右侧区域：写文章按钮（登录后） + 主题切换 + 通知 + 用户信息/登录注册 + 移动端菜单按钮 */}
+            <div className="flex items-center gap-4 sm:gap-6 ml-auto">
+                {/* 写文章按钮（仅登录后显示，桌面端） */}
                 {isLoggedIn && (
-                    <Link to="/create-article">
-
+                    <Link to="/create-article" className="hidden md:block">
                         <Button
                             type="primary"
                             size="middle"
                             shape="round"
-                            className="rounded-4xl px-6 bg-linear-to-r from-green-500 to-green-600 text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
+                            className="rounded-full px-6 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
                         >
-                            <EditOutlined />写文章
+                            <EditOutlined /> 写文章
                         </Button>
                     </Link>
                 )}
-                
+
                 {/* 主题切换按钮 */}
                 <div className="flex items-center gap-2">
-                    {isDarkMode ? <MoonOutlined/> : <SunOutlined/>}
+                    {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
                     <Switch
                         checked={isDarkMode}
                         onChange={toggleTheme}
@@ -120,19 +194,29 @@ const Header: React.FC = () => {
                     <BellOutlined />
                 </div>
 
+                {/* 移动端菜单按钮 */}
+                <button
+                    className="md:hidden flex items-center"
+                    onClick={toggleMobileMenu}
+                    aria-label="菜单"
+                >
+                    {isMobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
+                </button>
+
                 {/* 根据登录状态显示不同内容 */}
                 {isLoggedIn ? (
                     /* 登录状态：显示用户信息和下拉菜单 */
-                    <div className="relative" ref={dropdownRef}>
-                        <div 
+                    <div className="relative hidden md:block" ref={dropdownRef}>
+                        <div
                             className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition-opacity duration-200"
                             onClick={toggleDropdown}
                         >
                             {/* 用户头像 */}
-                            <div className="w-8 h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white hover:scale-110 transition-all duration-300">
+                            <div
+                                className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white hover:scale-110 transition-all duration-300">
                                 {user.avatar ? (
-                                    <img 
-                                        src={user.avatar} 
+                                    <img
+                                        src={user.avatar}
                                         alt={user.nickname || ''}
                                         className="w-full h-full rounded-full object-cover"
                                     />
@@ -141,51 +225,54 @@ const Header: React.FC = () => {
                                 )}
                             </div>
                             {/* 用户名 */}
-                            <span className="text-purple-600 font-medium hidden md:inline-block max-w-[100px] truncate">{user.nickname}</span>
+                            <span
+                                className="text-purple-600 font-medium inline-block max-w-[100px] truncate">{user.nickname}</span>
                         </div>
-                        
+
                         {/* 下拉菜单 */}
                         {isDropdownOpen && (
-                            <div className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-sm py-2 z-50 transition-all duration-200 origin-top-right border border-gray-50">
+                            <div
+                                className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-sm py-2 z-50 transition-all duration-200 origin-top-right border border-gray-50">
                                 {/* 个人中心 */}
-                                <Link 
-                                    to="/profile" 
+                                <Link
+                                    to="/profile"
                                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 w-full rounded-lg mx-1"
                                     onClick={closeDropdown}
                                 >
-                                    <UserOutlined className="text-gray-400" />
+                                    <UserOutlined className="text-gray-400"/>
                                     <span>个人中心</span>
                                 </Link>
-                                
+
                                 {/* 我的创作 */}
-                                <Link 
-                                    to="/creator" 
+                                <Link
+                                    to="/creator"
                                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 w-full rounded-lg mx-1"
                                     onClick={closeDropdown}
                                 >
-                                    <FileTextOutlined className="text-gray-400" />
+                                    <FileTextOutlined className="text-gray-400"/>
                                     <span>我的创作</span>
                                 </Link>
-                                
+
                                 {/* 分割线 */}
                                 <div className="border-t border-gray-50 my-1 mx-3"></div>
-                                
+
                                 {/* 退出登录 */}
-                                <button 
+                                <button
                                     onClick={handleLogout}
                                     className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors duration-200 rounded-lg mx-1"
                                 >
-                                    <LogoutOutlined className="text-red-400" />
+                                    <LogoutOutlined className="text-red-400"/>
                                     <span>退出登录</span>
                                 </button>
                             </div>
                         )}
                     </div>
                 ) : (
-                    /* 未登录状态：显示登录和注册按钮 */
-                    <>
+                    /* 未登录状态：显示登录和注册按钮（仅桌面端） */
+                    <div className="hidden md:flex items-center gap-4">
                         {/* 登录按钮 */}
-                        <Link to="/login" className="text-gray-700 hover:text-primary-600 font-medium transition-colors duration-200 px-4">
+                        <Link to="/login"
+                              className="text-gray-700 hover:text-primary-600 font-medium transition-colors duration-200 px-4">
                             登录
                         </Link>
 
@@ -196,14 +283,107 @@ const Header: React.FC = () => {
                                 variant="solid"
                                 size="middle"
                                 shape="round"
-                                className="rounded-4xl px-6 bg-linear-to-r text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border-none"
+                                className="rounded-full px-6 bg-gradient-to-r text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border-none"
                             >
                                 注册
                             </Button>
                         </Link>
-                    </>
+                    </div>
                 )}
             </div>
+
+            {/* 移动端导航菜单 */}
+            {isMobileMenuOpen && (
+                <div
+                    className="md:hidden fixed top-18 left-0 right-0 bg-white border-b border-gray-200 shadow-sm z-50 p-4"
+                    ref={mobileMenuRef}
+                >
+                    {/* 移动端导航项 */}
+                    <nav className="flex items-center gap-6 overflow-x-auto whitespace-nowrap pb-2">
+                        <div className="relative">
+                            <Link to="/" className={`font-medium transition-colors duration-200 px-2 ${activeNavItem === 'recommend' ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
+                                推荐
+                            </Link>
+                            {activeNavItem === 'recommend' && (
+                                <div className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+                            )}
+                        </div>
+                        <div className="relative">
+                            <Link to="/hot" className={`font-medium transition-colors duration-200 px-2 ${activeNavItem === 'hot' ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
+                                热门
+                            </Link>
+                            {activeNavItem === 'hot' && (
+                                <div className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+                            )}
+                        </div>
+                        <div className="relative">
+                            <Link to="/following" className={`font-medium transition-colors duration-200 px-2 ${activeNavItem === 'following' ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
+                                关注
+                            </Link>
+                            {activeNavItem === 'following' && (
+                                <div className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+                            )}
+                        </div>
+                        <div className="relative">
+                            <Link to="/columns" className={`font-medium transition-colors duration-200 px-2 ${activeNavItem === 'columns' ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
+                                专栏
+                            </Link>
+                            {activeNavItem === 'columns' && (
+                                <div className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+                            )}
+                        </div>
+                    </nav>
+
+                    {/* 移动端搜索框 */}
+                    <div className="mt-4">
+                        <Input
+                            placeholder="搜索..."
+                            prefix={<SearchOutlined />}
+                            size="middle"
+                            className="rounded-full bg-gray-100 border border-gray-200 hover:border-primary-300 focus:border-primary-500 focus:ring-0 transition-all duration-200"
+                        />
+                    </div>
+
+                    {/* 移动端写文章按钮 */}
+                    {isLoggedIn && (
+                        <Link to="/create-article" className="mt-4 block">
+                            <Button
+                                type="primary"
+                                size="middle"
+                                shape="round"
+                                className="w-full rounded-full px-6 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
+                            >
+                                <EditOutlined /> 写文章
+                            </Button>
+                        </Link>
+                    )}
+
+                    {/* 移动端登录注册 */}
+                    {!isLoggedIn && (
+                        <div className="mt-4 flex gap-4">
+                            <Link to="/login" className="flex-1">
+                                <Button
+                                    variant="solid"
+                                    size="middle"
+                                    className="w-full rounded-full px-6 text-gray-700 font-medium hover:bg-gray-50 transition-all duration-300"
+                                >
+                                    登录
+                                </Button>
+                            </Link>
+                            <Link to="/register" className="flex-1">
+                                <Button
+                                    color="danger"
+                                    variant="solid"
+                                    size="middle"
+                                    className="w-full rounded-full px-6 bg-gradient-to-r text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border-none"
+                                >
+                                    注册
+                                </Button>
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            )}
         </header>
     );
 };
