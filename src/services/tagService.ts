@@ -10,7 +10,6 @@ export interface Tag {
 
 // 标签服务
 const tagService = {
-
     /**
      * 获取激活状态的标签
      * @returns 激活状态的标签列表

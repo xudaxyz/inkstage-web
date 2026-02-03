@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
     // 文章相关
     ARTICLE: {
         DETAIL: '/front/article',
+        UPDATE: (id: string) => `/front/article/update/${id}`, // 更新文章
         SAVE_DRAFT: (id?: number) => `/article/${id}/draft`, // 保存草稿
         DELETE: (id: number) => `/article/${id}`, // 删除文章
     },

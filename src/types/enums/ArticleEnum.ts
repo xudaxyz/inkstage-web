@@ -8,7 +8,8 @@ export const ArticleStatusEnum = {
 // 文章原创性枚举
 export const ArticleOriginalEnum = {
     ORIGINAL: 'ORIGINAL',
-    REPRINT: 'REPRINT'
+    REPRINT: 'REPRINT',
+    OTHER: 'OTHER'
 } as const;
 
 // 文章可见性枚举
@@ -39,7 +40,8 @@ export const ArticleStatusMap = {
 
 export const ArticleOriginalMap = {
     [ArticleOriginalEnum.ORIGINAL]: '原创',
-    [ArticleOriginalEnum.REPRINT]: '转载'
+    [ArticleOriginalEnum.REPRINT]: '转载',
+    [ArticleOriginalEnum.OTHER]: '其他'
 };
 
 export const ArticleVisibleMap = {

@@ -5,7 +5,6 @@ import type {ApiResponse} from '../types/auth';
 export interface Category {
     id: number;
     name: string;
-    description?: string;
     status?: number;
 }
 

@@ -1,6 +1,7 @@
 import apiClient from './apiClient';
 import {API_ENDPOINTS} from './apiEndpoints';
 import type {ApiResponse} from "../types/auth.ts";
+import type {Tag} from "./tagService.ts";
 import {
     ArticleStatusEnum,
     ArticleOriginalEnum,
@@ -8,6 +9,7 @@ import {
     AllowStatusEnum,
     GenderEnum
 } from '../types/enums';
+import type {Category} from "./categoryService.ts";
 
 // 文章类型定义
 export interface Article {
@@ -74,6 +76,7 @@ export interface ArticleDetailInfo {
     coverImage: string;
     allowComment: AllowStatusEnum;
     allowForward: AllowStatusEnum;
+    visible: ArticleVisibleEnum;
     original: ArticleOriginalEnum;
     originalUrl: string;
     publishTime: string;
@@ -92,9 +95,8 @@ export interface ArticleDetailInfo {
     gender: GenderEnum;
     articleCount: number;
     followerCount: number;
-    categoryId: number;
-    categoryName: string;
-    tags: []
+    category: Category;
+    tags: Tag
 }
 
 // 文章 API 服务
@@ -117,7 +119,7 @@ const articleService = {
         };
 
         if (article.id) {
-            return await articleService.updateArticle(article.id, draftArticle);
+            return await apiClient.put(`/front/article/${article.id}/draft`, draftArticle);
         } else {
             // 创建新文章时，移除可能存在的 id 属性
             const {...newArticle} = draftArticle;

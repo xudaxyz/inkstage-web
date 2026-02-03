@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, Table, Button, Tag, message, Space, Statistic, Row, Col } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import articleService from '../../../services/articleService.ts';
 
 // 文章类型定义
 interface Article {
@@ -71,7 +72,7 @@ const MyCreations: React.FC = () => {
       title: '标题',
       dataIndex: 'title',
       key: 'title',
-      render: (text: string) => <a href="#" className="text-primary-600 hover:underline">{text}</a>
+      render: (text: string, record: Article) => <a href={`/article/${record.id}`} className="text-primary-600 hover:underline">{text}</a>
     },
     {
       title: '发布时间',
@@ -125,20 +126,26 @@ const MyCreations: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: () => (
+      render: (_: any, record: Article) => (
         <Space size="middle">
-          <Button icon={<EyeOutlined />} size="small">
+          <Button icon={<EyeOutlined />} size="small" onClick={() => navigate(`/article/${record.id}`)}>
             查看
           </Button>
-          <Button icon={<EditOutlined />} size="small">
+          <Button icon={<EditOutlined />} size="small" onClick={() => navigate(`/edit-article/${record.id}`)}>
             编辑
           </Button>
           <Button
             icon={<DeleteOutlined />}
             size="small"
             danger
-            onClick={() => {
-              message.success('文章已删除');
+            onClick={async () => {
+              try {
+                await articleService.deleteArticle(record.id);
+                message.success('文章已删除');
+                // 这里可以添加重新加载文章列表的逻辑
+              } catch {
+                message.error('删除失败，请重试');
+              }
             }}
           >
             删除

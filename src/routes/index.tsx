@@ -27,6 +27,8 @@ const AppRoutes = () => {
       <Route path="/register" element={<Register />} />
       {/* 写文章路由 */}
       <Route path="/create-article" element={<CreateArticle />} />
+      {/* 编辑文章路由 */}
+      <Route path="/edit-article/:id" element={<CreateArticle />} />
       {/* 文章详情路由 */}
       <Route path="/article/:id" element={<ArticleDetail />} />
       {/* 个人中心路由 */}

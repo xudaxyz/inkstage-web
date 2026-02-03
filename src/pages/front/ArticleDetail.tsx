@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
-import {useParams} from 'react-router-dom';
-import {Avatar, message, Button, Tooltip, Divider, List, Card} from 'antd';
+import {useParams, useNavigate} from 'react-router-dom';
+import {Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, Modal} from 'antd';
 import {
     ArrowLeftOutlined,
     LikeOutlined,
@@ -11,7 +11,10 @@ import {
     StarOutlined,
     StarTwoTone,
     LinkOutlined,
-    ExclamationCircleOutlined
+    ExclamationCircleOutlined,
+    DownOutlined,
+    EditOutlined,
+    DeleteOutlined
 } from '@ant-design/icons';
 import Header from '../../components/common/Header.tsx';
 import Footer from '../../components/common/Footer.tsx';
@@ -19,6 +22,7 @@ import CommentSection from '../../components/front/CommentSection.tsx';
 import {useUser} from '../../store';
 import type {ArticleDetailInfo} from '../../services/articleService.ts';
 import articleService from '../../services/articleService.ts';
+import type {Tag} from '../../services/tagService.ts';
 import MarkdownIt from 'markdown-it';
 import {createHighlighter} from 'shiki';
 
@@ -44,6 +48,7 @@ const md: MarkdownIt = new MarkdownIt({
 
 const ArticleDetail: React.FC = () => {
     const {id} = useParams<{ id: string }>();
+    const navigate = useNavigate();
     const [article, setArticle] = useState<ArticleDetailInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -52,6 +57,7 @@ const ArticleDetail: React.FC = () => {
     const [collected, setCollected] = useState(false);
     const [collectionCount, setCollectionCount] = useState(0);
     const [toc, setToc] = useState<Array<{ id: string; text: string; level: number }>>([]);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
 
     // 获取当前用户信息
@@ -136,6 +142,41 @@ const ArticleDetail: React.FC = () => {
         void message.info('分享功能即将上线');
     };
 
+    // 处理文章编辑
+    const handleEdit = () => {
+        navigate(`/edit-article/${id}`);
+    };
+
+    // 处理文章删除
+    const handleDelete = () => {
+        setDeleteModalVisible(true);
+    };
+
+    // 确认删除文章
+    const confirmDelete = async () => {
+        try {
+            setDeleteModalVisible(false);
+            if (!id) {
+                message.error('文章ID不存在');
+                return;
+            }
+            const result = await articleService.deleteArticle(id);
+            if (result.code === 200) {
+                message.success('文章删除成功');
+                // 跳转到我的创作页面
+                navigate('/profile/creations');
+            } else {
+                message.error(result.message || '文章删除失败');
+            }
+        } catch (error) {
+            console.error('删除文章失败:', error);
+            message.error('删除失败，请重试');
+        }
+    };
+
+    // 检查当前用户是否是文章作者
+    const isAuthor = user && user.id && article && Number(user.id) === article.userId;
+
     // 模拟作者相关文章数据
     const relatedArticles = [
         {id: 1, title: 'Cypress 测试框架入门指南', publishTime: '2026-01-30'},
@@ -197,6 +238,19 @@ const ArticleDetail: React.FC = () => {
         <div className="flex min-h-screen flex-col bg-white font-sans">
             {/* 顶部导航栏 */}
             <Header/>
+
+            {/* 删除确认对话框 */}
+            <Modal
+                title="确认删除"
+                open={deleteModalVisible}
+                onOk={confirmDelete}
+                onCancel={() => setDeleteModalVisible(false)}
+                okText="确认删除"
+                cancelText="取消"
+                okType="danger"
+            >
+                <p>您确定要删除这篇文章吗？此操作不可恢复。</p>
+            </Modal>
 
             {/* 主体内容 */}
             <main className="bg-gray-50 flex-1 pt-8 px-[5%]">
@@ -284,42 +338,80 @@ const ArticleDetail: React.FC = () => {
 
                             {/* 作者信息和统计数据 */}
                             <div
-                                className="flex flex-wrap items-center gap-5 md:gap-6 mb-8 text-gray-500 pb-4 border-b border-gray-100">
-                                <div className="flex items-center gap-3">
-                                    <Avatar size={40} src={article.avatar || undefined} alt={article.authorName}/>
-                                    <span
-                                        className="font-medium text-gray-700">{article.authorName || '未知作者'}</span>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <Tooltip title="阅读量">
-                                        <div className="flex items-center gap-2">
-                                            <EyeOutlined className="text-gray-400"/>
-                                            <span>{article.readCount || 0}</span>
+                                className="flex flex-wrap items-center justify-between gap-5 md:gap-6 mb-8 text-gray-500 pb-4 border-b border-gray-100">
+                                <div className="flex flex-wrap items-center gap-5 md:gap-6">
+                                    <div className="flex items-center gap-3">
+                                        <Avatar size={40} src={article.avatar || undefined} alt={article.authorName}/>
+                                        <div>
+                                            <span
+                                                className="font-medium text-gray-700">{article.authorName || '未知作者'}</span>
+                                            {article.category?.name && (
+                                                <span className="ml-2 text-sm text-gray-500">
+                                                    · {article.category.name}
+                                                </span>
+                                            )}
                                         </div>
-                                    </Tooltip>
-                                    <Tooltip title="点赞数">
-                                        <div className="flex items-center gap-2">
-                                            <LikeOutlined
-                                                className={`${liked ? 'text-red-500' : 'text-gray-400'}`}/>
-                                            <span>{likeCount}</span>
-                                        </div>
-                                    </Tooltip>
-                                    <Tooltip title="评论数">
-                                        <div className="flex items-center gap-2">
-                                            <MessageOutlined className="text-gray-400"/>
-                                            <span>{article.commentCount || 0}</span>
-                                        </div>
-                                    </Tooltip>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <Tooltip title="阅读量">
+                                            <div className="flex items-center gap-2">
+                                                <EyeOutlined className="text-gray-400"/>
+                                                <span>{article.readCount || 0}</span>
+                                            </div>
+                                        </Tooltip>
+                                        <Tooltip title="点赞数">
+                                            <div className="flex items-center gap-2">
+                                                <LikeOutlined
+                                                    className={`${liked ? 'text-red-500' : 'text-gray-400'}`}/>
+                                                <span>{likeCount}</span>
+                                            </div>
+                                        </Tooltip>
+                                        <Tooltip title="评论数">
+                                            <div className="flex items-center gap-2">
+                                                <MessageOutlined className="text-gray-400"/>
+                                                <span>{article.commentCount || 0}</span>
+                                            </div>
+                                        </Tooltip>
+                                    </div>
+                                    <div className="flex items-center text-sm">
+                                        <span
+                                            className="text-gray-400">{article.publishTime ? new Date(article.publishTime).toLocaleDateString('zh-CN', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) : ''}</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-1 text-sm text-gray-400">
-                                    <span>{article.publishTime ? new Date(article.publishTime).toLocaleDateString('zh-CN', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    }) : ''}</span>
-                                </div>
+                                {isAuthor && (
+                                    <Dropdown
+                                        menu={{
+                                            items: [
+                                                {
+                                                    key: 'edit',
+                                                    icon: <EditOutlined/>,
+                                                    label: '修改',
+                                                    onClick: handleEdit
+                                                },
+                                                {
+                                                    key: 'delete',
+                                                    icon: <DeleteOutlined/>,
+                                                    label: '删除',
+                                                    onClick: handleDelete
+                                                }
+                                            ]
+                                        }}
+                                        placement="bottomRight"
+                                    >
+                                        <Button
+                                            type="text"
+                                            className="text-gray-400 hover:text-gray-600"
+                                        >
+                                            管理 <DownOutlined/>
+                                        </Button>
+                                    </Dropdown>
+                                )}
                             </div>
 
                             {/* 文章摘要 */}
@@ -353,12 +445,12 @@ const ArticleDetail: React.FC = () => {
                             </div>
 
                             {/* 文章标签 */}
-                            {article.tags && article.tags.length > 0 && (
+                            {article.tags && Array.isArray(article.tags) && (
                                 <div className="mb-10 flex flex-wrap gap-2">
-                                    {article.tags.map((tag, index) => (
-                                        <span key={index}
+                                    {article.tags.map((tag: Tag, index) => (
+                                        <span key={tag.id || index}
                                               className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors">
-                                            {tag}
+                                            {tag.name}
                                         </span>
                                     ))}
                                 </div>
