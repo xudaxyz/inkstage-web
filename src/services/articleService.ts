@@ -172,7 +172,7 @@ const articleService = {
 
     // 获取最新文章
     getLatestArticles: async (limit: number = 5): Promise<ApiResponse<LatestArticle[]>> => {
-        return await apiClient.get(API_ENDPOINTS.INDEX.LATEST, {params: {limit}});
+        return await apiClient.get(API_ENDPOINTS.INDEX.LATEST_ARTICLES, {params: {limit}});
     },
 
     // 获取文章详情

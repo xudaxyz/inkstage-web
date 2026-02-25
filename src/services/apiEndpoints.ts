@@ -5,7 +5,9 @@ export const API_ENDPOINTS = {
         INDEX: '/',
         LIST: '/index/articles',        // 获取首页文章列表
         BANNER: '/index/banner',      // 获取轮播图文章
-        LATEST: '/index/latest-article',      // 获取最新文章
+        LATEST_ARTICLES: '/index/latest-articles',      // 获取最新文章列表
+        HOT_ARTICLES: '/index/hot-articles',      // 获取热门文章
+        HOT_USERS: '/index/hot-users',      // 获取热门用户
         CREATE: '/article',             // 创建文章
 
     },
@@ -60,7 +62,9 @@ export const PUBLIC_ENDPOINTS = [
     API_ENDPOINTS.INDEX.INDEX,
     API_ENDPOINTS.INDEX.LIST,
     API_ENDPOINTS.INDEX.BANNER,
-    API_ENDPOINTS.INDEX.LATEST,
+    API_ENDPOINTS.INDEX.LATEST_ARTICLES,
+    API_ENDPOINTS.INDEX.HOT_ARTICLES,
+    API_ENDPOINTS.INDEX.HOT_USERS,
     API_ENDPOINTS.TAG.ACTIVE,
     API_ENDPOINTS.CATEGORY.ACTIVE,
     API_ENDPOINTS.COMMENT.LIST,

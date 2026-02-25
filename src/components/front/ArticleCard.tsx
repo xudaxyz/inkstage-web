@@ -45,7 +45,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                     <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap mt-auto">
                         {/* 用户信息 */}
                         <div className="flex items-center gap-2">
-                            <Avatar src={avatar || undefined} alt={authorName} className="w-6 h-6"/>
+                            <Avatar src={avatar} alt={authorName} className="w-6 h-6"/>
                             <a href={`/user/${authorName}`}
                                className="font-medium text-gray-700 hover:text-blue-600 transition-colors">
                                 {authorName}
