@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Spin } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Spin, Pagination } from 'antd';
 import useCommentStore from '../../store/CommentStore';
 import CommentItem from './CommentItem';
 import CommentInput from './CommentInput';
@@ -22,19 +22,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         comments, 
         commentCount, 
         sortBy, 
-        loading, 
-        loadingMore, 
-        hasMore,
+        loading,
         setSortBy,
         fetchComments
     } = useCommentStore();
 
-    const listRef = useRef<HTMLDivElement>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // 初始化数据
     useEffect(() => {
         const loadData = async () => {
-            await fetchComments(articleId, true);
+            await fetchComments(articleId, 1);
         };
         void loadData();
     }, [articleId, fetchComments]);
@@ -42,40 +40,23 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     // 排序变化时刷新数据
     useEffect(() => {
         const loadData = async () => {
-            await fetchComments(articleId, true);
+            await fetchComments(articleId, 1);
+            setCurrentPage(1);
         };
         void loadData();
     }, [articleId, sortBy, fetchComments]);
 
-    // 处理滚动加载更多
-    useEffect(() => {
-        const handleScroll = () => {
-            if (listRef.current) {
-                const { scrollTop, clientHeight, scrollHeight } = listRef.current;
-                if (scrollHeight - scrollTop - clientHeight < 200 && !loadingMore && hasMore) {
-                    void fetchComments(articleId, false);
-                }
-            }
-        };
-
-        const currentListRef = listRef.current;
-        if (currentListRef) {
-            currentListRef.addEventListener('scroll', handleScroll);
-        }
-
-        return () => {
-            if (currentListRef) {
-                currentListRef.removeEventListener('scroll', handleScroll);
-            }
-        };
-    }, [articleId, loadingMore, hasMore, fetchComments]);
+    // 处理分页变化
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        void fetchComments(articleId, page);
+    };
 
     // 评论发布后的滚动效果
     const handleCommentSubmitSuccess = () => {
-        // 滚动到评论列表顶部
-        if (listRef.current) {
-            listRef.current.scrollTop = 0;
-        }
+        // 评论发布成功后刷新第一页数据
+        void fetchComments(articleId, 1);
+        setCurrentPage(1);
     };
 
     return (
@@ -118,18 +99,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             <div className="space-y-6">
                 {loading ? (
                     <div className="text-center py-10">
-                        <Spin size="large" tip="加载中..." />
+                        <div className="mb-2"><Spin size="large" /></div>
+                        <div className="text-gray-500">加载中...</div>
                     </div>
                 ) : comments.length === 0 ? (
                     <div className="text-center py-10">
                         <p className="text-gray-500">暂无评论，快来抢沙发吧！</p>
                     </div>
                 ) : (
-                    <div 
-                        ref={listRef}
-                        className="overflow-y-auto space-y-6"
-                        style={{ maxHeight: '800px' }}
-                    >
+                    <div className="space-y-6">
                         {comments.map((comment) => (
                             <CommentItem
                                 key={comment.id}
@@ -143,11 +121,20 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                     </div>
                 )}
 
-                {/* 加载更多指示器 */}
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                    {loadingMore && <Spin tip="加载中..." />}
-                    {!hasMore && comments.length > 0 && <p className="text-gray-500">没有更多评论了</p>}
-                </div>
+                {/* 分页组件 */}
+                {comments.length > 0 && (
+                    <div className="mt-8 flex justify-center">
+                        <Pagination
+                            current={currentPage}
+                            pageSize={10}
+                            total={commentCount}
+                            onChange={handlePageChange}
+                            showSizeChanger={false}
+                            showQuickJumper
+                            showTotal={(total) => `共 ${total} 条评论`}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

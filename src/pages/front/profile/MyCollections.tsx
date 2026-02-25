@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Table, Button, message, Space, Empty, Tag } from 'antd';
+import type { Key } from 'react';
 import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 
 // 收藏文章类型定义
@@ -60,12 +61,7 @@ const MyCollections: React.FC = () => {
   ]);
 
   // 选中的收藏项
-  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
-
-  // 处理全选
-  const onSelectChange = (newSelectedRowKeys: string[]) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
 
   // 批量取消收藏
   const handleBatchDelete = () => {
@@ -78,14 +74,17 @@ const MyCollections: React.FC = () => {
   };
 
   // 取消单个收藏
-  const handleSingleDelete = () => {
+  const handleSingleDelete = (id: string) => {
+      console.log(id);
     message.success('已取消收藏');
   };
 
   // 表格行选择配置
   const rowSelection = {
     selectedRowKeys,
-    onChange: onSelectChange
+    onChange: (selectedRowKeys: Key[]) => {
+      setSelectedRowKeys(selectedRowKeys);
+    }
   };
 
   // 表格列定义

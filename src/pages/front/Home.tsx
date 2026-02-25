@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {List, message} from 'antd';
+import {List, message, Pagination} from 'antd';
 import Header from '../../components/common/Header.tsx';
 import Footer from '../../components/common/Footer.tsx';
 import Banner from '../../components/front/Banner.tsx';
@@ -24,26 +24,18 @@ const Home: React.FC = () => {
 
     // 加载状态
     const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
     const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
+    const [total, setTotal] = useState(0);
     const [error, setError] = useState<string | null>(null);
 
     // 引用
-    const pageRef = useRef(page);
     const listRef = useRef<HTMLDivElement>(null);
-    const observerRef = useRef<HTMLDivElement>(null);
-    const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
-
-    useEffect(() => {
-        pageRef.current = page;
-    }, [page]);
 
     // 获取文章列表
-    const fetchArticles = useCallback(async (isRefresh = false) => {
+    const fetchArticles = useCallback(async (currentPage: number) => {
         try {
-            const currentPage = isRefresh ? 1 : pageRef.current;
+            setLoading(true);
             const response = await articleService.getArticles({
                 page: currentPage,
                 pageSize: 10,
@@ -70,27 +62,14 @@ const Home: React.FC = () => {
                 publishTime: item.publishTime ? new Date(item.publishTime).toLocaleString('zh-CN') : ''
             }));
 
-            if (isRefresh) {
-                setArticles(formattedArticles);
-                setPage(2);
-            } else {
-                setArticles(prev => [...prev, ...formattedArticles]);
-                setPage(prev => prev + 1);
-            }
-
-            // 更新是否有更多
-            setHasMore(formattedArticles.length >= 10);
+            setArticles(formattedArticles);
+            setTotal(response.data.total || 0);
         } catch {
-            if (isRefresh) {
-                setError('加载更多文章列表失败');
-            }
+            setError('文章列表加载失败');
         } finally {
-            if (isRefresh) {
-                setLoading(false);
-            }
-            setLoadingMore(false);
+            setLoading(false);
         }
-    }, [selectedCategory, pageRef]);
+    }, [selectedCategory]);
 
     // 获取轮播图文章
     const fetchBannerArticles = async () => {
@@ -138,10 +117,9 @@ const Home: React.FC = () => {
             setLoading(true);
             setError(null);
             setPage(1);
-            setHasMore(true);
 
             // 独立执行所有数据获取方法
-            await fetchArticles(true);
+            await fetchArticles(1);
             await fetchBannerArticles();
             await fetchLatestArticles();
             await fetchCategories();
@@ -150,39 +128,11 @@ const Home: React.FC = () => {
         void loadData();
     }, [selectedCategory, fetchArticles]);
 
-    // 设置无限滚动
-    useEffect(() => {
-        if (observerRef.current) {
-            // 清除之前的观察器
-            if (intersectionObserverRef.current) {
-                intersectionObserverRef.current.disconnect();
-            }
-
-            // 创建新的观察器
-            intersectionObserverRef.current = new IntersectionObserver(
-                (entries) => {
-                    const entry = entries[0];
-                    if (entry.isIntersecting && hasMore && !loadingMore) {
-                        setLoadingMore(true);
-                        void fetchArticles(false);
-                    }
-                },
-                {
-                    threshold: 0.1
-                }
-            );
-
-            // 开始观察
-            intersectionObserverRef.current.observe(observerRef.current);
-        }
-
-        // 清理函数
-        return () => {
-            if (intersectionObserverRef.current) {
-                intersectionObserverRef.current.disconnect();
-            }
-        };
-    }, [hasMore, loadingMore, page, selectedCategory, fetchArticles]);
+    // 处理分页变化
+    const handlePageChange = (current: number) => {
+        setPage(current);
+        void fetchArticles(current);
+    };
 
     // 处理分类选择
     const handleCategorySelect = (category: Category | '全部') => {
@@ -256,9 +206,17 @@ const Home: React.FC = () => {
                                 split={false}
                             />
 
-                            {/* 加载更多指示器 */}
-                            <div ref={observerRef} style={{textAlign: 'center', padding: '20px 0'}}>
-                                {!hasMore && articles.length > 0 && <p className="text-gray-500">没有更多文章了</p>}
+                            {/* 分页组件 */}
+                            <div className="mt-8 flex justify-center">
+                                <Pagination
+                                    current={page}
+                                    pageSize={10}
+                                    total={total}
+                                    onChange={handlePageChange}
+                                    showSizeChanger={false}
+                                    showQuickJumper
+                                    showTotal={(total) => `共 ${total} 篇文章`}
+                                />
                             </div>
                         </div>
                     </div>

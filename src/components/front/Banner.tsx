@@ -32,7 +32,7 @@ const Banner: React.FC<BannerProps> = ({
     const carouselRef = useRef<CarouselRef>(null);
 
     return (
-        <div className="relative mb-8 overflow-hidden rounded-lg shadow-md group">
+        <div className="relative overflow-hidden rounded-lg shadow-md group">
             {/* 动态渐变背景 */}
             <div
                 className="absolute inset-0 bg-linear-to-r from-blue-500 via-purple-500 to-indigo-600 opacity-90 animate-gradient-x"></div>

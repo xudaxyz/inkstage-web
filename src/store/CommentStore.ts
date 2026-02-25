@@ -12,8 +12,6 @@ interface CommentState {
     commentCount: number;
     sortBy: 'hot' | 'new';
     loading: boolean;
-    loadingMore: boolean;
-    hasMore: boolean;
     page: number;
     isSubmitting: boolean;
 
@@ -22,13 +20,11 @@ interface CommentState {
     setCommentCount: (count: number) => void;
     setSortBy: (sortBy: 'hot' | 'new') => void;
     setLoading: (loading: boolean) => void;
-    setLoadingMore: (loadingMore: boolean) => void;
-    setHasMore: (hasMore: boolean) => void;
     setPage: (page: number) => void;
     setIsSubmitting: (isSubmitting: boolean) => void;
 
     // 方法
-    fetchComments: (articleId: number, isRefresh?: boolean) => Promise<void>;
+    fetchComments: (articleId: number, page: number) => Promise<void>;
     createComment: (params: CommentCreateParams) => Promise<boolean>;
     updateComment: (params: CommentUpdateParams) => Promise<boolean>;
     deleteComment: (commentId: number) => Promise<boolean>;
@@ -60,8 +56,6 @@ const useCommentStore = create<CommentState>((set, get) => {
         commentCount: 0,
         sortBy: 'hot',
         loading: false,
-        loadingMore: false,
-        hasMore: true,
         page: 1,
         isSubmitting: false,
 
@@ -70,55 +64,33 @@ const useCommentStore = create<CommentState>((set, get) => {
         setCommentCount: (commentCount) => set({commentCount}),
         setSortBy: (sortBy) => set({sortBy}),
         setLoading: (loading) => set({loading}),
-        setLoadingMore: (loadingMore) => set({loadingMore}),
-        setHasMore: (hasMore) => set({hasMore}),
         setPage: (page) => set({page}),
         setIsSubmitting: (isSubmitting) => set({isSubmitting}),
 
         // 方法
-        fetchComments: async (articleId, isRefresh = false) => {
-            const currentPage = isRefresh ? 1 : get().page;
+        fetchComments: async (articleId, page) => {
             const sortBy = get().sortBy;
 
             try {
-                if (isRefresh) {
-                    get().setLoading(true);
-                } else {
-                    get().setLoadingMore(true);
-                }
+                get().setLoading(true);
 
                 const response = await commentService.getComments({
                     articleId,
-                    pageNum: currentPage,
+                    pageNum: page,
                     pageSize: 10,
                     sortBy
                 });
 
                 if (response.code === 200 && response.data) {
                     const formattedComments = response.data.record || [];
-
-                    if (isRefresh) {
-                        get().setComments(formattedComments);
-                        get().setPage(2);
-                        get().setCommentCount(response.data.total || 0);
-                    } else {
-                        const existingComments = get().comments;
-                        const existingIds = new Set(existingComments.map(comment => comment.id));
-                        const newComments = formattedComments.filter(comment => !existingIds.has(comment.id));
-
-                        if (newComments.length > 0) {
-                            get().setComments([...existingComments, ...newComments]);
-                            get().setPage(currentPage + 1);
-                        }
-                    }
-
-                    get().setHasMore(currentPage < response.data.pages);
+                    get().setComments(formattedComments);
+                    get().setPage(page);
+                    get().setCommentCount(response.data.total || 0);
                 }
             } catch (error) {
                 console.error('获取评论失败:', error);
             } finally {
                 get().setLoading(false);
-                get().setLoadingMore(false);
             }
         },
 
@@ -201,7 +173,7 @@ const useCommentStore = create<CommentState>((set, get) => {
         },
 
         refreshComments: async (articleId) => {
-            await get().fetchComments(articleId, true);
+            await get().fetchComments(articleId, 1);
         }
     };
 });

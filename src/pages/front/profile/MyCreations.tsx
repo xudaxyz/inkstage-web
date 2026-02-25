@@ -126,7 +126,7 @@ const MyCreations: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: (_: any, record: Article) => (
+      render: (_: unknown, record: Article) => (
         <Space size="middle">
           <Button icon={<EyeOutlined />} size="small" onClick={() => navigate(`/article/${record.id}`)}>
             查看
