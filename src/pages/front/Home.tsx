@@ -56,6 +56,7 @@ const Home: React.FC = () => {
                 coverImage: item.coverImage,
                 avatar: item.avatar || "",
                 authorName: item.authorName,
+                userId: item.userId,
                 likeCount: item.likeCount,
                 readCount: item.readCount,
                 commentCount: item.commentCount,

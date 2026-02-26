@@ -35,6 +35,7 @@ export interface IndexArticleList {
     coverImage: string;
     avatar: string;
     authorName: string;
+    userId: number;
     readCount: number;
     likeCount: number;
     commentCount: number;
@@ -178,6 +179,11 @@ const articleService = {
     // 获取文章详情
     getArticleDetail: async (id: number): Promise<ApiResponse<ArticleDetailInfo>> => {
         return await apiClient.get(`${API_ENDPOINTS.ARTICLE.DETAIL}/${id}`);
+    },
+
+    // 获取用户文章列表
+    getUserArticles: async (userId: string, page: number = 1, size: number = 10): Promise<ApiResponse<ArticleListResponse>> => {
+        return await apiClient.get(API_ENDPOINTS.ARTICLE.USER_ARTICLES(userId), {params: {page, size}});
     }
 };
 

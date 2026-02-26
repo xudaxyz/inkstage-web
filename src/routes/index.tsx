@@ -6,6 +6,7 @@ import Profile from '../pages/front/Profile.tsx';
 import CreateArticle from '../pages/front/CreateArticle.tsx';
 import ArticleDetail from '../pages/front/ArticleDetail.tsx';
 import Rankings from '../pages/front/Rankings.tsx';
+import UserProfile from '../pages/front/UserProfile.tsx';
 import ProfileLayout from '../layouts/ProfileLayout';
 import ProfileInfo from '../pages/front/profile/ProfileInfo';
 import MyCreations from '../pages/front/profile/MyCreations';
@@ -34,6 +35,8 @@ const AppRoutes = () => {
       <Route path="/article/:id" element={<ArticleDetail />} />
       {/* 热门排行榜路由 */}
       <Route path="/rankings" element={<Rankings />} />
+      {/* 用户主页路由 */}
+      <Route path="/author/:id" element={<UserProfile />} />
       {/* 个人中心路由 */}
       <Route path="/profile" element={<ProfileLayout />}>
         <Route index element={<Profile />} />

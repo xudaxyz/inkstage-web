@@ -18,11 +18,13 @@ export const API_ENDPOINTS = {
         UPDATE: (id: string) => `/front/article/update/${id}`, // 更新文章
         SAVE_DRAFT: (id?: number) => `/article/${id}/draft`, // 保存草稿
         DELETE: (id: number) => `/article/${id}`, // 删除文章
+        USER_ARTICLES: (userId: string) => `/front/article/user/${userId}`, // 获取用户文章列表
     },
 
     // 用户相关
     USER: {
         PROFILE: '/front/user/profile', // 获取/更新用户资料
+        PUBLIC_PROFILE: (userId: string) => `/front/user/profile/${userId}`, // 获取用户公开资料
     },
 
     // 标签相关
@@ -68,4 +70,10 @@ export const PUBLIC_ENDPOINTS = [
     API_ENDPOINTS.TAG.ACTIVE,
     API_ENDPOINTS.CATEGORY.ACTIVE,
     API_ENDPOINTS.COMMENT.LIST,
+    // 这里添加用户公开资料接口的基础路径，具体ID会动态生成
+    '/front/user/profile/',
+    // 这里添加用户文章列表接口的基础路径，具体ID会动态生成
+    '/front/article/user/',
 ];
+
+

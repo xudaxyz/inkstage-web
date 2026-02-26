@@ -9,6 +9,7 @@ interface Article {
     summary: string;
     coverImage?: string;
     authorName: string;
+    userId: number;
     avatar: string;
     likeCount: number;
     readCount: number;
@@ -46,10 +47,14 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                         {/* 用户信息 */}
                         <div className="flex items-center gap-2">
                             <Avatar src={avatar} alt={authorName} className="w-6 h-6"/>
-                            <a href={`/user/${authorName}`}
-                               className="font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                                {authorName}
-                            </a>
+                            {article.userId ? (
+                                <Link to={`/author/${article.userId}`}
+                                   className="font-medium text-gray-700 hover:text-blue-600 transition-colors">
+                                    {authorName}
+                                </Link>
+                            ) : (
+                                <span className="font-medium text-gray-700">{authorName}</span>
+                            )}
                         </div>
 
                         {/* 点赞量 */}
