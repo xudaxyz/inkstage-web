@@ -58,6 +58,8 @@ const ArticleDetail: React.FC = () => {
     const [collectionCount, setCollectionCount] = useState(0);
     const [toc, setToc] = useState<Array<{ id: string; text: string; level: number }>>([]);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [relatedArticles, setRelatedArticles] = useState<Array<{id: number; title: string; publishTime: string}>>([]);
+    const [relatedArticlesLoading, setRelatedArticlesLoading] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
 
     // 获取当前用户信息
@@ -82,6 +84,25 @@ const ArticleDetail: React.FC = () => {
             setLoading(false);
         }
     }, [id]);
+
+    // 定义fetchRelatedArticles函数
+    const fetchRelatedArticles = useCallback(async (userId: number, articleId: number) => {
+        try {
+            setRelatedArticlesLoading(true);
+            const response = await articleService.getAuthorRelatedArticles(userId, articleId);
+            if (response.code === 200 && response.data) {
+                setRelatedArticles(response.data.map((item) => ({
+                    id: item.id,
+                    title: item.title,
+                    publishTime: item.publishTime
+                })));
+            }
+        } catch (error) {
+            console.error('获取作者相关文章失败:', error);
+        } finally {
+            setRelatedArticlesLoading(false);
+        }
+    }, []);
 
     // 再定义generateToc函数
     const generateToc = useCallback(() => {
@@ -118,8 +139,12 @@ const ArticleDetail: React.FC = () => {
             setCollected(article.isCollected || false);
             setCollectionCount(article.collectionCount || 0);
             generateToc();
+            // 获取作者相关文章
+            if (article.userId && id) {
+                void fetchRelatedArticles(article.userId, Number(id));
+            }
         }
-    }, [article, generateToc]);
+    }, [article, generateToc, fetchRelatedArticles, id]);
 
     const scrollToHeading = (id: string) => {
         const element = document.getElementById(id);
@@ -176,13 +201,6 @@ const ArticleDetail: React.FC = () => {
 
     // 检查当前用户是否是文章作者
     const isAuthor = user && user.id && article && Number(user.id) === article.userId;
-
-    // 模拟作者相关文章数据
-    const relatedArticles = [
-        {id: 1, title: 'Cypress 测试框架入门指南', publishTime: '2026-01-30'},
-        {id: 2, title: '前端自动化测试最佳实践', publishTime: '2026-01-25'},
-        {id: 3, title: '如何编写高质量的测试用例', publishTime: '2026-01-20'}
-    ];
 
     if (loading) {
         return (
@@ -527,27 +545,39 @@ const ArticleDetail: React.FC = () => {
                             {/* 作者相关文章 */}
                             <Card className="mb-8 border border-gray-100 rounded-lg shadow-sm"
                                   title="作者相关文章">
-                                <List
-                                    size="small"
-                                    dataSource={relatedArticles}
-                                    renderItem={(item) => (
-                                        <List.Item className="py-3">
-                                            <List.Item.Meta
-                                                title={
-                                                    <a href={`/article/${item.id}`}
-                                                       className="text-gray-800 hover:text-blue-600 transition-colors">
-                                                        {item.title}
-                                                    </a>
-                                                }
-                                                description={
-                                                    <span className="text-gray-400 text-xs">
-                                                        {item.publishTime}
-                                                    </span>
-                                                }
-                                            />
-                                        </List.Item>
-                                    )}
-                                />
+                                {relatedArticlesLoading ? (
+                                    <div className="text-center py-4">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                                    </div>
+                                ) : relatedArticles.length > 0 ? (
+                                    <List
+                                        size="small"
+                                        dataSource={relatedArticles}
+                                        renderItem={(item) => (
+                                            <List.Item className="py-3">
+                                                <List.Item.Meta
+                                                    title={
+                                                        <a href={`/article/${item.id}`}
+                                                           target="_blank"
+                                                           rel="noopener noreferrer"
+                                                           className="text-gray-800 hover:text-blue-600 transition-colors">
+                                                            {item.title}
+                                                        </a>
+                                                    }
+                                                    description={
+                                                        <span className="text-gray-400 text-xs">
+                                                            {item.publishTime}
+                                                        </span>
+                                                    }
+                                                />
+                                            </List.Item>
+                                        )}
+                                    />
+                                ) : (
+                                    <div className="text-center py-4 text-gray-500 text-sm">
+                                        暂无相关文章
+                                    </div>
+                                )}
                             </Card>
 
                             {/* 文章目录 */}

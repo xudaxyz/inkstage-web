@@ -115,9 +115,12 @@ const Rankings: React.FC = () => {
                           {/* 文章内容 */}
                           <div className="flex-1 min-w-0">
                             {/* 标题 */}
-                            <div className="text-black font-semibold text-xl mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight  cursor-pointer" onClick={() => navigate(`/article/${article.id}`)}>
+                            <a href={`/article/${article.id}`}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               className="text-black font-semibold text-xl mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight  cursor-pointer hover:text-blue-600">
                               {article.title}
-                            </div>
+                            </a>
 
                             {/* 简介 */}
                             <p className="text-gray-600 text-sm mb-3 line-clamp-2">
@@ -243,9 +246,12 @@ const Rankings: React.FC = () => {
                           {/* 文章信息 */}
                           <div className="flex-1 min-w-0">
                             {/* 标题 */}
-                            <div className="text-black font-bold text-base mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight drop-shadow-sm cursor-pointer hover:text-blue-600" onClick={() => navigate(`/article/${article.id}`)}>
+                            <a href={`/article/${article.id}`}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               className="text-black font-bold text-base mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight drop-shadow-sm cursor-pointer hover:text-blue-600">
                               {article.title}
-                            </div>
+                            </a>
 
                             {/* 作者信息 */}
                             <div className="flex items-center text-gray-500 text-xs mb-1">

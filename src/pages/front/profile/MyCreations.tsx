@@ -72,7 +72,7 @@ const MyCreations: React.FC = () => {
       title: '标题',
       dataIndex: 'title',
       key: 'title',
-      render: (text: string, record: Article) => <a href={`/article/${record.id}`} className="text-primary-600 hover:underline">{text}</a>
+      render: (text: string, record: Article) => <a href={`/article/${record.id}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">{text}</a>
     },
     {
       title: '发布时间',

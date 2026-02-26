@@ -72,7 +72,7 @@ const UserProfile: React.FC = () => {
       if (id) {
         try {
           setLoading(true);
-          const userData = await getUserPublicProfile(id);
+          const userData = await getUserPublicProfile(Number(id));
           
           // 验证userData是否存在
           if (!userData) {
@@ -134,7 +134,7 @@ const UserProfile: React.FC = () => {
       if (id) {
         try {
           setArticlesLoading(true);
-          const response = await articleService.getUserArticles(id);
+          const response = await articleService.getUserArticles(Number(id));
           if (response && response.data && response.data.record) {
             setArticles(response.data.record);
           }
@@ -307,6 +307,8 @@ const UserProfile: React.FC = () => {
                               <h3 className="text-xl font-semibold mb-3 leading-tight">
                                 <a 
                                   href={`/article/${article.id}`} 
+                                  target="_blank"
+                                  rel="noopener noreferrer"
                                   className="text-gray-800 hover:text-blue-600 transition-colors duration-300 group-hover:translate-x-1"
                                 >
                                   {article.title}
@@ -364,7 +366,7 @@ const UserProfile: React.FC = () => {
                             {/* 右侧封面图 */}
                             {article.coverImage && (
                               <div className="w-full md:w-56 h-36 rounded-lg overflow-hidden shrink-0 shadow-md transform transition-all duration-300 group-hover:scale-105">
-                                <a href={`/article/${article.id}`} className="block">
+                                <a href={`/article/${article.id}`} target="_blank" rel="noopener noreferrer" className="block">
                                   <img
                                     src={article.coverImage}
                                     alt={article.title}

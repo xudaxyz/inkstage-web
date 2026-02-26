@@ -182,8 +182,13 @@ const articleService = {
     },
 
     // 获取用户文章列表
-    getUserArticles: async (userId: string, page: number = 1, size: number = 10): Promise<ApiResponse<ArticleListResponse>> => {
+    getUserArticles: async (userId: number, page: number = 1, size: number = 10): Promise<ApiResponse<ArticleListResponse>> => {
         return await apiClient.get(API_ENDPOINTS.ARTICLE.USER_ARTICLES(userId), {params: {page, size}});
+    },
+
+    // 获取作者相关文章
+    getAuthorRelatedArticles: async (userId: number, excludeArticleId: number, limit: number = 3): Promise<ApiResponse<IndexArticleList[]>> => {
+        return await apiClient.get(API_ENDPOINTS.ARTICLE.AUTHOR_RELATED, {params: {userId, excludeArticleId, limit}});
     }
 };
 

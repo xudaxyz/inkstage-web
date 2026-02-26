@@ -23,7 +23,7 @@ export interface UserInfo {
 }
 
 // 获取用户公开资料
-export const getUserPublicProfile = async (userId: string): Promise<UserInfo> => {
+export const getUserPublicProfile = async (userId: number): Promise<UserInfo> => {
   try {
     const response = await apiClient.get(API_ENDPOINTS.USER.PUBLIC_PROFILE(userId));
     return response.data;

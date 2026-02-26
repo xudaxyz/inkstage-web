@@ -1,6 +1,5 @@
 import React from 'react';
 import {Avatar} from 'antd';
-import {Link} from 'react-router-dom';
 import {LikeOutlined, EyeOutlined, MessageOutlined, CalendarOutlined} from '@ant-design/icons';
 
 interface Article {
@@ -31,10 +30,12 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                 <div className={`flex-1 ${coverImage ? 'md:pr-4' : ''} flex flex-col min-w-10`}>
                     {/* 文章标题 */}
                     <h3 className="text-xl font-semibold mb-2 leading-tight">
-                        <Link to={`/article/${article.id}`}
-                              className="text-gray-800 hover:text-blue-600 transition-colors cursor-pointer">
+                        <a href={`/article/${article.id}`}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="text-gray-800 hover:text-blue-600 transition-colors cursor-pointer">
                             {title}
-                        </Link>
+                        </a>
                     </h3>
 
                     {/* 文章简介 */}
@@ -48,10 +49,10 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                         <div className="flex items-center gap-2">
                             <Avatar src={avatar} alt={authorName} className="w-6 h-6"/>
                             {article.userId ? (
-                                <Link to={`/author/${article.userId}`}
+                                <a href={`/author/${article.userId}`}
                                    className="font-medium text-gray-700 hover:text-blue-600 transition-colors">
                                     {authorName}
-                                </Link>
+                                </a>
                             ) : (
                                 <span className="font-medium text-gray-700">{authorName}</span>
                             )}
@@ -87,13 +88,15 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                 {/* 右侧封面图 */}
                 {coverImage && (
                     <div className="w-full md:w-64 h-40 md:h-32 rounded-md overflow-hidden flex-shrink-0">
-                        <Link to={`/article/${article.id}`}>
+                        <a href={`/article/${article.id}`}
+                           target="_blank"
+                           rel="noopener noreferrer">
                             <img
                                 src={coverImage}
                                 alt={title}
                                 className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                             />
-                        </Link>
+                        </a>
                     </div>
                 )}
             </div>

@@ -50,6 +50,8 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
                             <div className="flex items-center gap-2">
                                 <a
                                     href={`/article/${article.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="text-[#696868] hover:text-blue-500 text-sm font-medium transition-colors truncate no-underline"
                                     style={{color: '#696868', textDecoration: 'none'}}
                                 >

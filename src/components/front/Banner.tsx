@@ -79,7 +79,15 @@ const Banner: React.FC<BannerProps> = ({
                         {/* 内容 */}
                         <div className="relative px-[5%] py-12 md:py-16 text-white flex flex-col justify-center h-full">
                             <h2 className="text-2xl md:text-3xl font-bold mb-3 max-w-3xl leading-tight">
-                                {article.title}
+                                <a
+                                    href={`/article/${article.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-white hover:text-blue-200 transition-colors no-underline"
+                                    style={{ color: 'white', textDecoration: 'none' }}
+                                >
+                                    {article.title}
+                                </a>
                             </h2>
                             <p className="text-sm md:text-base opacity-90 max-w-2xl leading-relaxed">
                                 {article.summary}
@@ -87,6 +95,8 @@ const Banner: React.FC<BannerProps> = ({
                             <div className="mt-6">
                                 <a
                                     href={`/article/${article.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="inline-block px-6 py-2 bg-white text-blue-600 font-medium rounded-full hover:bg-opacity-90 transition-all duration-300"
                                 >
                                     阅读全文
