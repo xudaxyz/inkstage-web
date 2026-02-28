@@ -68,10 +68,10 @@ const ProfileLayout: React.FC = () => {
 
       {/* 主体内容 */}
       <main className="flex-1 py-8 px-[5%]">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* 左侧导航 */}
-            <div className="lg:w-64 shrink-0">
+            <div className="lg:w-48 shrink-0">
               <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
                 <div className="mb-8">
                   <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">个人中心</h2>
@@ -101,7 +101,7 @@ const ProfileLayout: React.FC = () => {
 
             {/* 右侧内容 */}
             <div className="flex-1">
-              <div className="bg-white rounded-2xl shadow-sm p-8">
+              <div className="bg-white rounded-xs shadow-xs p-6">
                 <Outlet />
               </div>
             </div>

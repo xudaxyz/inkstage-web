@@ -7,11 +7,11 @@ export interface ArticleState {
     article: ArticleDetailInfo | null;
     loading: boolean;
     error: string | null;
-    relatedArticles: Array<{id: number; title: string; publishTime: string}>;
+    relatedArticles: Array<{ id: number; title: string; publishTime: string }>;
     relatedArticlesLoading: boolean;
     likeLoading: boolean;
     collectLoading: boolean;
-    
+
     // 操作方法
     fetchArticleDetail: (id: number) => Promise<void>;
     fetchRelatedArticles: (userId: number, articleId: number) => Promise<void>;
@@ -33,14 +33,14 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
     relatedArticlesLoading: false,
     likeLoading: false,
     collectLoading: false,
-    
+
     // 获取文章详情
     fetchArticleDetail: async (id) => {
         set({loading: true, error: null});
         try {
             const response = await articleService.getArticleDetail(id);
             if (response.code !== 200) {
-                set({error: response.message || '文章详情加载失败'});
+                set({error: response.message || '文章详情加载失败', loading: false});
                 return;
             }
             set({article: response.data, loading: false});
@@ -49,7 +49,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
             console.error('获取文章详情失败:', error);
         }
     },
-    
+
     // 获取作者相关文章
     fetchRelatedArticles: async (userId, articleId) => {
         set({relatedArticlesLoading: true});
@@ -70,7 +70,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
             set({relatedArticlesLoading: false});
         }
     },
-    
+
     // 增加文章阅读量
     incrementReadCount: async (articleId) => {
         try {
@@ -79,12 +79,12 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
             console.error('增加阅读量失败:', error);
         }
     },
-    
+
     // 点赞文章
     likeArticle: async (articleId) => {
         const article = get().article;
         if (!article) return;
-        
+
         // 乐观更新
         set({likeLoading: true});
         set((state) => ({
@@ -94,7 +94,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
                 likeCount: (state.article.likeCount || 0) + 1
             } : null
         }));
-        
+
         try {
             const response = await articleService.likeArticle(articleId);
             if (response.code !== 200) {
@@ -121,12 +121,12 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
             set({likeLoading: false});
         }
     },
-    
+
     // 取消点赞
     unLikeArticle: async (articleId) => {
         const article = get().article;
         if (!article) return;
-        
+
         // 乐观更新
         set({likeLoading: true});
         set((state) => ({
@@ -136,7 +136,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
                 likeCount: Math.max(0, (state.article.likeCount || 0) - 1)
             } : null
         }));
-        
+
         try {
             const response = await articleService.unlikeArticle(articleId);
             if (response.code !== 200) {
@@ -163,12 +163,12 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
             set({likeLoading: false});
         }
     },
-    
+
     // 收藏文章
     collectArticle: async (articleId) => {
         const article = get().article;
         if (!article) return;
-        
+
         // 乐观更新
         set({collectLoading: true});
         set((state) => ({
@@ -178,7 +178,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
                 collectionCount: (state.article.collectionCount || 0) + 1
             } : null
         }));
-        
+
         try {
             const response = await articleService.collectArticle(articleId);
             if (response.code !== 200) {
@@ -205,12 +205,12 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
             set({collectLoading: false});
         }
     },
-    
+
     // 取消收藏
     unCollectArticle: async (articleId) => {
         const article = get().article;
         if (!article) return;
-        
+
         // 乐观更新
         set({collectLoading: true});
         set((state) => ({
@@ -220,7 +220,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
                 collectionCount: Math.max(0, (state.article.collectionCount || 0) - 1)
             } : null
         }));
-        
+
         try {
             const response = await articleService.unCollectArticle(articleId);
             if (response.code !== 200) {
@@ -247,7 +247,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
             set({collectLoading: false});
         }
     },
-    
+
     // 更新评论数
     updateCommentCount: (count) => {
         set((state) => ({
@@ -257,7 +257,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
             } : null
         }));
     },
-    
+
     // 重置状态
     reset: () => {
         set({

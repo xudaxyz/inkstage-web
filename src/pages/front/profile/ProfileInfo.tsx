@@ -173,7 +173,7 @@ const ProfileInfo: React.FC = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto">
+        <div className="mx-auto">
             {/* 背景图片区域 */}
             <div className="relative mb-8">
                 <div
