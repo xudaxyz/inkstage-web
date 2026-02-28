@@ -10,13 +10,15 @@ interface CommentSectionProps {
     currentUserId?: number;
     currentUserNickname?: string;
     currentUserAvatar?: string;
+    onCommentCountChange?: (newCount: number) => void;
 }
 
 const CommentSection: React.FC<CommentSectionProps> = ({
                                                            articleId,
                                                            currentUserId,
                                                            currentUserNickname,
-                                                           currentUserAvatar
+                                                           currentUserAvatar,
+                                                           onCommentCountChange
                                                        }) => {
     const { 
         comments, 
@@ -45,6 +47,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         };
         void loadData();
     }, [articleId, sortBy, fetchComments]);
+
+    // 评论数变化时通知父组件
+    useEffect(() => {
+        if (onCommentCountChange) {
+            onCommentCountChange(commentCount);
+        }
+    }, [commentCount, onCommentCountChange]);
 
     // 处理分页变化
     const handlePageChange = (page: number) => {

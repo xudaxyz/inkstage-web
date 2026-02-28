@@ -189,6 +189,41 @@ const articleService = {
     // 获取作者相关文章
     getAuthorRelatedArticles: async (userId: number, excludeArticleId: number, limit: number = 3): Promise<ApiResponse<IndexArticleList[]>> => {
         return await apiClient.get(API_ENDPOINTS.ARTICLE.AUTHOR_RELATED, {params: {userId, excludeArticleId, limit}});
+    },
+
+    // 点赞文章
+    likeArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
+        return await apiClient.post(API_ENDPOINTS.ARTICLE.LIKE(articleId));
+    },
+
+    // 取消点赞
+    unlikeArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
+        return await apiClient.delete(API_ENDPOINTS.ARTICLE.UNLIKE(articleId));
+    },
+
+    // 检查点赞状态
+    checkLikeStatus: async (articleId: number): Promise<ApiResponse<boolean>> => {
+        return await apiClient.get(API_ENDPOINTS.ARTICLE.LIKE_STATUS(articleId));
+    },
+
+    // 收藏文章
+    collectArticle: async (articleId: number, folderId: number = 0): Promise<ApiResponse<boolean>> => {
+        return await apiClient.post(API_ENDPOINTS.ARTICLE.COLLECT(articleId), {folderId});
+    },
+
+    // 取消收藏
+    unCollectArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
+        return await apiClient.delete(API_ENDPOINTS.ARTICLE.UN_COLLECT(articleId));
+    },
+
+    // 检查收藏状态
+    checkCollectStatus: async (articleId: number): Promise<ApiResponse<boolean>> => {
+        return await apiClient.get(API_ENDPOINTS.ARTICLE.COLLECT_STATUS(articleId));
+    },
+
+    // 增加文章阅读量
+    incrementReadCount: async (articleId: number): Promise<ApiResponse<number>> => {
+        return await apiClient.post(API_ENDPOINTS.ARTICLE.INCREMENT_READ(articleId));
     }
 };
 

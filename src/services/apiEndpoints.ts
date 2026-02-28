@@ -20,6 +20,13 @@ export const API_ENDPOINTS = {
         DELETE: (id: number) => `/article/${id}`, // 删除文章
         USER_ARTICLES: (userId: number) => `/front/article/user/${userId}`, // 获取用户文章列表
         AUTHOR_RELATED: '/front/article/author/related', // 获取作者相关文章
+        LIKE: (id: number) => `/front/article/like/${id}`, // 点赞文章
+        UNLIKE: (id: number) => `/front/article/like/${id}`, // 取消点赞
+        LIKE_STATUS: (id: number) => `/front/article/like/${id}/status`, // 检查点赞状态
+        COLLECT: (id: number) => `/front/article/collect/${id}`, // 收藏文章
+        UN_COLLECT: (id: number) => `/front/article/collect/${id}`, // 取消收藏
+        COLLECT_STATUS: (id: number) => `/front/article/collect/${id}/status`, // 检查收藏状态
+        INCREMENT_READ: (id: number) => `/front/article/read/${id}`, // 增加阅读数
     },
 
     // 用户相关
@@ -77,6 +84,8 @@ export const PUBLIC_ENDPOINTS = [
     '/front/article/user/',
     // 作者相关文章接口
     '/front/article/author/related',
+    // 文章阅读量增加接口
+    '/front/article/read/',
 ];
 
 

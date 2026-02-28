@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useCallback} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
 import {Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, Modal} from 'antd';
 import {
@@ -19,25 +19,10 @@ import {
 import Header from '../../components/common/Header.tsx';
 import Footer from '../../components/common/Footer.tsx';
 import CommentSection from '../../components/front/CommentSection.tsx';
-import {useUser} from '../../store';
-import type {ArticleDetailInfo} from '../../services/articleService.ts';
+import {useUser, useArticle} from '../../store';
 import articleService from '../../services/articleService.ts';
 import type {Tag} from '../../services/tagService.ts';
 import MarkdownIt from 'markdown-it';
-import {createHighlighter} from 'shiki';
-
-// 初始化shiki高亮器
-let highlighter: Awaited<ReturnType<typeof createHighlighter>> | null = null;
-
-// 初始化高亮器函数
-const initHighlighter = async () => {
-    if (!highlighter) {
-        highlighter = await createHighlighter({
-            themes: ['github-dark', 'github-light'],
-            langs: ['javascript', 'typescript', 'html', 'css', 'python', 'java', 'go', 'rust', 'json', 'yaml', 'markdown'],
-        });
-    }
-};
 
 // 初始化Markdown渲染器
 const md: MarkdownIt = new MarkdownIt({
@@ -49,64 +34,36 @@ const md: MarkdownIt = new MarkdownIt({
 const ArticleDetail: React.FC = () => {
     const {id} = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [article, setArticle] = useState<ArticleDetailInfo | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [liked, setLiked] = useState(false);
-    const [likeCount, setLikeCount] = useState(0);
-    const [collected, setCollected] = useState(false);
-    const [collectionCount, setCollectionCount] = useState(0);
-    const [toc, setToc] = useState<Array<{ id: string; text: string; level: number }>>([]);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    const [relatedArticles, setRelatedArticles] = useState<Array<{id: number; title: string; publishTime: string}>>([]);
-    const [relatedArticlesLoading, setRelatedArticlesLoading] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
 
     // 获取当前用户信息
     const {user, isLoggedIn} = useUser();
+    
+    // 获取文章状态
+    const {
+        article,
+        loading,
+        error,
+        relatedArticles,
+        relatedArticlesLoading,
+        likeLoading,
+        collectLoading,
+        fetchArticleDetail,
+        fetchRelatedArticles,
+        incrementReadCount,
+        likeArticle,
+        unLikeArticle,
+        collectArticle,
+        unCollectArticle,
+        updateCommentCount,
+        reset
+    } = useArticle();
 
-    // 先定义fetchArticleDetail函数
-    const fetchArticleDetail = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const response = await articleService.getArticleDetail(Number(id));
-            if (response.code !== 200) {
-                message.error(response.message || '文章详情加载失败');
-                setError(response.message || '文章详情加载失败');
-                return;
-            }
-            setArticle(response.data);
-        } catch {
-            setError('文章详情加载失败');
-            message.error('文章详情加载失败');
-        } finally {
-            setLoading(false);
-        }
-    }, [id]);
-
-    // 定义fetchRelatedArticles函数
-    const fetchRelatedArticles = useCallback(async (userId: number, articleId: number) => {
-        try {
-            setRelatedArticlesLoading(true);
-            const response = await articleService.getAuthorRelatedArticles(userId, articleId);
-            if (response.code === 200 && response.data) {
-                setRelatedArticles(response.data.map((item) => ({
-                    id: item.id,
-                    title: item.title,
-                    publishTime: item.publishTime
-                })));
-            }
-        } catch (error) {
-            console.error('获取作者相关文章失败:', error);
-        } finally {
-            setRelatedArticlesLoading(false);
-        }
-    }, []);
-
-    // 再定义generateToc函数
-    const generateToc = useCallback(() => {
-        if (!article?.content) return;
+    // 生成目录
+    const toc = React.useMemo(() => {
+        if (!article) return [];
+        
         const newToc: Array<{ id: string; text: string; level: number }> = [];
         const headingRegex = /^(#{1,6})\s+(.+)$/gm;
         let match;
@@ -118,33 +75,28 @@ const ArticleDetail: React.FC = () => {
             newToc.push({id, text, level});
         }
 
-        setToc(newToc);
-    }, [article?.content]);
+        return newToc;
+    }, [article]);
 
-    // 最后使用useEffect钩子
+    // 当文章ID变化时获取文章详情和增加阅读量
     useEffect(() => {
-        // 初始化shiki高亮器
-        void initHighlighter();
-
-        // 获取文章详情
         if (id) {
-            void fetchArticleDetail();
+            void fetchArticleDetail(Number(id));
+            void incrementReadCount(Number(id));
         }
-    }, [id, fetchArticleDetail]);
+        
+        // 组件卸载时重置状态
+        return () => {
+            reset();
+        };
+    }, [id, fetchArticleDetail, incrementReadCount, reset]);
 
+    // 当文章数据变化时获取作者相关文章
     useEffect(() => {
-        if (article) {
-            setLiked(article.isLiked || false);
-            setLikeCount(article.likeCount || 0);
-            setCollected(article.isCollected || false);
-            setCollectionCount(article.collectionCount || 0);
-            generateToc();
-            // 获取作者相关文章
-            if (article.userId && id) {
-                void fetchRelatedArticles(article.userId, Number(id));
-            }
+        if (article && id) {
+            void fetchRelatedArticles(article.userId, Number(id));
         }
-    }, [article, generateToc, fetchRelatedArticles, id]);
+    }, [article, id, fetchRelatedArticles]);
 
     const scrollToHeading = (id: string) => {
         const element = document.getElementById(id);
@@ -153,14 +105,34 @@ const ArticleDetail: React.FC = () => {
         }
     };
 
-    const handleLike = () => {
-        setLiked(!liked);
-        setLikeCount(prev => liked ? prev - 1 : prev + 1);
+    const handleLike = async () => {
+        if (!isLoggedIn || !article) {
+            message.info('请先登录');
+            return;
+        }
+
+        if (article.isLiked) {
+            // 取消点赞
+            await unLikeArticle(Number(id));
+        } else {
+            // 点赞
+            await likeArticle(Number(id));
+        }
     };
 
-    const handleCollect = () => {
-        setCollected(!collected);
-        setCollectionCount(prev => collected ? prev - 1 : prev + 1);
+    const handleCollect = async () => {
+        if (!isLoggedIn || !article) {
+            message.info('请先登录');
+            return;
+        }
+
+        if (article.isCollected) {
+            // 取消收藏
+            await unCollectArticle(Number(id));
+        } else {
+            // 收藏
+            await collectArticle(Number(id));
+        }
     };
 
     const handleShare = () => {
@@ -285,10 +257,11 @@ const ArticleDetail: React.FC = () => {
                                         variant="outlined"
                                         size="large"
                                         onClick={handleLike}
-                                        icon={liked ? <LikeTwoTone/> : <LikeOutlined/>}
+                                        loading={likeLoading}
+                                        icon={article.isLiked ? <LikeTwoTone/> : <LikeOutlined/>}
                                     />
                                 </Tooltip>
-                                <span className="text-xs text-gray-500">{likeCount}</span>
+                                <span className="text-xs text-gray-500">{article.likeCount || 0}</span>
                             </div>
 
                             {/* 收藏按钮 */}
@@ -299,10 +272,11 @@ const ArticleDetail: React.FC = () => {
                                         variant="outlined"
                                         size="large"
                                         onClick={handleCollect}
-                                        icon={collected ? <StarTwoTone/> : <StarOutlined/>}
+                                        loading={collectLoading}
+                                        icon={article.isCollected ? <StarTwoTone/> : <StarOutlined/>}
                                     />
                                 </Tooltip>
-                                <span className="text-xs text-gray-500">{collectionCount}</span>
+                                <span className="text-xs text-gray-500">{article.collectionCount || 0}</span>
                             </div>
 
                             {/* 评论按钮 */}
@@ -381,8 +355,8 @@ const ArticleDetail: React.FC = () => {
                                         <Tooltip title="点赞数">
                                             <div className="flex items-center gap-2">
                                                 <LikeOutlined
-                                                    className={`${liked ? 'text-red-500' : 'text-gray-400'}`}/>
-                                                <span>{likeCount}</span>
+                                                    className={`${article.isLiked ? 'text-red-500' : 'text-gray-400'}`}/>
+                                                <span>{article.likeCount || 0}</span>
                                             </div>
                                         </Tooltip>
                                         <Tooltip title="评论数">
@@ -482,19 +456,21 @@ const ArticleDetail: React.FC = () => {
                                     onClick={handleLike}
                                     size="large"
                                     shape="round"
-                                    icon={<LikeOutlined className={liked ? 'text-red-500' : ''}/>}
-                                    className={`${liked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} px-4 py-2 rounded-full hover:shadow-sm transition-all`}
+                                    loading={likeLoading}
+                                    icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''}/>}
+                                    className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} px-4 py-2 rounded-full hover:shadow-sm transition-all`}
                                 >
-                                    {liked ? '已点赞' : '点赞'}
+                                    {article.isLiked ? '已点赞' : '点赞'}
                                 </Button>
                                 <Button
                                     onClick={handleCollect}
                                     size="large"
                                     shape="round"
-                                    icon={<StarOutlined className={collected ? 'text-yellow-500' : ''}/>}
-                                    className={`${collected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} px-4 py-2 rounded-full hover:shadow-sm transition-all`}
+                                    loading={collectLoading}
+                                    icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''}/>}
+                                    className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} px-4 py-2 rounded-full hover:shadow-sm transition-all`}
                                 >
-                                    {collected ? '已收藏' : '收藏'}
+                                    {article.isCollected ? '已收藏' : '收藏'}
                                 </Button>
                                 <Button
                                     onClick={handleShare}
@@ -513,6 +489,7 @@ const ArticleDetail: React.FC = () => {
                                 currentUserId={isLoggedIn ? Number(user.id) : undefined}
                                 currentUserNickname={user.nickname}
                                 currentUserAvatar={user.avatar}
+                                onCommentCountChange={updateCommentCount}
                             />
                         </div>
                     </div>
