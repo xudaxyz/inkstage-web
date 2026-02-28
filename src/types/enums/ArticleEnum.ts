@@ -1,8 +1,11 @@
 // 文章状态枚举
 export const ArticleStatusEnum = {
+    ALL: 'ALL',
     DRAFT: 'DRAFT',
     PENDING: 'PENDING',
-    PUBLISHED: 'PUBLISHED'
+    PUBLISHED: 'PUBLISHED',
+    OFFLINE: 'OFFLINE',
+    RECYCLE: 'RECYCLE'
 } as const;
 
 // 文章原创性枚举
@@ -33,9 +36,12 @@ export type AllowStatusEnum = typeof AllowStatusEnum[keyof typeof AllowStatusEnu
 
 // 枚举映射（用于UI显示）
 export const ArticleStatusMap = {
+    [ArticleStatusEnum.ALL]: '所有',
     [ArticleStatusEnum.DRAFT]: '草稿',
     [ArticleStatusEnum.PENDING]: '待审核',
-    [ArticleStatusEnum.PUBLISHED]: '已发布'
+    [ArticleStatusEnum.PUBLISHED]: '已发布',
+    [ArticleStatusEnum.OFFLINE]: '已下架',
+    [ArticleStatusEnum.RECYCLE]: '回收站'
 };
 
 export const ArticleOriginalMap = {

@@ -1,5 +1,5 @@
-import React, {useMemo, useState} from 'react';
-import {Button, Card, Empty, Input, message, Modal, Pagination, Popover, Space, Tag} from 'antd';
+import React, {useCallback, useEffect, useState, useMemo} from 'react';
+import {Button, Card, Empty, Input, message, Modal, Pagination, Popover, Space, Tag, Spin} from 'antd';
 import {
     DeleteOutlined,
     LikeOutlined,
@@ -7,9 +7,19 @@ import {
     MessageOutlined,
     MoreOutlined,
     SearchOutlined,
-    ShareAltOutlined
+    ShareAltOutlined,
+    EyeOutlined
 } from '@ant-design/icons';
-import articleService from '../../../services/articleService.ts';
+import {useNavigate} from 'react-router-dom';
+import articleService, {type MyArticleList} from '../../../services/articleService.ts';
+import {
+    ArticleOriginalEnum,
+    ArticleVisibleEnum,
+    ArticleOriginalMap,
+    ArticleStatusEnum,
+    ArticleVisibleMap,
+    ArticleStatusMap
+} from '../../../types/enums';
 
 // 文章类型定义
 interface Article {
@@ -17,144 +27,103 @@ interface Article {
     title: string;
     summary: string;
     publishTime: string;
-    isOriginal: boolean;
-    isPublic: boolean;
-    status: 'published' | 'draft' | 'pending' | 'deleted';
-    views: number;
-    likes: number;
-    comments: number;
-    category: string;
-    tags: string[];
+    original: ArticleOriginalEnum;
+    visible: ArticleVisibleEnum;
+    articleStatus: ArticleStatusEnum;
+    readCount: number;
+    likeCount: number;
+    commentCount: number;
 }
 
 const MyCreations: React.FC = () => {
-
-    // 模拟文章数据
-    const [articles] = useState<Article[]>([
-        {
-            id: '1',
-            title: '如何提高写作技巧：实用指南',
-            summary: '本文将分享一些实用的写作技巧，帮助你提高写作水平，包括如何构思、如何组织内容、如何修改等方面。',
-            publishTime: '2026-01-25',
-            isOriginal: true,
-            isPublic: true,
-            status: 'published',
-            views: 1200,
-            likes: 89,
-            comments: 23,
-            category: '写作',
-            tags: ['写作技巧', '指南']
-        },
-        {
-            id: '2',
-            title: 'React 18 新特性详解',
-            summary: 'React 18 带来了许多新特性，包括自动批处理、并发渲染、Suspense 改进等，本文将详细介绍这些特性。',
-            publishTime: '2026-01-20',
-            isOriginal: true,
-            isPublic: false,
-            status: 'published',
-            views: 2500,
-            likes: 156,
-            comments: 45,
-            category: '前端',
-            tags: ['React', '前端']
-        },
-        {
-            id: '3',
-            title: 'TypeScript 类型系统深入理解',
-            summary: 'TypeScript 的类型系统是其核心特性之一，本文将深入探讨 TypeScript 的类型系统，包括类型推断、泛型、类型守卫等。',
-            publishTime: '2026-01-15',
-            isOriginal: false,
-            isPublic: true,
-            status: 'draft',
-            views: 0,
-            likes: 0,
-            comments: 0,
-            category: '前端',
-            tags: ['TypeScript', '类型系统']
-        },
-        {
-            id: '4',
-            title: '前端性能优化最佳实践',
-            summary: '前端性能优化是提高用户体验的关键，本文将分享一些前端性能优化的最佳实践，包括资源加载优化、渲染优化、代码优化等。',
-            publishTime: '2026-01-10',
-            isOriginal: true,
-            isPublic: true,
-            status: 'published',
-            views: 3200,
-            likes: 210,
-            comments: 67,
-            category: '前端',
-            tags: ['性能优化', '前端']
-        },
-        {
-            id: '5',
-            title: 'Python 数据分析入门',
-            summary: '本文介绍 Python 数据分析的基本概念和工具，包括 NumPy、Pandas、Matplotlib 等库的使用。',
-            publishTime: '2026-01-05',
-            isOriginal: true,
-            isPublic: true,
-            status: 'pending',
-            views: 0,
-            likes: 0,
-            comments: 0,
-            category: '后端',
-            tags: ['Python', '数据分析']
-        },
-        {
-            id: '6',
-            title: 'Docker 容器化实践',
-            summary: '本文介绍 Docker 容器化技术的基本概念和实践，包括镜像构建、容器管理、网络配置等。',
-            publishTime: '2026-01-01',
-            isOriginal: false,
-            isPublic: true,
-            status: 'published',
-            views: 1800,
-            likes: 120,
-            comments: 35,
-            category: '后端',
-            tags: ['Docker', '容器化']
-        }
-    ]);
+    const navigate = useNavigate();
 
     // 状态管理
     const [searchText, setSearchText] = useState('');
-    const [currentStatus, setCurrentStatus] = useState<string>('all');
+    const [debouncedSearchText, setDebouncedSearchText] = useState('');
+    const [currentStatus, setCurrentStatus] = useState<ArticleStatusEnum>(ArticleStatusEnum.ALL);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(3);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [deleteArticleId, setDeleteArticleId] = useState('');
+    const [articles, setArticles] = useState<Article[]>([]);
+    const [total, setTotal] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // 搜索防抖
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchText(searchText);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchText]);
 
     // 创作统计数据
-    const stats = {
-        totalArticles: articles.length
-    };
+    const stats = useMemo(() => ({
+        totalArticles: total
+    }), [total]);
 
-    // 过滤文章
-    const filteredArticles = useMemo(() => {
-        return articles.filter(article => {
-            // 搜索过滤
-            const matchesSearch = article.title.toLowerCase().includes(searchText.toLowerCase()) ||
-                article.summary.toLowerCase().includes(searchText.toLowerCase());
+    // 获取文章列表
+    const fetchArticles = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await articleService.getMyArticles({
+                articleStatus: currentStatus,
+                keyword: debouncedSearchText,
+                page: currentPage,
+                size: pageSize
+            });
+            if (response.code === 200 && response.data) {
+                // 转换后端数据格式
+                const formattedArticles: Article[] = response.data.record.map((item: MyArticleList) => ({
+                    id: item.id.toString(),
+                    title: item.title,
+                    summary: item.summary,
+                    publishTime: item.publishTime,
+                    original: item.original as ArticleOriginalEnum || ArticleOriginalEnum.OTHER,
+                    visible: item.visible as ArticleVisibleEnum || ArticleVisibleEnum.PUBLIC,
+                    articleStatus: item.articleStatus as ArticleStatusEnum,
+                    readCount: item.readCount || 0,
+                    likeCount: item.likeCount || 0,
+                    commentCount: item.commentCount || 0,
+                }));
+                setArticles(formattedArticles);
+                setTotal(response.data.total);
+            } else {
+                setError(response.message || '获取文章列表失败');
+            }
+        } catch (err) {
+            setError('网络错误，请稍后重试');
+            console.error('获取文章列表失败:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [currentStatus, debouncedSearchText, currentPage, pageSize]);
 
-            // 状态过滤
-            const matchesStatus = currentStatus === 'all' || article.status === currentStatus;
-
-            return matchesSearch && matchesStatus;
-        });
-    }, [articles, searchText, currentStatus]);
-
-    // 分页处理
-    const paginatedArticles = useMemo(() => {
-        const start = (currentPage - 1) * pageSize;
-        const end = start + pageSize;
-        return filteredArticles.slice(start, end);
-    }, [filteredArticles, currentPage, pageSize]);
+    // 当状态、搜索词或分页参数变化时重新获取数据
+    useEffect(() => {
+        fetchArticles();
+    }, [fetchArticles]);
 
     // 分享文章
-    const handleShare = () => {
+    const handleShare = (articleId: string) => {
         // 实现分享逻辑
         void message.success('分享功能已触发');
+        // 可以添加复制链接到剪贴板的功能
+        const shareUrl = `${window.location.origin}/article/${articleId}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            message.success('链接已复制到剪贴板');
+        }).catch(() => {
+            console.error('复制失败');
+        });
+    };
+
+    // 编辑文章
+    const handleEdit = (articleId: string) => {
+        navigate(`/edit-article/${articleId}`);
     };
 
     // 打开删除确认对话框
@@ -174,26 +143,37 @@ const MyCreations: React.FC = () => {
         if (!deleteArticleId) return;
 
         try {
+            setLoading(true);
             await articleService.deleteArticle(deleteArticleId);
             message.success('文章已删除');
             setDeleteModalVisible(false);
             setDeleteArticleId('');
-            // 这里可以添加重新加载文章列表的逻辑
-        } catch {
+            // 重新加载文章列表
+            await fetchArticles();
+        } catch (error) {
             message.error('删除失败，请重试');
+            console.error('删除文章失败:', error);
+        } finally {
+            setLoading(false);
         }
+    };
+
+    // 状态变化时重置页码
+    const handleStatusChange = (articleStatus: ArticleStatusEnum) => {
+        setCurrentStatus(articleStatus);
+        setCurrentPage(1);
     };
 
     // 获取状态文本
     const getStatusText = (status: string) => {
         switch (status) {
-            case 'published':
+            case 'PUBLISHED':
                 return '已发布';
-            case 'draft':
+            case 'DRAFT':
                 return '草稿';
-            case 'pending':
+            case 'PENDING':
                 return '待审核';
-            case 'deleted':
+            case 'DELETED':
                 return '已删除';
             default:
                 return '未知';
@@ -212,42 +192,42 @@ const MyCreations: React.FC = () => {
                 {/* 状态标签 */}
                 <div className="flex space-x-6 mb-2 md:mb-0">
                     <Button
-                        color={currentStatus === 'all' ? 'cyan' : 'default'}
-                        variant={currentStatus === 'all' ? 'solid' : 'text'}
+                        color={currentStatus === ArticleStatusEnum.ALL ? 'cyan' : 'default'}
+                        variant={currentStatus === ArticleStatusEnum.ALL ? 'solid' : 'text'}
                         size="large"
-                        onClick={() => setCurrentStatus('all')}
+                        onClick={() => handleStatusChange(ArticleStatusEnum.ALL)}
                     >
                         全部文章
                     </Button>
                     <Button
-                        color={currentStatus === 'published' ? 'cyan' : 'default'}
-                        variant={currentStatus === 'published' ? 'solid' : 'text'}
+                        color={currentStatus === ArticleStatusEnum.PUBLISHED ? 'cyan' : 'default'}
+                        variant={currentStatus === ArticleStatusEnum.PUBLISHED ? 'solid' : 'text'}
                         size="large"
-                        onClick={() => setCurrentStatus('published')}
+                        onClick={() => handleStatusChange(ArticleStatusEnum.PUBLISHED)}
                     >
                         已发布
                     </Button>
                     <Button
-                        color={currentStatus === 'draft' ? 'cyan' : 'default'}
-                        variant={currentStatus === 'draft' ? 'solid' : 'text'}
+                        color={currentStatus === ArticleStatusEnum.DRAFT ? 'cyan' : 'default'}
+                        variant={currentStatus === ArticleStatusEnum.DRAFT ? 'solid' : 'text'}
                         size="large"
-                        onClick={() => setCurrentStatus('draft')}
+                        onClick={() => handleStatusChange(ArticleStatusEnum.DRAFT)}
                     >
                         草稿
                     </Button>
                     <Button
-                        color={currentStatus === 'pending' ? 'cyan' : 'default'}
-                        variant={currentStatus === 'pending' ? 'solid' : 'text'}
+                        color={currentStatus === ArticleStatusEnum.PENDING ? 'cyan' : 'default'}
+                        variant={currentStatus === ArticleStatusEnum.PENDING ? 'solid' : 'text'}
                         size="large"
-                        onClick={() => setCurrentStatus('pending')}
+                        onClick={() => handleStatusChange(ArticleStatusEnum.PENDING)}
                     >
                         待审核
                     </Button>
                     <Button
-                        color={currentStatus === 'deleted' ? 'cyan' : 'default'}
-                        variant={currentStatus === 'deleted' ? 'solid' : 'text'}
+                        color={currentStatus === ArticleStatusEnum.RECYCLE ? 'cyan' : 'default'}
+                        variant={currentStatus === ArticleStatusEnum.RECYCLE ? 'solid' : 'text'}
                         size="large"
-                        onClick={() => setCurrentStatus('deleted')}
+                        onClick={() => handleStatusChange(ArticleStatusEnum.RECYCLE)}
                     >
                         回收站
                     </Button>
@@ -255,7 +235,7 @@ const MyCreations: React.FC = () => {
 
                 {/* 搜索框 */}
                 <Input
-                    placeholder={`搜索${currentStatus === 'all' ? '' : getStatusText(currentStatus)}文章`}
+                    placeholder={`搜索${currentStatus === ArticleStatusEnum.ALL ? '' : getStatusText(currentStatus)}文章`}
                     prefix={<SearchOutlined/>}
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
@@ -264,25 +244,45 @@ const MyCreations: React.FC = () => {
             </div>
 
             {/* 文章列表 */}
-            {paginatedArticles.length > 0 ? (
+            {loading ? (
+                <div className="py-12 flex justify-center">
+                    <Spin size="large" tip="加载中..."/>
+                </div>
+            ) : error ? (
+                <div className="py-12 flex justify-center">
+                    <div className="text-center">
+                        <p className="text-red-500 mb-4">{error}</p>
+                        <Button type="primary" onClick={fetchArticles}>重试</Button>
+                    </div>
+                </div>
+            ) : articles.length > 0 ? (
                 <div className="space-y-4">
-                    {paginatedArticles.map((article) => (
+                    {articles.map((article) => (
                         <Card key={article.id} variant="borderless"
                               style={{borderBottom: '1px solid #e8e8e8', borderRadius: 0}}>
-                            <div className="flex justify-between items-start mb-3">
-                                <a
-                                    href={`/article/${article.id}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xl font-semibold text-black hover:text-primary-600"
-                                >
-                                    {article.title}
-                                </a>
-                                <Space>
-                                    <Tag variant="filled" color={article.isPublic ? 'blue' : 'default'}>
-                                        {article.isPublic ? '公开' : '私密'}
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-start">
+                                    <a
+                                        href={`/article/${article.id}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-2xl font-semibold text-black hover:text-primary-600"
+                                    >
+                                        {article.title}
+                                    </a>
+                                    <div className="ml-1">
+                                        <Tag variant="outlined"
+                                             color={article.visible === ArticleVisibleEnum.PUBLIC ? 'green' : 'default'}>
+                                            {ArticleVisibleMap[article.visible]}
+                                        </Tag>
+                                    </div>
+                                </div>
+                                <div className="flex items-center">
+                                    <Tag variant="filled"
+                                         color={article.articleStatus === ArticleStatusEnum.PUBLISHED ? 'default' : 'warning'}>
+                                        {ArticleStatusMap[article.articleStatus]}
                                     </Tag>
-                                </Space>
+                                </div>
                             </div>
 
                             <div className="text-gray-600 mb-4 line-clamp-2">
@@ -292,15 +292,18 @@ const MyCreations: React.FC = () => {
                             <div className="flex flex-wrap items-center justify-between ">
                                 <div className="flex items-center gap-5 text-sm text-gray-500">
                                     <Tag variant="solid"
-                                         color={article.isOriginal ? 'gold' : 'green'}>
-                                        {article.isOriginal ? '原创' : '非原创'}
+                                         color={article.original === ArticleOriginalEnum.ORIGINAL ? 'gold' : 'green'}>
+                                        {ArticleOriginalMap[article.original] || ArticleOriginalEnum.OTHER}
                                     </Tag>
                                     <span>{article.publishTime}</span>
                                     <Space size={4}>
-                                        <LikeOutlined/> {article.likes}
+                                        <EyeOutlined/> {article.readCount}
                                     </Space>
                                     <Space size={4}>
-                                        <MessageOutlined/> {article.comments}
+                                        <LikeOutlined/> {article.likeCount}
+                                    </Space>
+                                    <Space size={4}>
+                                        <MessageOutlined/> {article.commentCount}
                                     </Space>
                                 </div>
 
@@ -313,7 +316,7 @@ const MyCreations: React.FC = () => {
                                                     icon={<EditOutlined/>}
                                                     size="small"
                                                     type="text"
-                                                    onClick={handleShare}
+                                                    onClick={() => handleEdit(article.id)}
                                                 >
                                                     编辑
                                                 </Button>
@@ -321,7 +324,7 @@ const MyCreations: React.FC = () => {
                                                     icon={<ShareAltOutlined/>}
                                                     size="small"
                                                     type="text"
-                                                    onClick={handleShare}
+                                                    onClick={() => handleShare(article.id)}
                                                 >
                                                     分享
                                                 </Button>
@@ -346,7 +349,7 @@ const MyCreations: React.FC = () => {
                     ))}
                 </div>
             ) : (
-                <Empty description="暂无文章"/>
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无文章"/>
             )}
 
             {/* 分页 */}
@@ -354,7 +357,7 @@ const MyCreations: React.FC = () => {
                 <Pagination
                     current={currentPage}
                     pageSize={pageSize}
-                    total={filteredArticles.length}
+                    total={total}
                     onChange={(page) => setCurrentPage(page)}
                     onShowSizeChange={(_, size) => setPageSize(size)}
                     showSizeChanger

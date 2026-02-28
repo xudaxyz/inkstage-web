@@ -12,7 +12,7 @@ import {useUser} from '../../../store';
 import authService from '../../../services/authService.ts';
 import type {UploadProps} from 'antd';
 import dayjs, {type Dayjs} from 'dayjs';
-import {GenderEnum} from '../../../types/enums';
+import {GenderEnum, GenderLabel} from '../../../types/enums';
 
 // 表单值类型定义
 type ProfileFormValues = {
@@ -216,10 +216,10 @@ const ProfileInfo: React.FC = () => {
                             <div className="flex items-center gap-2 mb-1">
                                 <h2 className="text-xl font-semibold">{user?.nickname}</h2>
                                 {user?.gender === GenderEnum.MALE && (
-                                    <span><ManOutlined/></span>
+                                    <span><ManOutlined style={{color: 'blue'}} /></span>
                                 )}
                                 {user?.gender === GenderEnum.FEMALE && (
-                                    <span><WomanOutlined/></span>
+                                    <span><WomanOutlined style={{color: 'red'}} /></span>
                                 )}
                             </div>
                             <p className="text-gray-400 truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px]">{user?.signature || '暂无简介'}</p>
@@ -282,13 +282,13 @@ const ProfileInfo: React.FC = () => {
                             >
                                 <Radio.Group className="h-12 flex items-center">
                                     <Radio value={GenderEnum.MALE} className="mr-6 flex items-center">
-                                        <ManOutlined/> 男
+                                        <ManOutlined style={{color: 'blue'}}/> {GenderLabel.MALE}
                                     </Radio>
                                     <Radio value={GenderEnum.FEMALE} className="mr-6 flex items-center">
-                                        <WomanOutlined/> 女
+                                        <WomanOutlined style={{color: 'red'}} /> {GenderLabel.FEMALE}
                                     </Radio>
                                     <Radio value={GenderEnum.SECRET} className="flex items-center">
-                                        <LockOutlined/> 保密
+                                        <LockOutlined style={{color: 'gray'}} /> {GenderLabel.SECRET}
                                     </Radio>
                                 </Radio.Group>
                             </Form.Item>

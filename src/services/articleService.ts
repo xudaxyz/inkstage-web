@@ -42,6 +42,21 @@ export interface IndexArticleList {
     publishTime: string;
 }
 
+// 我的文章列表项类型
+export interface MyArticleList {
+    id: number;
+    title: string;
+    summary: string;
+    userId: number;
+    readCount: number;
+    likeCount: number;
+    commentCount: number;
+    publishTime: string;
+    articleStatus: ArticleStatusEnum;
+    visible: ArticleVisibleEnum;
+    original: ArticleOriginalEnum;
+}
+
 // 轮播图文章类型
 export interface BannerArticle {
     id: number;
@@ -58,8 +73,8 @@ export interface LatestArticle {
 }
 
 // 文章列表响应类型
-export interface ArticleListResponse {
-    record: IndexArticleList[];
+export interface ArticleListResponse<T = IndexArticleList> {
+    record: T[];
     total: number;
     size: number;
     current: number;
@@ -224,6 +239,16 @@ const articleService = {
     // 增加文章阅读量
     incrementReadCount: async (articleId: number): Promise<ApiResponse<number>> => {
         return await apiClient.post(API_ENDPOINTS.ARTICLE.INCREMENT_READ(articleId));
+    },
+
+    // 获取当前用户文章列表
+    getMyArticles: async (params: {
+        articleStatus: ArticleStatusEnum;
+        keyword?: string;
+        page?: number;
+        size?: number;
+    }): Promise<ApiResponse<ArticleListResponse<MyArticleList>>> => {
+        return await apiClient.get('/front/article/my', { params });
     }
 };
 
