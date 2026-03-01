@@ -30,7 +30,7 @@ const AppRoutes = () => {
       {/* 写文章路由 */}
       <Route path="/create-article" element={<CreateArticle />} />
       {/* 编辑文章路由 */}
-      <Route path="/edit-article/:id" element={<CreateArticle />} />
+      <Route path="/edit-article/:articleId" element={<CreateArticle />} />
       {/* 文章详情路由 */}
       <Route path="/article/:id" element={<ArticleDetail />} />
       {/* 热门排行榜路由 */}

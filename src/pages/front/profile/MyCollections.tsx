@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, message, Space, Empty, Tag } from 'antd';
-import type { Key } from 'react';
-import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, message, Tag, Empty } from 'antd';
+import { HeartOutlined, EyeOutlined, DeleteOutlined, LockOutlined, UserOutlined,EyeTwoTone, LikeOutlined } from '@ant-design/icons';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // 收藏文章类型定义
 interface Collection {
@@ -61,131 +61,185 @@ const MyCollections: React.FC = () => {
   ]);
 
   // 选中的收藏项
-  const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   // 批量取消收藏
   const handleBatchDelete = () => {
-    if (selectedRowKeys.length === 0) {
+    if (selectedItems.length === 0) {
       message.warning('请选择要取消收藏的文章');
       return;
     }
-    message.success(`已取消收藏 ${selectedRowKeys.length} 篇文章`);
-    setSelectedRowKeys([]);
+    message.success(`已取消收藏 ${selectedItems.length} 篇文章`);
+    setSelectedItems([]);
   };
 
   // 取消单个收藏
-  const handleSingleDelete = (id: string) => {
-      console.log(id);
+  const handleSingleDelete = () => {
     message.success('已取消收藏');
   };
 
-  // 表格行选择配置
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedRowKeys: Key[]) => {
-      setSelectedRowKeys(selectedRowKeys);
+  // 切换选择状态
+  const toggleSelect = (id: string) => {
+    setSelectedItems(prev => 
+      prev.includes(id) 
+        ? prev.filter(itemId => itemId !== id)
+        : [...prev, id]
+    );
+  };
+
+  // 全选/取消全选
+  const toggleSelectAll = () => {
+    if (selectedItems.length === collections.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(collections.map(item => item.id));
     }
   };
 
-  // 表格列定义
-  const columns = [
-    {
-      title: '标题',
-      dataIndex: 'title',
-      key: 'title',
-      render: (text: string) => <a href="#" className="text-primary-600 hover:underline">{text}</a>
-    },
-    {
-      title: '作者',
-      dataIndex: 'author',
-      key: 'author',
-      render: (text: string) => <span className="text-gray-600">{text}</span>
-    },
-    {
-      title: '收藏时间',
-      dataIndex: 'collectTime',
-      key: 'collectTime'
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => {
-        return (
-          <Tag color={status === 'public' ? 'green' : 'blue'}>
-            {status === 'public' ? '公开' : '私密'}
-          </Tag>
-        );
-      }
-    },
-    {
-      title: '浏览量',
-      dataIndex: 'views',
-      key: 'views'
-    },
-    {
-      title: '点赞数',
-      dataIndex: 'likes',
-      key: 'likes'
-    },
-    {
-      title: '操作',
-      key: 'action',
-      render: (_: unknown, record: Collection) => (
-        <Space size="middle">
-          <Button icon={<EyeOutlined />} size="small">
-            查看
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      {/* 页面标题和操作栏 */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+        <div className="flex items-center gap-2">
+          <HeartOutlined className="text-accent-500 text-2xl" />
+          <h1 className="text-2xl font-bold text-secondary-800">我的收藏</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            type="default"
+            onClick={toggleSelectAll}
+            disabled={collections.length === 0}
+            className="border-secondary-300 hover:border-primary-500"
+          >
+            {selectedItems.length === collections.length ? '取消全选' : '全选'}
           </Button>
           <Button
-            icon={<DeleteOutlined />}
-            size="small"
             danger
-            onClick={() => handleSingleDelete(record.id)}
+            icon={<DeleteOutlined />}
+            onClick={handleBatchDelete}
+            disabled={selectedItems.length === 0}
           >
-            取消收藏
+            批量取消收藏
           </Button>
-        </Space>
-      )
-    }
-  ];
-
-  return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">我的收藏</h1>
-        <Button
-          danger
-          icon={<DeleteOutlined />}
-          onClick={handleBatchDelete}
-          disabled={selectedRowKeys.length === 0}
-        >
-          批量取消收藏
-        </Button>
+        </div>
       </div>
 
       {/* 收藏列表 */}
-      <Card>
-        {collections.length > 0 ? (
-          <>
-            <Table
-              rowSelection={rowSelection}
-              columns={columns}
-              dataSource={collections}
-              rowKey="id"
-              pagination={{ pageSize: 10 }}
-              className="mt-4"
-            />
-            <div className="mt-4 text-sm text-gray-500">
-              已选择 {selectedRowKeys.length} 项
-            </div>
-          </>
-        ) : (
+      {collections.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {collections.map((collection) => (
+              <motion.div
+                key={collection.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-secondary-100 relative ${selectedItems.includes(collection.id) ? 'ring-2 ring-primary-500' : ''}`}
+              >
+                {/* 选择复选框 */}
+                <div className="absolute top-3 right-3 z-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(collection.id)}
+                    onChange={() => toggleSelect(collection.id)}
+                    className="w-5 h-5 text-primary-600 rounded border-secondary-300 focus:ring-primary-500"
+                  />
+                </div>
+
+                {/* 卡片内容 */}
+                <div className="p-6">
+                  {/* 状态标签 */}
+                  <div className="mb-3">
+                    <Tag 
+                      color={collection.status === 'public' ? 'success' : 'primary'} 
+                      className="text-xs"
+                    >
+                      {collection.status === 'public' ? '公开' : '私密'}
+                    </Tag>
+                  </div>
+
+                  {/* 标题 */}
+                  <h3 className="text-lg font-semibold text-secondary-800 mb-2 hover:text-primary-600 transition-colors duration-200">
+                    <a href="#" className="block hover:underline">{collection.title}</a>
+                  </h3>
+
+                  {/* 作者信息 */}
+                  <div className="flex items-center text-sm text-secondary-500 mb-4">
+                    <UserOutlined className="mr-1" />
+                    <span>{collection.author}</span>
+                  </div>
+
+                  {/* 统计信息 */}
+                  <div className="flex items-center justify-between text-sm text-secondary-500 mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center">
+                        <LockOutlined className="mr-1" />
+                        <span>{collection.collectTime}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <EyeTwoTone className="mr-1" />
+                        <span>{collection.views}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <LikeOutlined className="mr-1" />
+                        <span>{collection.likes}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 操作按钮 */}
+                  <div className="flex gap-2">
+                    <Button
+                      icon={<EyeOutlined />}
+                      size="small"
+                      className="flex-1 border-secondary-200 hover:border-primary-500 hover:text-primary-600"
+                    >
+                      查看
+                    </Button>
+                    <Button
+                      icon={<DeleteOutlined />}
+                      size="small"
+                      danger
+                      onClick={handleSingleDelete}
+                    >
+                      取消收藏
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-secondary-100">
           <Empty
             description="暂无收藏的文章"
-            className="py-12"
+            className="py-8"
           />
-        )}
-      </Card>
+          <Button type="primary" className="mt-4">
+            去浏览文章
+          </Button>
+        </div>
+      )}
+
+      {/* 选择状态提示 */}
+      {selectedItems.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-secondary-800 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"
+        >
+          <span>已选择 {selectedItems.length} 项</span>
+          <Button
+            danger
+            size="small"
+            onClick={handleBatchDelete}
+          >
+            取消收藏
+          </Button>
+        </motion.div>
+      )}
     </div>
   );
 };

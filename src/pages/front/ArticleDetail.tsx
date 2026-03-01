@@ -39,7 +39,7 @@ const ArticleDetail: React.FC = () => {
 
     // 获取当前用户信息
     const {user, isLoggedIn} = useUser();
-    
+
     // 获取文章状态
     const {
         article,
@@ -63,7 +63,7 @@ const ArticleDetail: React.FC = () => {
     // 生成目录
     const toc = React.useMemo(() => {
         if (!article) return [];
-        
+
         const newToc: Array<{ id: string; text: string; level: number }> = [];
         const headingRegex = /^(#{1,6})\s+(.+)$/gm;
         let match;
@@ -84,7 +84,7 @@ const ArticleDetail: React.FC = () => {
             void fetchArticleDetail(Number(id));
             void incrementReadCount(Number(id));
         }
-        
+
         // 组件卸载时重置状态
         return () => {
             reset();
@@ -157,7 +157,7 @@ const ArticleDetail: React.FC = () => {
                 message.error('文章ID不存在');
                 return;
             }
-            const result = await articleService.deleteArticle(id);
+            const result = await articleService.deleteArticle(Number(id));
             if (result.code === 200) {
                 message.success('文章删除成功');
                 // 跳转到我的创作页面
@@ -524,7 +524,8 @@ const ArticleDetail: React.FC = () => {
                                   title="作者相关文章">
                                 {relatedArticlesLoading ? (
                                     <div className="text-center py-4">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                                        <div
+                                            className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
                                     </div>
                                 ) : relatedArticles.length > 0 ? (
                                     <List

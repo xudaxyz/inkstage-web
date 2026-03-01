@@ -112,19 +112,19 @@ export interface ArticleDetailInfo {
     followerCount: number;
     categoryId: number;
     categoryName: string;
-    tags: Tag
+    tags: Tag[]
 }
 
 // 文章 API 服务
 const articleService = {
     // 创建文章
-    createArticle: async (article: Omit<Article, 'id' | 'createdTime' | 'updatedTime'>): Promise<ApiResponse<Article>> => {
-        return await apiClient.post('/front/article/create', article);
+    createArticle: async (article: Omit<Article, 'createdTime' | 'updatedTime'>): Promise<ApiResponse<Article>> => {
+        return await apiClient.post(API_ENDPOINTS.ARTICLE.CREATE, article);
     },
 
     // 更新文章
-    updateArticle: async (id: string, article: Partial<Article>): Promise<ApiResponse<Article>> => {
-        return await apiClient.put(`/front/article/update/${id}`, article);
+    updateArticle: async (id: number, article: Partial<Article>): Promise<ApiResponse<Article>> => {
+        return await apiClient.put(API_ENDPOINTS.ARTICLE.UPDATE(id), article);
     },
 
     // 保存草稿
@@ -135,7 +135,7 @@ const articleService = {
         };
 
         if (article.id) {
-            return await apiClient.put(`/front/article/${article.id}/draft`, draftArticle);
+            return await apiClient.put(API_ENDPOINTS.ARTICLE.SAVE_DRAFT(Number(article.id)), draftArticle);
         } else {
             // 创建新文章时，移除可能存在的 id 属性
             const {...newArticle} = draftArticle;
@@ -144,8 +144,8 @@ const articleService = {
     },
 
     // 删除文章
-    deleteArticle: async (id: string): Promise<ApiResponse<void>> => {
-        return await apiClient.delete(`/front/article/delete/${id}`);
+    deleteArticle: async (id: number): Promise<ApiResponse<void>> => {
+        return await apiClient.post(API_ENDPOINTS.ARTICLE.DELETE(id));
     },
 
     // 上传图片
@@ -153,7 +153,7 @@ const articleService = {
         const formData = new FormData();
         formData.append('file', file as File);
 
-        return await apiClient.post('/upload/article/cover-image', formData, {
+        return await apiClient.post(API_ENDPOINTS.UPLOAD.ARTICLE_COVER_IMG, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -248,7 +248,7 @@ const articleService = {
         page?: number;
         size?: number;
     }): Promise<ApiResponse<ArticleListResponse<MyArticleList>>> => {
-        return await apiClient.get('/front/article/my', { params });
+        return await apiClient.get(API_ENDPOINTS.USER.MY_ARTICLES, {params});
     }
 };
 

@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons';
 import {useNavigate} from 'react-router-dom';
 import articleService, {type MyArticleList} from '../../../services/articleService.ts';
+import {ROUTES} from '../../../routes/constants';
 import {
     ArticleOriginalEnum,
     ArticleVisibleEnum,
@@ -105,7 +106,7 @@ const MyCreations: React.FC = () => {
 
     // 当状态、搜索词或分页参数变化时重新获取数据
     useEffect(() => {
-        fetchArticles();
+        void fetchArticles();
     }, [fetchArticles]);
 
     // 分享文章
@@ -113,9 +114,9 @@ const MyCreations: React.FC = () => {
         // 实现分享逻辑
         void message.success('分享功能已触发');
         // 可以添加复制链接到剪贴板的功能
-        const shareUrl = `${window.location.origin}/article/${articleId}`;
+        const shareUrl = `${window.location.origin}${ROUTES.ARTICLE_DETAIL(articleId)}`;
         navigator.clipboard.writeText(shareUrl).then(() => {
-            message.success('链接已复制到剪贴板');
+            void message.success('链接已复制到剪贴板');
         }).catch(() => {
             console.error('复制失败');
         });
@@ -123,7 +124,7 @@ const MyCreations: React.FC = () => {
 
     // 编辑文章
     const handleEdit = (articleId: string) => {
-        navigate(`/edit-article/${articleId}`);
+        navigate(ROUTES.EDIT_ARTICLE(articleId));
     };
 
     // 打开删除确认对话框
@@ -144,7 +145,7 @@ const MyCreations: React.FC = () => {
 
         try {
             setLoading(true);
-            await articleService.deleteArticle(deleteArticleId);
+            await articleService.deleteArticle(Number(deleteArticleId));
             message.success('文章已删除');
             setDeleteModalVisible(false);
             setDeleteArticleId('');
@@ -259,14 +260,29 @@ const MyCreations: React.FC = () => {
                 <div className="space-y-4">
                     {articles.map((article) => (
                         <Card key={article.id} variant="borderless"
-                              style={{borderBottom: '1px solid #e8e8e8', borderRadius: 0}}>
+                              styles={{
+                                  body: {
+                                      padding: '24px 12px',
+                                      borderBottom: '1px solid #e8e8e8',
+                                      borderRadius: 0
+                                  }
+                              }}
+                        >
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-start">
                                     <a
-                                        href={`/article/${article.id}`}
+                                        href={ROUTES.ARTICLE_DETAIL(article.id)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-2xl font-semibold text-black hover:text-primary-600"
+                                        className="text-2xl font-semibold no-underline"
+                                        style={{
+                                            color: 'black',
+                                            textDecoration: 'none',
+                                            fontFamily: 'sans-serif',
+                                            letterSpacing: '-0.02em'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.color = '#0284c7'}
+                                        onMouseOut={(e) => e.currentTarget.style.color = 'black'}
                                     >
                                         {article.title}
                                     </a>
@@ -372,6 +388,10 @@ const MyCreations: React.FC = () => {
                 onOk={handleDelete}
                 onCancel={handleDeleteCancel}
                 okText="确认删除"
+                okButtonProps={{
+                    type: 'primary',
+                    danger: true
+                }}
                 cancelText="取消"
             >
                 <p>确定要删除这篇文章吗？此操作不可撤销。</p>

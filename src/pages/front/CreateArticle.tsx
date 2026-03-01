@@ -8,9 +8,9 @@ import {
     SwapLeftOutlined,
     InboxOutlined,
 } from '@ant-design/icons';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import articleService from '../../services/articleService.ts';
-import tagService from '../../services/tagService.ts';
+import tagService, {type Tag} from '../../services/tagService.ts';
 import categoryService from '../../services/categoryService.ts';
 import {useUser} from '../../store';
 import {ArticleStatusEnum, ArticleOriginalEnum, ArticleVisibleEnum, AllowStatusEnum} from '../../types/enums';
@@ -36,6 +36,8 @@ const CreateArticle: React.FC = () => {
     const [error, setError] = useState<string>('');
     const navigate = useNavigate();
     const {user} = useUser();
+    const {articleId} = useParams<{ articleId: string }>();
+    const isEditMode = !!articleId;
 
     // 加载分类和标签数据
     useEffect(() => {
@@ -72,6 +74,11 @@ const CreateArticle: React.FC = () => {
                 setCategories(formattedCategories);
                 setAvailableTags(formattedTags);
 
+                // 如果是编辑模式，加载文章详情
+                if (isEditMode && articleId) {
+                    await loadArticleDetail(articleId);
+                }
+
             } catch (err) {
                 console.error('加载数据失败:', err);
             } finally {
@@ -79,16 +86,59 @@ const CreateArticle: React.FC = () => {
             }
         };
 
+        // 加载文章详情
+        const loadArticleDetail = async (id: string) => {
+            try {
+                const articleRes = await articleService.getArticleDetail(parseInt(id));
+                if (articleRes.code === 200 && articleRes.data) {
+                    const article = articleRes.data;
+
+                    // 填充表单数据
+                    form.setFieldsValue({
+                        title: article.title,
+                        category: article.categoryId.toString(),
+                        tags: article.tags.map((tag: Tag) => tag.id.toString()),
+                        allowComment: article.allowComment,
+                        allowForward: article.allowForward,
+                        original: article.original,
+                        visible: article.visible
+                    });
+
+                    // 设置其他状态
+                    setSummary(article.summary);
+                    setEditorContent(article.content || article.contentHtml);
+
+                    // 设置封面图
+                    if (article.coverImage) {
+                        setCoverImage(article.coverImage);
+                        setServerCoverImageUrl(article.coverImage);
+                        setFileList([{
+                            uid: Date.now().toString(),
+                            name: 'cover-image.jpg',
+                            status: 'done',
+                            url: article.coverImage
+                        }]);
+                    }
+
+                    // 设置标签
+                    setSelectedTags(article.tags.map((tag: Tag) => tag.id));
+                } else {
+                    message.error(articleRes.message || '获取文章详情失败');
+                }
+            } catch (err) {
+                console.error('获取文章详情失败:', err);
+                message.error('获取文章详情失败，请重试');
+            }
+        };
+
         void loadCategoriesAndTags();
-    }, []);
+    }, [isEditMode, articleId, form]);
 
 
     // 处理标签选择
     const handleTagChange = (values: string[]) => {
         setSelectedTags(values.map(v => parseInt(v)));
     };
-
-
 
     // 处理表单提交
     const handleSubmit = async (values: {
@@ -110,22 +160,29 @@ const CreateArticle: React.FC = () => {
                 tagIds: selectedTags,
                 coverImage: serverCoverImageUrl || coverImage,
                 status: ArticleStatusEnum.PENDING,
-                visible: ArticleVisibleEnum.PUBLIC,
-                allowComment: AllowStatusEnum.ALLOWED,
-                allowForward: AllowStatusEnum.ALLOWED,
-                original: ArticleOriginalEnum.ORIGINAL,
+                visible: values.visible as ArticleVisibleEnum,
+                allowComment: values.allowComment as AllowStatusEnum,
+                allowForward: values.allowForward as AllowStatusEnum,
+                original: values.original as ArticleOriginalEnum,
             };
 
-            const result = await articleService.createArticle(articleData);
-            if (result.code !== 200) {
-                message.error(result.message || '文章发布失败！');
+            let result;
+            if (isEditMode && articleId) {
+                result = await articleService.updateArticle(Number(articleId), articleData);
             } else {
-                message.success(result.message || '文章发布成功！');
-                // 发布成功后导航到我的创作页面
+                console.log("articleData", articleData)
+                result = await articleService.createArticle(articleData);
+            }
+
+            if (result.code !== 200) {
+                message.error(result.message || (isEditMode ? '文章更新失败！' : '文章发布失败！'));
+            } else {
+                message.success(result.message || (isEditMode ? '文章更新成功！' : '文章发布成功！'));
+                // 操作成功后导航到我的创作页面
                 navigate('/profile/creations');
             }
         } catch {
-            message.error('发布失败，请重试');
+            message.error(isEditMode ? '更新失败，请重试' : '发布失败，请重试');
         } finally {
             setIsSubmitting(false);
         }
@@ -137,17 +194,18 @@ const CreateArticle: React.FC = () => {
         try {
             const values = await form.validateFields();
             const articleData = {
+                id: articleId,
                 title: values.title || '未命名文章',
                 content: editorContent,
                 summary: summary,
                 categoryId: parseInt(values.category || '0'), // 默认分类
                 tagIds: selectedTags,
-                coverImage: serverCoverImageUrl ||coverImage,
+                coverImage: serverCoverImageUrl || coverImage,
                 status: ArticleStatusEnum.DRAFT,
-                visible: ArticleVisibleEnum.PUBLIC,
-                allowComment: AllowStatusEnum.ALLOWED,
-                allowForward: AllowStatusEnum.ALLOWED,
-                original: ArticleOriginalEnum.ORIGINAL,
+                visible: (values.visible || ArticleVisibleEnum.PUBLIC) as ArticleVisibleEnum,
+                allowComment: (values.allowComment || AllowStatusEnum.ALLOWED) as AllowStatusEnum,
+                allowForward: (values.allowForward || AllowStatusEnum.ALLOWED) as AllowStatusEnum,
+                original: (values.original || ArticleOriginalEnum.ORIGINAL) as ArticleOriginalEnum,
             };
 
             await articleService.saveDraft(articleData);
@@ -171,7 +229,8 @@ const CreateArticle: React.FC = () => {
             InkStage
                     </span>
                     <span className="mx-2 items-center text-base text-gray-400">\</span>
-                    <span className="text-base items-center font-medium text-gray-800">写文章</span>
+                    <span
+                        className="text-base items-center font-medium text-gray-800">{isEditMode ? '编辑文章' : '写文章'}</span>
                 </div>
 
                 {/* 右侧：操作按钮和用户信息 */}
@@ -362,7 +421,8 @@ const CreateArticle: React.FC = () => {
                                     <div className="flex items-center">
                                         <span className="w-32 text-sm text-[#595959] font-medium">是否允许评论</span>
                                         <div className="flex-1 text-[#595959]">
-                                            <Form.Item name="allowComment" initialValue={AllowStatusEnum.ALLOWED} noStyle>
+                                            <Form.Item name="allowComment" initialValue={AllowStatusEnum.ALLOWED}
+                                                       noStyle>
                                                 <Radio.Group>
                                                     <Radio value={AllowStatusEnum.ALLOWED}>允许</Radio>
                                                     <Radio value={AllowStatusEnum.PROHIBITED}>禁止</Radio>
@@ -375,7 +435,8 @@ const CreateArticle: React.FC = () => {
                                     <div className="flex items-center">
                                         <span className="w-32 text-sm text-[#595959] font-medium">文章类型</span>
                                         <div className="flex-1 text-[#595959]">
-                                            <Form.Item name="original" initialValue={ArticleOriginalEnum.ORIGINAL} noStyle>
+                                            <Form.Item name="original" initialValue={ArticleOriginalEnum.ORIGINAL}
+                                                       noStyle>
                                                 <Radio.Group>
                                                     <Radio value={ArticleOriginalEnum.ORIGINAL}>原创</Radio>
                                                     <Radio value={ArticleOriginalEnum.REPRINT}>转载</Radio>
@@ -388,7 +449,8 @@ const CreateArticle: React.FC = () => {
                                     <div className="flex items-center">
                                         <span className="w-32 text-sm text-[#595959] font-medium">是否允许转发</span>
                                         <div className="flex-1 text-[#595959]">
-                                            <Form.Item name="allowForward" initialValue={AllowStatusEnum.ALLOWED} noStyle>
+                                            <Form.Item name="allowForward" initialValue={AllowStatusEnum.ALLOWED}
+                                                       noStyle>
                                                 <Radio.Group>
                                                     <Radio value={AllowStatusEnum.ALLOWED}>允许</Radio>
                                                     <Radio value={AllowStatusEnum.PROHIBITED}>禁止</Radio>
@@ -423,7 +485,7 @@ const CreateArticle: React.FC = () => {
                                     name="coverImage"
                                     multiple={false}
                                     customRequest={async (options) => {
-                                        const { file, onSuccess, onError } = options;
+                                        const {file, onSuccess, onError} = options;
                                         try {
                                             setLoading(true);
                                             // 调用服务层上传方法
