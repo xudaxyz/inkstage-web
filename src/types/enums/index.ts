@@ -1,9 +1,9 @@
 // 统一导出所有枚举类型和工具函数
-
 export * from './StatusEnum';
 export * from './UserRoleEnum';
 export * from './GenderEnum';
 export * from './ArticleEnum';
+export * from './DefaultStatusEnum';
 
 // 通用枚举工具类型
 export type EnumLike = Record<string, string | number>;

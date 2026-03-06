@@ -7,7 +7,9 @@ import {
     ArticleOriginalEnum,
     ArticleVisibleEnum,
     AllowStatusEnum,
-    GenderEnum
+    GenderEnum,
+    ArticleCollectionStatusEnum,
+    DefaultStatusEnum
 } from '../types/enums';
 
 // 文章类型定义
@@ -55,6 +57,29 @@ export interface MyArticleList {
     articleStatus: ArticleStatusEnum;
     visible: ArticleVisibleEnum;
     original: ArticleOriginalEnum;
+}
+
+// 我的文章收藏列表项类型
+export interface MyArticleCollectionList {
+    collectionId: number; // 收藏id
+    articleId: number; // 文章id
+    title: string;
+    summary: string;
+    coverImage: string;
+    userId: number;
+    authorName: string;
+    avatar: string; // 作者头像
+    categoryName: string;
+    articleStatus: ArticleStatusEnum;
+    originalStatus: ArticleOriginalEnum;
+    publishTime: string;
+    collectTime: string; // 收藏时间
+    readCount: number;
+    likeCount: number;
+    commentCount: number;
+    collectionStatus: ArticleCollectionStatusEnum;
+    folderId: number;
+    folderName: string;
 }
 
 // 轮播图文章类型
@@ -222,13 +247,13 @@ const articleService = {
     },
 
     // 收藏文章
-    collectArticle: async (articleId: number, folderId: number = 0): Promise<ApiResponse<boolean>> => {
-        return await apiClient.post(API_ENDPOINTS.ARTICLE.COLLECT(articleId), {folderId});
+    collectArticle: async (params: { articleId: number; folderId?: number; folderName?: string; folderDescription?: string }): Promise<ApiResponse<boolean>> => {
+        return await apiClient.post(API_ENDPOINTS.ARTICLE.COLLECT, params);
     },
 
     // 取消收藏
     unCollectArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
-        return await apiClient.delete(API_ENDPOINTS.ARTICLE.UN_COLLECT(articleId));
+        return await apiClient.post(API_ENDPOINTS.ARTICLE.UN_COLLECT(articleId));
     },
 
     // 检查收藏状态
@@ -249,6 +274,43 @@ const articleService = {
         size?: number;
     }): Promise<ApiResponse<ArticleListResponse<MyArticleList>>> => {
         return await apiClient.get(API_ENDPOINTS.USER.MY_ARTICLES, {params});
+    },
+
+    // 获取当前用户收藏文章列表
+    getMyCollections: async (params: {
+        folderId?: number;
+        keyword?: string;
+        page?: number;
+        size?: number;
+        sortBy?: string;
+        sortOrder?: string;
+    }): Promise<ApiResponse<ArticleListResponse<MyArticleCollectionList>>> => {
+        return await apiClient.get('/front/article/collections', {params});
+    },
+
+    // 获取用户的收藏文件夹列表
+    getCollectionFolders: async (): Promise<ApiResponse<Array<{
+        id: number;
+        name: string;
+        articleCount: number;
+        defaultFolder: DefaultStatusEnum | string;
+    }>>> => {
+        return await apiClient.get('/front/article/collections/folders');
+    },
+
+    // 获取用户的总收藏数
+    getTotalCollectionCount: async (): Promise<ApiResponse<number>> => {
+        return await apiClient.get('/front/article/collections/total');
+    },
+
+    // 移动收藏文章到其他文件夹
+    moveCollectionArticle: async (articleId: number, targetFolderId: number): Promise<ApiResponse<boolean>> => {
+        return await apiClient.put('/front/article/collections/move', { articleId, folderId: targetFolderId });
+    },
+    
+    // 创建收藏文件夹
+    createCollectionFolder: async (params: { folderName: string; folderDescription?: string }): Promise<ApiResponse<number>> => {
+        return await apiClient.post('/front/article/collections/folders', params);
     }
 };
 

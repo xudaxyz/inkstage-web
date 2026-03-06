@@ -180,7 +180,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
         }));
 
         try {
-            const response = await articleService.collectArticle(articleId);
+            const response = await articleService.collectArticle({ articleId });
             if (response.code !== 200) {
                 // 请求失败，回滚状态
                 set((state) => ({

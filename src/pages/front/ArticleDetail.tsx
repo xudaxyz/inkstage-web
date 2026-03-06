@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
-import {Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, Modal} from 'antd';
+import {Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, notification, Modal} from 'antd';
 import {
     ArrowLeftOutlined,
     LikeOutlined,
@@ -19,7 +19,9 @@ import {
 import Header from '../../components/common/Header.tsx';
 import Footer from '../../components/common/Footer.tsx';
 import CommentSection from '../../components/front/CommentSection.tsx';
+import CollectionFolderModal from '../../components/front/CollectionFolderModal.tsx';
 import {useUser, useArticle} from '../../store';
+import useCollection from '../../hooks/useCollection';
 import articleService from '../../services/articleService.ts';
 import type {Tag} from '../../services/tagService.ts';
 import MarkdownIt from 'markdown-it';
@@ -35,6 +37,7 @@ const ArticleDetail: React.FC = () => {
     const {id} = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [folderModalVisible, setFolderModalVisible] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
 
     // 获取当前用户信息
@@ -54,11 +57,22 @@ const ArticleDetail: React.FC = () => {
         incrementReadCount,
         likeArticle,
         unLikeArticle,
-        collectArticle,
-        unCollectArticle,
         updateCommentCount,
         reset
     } = useArticle();
+
+    // 使用收藏Hook
+    const {
+        isLoadingFolders,
+        folders,
+        selectedFolderId,
+        setSelectedFolderId,
+        fetchFolders,
+        collectArticle,
+        unCollectArticle: removeCollection,
+        moveCollection,
+        createFolder
+    } = useCollection();
 
     // 生成目录
     const toc = React.useMemo(() => {
@@ -120,19 +134,85 @@ const ArticleDetail: React.FC = () => {
         }
     };
 
+
     const handleCollect = async () => {
         if (!isLoggedIn || !article) {
             message.info('请先登录');
             return;
         }
 
+        // 检查文章ID是否有效
+        const articleId = Number(id);
+        if (isNaN(articleId)) {
+            message.error('文章ID无效');
+            return;
+        }
+
         if (article.isCollected) {
             // 取消收藏
-            await unCollectArticle(Number(id));
+            const success = await removeCollection(articleId);
+            if (success) {
+                notification.success({
+                    title: '取消收藏成功',
+                    duration: 2,
+                    placement: 'top',
+                });
+            }
         } else {
-            // 收藏
-            await collectArticle(Number(id));
+            // 默认收藏到默认文件夹
+            const success = await collectArticle(articleId, 0);
+            if (success) {
+                // 显示收藏成功提示，并提供选择收藏夹的选项
+                notification.success({
+                    title: '收藏成功',
+                    description: (
+                        <div>
+                            <p>文章已成功收藏到默认收藏夹</p>
+                            <Button
+                                type="link"
+                                onClick={() => openFolderModal(articleId)}
+                                style={{marginLeft: 0, padding: 0}}
+                            >
+                                选择其他收藏夹
+                            </Button>
+                        </div>
+                    ),
+                    duration: 3,
+                    placement: 'top',
+                });
+            }
         }
+    };
+
+    // 保存收藏到指定文件夹
+    const handleSaveToFolder = async (folderId: number) => {
+        const articleId = Number(id);
+        if (isNaN(articleId)) {
+            message.error('文章ID无效');
+            return;
+        }
+        
+        const success = await moveCollection(articleId, folderId);
+        if (success) {
+            notification.success({
+                title: '移动成功',
+                description: '文章已成功移动到指定收藏夹',
+                duration: 3,
+                placement: 'top',
+            });
+            setFolderModalVisible(false);
+        }
+    };
+
+    // 打开文件夹选择模态框
+    const openFolderModal = async (articleId: number) => {
+        if (!articleId) {
+            message.error('文章ID不存在');
+            return;
+        }
+        // 获取收藏文件夹列表
+        await fetchFolders();
+        setFolderModalVisible(true);
     };
 
     const handleShare = () => {
@@ -579,6 +659,20 @@ const ArticleDetail: React.FC = () => {
                     </div>
                 </div>
             </main>
+
+            {/* 收藏成功提示使用Ant Design的message组件 */}
+
+            {/* 文件夹选择模态框 */}
+            <CollectionFolderModal
+                visible={folderModalVisible}
+                onClose={() => setFolderModalVisible(false)}
+                onSave={handleSaveToFolder}
+                folders={folders}
+                loading={isLoadingFolders}
+                selectedFolderId={selectedFolderId}
+                onSelectFolder={setSelectedFolderId}
+                onCreateFolder={createFolder}
+            />
 
             {/* 页脚信息 */}
             <Footer/>

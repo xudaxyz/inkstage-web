@@ -22,6 +22,12 @@ export const ArticleVisibleEnum = {
     FOLLOWERS_ONLY: 'FOLLOWERS_ONLY'
 } as const;
 
+// 文章收藏状态
+export const ArticleCollectionStatusEnum = {
+    PUBLIC: 'PUBLIC',
+    PRIVATE: 'PRIVATE'
+} as const;
+
 // 是否允许
 export const AllowStatusEnum = {
     ALLOWED: 'ALLOWED',
@@ -32,6 +38,7 @@ export const AllowStatusEnum = {
 export type ArticleStatusEnum = typeof ArticleStatusEnum[keyof typeof ArticleStatusEnum];
 export type ArticleOriginalEnum = typeof ArticleOriginalEnum[keyof typeof ArticleOriginalEnum];
 export type ArticleVisibleEnum = typeof ArticleVisibleEnum[keyof typeof ArticleVisibleEnum];
+export type ArticleCollectionStatusEnum = typeof ArticleCollectionStatusEnum[keyof typeof ArticleCollectionStatusEnum];
 export type AllowStatusEnum = typeof AllowStatusEnum[keyof typeof AllowStatusEnum];
 
 // 枚举映射（用于UI显示）
@@ -54,6 +61,11 @@ export const ArticleVisibleMap = {
     [ArticleVisibleEnum.PRIVATE]: '私有',
     [ArticleVisibleEnum.PUBLIC]: '公开',
     [ArticleVisibleEnum.FOLLOWERS_ONLY]: '仅粉丝可见'
+};
+
+export const ArticleCollectionStatusMap = {
+    [ArticleCollectionStatusEnum.PUBLIC]: '公开',
+    [ArticleCollectionStatusEnum.PRIVATE]: '私有',
 };
 
 export const AllowStatusMap = {

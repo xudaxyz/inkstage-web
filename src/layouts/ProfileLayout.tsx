@@ -73,8 +73,8 @@ const ProfileLayout: React.FC = () => {
             {/* 左侧导航 */}
             <div className="lg:w-48 shrink-0">
               <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
-                <div className="mb-8">
-                  <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">个人中心</h2>
+                <div className="mb-6">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">个人中心</h1>
                 </div>
                 
                 <nav>
