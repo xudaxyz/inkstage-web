@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
 import {Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, notification, Modal} from 'antd';
 import {
@@ -23,6 +23,7 @@ import CollectionFolderModal from '../../components/front/CollectionFolderModal.
 import {useUser, useArticle} from '../../store';
 import useCollection from '../../hooks/useCollection';
 import articleService from '../../services/articleService.ts';
+import readingHistoryService from '../../services/readingHistoryService.ts';
 import type {Tag} from '../../services/tagService.ts';
 import MarkdownIt from 'markdown-it';
 
@@ -39,6 +40,10 @@ const ArticleDetail: React.FC = () => {
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [folderModalVisible, setFolderModalVisible] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
+    
+    // 阅读历史相关状态
+    const readingStartTimeRef = useRef<number>(0);
+    const [scrollPosition, setScrollPosition] = useState<number>(0);
 
     // 获取当前用户信息
     const {user, isLoggedIn} = useUser();
@@ -92,12 +97,54 @@ const ArticleDetail: React.FC = () => {
         return newToc;
     }, [article]);
 
+    // 计算阅读进度
+    const calculateProgress = useCallback(() => {
+        if (!contentRef.current) return 0;
+        
+        const content = contentRef.current;
+        const scrollTop = window.scrollY;
+        const contentHeight = content.scrollHeight - window.innerHeight;
+        
+        // 当内容高度小于等于窗口高度时，说明文章很短，不需要滚动就能阅读完整，进度为100%
+        if (contentHeight <= 0) {
+            setScrollPosition(scrollTop);
+            return 100;
+        }
+        
+        const progress = Math.min(Math.round((scrollTop / contentHeight) * 100), 100);
+        
+        setScrollPosition(scrollTop);
+        return progress;
+    }, []);
+
+    // 保存阅读历史
+    const saveReadingHistory = useCallback(async () => {
+        if (!id || !isLoggedIn) return;
+        
+        const progress = calculateProgress();
+        const duration = Math.round((Date.now() - readingStartTimeRef.current) / 60000); // 转换为分钟
+        
+        try {
+            await readingHistoryService.saveReadingHistory({
+                articleId: Number(id),
+                progress,
+                duration,
+                scrollPosition
+            });
+        } catch (error) {
+            console.error('保存阅读历史失败:', error);
+        }
+    }, [id, isLoggedIn, calculateProgress, scrollPosition]);
+
     // 当文章ID变化时获取文章详情和增加阅读量
     useEffect(() => {
         if (id) {
             void fetchArticleDetail(Number(id));
             void incrementReadCount(Number(id));
         }
+
+        // 重置阅读开始时间
+        readingStartTimeRef.current = Date.now();
 
         // 组件卸载时重置状态
         return () => {
@@ -111,6 +158,36 @@ const ArticleDetail: React.FC = () => {
             void fetchRelatedArticles(article.userId, Number(id));
         }
     }, [article, id, fetchRelatedArticles]);
+
+    // 监听滚动事件，计算阅读进度
+    useEffect(() => {
+        const handleScroll = () => {
+            calculateProgress();
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [calculateProgress]);
+
+    // 定期保存阅读历史（每10秒）
+    useEffect(() => {
+        if (!id || !isLoggedIn) return;
+
+        const timer = setInterval(saveReadingHistory, 10000);
+        return () => clearInterval(timer);
+    }, [id, isLoggedIn, saveReadingHistory]);
+
+    // 页面离开时保存阅读历史
+    useEffect(() => {
+        if (!id || !isLoggedIn) return;
+
+        const handleBeforeUnload = () => {
+            void saveReadingHistory();
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [id, isLoggedIn, saveReadingHistory]);
 
     const scrollToHeading = (id: string) => {
         const element = document.getElementById(id);

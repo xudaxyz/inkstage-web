@@ -67,6 +67,16 @@ export const API_ENDPOINTS = {
     AUTH: {
         TOKEN: '/oauth2/token', // 刷新令牌
     },
+
+    // 阅读历史相关
+    READING_HISTORY: {
+        LIST: '/front/reading-history/get', // 获取阅读历史列表
+        SAVE: '/front/reading-history/save', // 保存阅读历史
+        DELETE: (articleId: number) => `/front/reading-history/delete/${articleId}`, // 删除单条阅读历史
+        CLEAR: '/front/reading-history/delete/all', // 清空阅读历史
+        DETAIL: (articleId: number) => `/front/reading-history/${articleId}`, // 获取单篇文章的阅读历史
+        BATCH: '/front/reading-history/batch', // 批量获取阅读历史
+    },
 };
 
 // 公开端点列表（不需要身份认证的端点）
