@@ -1,6 +1,7 @@
 import React from 'react';
 import {Card} from 'antd';
 import type {LatestArticle} from '../../services/articleService.ts';
+import {formatDateTimeShort} from '../../utils/dateUtils';
 
 interface LatestArticlesProps {
     articles?: LatestArticle[];
@@ -60,7 +61,7 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
                             </div>
                         </div>
                         <span className="text-xs flex items-center text-gray-500 ml-3 whitespace-nowrap shrink-0 mt-1">
-                            {article.publishTime}
+                            {article.publishTime ? formatDateTimeShort(article.publishTime) : ''}
                         </span>
                     </div>
                 ))}

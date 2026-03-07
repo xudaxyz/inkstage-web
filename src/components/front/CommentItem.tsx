@@ -6,6 +6,7 @@ import { CommentTopStatus } from '../../types/enums/CommentEnum.ts';
 import ReplyItem from './ReplyItem';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
+import {formatDateTimeShort} from '../../utils/dateUtils';
 
 interface CommentItemProps {
   comment: ArticleComment;
@@ -80,7 +81,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
       {/* 评论操作 */}
       <div className="ml-12 flex items-center gap-4 text-sm text-gray-500 relative">
         <span className="flex items-center gap-1">
-          {comment.createTime}
+          {comment.createTime ? formatDateTimeShort(comment.createTime) : ''}
         </span>
         <button
           className={`flex items-center min-w-7 ${comment.isLiked ? 'text-red-500' : 'text-gray-500'}`}

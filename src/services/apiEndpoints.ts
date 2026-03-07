@@ -77,6 +77,22 @@ export const API_ENDPOINTS = {
         DETAIL: (articleId: number) => `/front/reading-history/${articleId}`, // 获取单篇文章的阅读历史
         BATCH: '/front/reading-history/batch', // 批量获取阅读历史
     },
+
+    // 通知相关
+    NOTIFICATION: {
+        LIST: '/front/notification/list', // 获取通知列表
+        LIST_PAGE: '/front/notification/list/page', // 分页获取通知列表
+        MARK_READ: (id: number) => `/front/notification/read/${id}`, // 标记通知为已读
+        MARK_ALL_READ: '/front/notification/read/all', // 标记所有通知为已读
+        DELETE: (id: number) => `/front/notification/delete/${id}`, // 删除通知
+        UNREAD_COUNT: '/front/notification/unread/count', // 获取未读通知数量
+        SYNC_UNREAD: '/front/notification/unread/sync', // 同步未读通知数量
+        SETTING: {
+            GET: '/front/notification/setting/get', // 获取通知设置
+            SAVE: '/front/notification/setting/save', // 保存通知设置
+            RESET: '/front/notification/setting/reset' // 恢复默认通知设置
+        }
+    },
 };
 
 // 公开端点列表（不需要身份认证的端点）

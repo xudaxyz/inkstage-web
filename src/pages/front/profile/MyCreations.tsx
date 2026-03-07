@@ -21,6 +21,7 @@ import {
     ArticleVisibleMap,
     ArticleStatusMap
 } from '../../../types/enums';
+import {formatDateTimeShort} from '../../../utils/dateUtils';
 
 // 文章类型定义
 interface Article {
@@ -311,7 +312,7 @@ const MyCreations: React.FC = () => {
                                          color={article.original === ArticleOriginalEnum.ORIGINAL ? 'gold' : 'green'}>
                                         {ArticleOriginalMap[article.original] || ArticleOriginalEnum.OTHER}
                                     </Tag>
-                                    <span>{article.publishTime}</span>
+                                    <span>{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</span>
                                     <Space size={4}>
                                         <EyeOutlined/> {article.readCount}
                                     </Space>

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button, Input, Switch } from 'antd';
+import { Button, Input, Switch, Badge } from 'antd';
 import { BellOutlined, EditOutlined, MenuOutlined, CloseOutlined, SearchOutlined, SunOutlined, MoonOutlined, UserOutlined, FileTextOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useUser } from '../../store';
+import notificationService from '../../services/notificationService';
 
 const Header: React.FC = () => {
     // 从localStorage中读取初始主题
@@ -18,6 +19,7 @@ const Header: React.FC = () => {
     const [isDarkMode, setIsDarkMode] = useState(getInitialTheme);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState<number>(0);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
@@ -68,6 +70,18 @@ const Header: React.FC = () => {
         closeDropdown();
     };
 
+    // 获取未读通知数量
+    const fetchUnreadCount = useCallback(async () => {
+        try {
+            const response = await notificationService.getUnreadCount();
+            if (response.code === 200) {
+                setUnreadCount(response.data);
+            }
+        } catch (err) {
+            console.error('获取未读通知数量失败:', err);
+        }
+    }, []);
+
     // 切换移动端菜单
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -94,6 +108,14 @@ const Header: React.FC = () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    // 监听登录状态，获取未读通知数量
+    useEffect(() => {
+        if (isLoggedIn) {
+            // 延迟调用，避免在effect中直接触发状态更新
+            setTimeout(fetchUnreadCount, 0);
+        }
+    }, [isLoggedIn, fetchUnreadCount]);
 
     return (
         <header
@@ -170,9 +192,15 @@ const Header: React.FC = () => {
                 </div>
 
                 {/* 通知图标 */}
-                <div className="flex items-center text-gray-700 dark:text-gray-200">
-                    <BellOutlined />
-                </div>
+                <Link to="/profile/notifications" className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary-600 transition-colors duration-200">
+                    {unreadCount > 0 ? (
+                        <Badge count={unreadCount} size="small">
+                            <BellOutlined />
+                        </Badge>
+                    ) : (
+                        <BellOutlined />
+                    )}
+                </Link>
 
                 {/* 移动端菜单按钮 */}
                 <button

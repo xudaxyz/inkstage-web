@@ -13,6 +13,7 @@ import MyCreations from '../pages/front/profile/MyCreations';
 import MyCollections from '../pages/front/profile/MyCollections';
 import ReadingHistory from '../pages/front/profile/ReadingHistory';
 import Notifications from '../pages/front/profile/Notifications';
+import NotificationSettings from '../pages/front/profile/NotificationSettings';
 import AccountSettings from '../pages/front/profile/AccountSettings';
 
 // 导入认证组件
@@ -45,6 +46,7 @@ const AppRoutes = () => {
         <Route path="collections" element={<MyCollections />} />
         <Route path="history" element={<ReadingHistory />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="notification-settings" element={<NotificationSettings />} />
         <Route path="settings" element={<AccountSettings />} />
       </Route>
     </Routes>

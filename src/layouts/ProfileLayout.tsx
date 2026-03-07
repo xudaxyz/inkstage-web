@@ -54,6 +54,12 @@ const ProfileLayout: React.FC = () => {
       path: '/profile/notifications'
     },
     {
+      key: '/profile/notification-settings',
+      icon: <SettingOutlined />,
+      label: '通知设置',
+      path: '/profile/notification-settings'
+    },
+    {
       key: '/profile/settings',
       icon: <SettingOutlined />,
       label: '账号设置',

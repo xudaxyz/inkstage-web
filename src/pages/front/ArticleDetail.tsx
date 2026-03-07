@@ -1,6 +1,7 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
 import {Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, notification, Modal} from 'antd';
+import {formatDateTimeShort} from '../../utils/dateUtils';
 import {
     ArrowLeftOutlined,
     LikeOutlined,
@@ -525,13 +526,7 @@ const ArticleDetail: React.FC = () => {
                                     </div>
                                     <div className="flex items-center text-sm">
                                         <span
-                                            className="text-gray-400">{article.publishTime ? new Date(article.publishTime).toLocaleDateString('zh-CN', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        }) : ''}</span>
+                                            className="text-gray-400">{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</span>
                                     </div>
                                 </div>
                                 {isAuthor && (
@@ -701,7 +696,7 @@ const ArticleDetail: React.FC = () => {
                                                     }
                                                     description={
                                                         <span className="text-gray-400 text-xs">
-                                                            {item.publishTime}
+                                                            {item.publishTime ? formatDateTimeShort(item.publishTime) : ''}
                                                         </span>
                                                     }
                                                 />

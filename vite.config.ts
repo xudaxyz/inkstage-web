@@ -21,5 +21,8 @@ export default defineConfig({
         alias: {
             "@": "/src",
         },
+    },
+    define: {
+        global: 'window'
     }
 })

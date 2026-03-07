@@ -16,6 +16,7 @@ import type { IndexArticleList } from '../../services/articleService.ts';
 import articleService from '../../services/articleService.ts';
 import { getUserPublicProfile } from '../../services/userService.ts';
 import {GenderEnum} from "../../types/enums";
+import {formatDateOnly, formatDateTimeShort} from '../../utils/dateUtils';
 
 // 作者信息类型定义
 interface AuthorInfo {
@@ -88,7 +89,7 @@ const UserProfile: React.FC = () => {
             signature: userData.signature || '',
             gender: userData.gender || GenderEnum.UNKNOWN,
             location: userData.location || '',
-            joinTime: userData.registerTime ? new Date(userData.registerTime).toLocaleDateString('zh-CN') : '',
+            joinTime: userData.registerTime ? formatDateOnly(userData.registerTime) : '',
             articleCount: userData.articleCount || 0,
             readCount: 0, // 暂时使用0，后续可以从API获取
             likeCount: userData.likeCount || 0,
@@ -323,7 +324,7 @@ const UserProfile: React.FC = () => {
                               {/* 发布时间和互动数据 */}
                               <div className="flex flex-wrap items-center justify-between gap-4">
                                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                                  <span>{article.publishTime}</span>
+                                  <span>{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</span>
                                   <div className="flex items-center gap-2 group-hover:text-blue-500 transition-colors">
                                     <HeartOutlined size={16} />
                                     <span>{article.likeCount}</span>

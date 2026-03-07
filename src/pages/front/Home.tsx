@@ -13,6 +13,7 @@ import type {Category} from '../../services/categoryService.ts';
 import categoryService from '../../services/categoryService.ts';
 import type {Tag} from '../../services/tagService.ts';
 import tagService from '../../services/tagService.ts';
+import {formatDateTimeShort} from '../../utils/dateUtils';
 
 const Home: React.FC = () => {
     // 状态管理
@@ -60,7 +61,7 @@ const Home: React.FC = () => {
                 likeCount: item.likeCount,
                 readCount: item.readCount,
                 commentCount: item.commentCount,
-                publishTime: item.publishTime ? new Date(item.publishTime).toLocaleString('zh-CN') : ''
+                publishTime: item.publishTime ? formatDateTimeShort(item.publishTime) : ''
             }));
 
             setArticles(formattedArticles);

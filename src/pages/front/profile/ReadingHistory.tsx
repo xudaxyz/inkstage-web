@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import { ROUTES } from '../../../routes/constants';
 import readingHistoryService, { type ReadingHistory } from '../../../services/readingHistoryService';
+import {formatDateOnly, formatTimeShort} from '../../../utils/dateUtils';
 
 const ReadingHistory: React.FC = () => {
   // 状态管理
@@ -51,7 +52,7 @@ const ReadingHistory: React.FC = () => {
     );
     
     return filteredHistories.reduce((groups: Record<string, ReadingHistory[]>, history) => {
-      const date = history.readDate;
+      const date = history.readDate ? formatDateOnly(history.readDate) : '';
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -222,7 +223,7 @@ const ReadingHistory: React.FC = () => {
                               {/* 阅读时间 */}
                               <Space size={4}>
                                 <ClockCircleOutlined />
-                                <span>{history.readTime.split(' ')[1]}</span>
+                                <span>{history.readTime ? formatTimeShort(history.readTime) : ''}</span>
                               </Space>
                               
                               {/* 阅读时长 */}

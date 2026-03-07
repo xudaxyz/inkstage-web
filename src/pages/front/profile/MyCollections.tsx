@@ -18,6 +18,7 @@ import {
 import {ROUTES} from '../../../routes/constants';
 import articleService, {type MyArticleCollectionList} from '../../../services/articleService';
 import {DefaultStatusEnum, ArticleOriginalMap} from '../../../types/enums';
+import {formatDateTimeShort} from '../../../utils/dateUtils';
 
 // 收藏夹类型定义
 interface CollectionFolder {
@@ -449,7 +450,7 @@ const MyCollections: React.FC = () => {
                                                                 <MessageOutlined/> {collection.commentCount}
                                                             </Space>
                                                             <div className="flex items-center pl-2">
-                                                                <span>收藏于: {collection.collectTime}</span>
+                                                                <span>收藏于: {collection.collectTime ? formatDateTimeShort(collection.collectTime) : ''}</span>
                                                             </div>
                                                         </div>
                                                     </div>

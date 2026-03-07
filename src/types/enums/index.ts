@@ -4,6 +4,7 @@ export * from './UserRoleEnum';
 export * from './GenderEnum';
 export * from './ArticleEnum';
 export * from './DefaultStatusEnum';
+export * from './NotificationEnum';
 
 // 通用枚举工具类型
 export type EnumLike = Record<string, string | number>;

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header.tsx';
 import Footer from '../../components/common/Footer.tsx';
 import rankingService, { type HotArticle, type HotUser } from '../../services/rankingService.ts';
+import {formatDateTimeShort} from '../../utils/dateUtils';
 
 const { Text } = Typography;
 
@@ -152,7 +153,7 @@ const Rankings: React.FC = () => {
                                 <MessageOutlined className="mr-1" />
                                 <Text>{article.commentCount}</Text>
                               </div>
-                              <Text>{article.publishTime}</Text>
+                              <Text>{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</Text>
                             </div>
                           </div>
 
@@ -263,7 +264,7 @@ const Rankings: React.FC = () => {
 
                             {/* 发布时间和阅读量 */}
                             <div className="flex items-center text-gray-400 text-xs gap-3 flex-wrap">
-                              <span>{article.publishTime}</span>
+                              <span>{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</span>
                               <span>
                                 <EyeOutlined className="mr-1" />
                                 {article.readCount}
