@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { Card, Button, Switch, List, message, Popconfirm } from 'antd';
-import { LockOutlined, MailOutlined, PhoneOutlined, BellOutlined, SecurityScanOutlined, LogoutOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Card, Button, List, message, Popconfirm } from 'antd';
+import { LockOutlined, MailOutlined, PhoneOutlined, SecurityScanOutlined, LogoutOutlined, DeleteOutlined } from '@ant-design/icons';
 
 interface SettingItem {
   id: string;
   title: string;
   description: string;
-  type: 'switch' | 'button' | 'status';
-  status?: boolean;
+  type: 'button' | 'status';
   action?: () => void;
   danger?: boolean;
 }
@@ -15,23 +14,6 @@ interface SettingItem {
 const AccountSettings: React.FC = () => {
   const [emailVerified] = useState(true);
   const [phoneVerified] = useState(false);
-  const [notificationSettings, setNotificationSettings] = useState({
-    email: true,
-    sms: false,
-    push: true,
-    comment: true,
-    like: true,
-    bookmark: false,
-    system: true,
-  });
-
-  const handleNotificationChange = (key: keyof typeof notificationSettings) => {
-    setNotificationSettings(prev => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-    message.success('设置已更新');
-  };
 
   const handleVerifyEmail = () => {
     message.success('验证邮件已发送，请查收');
@@ -77,58 +59,6 @@ const AccountSettings: React.FC = () => {
     },
   ];
 
-  const notificationSettingItems: SettingItem[] = [
-    {
-      id: 'email',
-      title: '邮件通知',
-      description: '接收系统邮件通知',
-      type: 'switch',
-      status: notificationSettings.email,
-    },
-    {
-      id: 'sms',
-      title: '短信通知',
-      description: '接收重要短信通知',
-      type: 'switch',
-      status: notificationSettings.sms,
-    },
-    {
-      id: 'push',
-      title: '站内通知',
-      description: '接收站内消息通知',
-      type: 'switch',
-      status: notificationSettings.push,
-    },
-    {
-      id: 'comment',
-      title: '评论通知',
-      description: '有人评论时通知我',
-      type: 'switch',
-      status: notificationSettings.comment,
-    },
-    {
-      id: 'like',
-      title: '点赞通知',
-      description: '有人点赞时通知我',
-      type: 'switch',
-      status: notificationSettings.like,
-    },
-    {
-      id: 'bookmark',
-      title: '收藏通知',
-      description: '有人收藏时通知我',
-      type: 'switch',
-      status: notificationSettings.bookmark,
-    },
-    {
-      id: 'system',
-      title: '系统通知',
-      description: '接收系统重要通知',
-      type: 'switch',
-      status: notificationSettings.system,
-    },
-  ];
-
   const accountActions: SettingItem[] = [
     {
       id: 'logout',
@@ -151,7 +81,7 @@ const AccountSettings: React.FC = () => {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-800">账号设置</h1>
-        <p className="text-gray-600 mt-2">管理您的账号安全和通知偏好</p>
+        <p className="text-gray-600 mt-2">管理您的账号安全</p>
       </div>
 
       <Card title={<span className="flex items-center"><SecurityScanOutlined className="mr-2" /> 安全设置</span>}>
@@ -190,30 +120,6 @@ const AccountSettings: React.FC = () => {
                     {item.title}
                   </div>
                 }
-                description={item.description}
-              />
-            </List.Item>
-          )}
-        />
-      </Card>
-
-      <Card title={<span className="flex items-center"><BellOutlined className="mr-2" /> 通知设置</span>}>
-        <List
-          dataSource={notificationSettingItems}
-          renderItem={item => (
-            <List.Item
-              key={item.id}
-              actions={[
-                item.type === 'switch' && (
-                  <Switch
-                    checked={item.status}
-                    onChange={() => handleNotificationChange(item.id as keyof typeof notificationSettings)}
-                  />
-                ),
-              ]}
-            >
-              <List.Item.Meta
-                title={item.title}
                 description={item.description}
               />
             </List.Item>

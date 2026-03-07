@@ -1,6 +1,7 @@
 import React from 'react';
 import {Avatar} from 'antd';
 import {LikeOutlined, EyeOutlined, MessageOutlined, CalendarOutlined} from '@ant-design/icons';
+import {formatDateTimeShort} from '../../utils/dateUtils';
 
 interface Article {
     id: number;
@@ -25,9 +26,9 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
 
     return (
         <div className="border-b border-gray-200 pt-2 pb-4 mb-4 hover:bg-gray-50 transition-colors duration-200 w-full">
-            <div className="flex flex-col md:flex-row gap-6 w-full">
+            <div className="flex flex-col md:flex-row gap-6 w-full items-start">
                 {/* 左侧内容 */}
-                <div className={`flex-1 ${coverImage ? 'md:pr-4' : ''} flex flex-col min-w-10`}>
+                <div className="flex-1 md:pr-4 flex flex-col min-w-10">
                     {/* 文章标题 */}
                     <h3 className="text-xl font-semibold mb-2 leading-tight">
                         <a href={`/article/${article.id}`}
@@ -39,7 +40,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                     </h3>
 
                     {/* 文章简介 */}
-                    <p className="text-gray-500 mb-4 line-clamp-2 text-base min-h-[24px] max-h-[48px] leading-relaxed">
+                    <p className="text-gray-500 mb-4 text-base leading-relaxed line-clamp-2">
                         {summary || '暂无简介'}
                     </p>
 
@@ -80,13 +81,13 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                         {/* 发布时间 */}
                         <span className="flex items-center gap-1">
               <CalendarOutlined/>
-                            {publishTime}
+                            {formatDateTimeShort(publishTime)}
             </span>
                     </div>
                 </div>
 
                 {/* 右侧封面图 */}
-                {coverImage && (
+                {coverImage ? (
                     <div className="w-full md:w-64 h-40 md:h-32 rounded-md overflow-hidden flex-shrink-0">
                         <a href={`/article/${article.id}`}
                            target="_blank"
@@ -98,6 +99,8 @@ const ArticleCard: React.FC<ArticleCardProps> = ({article}) => {
                             />
                         </a>
                     </div>
+                ) : (
+                    <div className="w-1 h-40 md:h-32 flex-shrink-0"></div>
                 )}
             </div>
         </div>

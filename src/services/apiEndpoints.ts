@@ -93,6 +93,17 @@ export const API_ENDPOINTS = {
             RESET: '/front/notification/setting/reset' // 恢复默认通知设置
         }
     },
+
+    // 搜索相关
+    SEARCH: {
+        ARTICLES: '/front/search/articles', // 搜索文章
+        HOT_WORDS: '/front/search/hot-words', // 获取热门搜索词
+        HISTORY: {
+            LIST: '/front/search/history', // 获取搜索历史
+            DELETE: '/front/search/history/delete', // 删除搜索历史
+            CLEAR: '/front/search/history/clear' // 清空搜索历史
+        }
+    },
 };
 
 // 公开端点列表（不需要身份认证的端点）

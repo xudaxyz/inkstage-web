@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Input, Switch, Badge } from 'antd';
 import { BellOutlined, EditOutlined, MenuOutlined, CloseOutlined, SearchOutlined, SunOutlined, MoonOutlined, UserOutlined, FileTextOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useUser } from '../../store';
@@ -23,6 +23,7 @@ const Header: React.FC = () => {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
+    const navigate = useNavigate();
     
     // 根据路由路径计算活跃导航项
     const activeNavItem = React.useMemo(() => {
@@ -177,6 +178,12 @@ const Header: React.FC = () => {
                         placeholder="搜索..."
                         prefix={<SearchOutlined />}
                         size="middle"
+                        onPressEnter={(e) => {
+                            const keyword = e.currentTarget.value.trim();
+                            if (keyword) {
+                                navigate({ pathname: '/', search: `?keyword=${encodeURIComponent(keyword)}` }, { replace: true });
+                            }
+                        }}
                         className="rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-300 focus:border-primary-500 focus:ring-0 transition-all duration-200"
                     />
                 </div>
@@ -253,7 +260,7 @@ const Header: React.FC = () => {
 
                                 {/* 我的创作 */}
                                 <Link
-                                    to="/creator"
+                                    to="/profile/creations"
                                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
                                     onClick={closeDropdown}
                                 >
@@ -330,9 +337,15 @@ const Header: React.FC = () => {
                     <div className="mt-4">
                         <Input
                             placeholder="搜索..."
-                        prefix={<SearchOutlined />}
-                        size="middle"
-                        className="rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-300 focus:border-primary-500 focus:ring-0 transition-all duration-200"
+                            prefix={<SearchOutlined />}
+                            size="middle"
+                            onPressEnter={(e) => {
+                                const keyword = e.currentTarget.value.trim();
+                                if (keyword) {
+                                    navigate({ pathname: '/', search: `?keyword=${encodeURIComponent(keyword)}` }, { replace: true });
+                                }
+                            }}
+                            className="rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-300 focus:border-primary-500 focus:ring-0 transition-all duration-200"
                         />
                     </div>
 

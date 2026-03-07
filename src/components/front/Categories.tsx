@@ -44,7 +44,7 @@ const Categories: React.FC<CategoriesProps> = ({
     };
 
     return (
-        <div className="mb-6">
+        <div className="mt-4 mb-4">
             <div className="flex items-center gap-6">
                 <div className="flex items-center gap-6 transition-all duration-300">
                     {displayCategories.map((category) => (
