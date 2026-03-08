@@ -1,95 +1,62 @@
-import React, { useState } from 'react';
-import { Card, Table, Input, Button, Space, Tag, Modal, Form, Switch, message, Typography } from 'antd';
-import { SearchOutlined, DeleteOutlined, EyeOutlined, EditOutlined, PlusOutlined, AppstoreOutlined, CalendarOutlined } from '@ant-design/icons';
+import React, {useState, useEffect} from 'react';
+import {Card, Table, Input, Button, Space, Tag, Modal, Form, Switch, message, Typography, Spin} from 'antd';
+import {
+    SearchOutlined,
+    DeleteOutlined,
+    EyeOutlined,
+    EditOutlined,
+    PlusOutlined,
+    AppstoreOutlined,
+    CalendarOutlined
+} from '@ant-design/icons';
+import categoryService, {type AdminCategory} from '../../services/categoryService';
+import {StatusEnum, StatusEnumLabel} from '../../types/enums';
+import {formatDateTime, formatDateTimeShort} from '../../utils/dateUtils';
 
-const { Search } = Input;
-const { Text } = Typography;
-
-// 分类类型定义
-interface Category {
-    key: string;
-    id: number;
-    name: string;
-    slug: string;
-    description: string;
-    status: boolean;
-    articleCount: number;
-    createdAt: string;
-    updatedAt: string;
-}
-
-// 模拟分类数据
-const mockCategories: Category[] = [
-    {
-        key: '1',
-        id: 1,
-        name: '前端开发',
-        slug: 'frontend',
-        description: '前端开发相关内容',
-        status: true,
-        articleCount: 128,
-        createdAt: '2026-01-01',
-        updatedAt: '2026-01-01'
-    },
-    {
-        key: '2',
-        id: 2,
-        name: '后端开发',
-        slug: 'backend',
-        description: '后端开发相关内容',
-        status: true,
-        articleCount: 96,
-        createdAt: '2026-01-01',
-        updatedAt: '2026-01-01'
-    },
-    {
-        key: '3',
-        id: 3,
-        name: '移动开发',
-        slug: 'mobile',
-        description: '移动开发相关内容',
-        status: true,
-        articleCount: 64,
-        createdAt: '2026-01-01',
-        updatedAt: '2026-01-01'
-    },
-    {
-        key: '4',
-        id: 4,
-        name: 'DevOps',
-        slug: 'devops',
-        description: 'DevOps相关内容',
-        status: true,
-        articleCount: 48,
-        createdAt: '2026-01-01',
-        updatedAt: '2026-01-01'
-    },
-    {
-        key: '5',
-        id: 5,
-        name: '其他',
-        slug: 'other',
-        description: '其他相关内容',
-        status: true,
-        articleCount: 32,
-        createdAt: '2026-01-01',
-        updatedAt: '2026-01-01'
-    }
-];
+const {Search} = Input;
+const {Text} = Typography;
 
 const AdminCategories: React.FC = () => {
-    const [categories, setCategories] = useState<Category[]>(mockCategories);
-    const [filteredCategories, setFilteredCategories] = useState<Category[]>(mockCategories);
-    const [searchText, setSearchText] = useState('');
+    const [categories, setCategories] = useState<AdminCategory[]>([]);
+    const [filteredCategories, setFilteredCategories] = useState<AdminCategory[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isViewModalVisible, setIsViewModalVisible] = useState(false);
-    const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+    const [currentCategory, setCurrentCategory] = useState<AdminCategory | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+
+    // 加载分类数据
+    const loadCategories = async () => {
+        setLoading(true);
+        try {
+            const response = await categoryService.adminGetAllCategories();
+            console.log(response);
+            if (response.code === 200 && response.data) {
+                const formattedCategories = response.data.map((category: AdminCategory) => ({
+                    ...category,
+                    key: category.id.toString()
+                }));
+                setCategories(formattedCategories);
+                setFilteredCategories(formattedCategories);
+            } else {
+                message.error('获取分类列表失败');
+            }
+        } catch (error) {
+            console.error('加载分类失败:', error);
+            message.error('加载分类失败');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 组件挂载时加载数据
+    useEffect(() => {
+        loadCategories();
+    }, []);
 
     // 搜索和筛选分类
     const handleSearch = (value: string) => {
-        setSearchText(value);
         filterCategories(value);
     };
 
@@ -97,7 +64,7 @@ const AdminCategories: React.FC = () => {
         let filtered = [...categories];
 
         if (search) {
-            filtered = filtered.filter(category => 
+            filtered = filtered.filter(category =>
                 category.name.toLowerCase().includes(search.toLowerCase()) ||
                 category.slug.toLowerCase().includes(search.toLowerCase())
             );
@@ -107,71 +74,85 @@ const AdminCategories: React.FC = () => {
     };
 
     // 打开编辑分类模态框
-    const handleEditCategory = (category: Category) => {
+    const handleEditCategory = (category: AdminCategory) => {
         setIsEditing(true);
         setCurrentCategory(category);
         form.setFieldsValue({
             name: category.name,
             slug: category.slug,
             description: category.description,
-            status: category.status
+            status: category.status === StatusEnum.ENABLED
         });
         setIsModalVisible(true);
     };
 
     // 打开查看分类模态框
-    const handleViewCategory = (category: Category) => {
+    const handleViewCategory = (category: AdminCategory) => {
         setCurrentCategory(category);
         setIsViewModalVisible(true);
     };
 
     // 删除分类
-    const handleDeleteCategory = (id: number) => {
-        setCategories(categories.filter(category => category.id !== id));
-        setFilteredCategories(filteredCategories.filter(category => category.id !== id));
-        message.success('分类删除成功');
+    const handleDeleteCategory = async (id: number) => {
+        try {
+            await categoryService.adminDeleteCategory(id);
+            message.success('分类删除成功');
+            loadCategories();
+        } catch (error) {
+            console.error('删除分类失败:', error);
+            message.error('删除分类失败');
+        }
     };
 
     // 切换分类状态
-    const handleToggleStatus = (id: number, status: boolean) => {
-        const updatedCategories = categories.map(category => 
-            category.id === id ? { ...category, status: !status } : category
-        );
-        setCategories(updatedCategories);
-        filterCategories(searchText);
-        message.success(`分类已${status ? '禁用' : '启用'}`);
+    const handleToggleStatus = async (id: number, status: StatusEnum) => {
+        try {
+            // 先更新本地状态，提供即时反馈
+            const updatedCategories = categories.map(category =>
+                category.id === id ? { ...category, status: status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED } : category
+            );
+            setCategories(updatedCategories);
+            setFilteredCategories(updatedCategories);
+
+            // 然后调用 API 更新后端数据
+            await categoryService.adminUpdateCategoryStatus(id, status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED);
+            message.success(`分类已${status === StatusEnum.ENABLED ? '禁用' : '启用'}`);
+
+        } catch (error) {
+            console.error('更新分类状态失败:', error);
+            message.error('更新分类状态失败');
+        }
     };
 
     // 保存分类
-    const handleSaveCategory = () => {
-        form.validateFields().then(values => {
-            if (isEditing && currentCategory) {
-                // 编辑现有分类
-                const updatedCategories = categories.map(category => 
-                    category.id === currentCategory.id ? { 
-                        ...category, 
-                        ...values,
-                        updatedAt: new Date().toISOString().split('T')[0]
-                    } : category
-                );
-                setCategories(updatedCategories);
-                filterCategories(searchText);
-                message.success('分类更新成功');
-            } else {
-                // 添加新分类
-                const newCategory: Category = {
-                    key: String(categories.length + 1),
-                    id: categories.length + 1,
-                    ...values,
-                    articleCount: 0,
-                    createdAt: new Date().toISOString().split('T')[0],
-                    updatedAt: new Date().toISOString().split('T')[0]
-                };
-                setCategories([...categories, newCategory]);
-                filterCategories(searchText);
-                message.success('分类添加成功');
+    const handleSaveCategory = async () => {
+        form.validateFields().then(async (values) => {
+            try {
+                if (isEditing && currentCategory) {
+                    // 编辑现有分类
+                    await categoryService.adminUpdateCategory(currentCategory.id, {
+                        name: values.name,
+                        slug: values.slug,
+                        description: values.description,
+                        status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
+                    });
+                    message.success('分类更新成功');
+                } else {
+                    // 添加新分类
+                    await categoryService.adminAddCategory({
+                        name: values.name,
+                        slug: values.slug,
+                        description: values.description,
+                        status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
+                    });
+                    message.success('分类添加成功');
+                }
+                setIsModalVisible(false);
+                loadCategories();
+            } catch (error) {
+                console.error('保存分类失败:', error);
+                message.error('保存分类失败');
             }
-            setIsModalVisible(false);
         }).catch(error => {
             console.error('验证失败:', error);
         });
@@ -189,13 +170,14 @@ const AdminCategories: React.FC = () => {
             title: '分类名称',
             dataIndex: 'name',
             key: 'name',
+            width: 150,
             render: (text: string) => <Text className="font-medium">{text}</Text>
         },
         {
             title: '别名',
             dataIndex: 'slug',
             key: 'slug',
-            width: 120
+            width: 150
         },
         {
             title: '分类描述',
@@ -214,44 +196,48 @@ const AdminCategories: React.FC = () => {
             dataIndex: 'status',
             key: 'status',
             width: 100,
-            render: (status: boolean, record: Category) => (
-                <Switch 
-                    checked={status} 
-                    onChange={(checked) => handleToggleStatus(record.id, checked)}
+            render: (status: StatusEnum, record: AdminCategory) => (
+                <Switch
+                    checked={status === StatusEnum.ENABLED}
+                    onChange={() => handleToggleStatus(record.id, status)}
                 />
             )
         },
         {
             title: '创建时间',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            width: 140
+            dataIndex: 'createTime',
+            key: 'createTime',
+            width: 180,
+            render: (createTime: string) => formatDateTimeShort(createTime)
         },
         {
             title: '操作',
             key: 'action',
-            width: 180,
-            render: (_: unknown, record: Category) => (
+            width: 200,
+            render: (_: unknown, record: AdminCategory) => (
                 <Space size="middle">
-                    <Button 
-                        type="text" 
-                        icon={<EyeOutlined />} 
+                    <Button
+                        variant={"text"}
+                        color={"green"}
+                        icon={<EyeOutlined/>}
                         onClick={() => handleViewCategory(record)}
                         className="text-blue-500"
                     >
                         查看
                     </Button>
-                    <Button 
-                        type="text" 
-                        icon={<EditOutlined />} 
+                    <Button
+                        variant={"text"}
+                        color={"orange"}
+                        icon={<EditOutlined/>}
                         onClick={() => handleEditCategory(record)}
                         className="text-green-500"
                     >
                         编辑
                     </Button>
-                    <Button 
-                        type="text" 
-                        icon={<DeleteOutlined />} 
+                    <Button
+                        variant={"text"}
+                        color={"danger"}
+                        icon={<DeleteOutlined/>}
                         onClick={() => handleDeleteCategory(record.id)}
                         className="text-red-500"
                     >
@@ -269,18 +255,18 @@ const AdminCategories: React.FC = () => {
             </div>
 
             {/* 搜索和筛选 */}
-            <Card variant={"borderless"} className="border-b border-gray-100">
+            <Card variant="borderless" className="border-b border-gray-100">
                 <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
                     <Search
                         placeholder="搜索分类名称或别名"
                         allowClear
-                        enterButton={<SearchOutlined />}
+                        enterButton={<SearchOutlined/>}
                         onSearch={handleSearch}
-                        style={{ width: 300 }}
+                        style={{width: 300}}
                     />
-                    <Button 
-                        type="primary" 
-                        icon={<PlusOutlined />}
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined/>}
                         onClick={() => {
                             setIsEditing(false);
                             setCurrentCategory(null);
@@ -294,19 +280,25 @@ const AdminCategories: React.FC = () => {
             </Card>
 
             {/* 分类列表 */}
-            <Card variant={"borderless"}>
-                <Table
-                    columns={columns}
-                    dataSource={filteredCategories}
-                    rowKey="id"
-                    pagination={{
-                        showSizeChanger: true,
-                        placement: ['bottomCenter'],
-                        pageSizeOptions: ['10', '20', '50'],
-                        defaultPageSize: 10,
-                        showTotal: (total) => `共 ${total} 个分类`
-                    }}
-                />
+            <Card variant="borderless">
+                {loading ? (
+                    <div className="flex justify-center py-10">
+                        <Spin size="large"/>
+                    </div>
+                ) : (
+                    <Table
+                        columns={columns}
+                        dataSource={filteredCategories}
+                        rowKey="id"
+                        pagination={{
+                            showSizeChanger: true,
+                            placement: ['bottomCenter'],
+                            pageSizeOptions: ['10', '20', '50'],
+                            defaultPageSize: 10,
+                            showTotal: (total) => `共 ${total} 个分类`
+                        }}
+                    />
+                )}
             </Card>
 
             {/* 添加/编辑分类模态框 */}
@@ -330,39 +322,40 @@ const AdminCategories: React.FC = () => {
                         name="name"
                         label="分类名称"
                         rules={[
-                            { required: true, message: '请输入分类名称' },
-                            { min: 2, max: 50, message: '分类名称长度应在2-50个字符之间' }
+                            {required: true, message: '请输入分类名称'},
+                            {min: 2, max: 50, message: '分类名称长度应在2-50个字符之间'}
                         ]}
                     >
-                        <Input placeholder="请输入分类名称" />
+                        <Input placeholder="请输入分类名称"/>
                     </Form.Item>
 
                     <Form.Item
                         name="slug"
                         label="别名"
                         rules={[
-                            { required: true, message: '请输入别名' },
-                            { min: 2, max: 50, message: '别名长度应在2-50个字符之间' }
+                            {required: true, message: '请输入别名'},
+                            {min: 2, max: 50, message: '别名长度应在2-50个字符之间'}
                         ]}
                     >
-                        <Input placeholder="请输入别名，用于URL" />
+                        <Input placeholder="请输入别名，用于URL"/>
                     </Form.Item>
 
                     <Form.Item
                         name="description"
                         label="描述"
                         rules={[
-                            { max: 200, message: '描述长度不能超过200个字符' }
+                            {max: 200, message: '描述长度不能超过200个字符'}
                         ]}
                     >
-                        <Input.TextArea rows={3} placeholder="请输入分类描述" />
+                        <Input.TextArea rows={3} placeholder="请输入分类描述"/>
                     </Form.Item>
 
                     <Form.Item
                         name="status"
                         label="状态"
+                        valuePropName="checked"
                     >
-                        <Switch />
+                        <Switch/>
                     </Form.Item>
                 </Form>
             </Modal>
@@ -382,41 +375,41 @@ const AdminCategories: React.FC = () => {
                 {currentCategory && (
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <AppstoreOutlined className="text-gray-500" />
+                            <AppstoreOutlined className="text-gray-500"/>
                             <span className="font-medium">分类名称:</span>
                             <span>{currentCategory.name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <AppstoreOutlined className="text-gray-500" />
+                            <AppstoreOutlined className="text-gray-500"/>
                             <span className="font-medium">别名:</span>
                             <span>{currentCategory.slug}</span>
                         </div>
                         <div className="flex items-start gap-2">
-                            <AppstoreOutlined className="text-gray-500 mt-1" />
+                            <AppstoreOutlined className="text-gray-500 mt-1"/>
                             <span className="font-medium">描述:</span>
                             <span>{currentCategory.description}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <AppstoreOutlined className="text-gray-500" />
+                            <AppstoreOutlined className="text-gray-500"/>
                             <span className="font-medium">文章数量:</span>
-                            <span>{currentCategory.articleCount}</span>
+                            <span>{currentCategory.articleCount || 0}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <AppstoreOutlined className="text-gray-500" />
+                            <AppstoreOutlined className="text-gray-500"/>
                             <span className="font-medium">状态:</span>
-                            <Tag color={currentCategory.status ? 'green' : 'red'}>
-                                {currentCategory.status ? '启用' : '禁用'}
+                            <Tag color={currentCategory.status === StatusEnum.ENABLED ? 'green' : 'orange'}>
+                                {StatusEnumLabel[currentCategory.status]}
                             </Tag>
                         </div>
                         <div className="flex items-center gap-2">
-                            <CalendarOutlined className="text-gray-500" />
+                            <CalendarOutlined className="text-gray-500"/>
                             <span className="font-medium">创建时间:</span>
-                            <span>{currentCategory.createdAt}</span>
+                            <span>{formatDateTime(currentCategory.createTime || '')}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <CalendarOutlined className="text-gray-500" />
+                            <CalendarOutlined className="text-gray-500"/>
                             <span className="font-medium">更新时间:</span>
-                            <span>{currentCategory.updatedAt}</span>
+                            <span>{formatDateTime(currentCategory.updateTime || '')}</span>
                         </div>
                     </div>
                 )}
