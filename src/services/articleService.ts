@@ -4,6 +4,7 @@ import type {ApiResponse} from "../types/auth.ts";
 import type {Tag} from "./tagService.ts";
 import {
     ArticleStatusEnum,
+    ArticleReviewStatusEnum,
     ArticleOriginalEnum,
     ArticleVisibleEnum,
     AllowStatusEnum,
@@ -21,6 +22,7 @@ export interface Article {
     tagIds: number[];
     coverImage?: string;
     status: ArticleStatusEnum;
+    reviewStatus?: ArticleReviewStatusEnum;
     visible: ArticleVisibleEnum;
     allowComment: AllowStatusEnum;
     allowForward: AllowStatusEnum;
@@ -55,6 +57,7 @@ export interface MyArticleList {
     commentCount: number;
     publishTime: string;
     articleStatus: ArticleStatusEnum;
+    reviewStatus: ArticleReviewStatusEnum;
     visible: ArticleVisibleEnum;
     original: ArticleOriginalEnum;
 }

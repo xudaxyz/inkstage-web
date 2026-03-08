@@ -18,8 +18,10 @@ import {
     ArticleVisibleEnum,
     ArticleOriginalMap,
     ArticleStatusEnum,
+    ArticleReviewStatusEnum,
     ArticleVisibleMap,
-    ArticleStatusMap
+    ArticleStatusMap,
+    ArticleReviewStatusMap
 } from '../../../types/enums';
 import {formatDateTimeShort} from '../../../utils/dateUtils';
 
@@ -32,6 +34,7 @@ interface Article {
     original: ArticleOriginalEnum;
     visible: ArticleVisibleEnum;
     articleStatus: ArticleStatusEnum;
+    reviewStatus: ArticleReviewStatusEnum;
     readCount: number;
     likeCount: number;
     commentCount: number;
@@ -88,6 +91,7 @@ const MyCreations: React.FC = () => {
                     original: item.original as ArticleOriginalEnum || ArticleOriginalEnum.OTHER,
                     visible: item.visible as ArticleVisibleEnum || ArticleVisibleEnum.PUBLIC,
                     articleStatus: item.articleStatus as ArticleStatusEnum,
+                    reviewStatus: item.reviewStatus as ArticleReviewStatusEnum,
                     readCount: item.readCount || 0,
                     likeCount: item.likeCount || 0,
                     commentCount: item.commentCount || 0,
@@ -173,8 +177,8 @@ const MyCreations: React.FC = () => {
                 return '已发布';
             case 'DRAFT':
                 return '草稿';
-            case 'PENDING':
-                return '待审核';
+            case 'PENDING_PUBLISH':
+                return '待发布';
             case 'DELETED':
                 return '已删除';
             default:
@@ -218,12 +222,12 @@ const MyCreations: React.FC = () => {
                         草稿
                     </Button>
                     <Button
-                        color={currentStatus === ArticleStatusEnum.PENDING ? 'cyan' : 'default'}
-                        variant={currentStatus === ArticleStatusEnum.PENDING ? 'solid' : 'text'}
+                        color={currentStatus === ArticleStatusEnum.PENDING_PUBLISH ? 'cyan' : 'default'}
+                        variant={currentStatus === ArticleStatusEnum.PENDING_PUBLISH ? 'solid' : 'text'}
                         size="large"
-                        onClick={() => handleStatusChange(ArticleStatusEnum.PENDING)}
+                        onClick={() => handleStatusChange(ArticleStatusEnum.PENDING_PUBLISH)}
                     >
-                        待审核
+                        待发布
                     </Button>
                     <Button
                         color={currentStatus === ArticleStatusEnum.RECYCLE ? 'cyan' : 'default'}
@@ -294,11 +298,18 @@ const MyCreations: React.FC = () => {
                                         </Tag>
                                     </div>
                                 </div>
-                                <div className="flex items-center">
+                                <div className="flex items-center gap-2">
                                     <Tag variant="filled"
                                          color={article.articleStatus === ArticleStatusEnum.PUBLISHED ? 'default' : 'warning'}>
                                         {ArticleStatusMap[article.articleStatus]}
                                     </Tag>
+                                    {article.reviewStatus && (
+                                        <Tag variant="filled"
+                                             color={article.reviewStatus === ArticleReviewStatusEnum.APPROVED ? 'green' : 
+                                                    article.reviewStatus === ArticleReviewStatusEnum.REJECTED ? 'red' : 'blue'}>
+                                            {ArticleReviewStatusMap[article.reviewStatus]}
+                                        </Tag>
+                                    )}
                                 </div>
                             </div>
 

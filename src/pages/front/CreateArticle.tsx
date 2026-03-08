@@ -13,7 +13,7 @@ import articleService from '../../services/articleService.ts';
 import tagService, {type Tag} from '../../services/tagService.ts';
 import categoryService from '../../services/categoryService.ts';
 import {useUser} from '../../store';
-import {ArticleStatusEnum, ArticleOriginalEnum, ArticleVisibleEnum, AllowStatusEnum} from '../../types/enums';
+import {ArticleStatusEnum, ArticleReviewStatusEnum, ArticleOriginalEnum, ArticleVisibleEnum, AllowStatusEnum} from '../../types/enums';
 import RichTextEditor from '../../components/editor/RichTextEditor.tsx';
 import './CreateArticle.css';
 
@@ -159,7 +159,8 @@ const CreateArticle: React.FC = () => {
                 categoryId: parseInt(values.category),
                 tagIds: selectedTags,
                 coverImage: serverCoverImageUrl || coverImage,
-                status: ArticleStatusEnum.PENDING,
+                status: ArticleStatusEnum.PUBLISHED,
+                reviewStatus: ArticleReviewStatusEnum.PENDING,
                 visible: values.visible as ArticleVisibleEnum,
                 allowComment: values.allowComment as AllowStatusEnum,
                 allowForward: values.allowForward as AllowStatusEnum,
@@ -202,6 +203,7 @@ const CreateArticle: React.FC = () => {
                 tagIds: selectedTags,
                 coverImage: serverCoverImageUrl || coverImage,
                 status: ArticleStatusEnum.DRAFT,
+                reviewStatus: undefined,
                 visible: (values.visible || ArticleVisibleEnum.PUBLIC) as ArticleVisibleEnum,
                 allowComment: (values.allowComment || AllowStatusEnum.ALLOWED) as AllowStatusEnum,
                 allowForward: (values.allowForward || AllowStatusEnum.ALLOWED) as AllowStatusEnum,

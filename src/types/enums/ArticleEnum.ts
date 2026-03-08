@@ -2,10 +2,18 @@
 export const ArticleStatusEnum = {
     ALL: 'ALL',
     DRAFT: 'DRAFT',
-    PENDING: 'PENDING',
+    PENDING_PUBLISH: 'PENDING_PUBLISH',
     PUBLISHED: 'PUBLISHED',
     OFFLINE: 'OFFLINE',
     RECYCLE: 'RECYCLE'
+} as const;
+
+// 文章审核状态枚举
+export const ArticleReviewStatusEnum = {
+    PENDING: 'PENDING',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED',
+    APPEALING: 'APPEALING'
 } as const;
 
 // 文章原创性枚举
@@ -36,6 +44,7 @@ export const AllowStatusEnum = {
 
 // 导出类型
 export type ArticleStatusEnum = typeof ArticleStatusEnum[keyof typeof ArticleStatusEnum];
+export type ArticleReviewStatusEnum = typeof ArticleReviewStatusEnum[keyof typeof ArticleReviewStatusEnum];
 export type ArticleOriginalEnum = typeof ArticleOriginalEnum[keyof typeof ArticleOriginalEnum];
 export type ArticleVisibleEnum = typeof ArticleVisibleEnum[keyof typeof ArticleVisibleEnum];
 export type ArticleCollectionStatusEnum = typeof ArticleCollectionStatusEnum[keyof typeof ArticleCollectionStatusEnum];
@@ -45,7 +54,7 @@ export type AllowStatusEnum = typeof AllowStatusEnum[keyof typeof AllowStatusEnu
 export const ArticleStatusMap = {
     [ArticleStatusEnum.ALL]: '所有',
     [ArticleStatusEnum.DRAFT]: '草稿',
-    [ArticleStatusEnum.PENDING]: '待审核',
+    [ArticleStatusEnum.PENDING_PUBLISH]: '待发布',
     [ArticleStatusEnum.PUBLISHED]: '已发布',
     [ArticleStatusEnum.OFFLINE]: '已下架',
     [ArticleStatusEnum.RECYCLE]: '回收站'
@@ -71,4 +80,11 @@ export const ArticleCollectionStatusMap = {
 export const AllowStatusMap = {
     [AllowStatusEnum.ALLOWED]: '允许',
     [AllowStatusEnum.PROHIBITED]: '禁止',
+};
+
+export const ArticleReviewStatusMap = {
+    [ArticleReviewStatusEnum.PENDING]: '待审核',
+    [ArticleReviewStatusEnum.APPROVED]: '审核通过',
+    [ArticleReviewStatusEnum.REJECTED]: '审核拒绝',
+    [ArticleReviewStatusEnum.APPEALING]: '申诉中'
 };
