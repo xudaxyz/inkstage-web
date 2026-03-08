@@ -55,6 +55,7 @@ export interface UserInfo {
     gender: GenderEnum | undefined,
     birthDate: string,
     location: string,
+    role?: string;
 }
 
 // OAuth2令牌响应

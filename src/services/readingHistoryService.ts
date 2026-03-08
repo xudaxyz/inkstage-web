@@ -35,7 +35,7 @@ export interface ReadingHistoryResponse {
     size: number;
     current: number;
     pages: number;
-};
+}
 
 // 阅读历史 API 服务
 const readingHistoryService = {

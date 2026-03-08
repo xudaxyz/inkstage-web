@@ -11,7 +11,7 @@ import { ROUTES } from '../../../routes/constants';
 import readingHistoryService, { type ReadingHistory } from '../../../services/readingHistoryService';
 import {formatDateOnly, formatTimeShort} from '../../../utils/dateUtils';
 
-const ReadingHistory: React.FC = () => {
+const ReadingHistories: React.FC = () => {
   // 状态管理
   const [histories, setHistories] = useState<ReadingHistory[]>([]);
   const [searchText, setSearchText] = useState('');
@@ -325,4 +325,4 @@ const ReadingHistory: React.FC = () => {
   );
 };
 
-export default ReadingHistory;
+export default ReadingHistories;

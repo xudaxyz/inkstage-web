@@ -1,5 +1,5 @@
-import axios from 'axios';
 import type {AxiosInstance} from 'axios';
+import axios from 'axios';
 import errorHandler from './errorHandler';
 import {API_ENDPOINTS, PUBLIC_ENDPOINTS} from './apiEndpoints';
 
@@ -50,9 +50,10 @@ apiClient.interceptors.response.use(
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
                 errorHandler.handleAuthError('登录已过期，请重新登录');
-                // 1秒后跳转到登录页面
+                // 1秒后跳转到相应的登录页面
                 setTimeout(() => {
-                    window.location.href = '/login';
+                    const currentPath = window.location.pathname;
+                    window.location.href = currentPath.startsWith('/admin') ? '/admin/login' : '/login';
                 }, 1000);
                 // 终止Promise链，避免无限循环
                 return new Promise(() => {new Error("用户未登录")});
@@ -100,9 +101,10 @@ apiClient.interceptors.response.use(
                         );
 
                         if (!isPublicEndpoint) {
-                            // 非公开端点，跳转到登录页面
+                            // 非公开端点，跳转到相应的登录页面
                             setTimeout(() => {
-                                window.location.href = '/login';
+                                const currentPath = window.location.pathname;
+                                window.location.href = currentPath.startsWith('/admin') ? '/admin/login' : '/login';
                             }, 1000);
                         }
 
@@ -122,10 +124,11 @@ apiClient.interceptors.response.use(
                     );
 
                     if (!isPublicEndpoint) {
-                        // 非公开端点，跳转到登录页面
+                        // 非公开端点，跳转到相应的登录页面
                         errorHandler.handleAuthError('登录状态无效，请重新登录');
                         setTimeout(() => {
-                            window.location.href = '/login';
+                            const currentPath = window.location.pathname;
+                            window.location.href = currentPath.startsWith('/admin') ? '/admin/login' : '/login';
                         }, 1000);
 
                     }

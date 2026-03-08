@@ -17,6 +17,7 @@ export interface UserState {
         gender?: GenderEnum;
         birthDate?: string;
         location?: string;
+        role?: string;
     };
     isLoggedIn: boolean;
     isLoading: boolean;
@@ -32,6 +33,7 @@ export interface UserState {
         gender?: GenderEnum;
         birthDate?: string;
         location?: string;
+        role?: string;
     }, accessToken?: string, refreshToken?: string, expiresIn?: number) => void;
     logout: () => void;
     updateUser: (userData: Partial<UserState['user']>) => void;
@@ -59,6 +61,7 @@ export interface UserState {
                 gender?: GenderEnum;
                 birthDate?: string;
                 location?: string;
+                role?: string;
             };
         };
     }>;
@@ -86,6 +89,7 @@ export interface UserState {
                 gender?: GenderEnum;
                 birthDate?: string;
                 location?: string;
+                role?: string;
             };
         };
     }>;
@@ -120,6 +124,7 @@ export interface UserState {
         gender: normalizedGender,
         birthDate: userInfo.birthDate,
         location: userInfo.location,
+        role: userInfo.role,
     };
 };
 
