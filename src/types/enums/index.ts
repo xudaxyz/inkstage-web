@@ -1,6 +1,7 @@
 // 统一导出所有枚举类型和工具函数
 export * from './StatusEnum';
 export * from './UserRoleEnum';
+export * from './UserStatusEnum';
 export * from './GenderEnum';
 export * from './ArticleEnum';
 export * from './DefaultStatusEnum';

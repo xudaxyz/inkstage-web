@@ -1,9 +1,9 @@
 // 用户角色枚举，对应后端 UserRoleEnum
 
 export const UserRoleEnum = {
-  SUPER_ADMIN: 0,
-  ADMIN: 1,
-  USER: 2,
+  SUPER_ADMIN: "SUPER_ADMIN",
+  ADMIN: "ADMIN",
+  USER: "USER",
 } as const;
 
 export type UserRoleEnum = typeof UserRoleEnum[keyof typeof UserRoleEnum];
@@ -16,8 +16,8 @@ export const UserRoleEnumLabel: Record<UserRoleEnum, string> = {
 };
 
 // 从代码获取用户角色枚举
-export function getUserRoleEnumByCode(code: number): UserRoleEnum {
-  return Object.values(UserRoleEnum).find((value) => value === code) as UserRoleEnum || UserRoleEnum.USER;
+export function getUserRoleEnumByName(name: string): UserRoleEnum {
+  return Object.values(UserRoleEnum).find((value) => value === name) as UserRoleEnum || UserRoleEnum.USER;
 }
 
 // 获取用户角色枚举的显示文本

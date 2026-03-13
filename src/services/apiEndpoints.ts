@@ -12,6 +12,36 @@ export const API_ENDPOINTS = {
 
     },
 
+    // 管理员相关
+    ADMIN: {
+        // 用户管理
+        USER: {
+            LIST: '/admin/user/all', // 分页获取用户
+            DETAIL: (id: number) => `/admin/user/${id}`, // 获取用户详情
+            DELETE: (id: number) => `/admin/user/${id}`, // 删除用户
+            UPDATE: (id: number) => `/admin/user/${id}`, // 更新用户
+            UPDATE_STATUS: (id: number) => `/admin/user/update-status/${id}`, // 更新用户状态
+            UPDATE_ROLE: (id: number) => `/admin/user/update-role/${id}`, // 更新用户角色
+        },
+
+        // 文章管理
+        ARTICLE: {
+            LIST_PAGE: '/admin/article/page', // 分页获取文章
+            GET: (id: number) => `/admin/article/${id}`, // 获取文章详情
+            DELETE: (id: number) => `/admin/article/${id}`, // 删除文章
+            UPDATE_STATUS: (id: number) => `/admin/article/${id}/status`, // 更新文章状态
+        },
+
+        // 评论管理
+        COMMENT: {
+            LIST_PAGE: '/admin/comment/page', // 分页获取评论
+            GET: (id: number) => `/admin/comment/${id}`, // 获取评论详情
+            DELETE: (id: number) => `/admin/comment/${id}`, // 删除评论
+            UPDATE_STATUS: (id: number) => `/admin/comment/${id}/status`, // 更新评论状态
+            UPDATE_TOP: (id: number) => `/admin/comment/${id}/top`, // 更新评论置顶状态
+        },
+    },
+
     // 文章相关
     ARTICLE: {
         DETAIL: '/front/article',

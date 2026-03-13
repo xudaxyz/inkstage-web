@@ -88,7 +88,37 @@ const commentService = {
     getComments,
     createComment,
     updateComment,
-    deleteComment
+    deleteComment,
+
+    // 管理员相关方法
+    admin: {
+        // 分页获取评论列表
+        getCommentsByPage: async (params: {
+            page?: number;
+            pageSize?: number;
+            keyword?: string;
+            articleId?: number;
+            userId?: number;
+            status?: CommentStatusEnum;
+        } = {}): Promise<ApiResponse<ArticleCommentResponse>> => {
+            return await apiClient.get(API_ENDPOINTS.ADMIN.COMMENT.LIST_PAGE, { params });
+        },
+
+        // 更新评论状态
+        updateCommentStatus: async (id: number, status: CommentStatusEnum, reviewReason?: string): Promise<ApiResponse<boolean>> => {
+            return await apiClient.put(API_ENDPOINTS.ADMIN.COMMENT.UPDATE_STATUS(id), { status, reviewReason });
+        },
+
+        // 更新评论置顶状态
+        updateCommentTop: async (id: number, top: CommentTopStatus, topOrder?: number): Promise<ApiResponse<boolean>> => {
+            return await apiClient.put(API_ENDPOINTS.ADMIN.COMMENT.UPDATE_TOP(id), { top, topOrder });
+        },
+
+        // 删除评论
+        deleteComment: async (id: number): Promise<ApiResponse<boolean>> => {
+            return await apiClient.delete(API_ENDPOINTS.ADMIN.COMMENT.DELETE(id));
+        }
+    }
 };
 
 export default commentService;

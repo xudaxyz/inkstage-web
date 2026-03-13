@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Card, Table, Input, Button, Space, Tag, Modal, Form, Switch, message, Typography, Spin} from 'antd';
+import {Card, Table, Input, Button, Space, Tag, Modal, Form, Switch, message, Typography, Spin, type PaginationProps} from 'antd';
 import {
     SearchOutlined,
     DeleteOutlined,
@@ -25,20 +25,30 @@ const AdminCategories: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+        total: 0
+    });
+    const [searchKeyword, setSearchKeyword] = useState('');
 
     // 加载分类数据
-    const loadCategories = async () => {
+    const loadCategories = async (pageNum: number = 1, pageSize: number = 10, keyword: string = '') => {
         setLoading(true);
         try {
-            const response = await categoryService.adminGetAllCategories();
-            console.log(response);
+            const response = await categoryService.adminGetCategoriesByPage(keyword, pageNum, pageSize);
             if (response.code === 200 && response.data) {
-                const formattedCategories = response.data.map((category: AdminCategory) => ({
+                const formattedCategories = response.data.record.map((category: AdminCategory) => ({
                     ...category,
                     key: category.id.toString()
                 }));
                 setCategories(formattedCategories);
                 setFilteredCategories(formattedCategories);
+                setPagination({
+                    current: response.data.pageNum,
+                    pageSize: response.data.pageSize,
+                    total: response.data.total
+                });
             } else {
                 message.error('获取分类列表失败');
             }
@@ -55,22 +65,17 @@ const AdminCategories: React.FC = () => {
         loadCategories();
     }, []);
 
-    // 搜索和筛选分类
-    const handleSearch = (value: string) => {
-        filterCategories(value);
+    // 处理分页变化
+    const handleTableChange = (pagination: PaginationProps) => {
+        const current = pagination.current || 1;
+        const pageSize = pagination.pageSize || 10;
+        loadCategories(current, pageSize, searchKeyword);
     };
 
-    const filterCategories = (search: string) => {
-        let filtered = [...categories];
-
-        if (search) {
-            filtered = filtered.filter(category =>
-                category.name.toLowerCase().includes(search.toLowerCase()) ||
-                category.slug.toLowerCase().includes(search.toLowerCase())
-            );
-        }
-
-        setFilteredCategories(filtered);
+    // 搜索和筛选分类
+    const handleSearch = (value: string) => {
+        setSearchKeyword(value);
+        loadCategories(1, pagination.pageSize, value);
     };
 
     // 打开编辑分类模态框
@@ -97,7 +102,7 @@ const AdminCategories: React.FC = () => {
         try {
             await categoryService.adminDeleteCategory(id);
             message.success('分类删除成功');
-            loadCategories();
+            await loadCategories(pagination.current, pagination.pageSize);
         } catch (error) {
             console.error('删除分类失败:', error);
             message.error('删除分类失败');
@@ -121,6 +126,8 @@ const AdminCategories: React.FC = () => {
         } catch (error) {
             console.error('更新分类状态失败:', error);
             message.error('更新分类状态失败');
+            // 失败时重新加载数据
+            await loadCategories(pagination.current, pagination.pageSize);
         }
     };
 
@@ -148,7 +155,7 @@ const AdminCategories: React.FC = () => {
                     message.success('分类添加成功');
                 }
                 setIsModalVisible(false);
-                loadCategories();
+                await loadCategories(pagination.current, pagination.pageSize);
             } catch (error) {
                 console.error('保存分类失败:', error);
                 message.error('保存分类失败');
@@ -164,7 +171,7 @@ const AdminCategories: React.FC = () => {
             title: '序号',
             key: 'index',
             width: 60,
-            render: (_: unknown, __: unknown, index: number) => index + 1
+            render: (_: unknown, __: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1
         },
         {
             title: '分类名称',
@@ -290,11 +297,14 @@ const AdminCategories: React.FC = () => {
                         columns={columns}
                         dataSource={filteredCategories}
                         rowKey="id"
+                        onChange={handleTableChange}
                         pagination={{
+                            current: pagination.current,
+                            pageSize: pagination.pageSize,
+                            total: pagination.total,
                             showSizeChanger: true,
                             placement: ['bottomCenter'],
-                            pageSizeOptions: ['10', '20', '50'],
-                            defaultPageSize: 10,
+                            pageSizeOptions: ['5', '10', '20', '50'],
                             showTotal: (total) => `共 ${total} 个分类`
                         }}
                     />

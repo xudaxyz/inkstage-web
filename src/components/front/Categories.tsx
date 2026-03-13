@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
-import type {Category} from '../../services/categoryService.ts';
+import type {FrontendCategory} from '../../services/categoryService.ts';
 
 interface CategoriesProps {
-    categories?: Category[];
-    onSelect?: (category: Category | '全部') => void;
+    categories?: FrontendCategory[];
+    onSelect?: (category: FrontendCategory | '全部') => void;
     selectedId?: number | undefined;
 }
 
@@ -19,13 +19,13 @@ const Categories: React.FC<CategoriesProps> = ({
     const [showMore, setShowMore] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('全部');
     // 显示的分类（默认显示前6个）
-    const [displayCategories, setDisplayCategories] = useState<Category[]>(allCategories.slice(0, 7));
+    const [displayCategories, setDisplayCategories] = useState<FrontendCategory[]>();
     // 剩余的分类
-    const [moreCategories, setMoreCategories] = useState<Category[]>(allCategories.slice(7));
+    const [moreCategories, setMoreCategories] = useState<FrontendCategory[]>();
 
     // 当 allCategories 变化时，更新 displayCategories 和 moreCategories
     React.useEffect(() => {
-        setDisplayCategories(allCategories.slice(0, 7));
+        setDisplayCategories(allCategories);
         setMoreCategories(allCategories.slice(7));
     }, [allCategories]);
 
@@ -36,7 +36,7 @@ const Categories: React.FC<CategoriesProps> = ({
     }, [selectedId, allCategories]);
 
     // 处理分类选择
-    const handleCategorySelect = (category: Category) => {
+    const handleCategorySelect = (category: FrontendCategory) => {
         setSelectedCategory(category.name);
         if (onSelect) {
             onSelect(category.id === 0 ? '全部' : category);
@@ -47,7 +47,7 @@ const Categories: React.FC<CategoriesProps> = ({
         <div className="mt-4 mb-4">
             <div className="flex items-center gap-6">
                 <div className="flex items-center gap-6 transition-all duration-300">
-                    {displayCategories.map((category) => (
+                    {displayCategories?.map((category) => (
                         <span
                             key={category.id}
                             onClick={() => handleCategorySelect(category)}
@@ -59,7 +59,7 @@ const Categories: React.FC<CategoriesProps> = ({
                 </div>
 
                 {/* 更多分类按钮和下拉容器 */}
-                {moreCategories.length > 0 && (
+                {moreCategories !== undefined && moreCategories.length > 0 && (
                     <div className="relative inline-block group">
                         {/* 更多分类按钮 */}
                         <span
@@ -79,7 +79,7 @@ const Categories: React.FC<CategoriesProps> = ({
                                         key={category.id}
                                         onClick={() => {
                                             // 将点击的分类添加到显示列表的最后，替换掉原来的最后一个分类
-                                            const newDisplayCategories = [...displayCategories];
+                                            const newDisplayCategories = [...(displayCategories || []), category];
                                             const removedCategory = newDisplayCategories.pop();
                                             if (removedCategory) {
                                                 newDisplayCategories.push(category);

@@ -6,10 +6,10 @@ import {StatusEnum} from '../types/enums';
 export interface FrontendCategory {
     id: number;
     name: string;
-    slug: string;
-    description: string;
+    slug?: string;
+    description?: string;
     articleCount?: number;
-    status: StatusEnum;
+    status?: StatusEnum;
 }
 
 // 后台分类接口
@@ -55,11 +55,22 @@ const categoryService = {
 
     // 管理员相关方法
     /**
-     * 获取所有分类（管理员）
-     * @returns 分类列表
+     * 分页获取分类（管理员）
+     * @param keyword 关键字
+     * @param pageNum 页码
+     * @param pageSize 每页大小
+     * @returns 分页结果
      */
-    adminGetAllCategories: async (): Promise<ApiResponse<AdminCategory[]>> => {
-        return await apiClient.get(`/admin/category`);
+    adminGetCategoriesByPage: async (keyword: string, pageNum: number, pageSize: number): Promise<ApiResponse<{
+        record: AdminCategory[];
+        total: number;
+        pageNum: number;
+        pageSize: number;
+        pages: number;
+    }>> => {
+        return await apiClient.get(`/admin/category/all`, {
+            params: { keyword, pageNum, pageSize }
+        });
     },
 
     /**

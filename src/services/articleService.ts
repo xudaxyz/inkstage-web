@@ -100,8 +100,17 @@ export interface LatestArticle {
     publishTime: string;
 }
 
-// 文章列表响应类型
-export interface ArticleListResponse<T = IndexArticleList> {
+// 前台首页文章列表响应类型
+export interface IndexArticleListResponse<T = IndexArticleList> {
+    record: T[];
+    total: number;
+    size: number;
+    current: number;
+    pages: number;
+}
+
+// 后台文章列表响应类型
+export interface AdminArticleListResponse<T = AdminArticleList> {
     record: T[];
     total: number;
     size: number;
@@ -141,6 +150,23 @@ export interface ArticleDetailInfo {
     categoryId: number;
     categoryName: string;
     tags: Tag[]
+}
+
+// 文章类型定义
+export interface AdminArticleList {
+    id: number;
+    title: string;
+    authorName: string;
+    categoryName: string;
+    articleStatus: string;
+    publishTime: string;
+    readCount: number;
+    likeCount: number;
+    commentCount: number;
+    top: string;
+    tags: string[];
+    createTime: string;
+    updateTime: string;
 }
 
 // 文章 API 服务
@@ -196,7 +222,7 @@ const articleService = {
         keyword?: string;
         sortBy?: string;
         sortOrder?: string
-    } = {}): Promise<ApiResponse<ArticleListResponse>> => {
+    } = {}): Promise<ApiResponse<IndexArticleListResponse>> => {
         const queryDTO = {
             page: query.page || 1,
             pageSize: query.pageSize || 10,
@@ -225,7 +251,7 @@ const articleService = {
     },
 
     // 获取用户文章列表
-    getUserArticles: async (userId: number, page: number = 1, size: number = 10): Promise<ApiResponse<ArticleListResponse>> => {
+    getUserArticles: async (userId: number, page: number = 1, size: number = 10): Promise<ApiResponse<IndexArticleListResponse>> => {
         return await apiClient.get(API_ENDPOINTS.ARTICLE.USER_ARTICLES(userId), {params: {page, size}});
     },
 
@@ -275,7 +301,7 @@ const articleService = {
         keyword?: string;
         page?: number;
         size?: number;
-    }): Promise<ApiResponse<ArticleListResponse<MyArticleList>>> => {
+    }): Promise<ApiResponse<IndexArticleListResponse<MyArticleList>>> => {
         return await apiClient.get(API_ENDPOINTS.USER.MY_ARTICLES, {params});
     },
 
@@ -287,7 +313,7 @@ const articleService = {
         size?: number;
         sortBy?: string;
         sortOrder?: string;
-    }): Promise<ApiResponse<ArticleListResponse<MyArticleCollectionList>>> => {
+    }): Promise<ApiResponse<IndexArticleListResponse<MyArticleCollectionList>>> => {
         return await apiClient.get('/front/article/collections', {params});
     },
 
@@ -314,6 +340,35 @@ const articleService = {
     // 创建收藏文件夹
     createCollectionFolder: async (params: { folderName: string; folderDescription?: string }): Promise<ApiResponse<number>> => {
         return await apiClient.post('/front/article/collections/folders', params);
+    },
+
+    // 管理员相关方法
+    admin: {
+        // 分页获取文章列表
+        getArticlesByPage: async (params: {
+            page?: number;
+            pageSize?: number;
+            keyword?: string;
+            categoryId?: number;
+            articleStatus?: ArticleStatusEnum | '';
+        } = {}): Promise<ApiResponse<AdminArticleListResponse>> => {
+            return await apiClient.get(API_ENDPOINTS.ADMIN.ARTICLE.LIST_PAGE, { params });
+        },
+
+        // 获取文章详情
+        getArticleById: async (id: number): Promise<ApiResponse<Article>> => {
+            return await apiClient.get(API_ENDPOINTS.ADMIN.ARTICLE.GET(id));
+        },
+
+        // 删除文章
+        deleteArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+            return await apiClient.delete(API_ENDPOINTS.ADMIN.ARTICLE.DELETE(id));
+        },
+
+        // 更新文章状态
+        updateArticleStatus: async (id: number, status: number): Promise<ApiResponse<Article>> => {
+            return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.UPDATE_STATUS(id), { status });
+        }
     }
 };
 
