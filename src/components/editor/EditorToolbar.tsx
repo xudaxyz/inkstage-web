@@ -38,10 +38,10 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, tools, className 
               disabled={isDisabled}
               className={`
                  px-3 py-1.5 text-sm font-medium transition-all duration-200
-                ${isActive 
-                  ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                  : 'bg-transparent text-gray-600 hover:bg-gray-100'
-                }
+                ${isActive
+            ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+            : 'bg-transparent text-gray-600 hover:bg-gray-100'
+          }
                 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
               `}
               title={tool.label}

@@ -1,18 +1,18 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import App from './App.tsx';
 
 // Sentry初始化
-import * as Sentry from '@sentry/react'
+import * as Sentry from '@sentry/react';
 
 // 只有在生产环境才初始化Sentry
 if (import.meta.env.PROD) {
   Sentry.init({
     dsn: 'https://your-dsn@sentry.io/your-project',
     // 简化Sentry配置，移除需要额外安装的集成
-    tracesSampleRate: 1.0,
-  })
+    tracesSampleRate: 1.0
+  });
 }
 
 createRoot(document.getElementById('root')!).render(
@@ -24,5 +24,5 @@ createRoot(document.getElementById('root')!).render(
     ) : (
       <App />
     )}
-  </StrictMode>,
-)
+  </StrictMode>
+);

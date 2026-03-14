@@ -28,11 +28,11 @@ export const formatDate = (
 ): string => {
   try {
     const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
-    
+
     if (isNaN(dateObj.getTime())) {
       return '无效日期';
     }
-    
+
     return new Intl.DateTimeFormat(locale, options).format(dateObj);
   } catch (error) {
     console.error('日期格式化失败:', error);
@@ -123,7 +123,7 @@ export const getRelativeTime = (date: Date | number | string): string => {
     const diffMins = Math.floor(diffSecs / 60);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
-    
+
     if (diffSecs < 60) {
       return '刚刚';
     } else if (diffMins < 60) {

@@ -82,7 +82,7 @@ const ProfileLayout: React.FC = () => {
                 <div className="mb-6">
                   <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">个人中心</h1>
                 </div>
-                
+
                 <nav>
                   <ul className="space-y-2">
                     {menuItems.map((item) => (

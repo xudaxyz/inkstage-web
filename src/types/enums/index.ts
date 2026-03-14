@@ -19,7 +19,7 @@ export type EnumValue<T extends EnumLike> = T[keyof T];
  * @param code 代码值
  * @returns 对应的枚举值或 undefined
  */
-export function getEnumByCode<T extends EnumLike>(enumObj: T, code: number | string): EnumValue<T> | undefined {
+export function getEnumByCode<T extends EnumLike> (enumObj: T, code: number | string): EnumValue<T> | undefined {
   return Object.values(enumObj).find((value) => value === code) as EnumValue<T> | undefined;
 }
 
@@ -28,7 +28,7 @@ export function getEnumByCode<T extends EnumLike>(enumObj: T, code: number | str
  * @param enumObj 枚举对象
  * @returns 枚举值数组
  */
-export function getEnumValues<T extends EnumLike>(enumObj: T): EnumValue<T>[] {
+export function getEnumValues<T extends EnumLike> (enumObj: T): EnumValue<T>[] {
   return Object.values(enumObj) as EnumValue<T>[];
 }
 
@@ -37,7 +37,7 @@ export function getEnumValues<T extends EnumLike>(enumObj: T): EnumValue<T>[] {
  * @param enumObj 枚举对象
  * @returns 枚举键数组
  */
-export function getEnumKeys<T extends EnumLike>(enumObj: T): Array<keyof T> {
+export function getEnumKeys<T extends EnumLike> (enumObj: T): Array<keyof T> {
   return Object.keys(enumObj) as Array<keyof T>;
 }
 
@@ -47,6 +47,6 @@ export function getEnumKeys<T extends EnumLike>(enumObj: T): Array<keyof T> {
  * @param value 要检查的值
  * @returns 是否为有效的枚举值
  */
-export function isValidEnumValue<T extends EnumLike>(enumObj: T, value: unknown): value is EnumValue<T> {
+export function isValidEnumValue<T extends EnumLike> (enumObj: T, value: unknown): value is EnumValue<T> {
   return Object.values(enumObj).includes(value as EnumValue<T>);
 }

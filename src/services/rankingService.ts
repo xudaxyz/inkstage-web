@@ -1,30 +1,20 @@
-import apiClient from './apiClient';
-import { API_ENDPOINTS } from './apiEndpoints';
+import { apiClient, API_ENDPOINTS } from '../api';
+import type { ApiResponse } from '../types/common';
+import type { HotArticle } from '../types/article';
+import type { HotUser } from '../types/user';
 
-// 类型定义
-export interface HotArticle {
-  id: string;
-  title: string;
-  authorName: string;
-  authorId: string;
-  avatar: string;
-  readCount: number;
-  likeCount: number;
-  commentCount: number;
-  publishTime: string;
-  categoryName: string;
-  summary: string;
-  coverImage?: string;
-}
+// 参数验证函数
+const validateLimitParam = (limit: number): void => {
+  if (limit <= 0) {
+    throw new Error('限制数量必须是正整数');
+  }
+};
 
-export interface HotUser {
-  id: string;
-  nickname: string;
-  avatar: string;
-  articleCount: number;
-  followerCount: number;
-  likeCount: number;
-}
+const validateTimeRangeParam = (timeRange: string): void => {
+  if (!['day', 'week', 'month'].includes(timeRange)) {
+    throw new Error('时间范围必须是day、week或month');
+  }
+};
 
 // 服务方法
 export const rankingService = {
@@ -34,16 +24,12 @@ export const rankingService = {
    * @param timeRange 时间范围：day, week, month
    * @returns 热门文章列表
    */
-  getHotArticles: async (limit: number = 20, timeRange: string = 'week') => {
-    try {
-      const response = await apiClient.get<HotArticle[]>(API_ENDPOINTS.FRONT.INDEX.HOT_ARTICLES, {
-        params: { limit, timeRange },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('获取热门文章失败:', error);
-      throw error;
-    }
+  getHotArticles: async (limit: number = 20, timeRange: string = 'week'): Promise<ApiResponse<HotArticle[]>> => {
+    validateLimitParam(limit);
+    validateTimeRangeParam(timeRange);
+    return await apiClient.get(API_ENDPOINTS.FRONT.INDEX.HOT_ARTICLES, {
+      params: { limit, timeRange }
+    });
   },
 
   /**
@@ -51,16 +37,11 @@ export const rankingService = {
    * @param limit 限制数量
    * @returns 最新文章列表
    */
-  getLatestArticles: async (limit: number = 5) => {
-    try {
-      const response = await apiClient.get<HotArticle[]>(API_ENDPOINTS.FRONT.INDEX.LATEST_ARTICLES, {
-        params: { limit },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('获取最新文章失败:', error);
-      throw error;
-    }
+  getLatestArticles: async (limit: number = 5): Promise<ApiResponse<HotArticle[]>> => {
+    validateLimitParam(limit);
+    return await apiClient.get(API_ENDPOINTS.FRONT.INDEX.LATEST_ARTICLES, {
+      params: { limit }
+    });
   },
 
   /**
@@ -68,16 +49,11 @@ export const rankingService = {
    * @param limit 限制数量
    * @returns 热门用户列表
    */
-  getHotUsers: async (limit: number = 10) => {
-    try {
-      const response = await apiClient.get<HotUser[]>(API_ENDPOINTS.FRONT.INDEX.HOT_USERS, {
-        params: { limit },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('获取热门用户失败:', error);
-      throw error;
-    }
+  getHotUsers: async (limit: number = 10): Promise<ApiResponse<HotUser[]>> => {
+    validateLimitParam(limit);
+    return await apiClient.get(API_ENDPOINTS.FRONT.INDEX.HOT_USERS, {
+      params: { limit }
+    });
   }
 };
 

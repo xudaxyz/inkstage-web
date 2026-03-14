@@ -4,7 +4,7 @@ import { LikeOutlined, DislikeOutlined, MessageOutlined, FlagOutlined, EllipsisO
 import type { ArticleComment } from '../../services/commentService';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
-import {formatDateTimeShort} from '../../utils/dateUtils';
+import { formatDateTimeShort } from '../../utils/date';
 
 interface ReplyItemProps {
   reply: ArticleComment;
@@ -22,7 +22,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
   currentUserAvatar
 }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
-  
+
   const { toggleLike, toggleDislike, refreshComments } = useCommentStore();
 
   const handleReply = () => {

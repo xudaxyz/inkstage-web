@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import { ROUTES } from '../../../routes/constants';
 import readingHistoryService, { type ReadingHistory } from '../../../services/readingHistoryService';
-import {formatDateOnly, formatTimeShort} from '../../../utils/dateUtils';
+import { formatDateOnly, formatTimeShort } from '../../../utils/date';
 
 const ReadingHistories: React.FC = () => {
   // 状态管理
@@ -46,11 +46,11 @@ const ReadingHistories: React.FC = () => {
 
   // 按日期分组
   const groupedHistories = useMemo(() => {
-    const filteredHistories = histories.filter(history => 
+    const filteredHistories = histories.filter(history =>
       history.title.toLowerCase().includes(searchText.toLowerCase()) ||
       history.authorName.toLowerCase().includes(searchText.toLowerCase())
     );
-    
+
     return filteredHistories.reduce((groups: Record<string, ReadingHistory[]>, history) => {
       const date = history.readDate ? formatDateOnly(history.readDate) : '';
       if (!groups[date]) {
@@ -63,14 +63,14 @@ const ReadingHistories: React.FC = () => {
 
   // 分页处理
   const paginatedGroups = useMemo(() => {
-    const allItems = Object.entries(groupedHistories).flatMap(([date, items]) => 
+    const allItems = Object.entries(groupedHistories).flatMap(([date, items]) =>
       items.map(item => ({ ...item, date }))
     );
-    
+
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedItems = allItems.slice(startIndex, endIndex);
-    
+
     // 重新分组
     return paginatedItems.reduce((groups: Record<string, ReadingHistory[]>, item) => {
       const date = item.date;
@@ -168,7 +168,7 @@ const ReadingHistories: React.FC = () => {
                 <ClockCircleOutlined className="mr-2" />
                 {date}
               </h2>
-              
+
               {/* 当日阅读历史 */}
               <div className="space-y-4">
                 {items.map((history) => (
@@ -225,7 +225,7 @@ const ReadingHistories: React.FC = () => {
                                 <ClockCircleOutlined />
                                 <span>{history.readTime ? formatTimeShort(history.readTime) : ''}</span>
                               </Space>
-                              
+
                               {/* 阅读时长 */}
                               <Space size={4}>
                                 <ClockCircleOutlined />

@@ -14,6 +14,6 @@ export const DefaultStatusMap = {
 };
 
 // 获取默认状态描述
-export function getDefaultStatusText(status: DefaultStatusEnum): string {
+export function getDefaultStatusText (status: DefaultStatusEnum): string {
   return DefaultStatusMap[status] || '未知';
 }

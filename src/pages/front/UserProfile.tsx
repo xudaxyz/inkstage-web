@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Avatar, Button, message, Dropdown, Spin } from 'antd';
 import {
-    UserOutlined,
-    CalendarOutlined,
-    HeartOutlined,
-    MessageOutlined,
-    MoreOutlined,
-    EyeOutlined,
-    ManOutlined, WomanOutlined
+  UserOutlined,
+  CalendarOutlined,
+  HeartOutlined,
+  MessageOutlined,
+  MoreOutlined,
+  EyeOutlined,
+  ManOutlined, WomanOutlined
 } from '@ant-design/icons';
 import Header from '../../components/common/Header.tsx';
 import Footer from '../../components/common/Footer.tsx';
 import type { IndexArticleList } from '../../services/articleService.ts';
 import articleService from '../../services/articleService.ts';
 import { getUserPublicProfile } from '../../services/userService.ts';
-import {GenderEnum} from "../../types/enums";
-import {formatDateOnly, formatDateTimeShort} from '../../utils/dateUtils';
+import { GenderEnum } from '../../types/enums';
+import { formatDateOnly, formatDateTimeShort } from '../../utils/date';
 
 // 作者信息类型定义
 interface AuthorInfo {
@@ -74,12 +74,12 @@ const UserProfile: React.FC = () => {
         try {
           setLoading(true);
           const userData = await getUserPublicProfile(Number(id));
-          
+
           // 验证userData是否存在
           if (!userData) {
             throw new Error('获取用户数据失败：返回数据为空');
           }
-          
+
           // 转换数据格式
           const formattedAuthor: AuthorInfo = {
             id: userData.id || 0,
@@ -218,26 +218,26 @@ const UserProfile: React.FC = () => {
                     <div className="flex items-center gap-3 mb-3">
                       <h2 className="text-3xl font-bold tracking-tight">{author.nickname}</h2>
                       <span className="text-sm px-3 py-1 bg-white/20 rounded-full backdrop-blur-sm">
-                          {author?.gender === GenderEnum.MALE && (
-                              <span><ManOutlined/></span>
-                          )}
-                          {author?.gender === GenderEnum.FEMALE && (
-                              <span><WomanOutlined/></span>
-                          )}
+                        {author?.gender === GenderEnum.MALE && (
+                          <span><ManOutlined/></span>
+                        )}
+                        {author?.gender === GenderEnum.FEMALE && (
+                          <span><WomanOutlined/></span>
+                        )}
                       </span>
                     </div>
-                    
+
                     {/* 第二行：个人简介 */}
                     <div className="mb-4 max-w-[600px]">
                       {author.signature ? (
                         <>
-                          <p 
+                          <p
                             className={`text-gray-200 text-lg leading-relaxed transition-all duration-300 ${showFullSignature ? 'line-clamp-none' : 'line-clamp-1'}`}
                           >
                             {author.signature}
                           </p>
                           {author.signature.length > 50 && (
-                            <button 
+                            <button
                               onClick={() => setShowFullSignature(!showFullSignature)}
                               className="text-blue-400 text-sm mt-1 hover:text-blue-300 transition-colors"
                             >
@@ -251,13 +251,13 @@ const UserProfile: React.FC = () => {
                         </p>
                       )}
                     </div>
-                    
+
                     {/* 第三行：加入时间 */}
                     <div className="flex items-center gap-2 mb-6 text-sm text-gray-200">
                       <CalendarOutlined size={16} />
                       <span>加入于 {author.joinTime}</span>
                     </div>
-                    
+
                     {/* 第四行：统计数据 - 水平放置 */}
                     <div className="flex flex-wrap items-center gap-8">
                       <div className="flex flex-col items-center group">
@@ -297,8 +297,8 @@ const UserProfile: React.FC = () => {
                   <>
                     <div className="divide-y divide-gray-100">
                       {articles.map((article) => (
-                        <div 
-                          key={article.id} 
+                        <div
+                          key={article.id}
                           className="px-6 py-6 hover:bg-gray-50 transition-colors duration-300 group"
                         >
                           <div className="flex flex-col md:flex-row gap-6">
@@ -306,8 +306,8 @@ const UserProfile: React.FC = () => {
                             <div className="flex-1">
                               {/* 文章标题 */}
                               <h3 className="text-xl font-semibold mb-3 leading-tight">
-                                <a 
-                                  href={`/article/${article.id}`} 
+                                <a
+                                  href={`/article/${article.id}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-gray-800 hover:text-blue-600 transition-colors duration-300 group-hover:translate-x-1"
@@ -315,12 +315,12 @@ const UserProfile: React.FC = () => {
                                   {article.title}
                                 </a>
                               </h3>
-                              
+
                               {/* 文章简介 */}
                               <p className="text-gray-600 mb-4 line-clamp-2 text-base leading-relaxed">
                                 {article.summary || '暂无简介'}
                               </p>
-                              
+
                               {/* 发布时间和互动数据 */}
                               <div className="flex flex-wrap items-center justify-between gap-4">
                                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
@@ -338,7 +338,7 @@ const UserProfile: React.FC = () => {
                                     <span>{article.readCount}</span>
                                   </div>
                                 </div>
-                                
+
                                 {/* 操作按钮 */}
                                 <div className="flex items-center gap-3">
                                   <Dropdown
@@ -363,7 +363,7 @@ const UserProfile: React.FC = () => {
                                 </div>
                               </div>
                             </div>
-                            
+
                             {/* 右侧封面图 */}
                             {article.coverImage && (
                               <div className="w-full md:w-56 h-36 rounded-lg overflow-hidden shrink-0 shadow-md transform transition-all duration-300 group-hover:scale-105">
@@ -380,7 +380,7 @@ const UserProfile: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                    
+
                     {/* 空状态 */}
                     {articles.length === 0 && (
                       <div className="py-16 text-center">

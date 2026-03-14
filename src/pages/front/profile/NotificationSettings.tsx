@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Switch, List, message, Popconfirm, Divider } from 'antd';
-import {BellOutlined, MailOutlined, PushpinOutlined} from '@ant-design/icons';
+import { BellOutlined, MailOutlined, PushpinOutlined } from '@ant-design/icons';
 import notificationService, { type NotificationSetting } from '../../../services/notificationService';
 
 const NotificationSettings: React.FC = () => {
@@ -18,7 +18,7 @@ const NotificationSettings: React.FC = () => {
     feedback: true,
     system: true,
     emailNotification: false,
-    siteNotification: true,
+    siteNotification: true
   });
 
   // 加载通知设置
@@ -43,7 +43,7 @@ const NotificationSettings: React.FC = () => {
             feedback: Boolean(settings.feedback),
             system: Boolean(settings.system),
             emailNotification: Boolean(settings.emailNotification),
-            siteNotification: Boolean(settings.siteNotification),
+            siteNotification: Boolean(settings.siteNotification)
           };
           setNotificationSettings(formattedSettings);
         } else {
@@ -61,7 +61,7 @@ const NotificationSettings: React.FC = () => {
   const handleSettingChange = async (key: keyof NotificationSetting, value: boolean) => {
     const newSettings = {
       ...notificationSettings,
-      [key]: value,
+      [key]: value
     };
     setNotificationSettings(newSettings);
 
@@ -105,7 +105,7 @@ const NotificationSettings: React.FC = () => {
             feedback: Boolean(settings.feedback),
             system: Boolean(settings.system),
             emailNotification: Boolean(settings.emailNotification),
-            siteNotification: Boolean(settings.siteNotification),
+            siteNotification: Boolean(settings.siteNotification)
           };
           setNotificationSettings(formattedSettings);
         }
@@ -124,58 +124,58 @@ const NotificationSettings: React.FC = () => {
     {
       key: 'articlePublish' as keyof NotificationSetting,
       title: '文章发布通知',
-      description: '接收文章发布成功的通知',
+      description: '接收文章发布成功的通知'
     },
     {
       key: 'articleLike' as keyof NotificationSetting,
       title: '文章点赞通知',
-      description: '接收文章被点赞的通知',
+      description: '接收文章被点赞的通知'
     },
     {
       key: 'articleCollection' as keyof NotificationSetting,
       title: '文章收藏通知',
-      description: '接收文章被收藏的通知',
+      description: '接收文章被收藏的通知'
     },
     {
       key: 'articleComment' as keyof NotificationSetting,
       title: '文章评论通知',
-      description: '接收文章收到评论的通知',
+      description: '接收文章收到评论的通知'
     },
     {
       key: 'commentReply' as keyof NotificationSetting,
       title: '评论回复通知',
-      description: '接收评论收到回复的通知',
+      description: '接收评论收到回复的通知'
     },
     {
       key: 'commentLike' as keyof NotificationSetting,
       title: '评论点赞通知',
-      description: '接收评论被点赞的通知',
+      description: '接收评论被点赞的通知'
     },
     {
       key: 'follow' as keyof NotificationSetting,
       title: '关注通知',
-      description: '接收被关注的通知',
+      description: '接收被关注的通知'
     },
     {
       key: 'message' as keyof NotificationSetting,
       title: '私信通知',
-      description: '接收私信消息的通知',
+      description: '接收私信消息的通知'
     },
     {
       key: 'report' as keyof NotificationSetting,
       title: '举报处理通知',
-      description: '接收举报处理结果的通知',
+      description: '接收举报处理结果的通知'
     },
     {
       key: 'feedback' as keyof NotificationSetting,
       title: '反馈处理通知',
-      description: '接收反馈处理结果的通知',
+      description: '接收反馈处理结果的通知'
     },
     {
       key: 'system' as keyof NotificationSetting,
       title: '系统通知',
-      description: '接收系统级别的重要通知',
-    },
+      description: '接收系统级别的重要通知'
+    }
   ];
 
   // 推送渠道设置
@@ -184,14 +184,14 @@ const NotificationSettings: React.FC = () => {
       key: 'siteNotification' as keyof NotificationSetting,
       title: '站内信',
       description: '在系统内接收消息通知',
-      icon: <BellOutlined className="mr-2 text-blue-500" />,
+      icon: <BellOutlined className="mr-2 text-blue-500" />
     },
     {
       key: 'emailNotification' as keyof NotificationSetting,
       title: '邮件',
       description: '通过电子邮件接收通知',
-      icon: <MailOutlined className="mr-2 text-green-500" />,
-    },
+      icon: <MailOutlined className="mr-2 text-green-500" />
+    }
   ];
 
   return (
@@ -259,8 +259,8 @@ const NotificationSettings: React.FC = () => {
           okText="确定"
           cancelText="取消"
         >
-          <Button 
-            type="default" 
+          <Button
+            type="default"
           >
             恢复默认设置
           </Button>

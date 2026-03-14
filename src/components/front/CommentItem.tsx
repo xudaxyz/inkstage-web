@@ -6,7 +6,7 @@ import { CommentTopStatus } from '../../types/enums/CommentEnum.ts';
 import ReplyItem from './ReplyItem';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
-import {formatDateTimeShort} from '../../utils/dateUtils';
+import { formatDateTimeShort } from '../../utils/date';
 
 interface CommentItemProps {
   comment: ArticleComment;
@@ -25,7 +25,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
 }) => {
   const [showReplyForm, setShowReplyForm] = useState<{ [key: number]: boolean }>({});
   const [isExpanded, setIsExpanded] = useState(true);
-  
+
   const { toggleLike, toggleDislike, deleteComment, refreshComments } = useCommentStore();
 
   const handleReply = (commentId: number) => {

@@ -31,12 +31,12 @@ interface ErrorHandlerConfig {
 export class ErrorHandler {
   private static instance: ErrorHandler;
 
-  private constructor() {}
+  private constructor () {}
 
   /**
    * 获取单例实例
    */
-  public static getInstance(): ErrorHandler {
+  public static getInstance (): ErrorHandler {
     if (!ErrorHandler.instance) {
       ErrorHandler.instance = new ErrorHandler();
     }
@@ -48,7 +48,7 @@ export class ErrorHandler {
    * @param error 错误对象
    * @param config 错误处理配置
    */
-  public handleError(error: unknown, config?: ErrorHandlerConfig): void {
+  public handleError (error: unknown, config?: ErrorHandlerConfig): void {
     const { showMessage = true, redirectToLogin = false, redirectDelay = 1500, customMessage } = config || {};
 
     // 分析错误类型
@@ -70,7 +70,7 @@ export class ErrorHandler {
    * 分析错误类型和消息
    * @param error 错误对象
    */
-  private analyzeError(error: unknown): { type: ErrorType; message: string } {
+  private analyzeError (error: unknown): { type: ErrorType; message: string } {
     if (error instanceof Error) {
       // 处理标准Error对象
       const errorMessage = error.message;
@@ -85,7 +85,7 @@ export class ErrorHandler {
         return { type: ErrorType.NETWORK_ERROR, message: errorMessage };
       }
 
-       return { type: ErrorType.UNKNOWN_ERROR, message: errorMessage };
+      return { type: ErrorType.UNKNOWN_ERROR, message: errorMessage };
     }
 
     // 处理其他类型的错误
@@ -107,25 +107,25 @@ export class ErrorHandler {
    * @param errorType 错误类型
    * @param errorMessage 错误消息
    */
-  private showErrorMessage(errorType: ErrorType, errorMessage: string): void {
+  private showErrorMessage (errorType: ErrorType, errorMessage: string): void {
     switch (errorType) {
       case ErrorType.AUTH_ERROR:
         void message.error(errorMessage);
         break;
       case ErrorType.NETWORK_ERROR:
-          void message.warning(errorMessage);
+        void message.warning(errorMessage);
         break;
       case ErrorType.SERVER_ERROR:
-          void message.error(errorMessage);
+        void message.error(errorMessage);
         break;
       case ErrorType.CLIENT_ERROR:
-          void message.info(errorMessage);
+        void message.info(errorMessage);
         break;
       case ErrorType.VALIDATION_ERROR:
-          void message.warning(errorMessage);
+        void message.warning(errorMessage);
         break;
       default:
-          void message.warning(errorMessage);
+        void message.warning(errorMessage);
     }
   }
 
@@ -133,9 +133,9 @@ export class ErrorHandler {
    * 处理认证错误
    * @param delay 跳转延迟时间
    */
-  private redirectToLogin(delay: number): void {
+  private redirectToLogin (delay: number): void {
     // 使用userStore的logout方法清除用户信息
-      useUserStore.getState().logout();
+    useUserStore.getState().logout();
 
     // 延迟跳转到登录页
     setTimeout(() => {
@@ -147,7 +147,7 @@ export class ErrorHandler {
    * 处理API响应错误
    * @param error API错误对象
    */
-  public handleApiError(error: unknown): void {
+  public handleApiError (error: unknown): void {
     this.handleError(error, {
       showMessage: true,
       redirectToLogin: false
@@ -158,7 +158,7 @@ export class ErrorHandler {
    * 处理认证相关错误
    * @param error 认证错误对象
    */
-  public handleAuthError(error: unknown): void {
+  public handleAuthError (error: unknown): void {
     this.handleError(error, {
       showMessage: true,
       redirectToLogin: true,
@@ -166,16 +166,6 @@ export class ErrorHandler {
     });
   }
 
-  /**
-   * 处理网络错误
-   * @param error 网络错误对象
-   */
-  // public handleNetworkError(error: unknown): void {
-  //   this.handleError(error, {
-  //     showMessage: true,
-  //     redirectToLogin: false
-  //   });
-  // }
 }
 
 // 导出单例实例

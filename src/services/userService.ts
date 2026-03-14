@@ -1,170 +1,87 @@
-import apiClient from './apiClient';
-import {API_ENDPOINTS} from './apiEndpoints';
-import {type GenderEnum, type UserRoleEnum, type UserStatusEnum} from "../types/enums";
-import type {ApiResponse} from '../types/auth';
+import { apiClient, API_ENDPOINTS } from '../api';
+import { type UserRoleEnum, type UserStatusEnum } from '../types/enums';
+import type { ApiResponse } from '../types/common';
+import type {
+  UserInfo,
+  AdminUser,
+  AdminUserQuery,
+  PageResult
+} from '../types/user';
 
-// 用户信息类型定义
-export interface UserInfo {
-    id: number;
-    name: string;
-    nickname: string;
-    email: string;
-    avatar: string;
-    coverImage: string;
-    signature: string;
-    gender: GenderEnum;
-    birthDate?: string;
-    location?: string;
-    articleCount: number;
-    likeCount: number;
-    commentCount: number;
-    followerCount: number;
-    followCount: number;
-    registerTime: string;
-}
+// 参数验证函数
+const validateIdParam = (id: number): void => {
+  if (id == null || id <= 0) {
+    throw new Error('ID必须是正整数');
+  }
+};
 
-// 后台用户管理相关类型
-export interface AdminUserArticle {
-    id: number;
-    title: string;
-    summary: string;
-    articleStatus: string;
-    reviewStatus: string;
-    publishTime: string;
-    readCount: number;
-    commentCount: number;
-    likeCount: number;
-}
-
-export interface AdminUserComment {
-    id: number;
-    articleId: number;
-    articleTitle: string;
-    content: string;
-    status: string;
-    top: string;
-    likeCount: number;
-    replyCount: number;
-    createTime: string;
-}
-
-export interface AdminUser {
-    id: number;
-    username: string;
-    nickname: string;
-    email: string;
-    phone: string;
-    role: UserRoleEnum;
-    status: UserStatusEnum;
-    registerTime: string;
-    lastLoginTime: string;
-    articleCount?: number;
-    commentCount?: number;
-    emailVerified?: string;
-    phoneVerified?: string;
-    avatar?: string;
-    signature?: string;
-    gender?: string;
-    location?: string;
-    website?: string;
-    followCount?: number;
-    followerCount?: number;
-    likeCount?: number;
-    lastLoginIp?: string;
-    registerIp?: string;
-    privacy?: string;
-    recentArticles?: AdminUserArticle[];
-    recentComments?: AdminUserComment[];
-}
-
-// 分页请求参数
-export interface AdminUserQuery {
-    pageNum: number;
-    pageSize: number;
-    keyword?: string;
-    userRole?: UserRoleEnum;
-    status?: UserStatusEnum;
-    startDate?: string;
-    endDate?: string;
-}
-
-// 分页响应结果
-export interface PageResult<T> {
-    record: T[];
-    total: number;
-    pageSize: number;
-    current: number;
-}
+const validateAdminUserQuery = (params: AdminUserQuery): void => {
+  if (params.pageNum == null || params.pageNum <= 0) {
+    throw new Error('页码必须是正整数');
+  }
+  if (params.pageSize == null || params.pageSize <= 0) {
+    throw new Error('每页数量必须是正整数');
+  }
+};
 
 // 获取用户公开资料
 export const getUserPublicProfile = async (userId: number): Promise<UserInfo> => {
-    try {
-        const response = await apiClient.get(API_ENDPOINTS.FRONT.USER.PUBLIC_PROFILE(userId));
-        return response.data;
-    } catch (error) {
-        console.error('获取用户资料失败:', error);
-        throw error;
-    }
+  validateIdParam(userId);
+  return await apiClient.get(API_ENDPOINTS.FRONT.USER.PUBLIC_PROFILE(userId));
 };
 
 // 获取当前用户资料
 export const getCurrentUserProfile = async (): Promise<UserInfo> => {
-    try {
-        const response = await apiClient.get(API_ENDPOINTS.FRONT.USER.PROFILE);
-        return response.data;
-    } catch (error) {
-        console.error('获取当前用户资料失败:', error);
-        throw error;
-    }
+  return await apiClient.get(API_ENDPOINTS.FRONT.USER.PROFILE);
 };
 
 // 更新用户资料
 export const updateUserProfile = async (userData: Partial<UserInfo>): Promise<UserInfo> => {
-    try {
-        const response = await apiClient.put(API_ENDPOINTS.FRONT.USER.PROFILE, userData);
-        return response.data;
-    } catch (error) {
-        console.error('更新用户资料失败:', error);
-        throw error;
-    }
+  return await apiClient.put(API_ENDPOINTS.FRONT.USER.PROFILE, userData);
 };
 
 // 后台用户管理相关方法
 const admin = {
-    // 分页获取用户列表
-    getUsersByPage: async (params: AdminUserQuery): Promise<ApiResponse<PageResult<AdminUser>>> => {
-        return await apiClient.post(API_ENDPOINTS.ADMIN.USER.LIST, params);
-    },
+  // 分页获取用户列表
+  getUsersByPage: async (params: AdminUserQuery): Promise<ApiResponse<PageResult<AdminUser>>> => {
+    validateAdminUserQuery(params);
+    return await apiClient.post(API_ENDPOINTS.ADMIN.USER.LIST, params);
+  },
 
-    // 根据ID获取用户
-    getUserById: async (id: number): Promise<ApiResponse<AdminUser>> => {
-        return await apiClient.get(API_ENDPOINTS.ADMIN.USER.DETAIL(id));
-    },
+  // 根据ID获取用户
+  getUserById: async (id: number): Promise<ApiResponse<AdminUser>> => {
+    validateIdParam(id);
+    return await apiClient.get(API_ENDPOINTS.ADMIN.USER.DETAIL(id));
+  },
 
-    // 删除用户
-    deleteUser: async (id: number): Promise<ApiResponse<void>> => {
-        return await apiClient.delete(API_ENDPOINTS.ADMIN.USER.DELETE(id));
-    },
+  // 删除用户
+  deleteUser: async (id: number): Promise<ApiResponse<void>> => {
+    validateIdParam(id);
+    return await apiClient.delete(API_ENDPOINTS.ADMIN.USER.DELETE(id));
+  },
 
-    // 更新用户信息
-    updateUser: async (id: number, userData: Partial<AdminUser>): Promise<ApiResponse<AdminUser>> => {
-            return await apiClient.put(API_ENDPOINTS.ADMIN.USER.UPDATE(id), userData);
+  // 更新用户信息
+  updateUser: async (id: number, userData: Partial<AdminUser>): Promise<ApiResponse<AdminUser>> => {
+    validateIdParam(id);
+    return await apiClient.put(API_ENDPOINTS.ADMIN.USER.UPDATE(id), userData);
+  },
 
-    },
-    // 更新用户状态
-    updateUserStatus: async (id: number, userStatus: UserStatusEnum): Promise<ApiResponse<AdminUser>> => {
-        return await apiClient.put(API_ENDPOINTS.ADMIN.USER.UPDATE_STATUS(id), userStatus);
-    },
+  // 更新用户状态
+  updateUserStatus: async (id: number, userStatus: UserStatusEnum): Promise<ApiResponse<AdminUser>> => {
+    validateIdParam(id);
+    return await apiClient.put(API_ENDPOINTS.ADMIN.USER.UPDATE_STATUS(id), userStatus);
+  },
 
-    // 更新用户角色
-    updateUserRole: async (id: number, userRole: UserRoleEnum): Promise<ApiResponse<AdminUser>> => {
-        return await apiClient.put(API_ENDPOINTS.ADMIN.USER.UPDATE_ROLE(id), userRole);
-    }
+  // 更新用户角色
+  updateUserRole: async (id: number, userRole: UserRoleEnum): Promise<ApiResponse<AdminUser>> => {
+    validateIdParam(id);
+    return await apiClient.put(API_ENDPOINTS.ADMIN.USER.UPDATE_ROLE(id), userRole);
+  }
 };
 
 export default {
-    getUserPublicProfile,
-    getCurrentUserProfile,
-    updateUserProfile,
-    admin
+  getUserPublicProfile,
+  getCurrentUserProfile,
+  updateUserProfile,
+  admin
 };

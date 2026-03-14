@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, List, Avatar, Typography, Tag, Spin, Alert } from 'antd';
 import { EyeOutlined, LikeOutlined, MessageOutlined, UserOutlined, BarChartOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import Header from '../../components/common/Header.tsx';
-import Footer from '../../components/common/Footer.tsx';
-import rankingService, { type HotArticle, type HotUser } from '../../services/rankingService.ts';
-import {formatDateTimeShort} from '../../utils/dateUtils';
+import Header from '../../components/common/Header';
+import Footer from '../../components/common/Footer';
+import rankingService from '../../services/rankingService';
+import type { HotArticle } from '../../types/article';
+import type { HotUser } from '../../types/user';
+import { formatDateTimeShort } from '../../utils';
 
 const { Text } = Typography;
 
@@ -20,25 +22,26 @@ const Rankings: React.FC = () => {
   const [latestArticles, setLatestArticles] = useState<HotArticle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 路由导航
   const navigate = useNavigate();
 
   // 从后端加载数据
   useEffect(() => {
-    const loadData = async () => {
+    const loadData = async () :Promise<void> => {
       setLoading(true);
       setError(null);
       try {
         // 并行请求数据
-        const [hotArticlesData, hotUsersData, latestArticlesData] = await Promise.all([
+        const [hotArticlesResponse, hotUsersResponse, latestArticlesResponse] = await Promise.all([
           rankingService.getHotArticles(20, timeRange),
           rankingService.getHotUsers(10),
           rankingService.getLatestArticles(5)
         ]);
-        setHotArticles(hotArticlesData);
-        setHotAuthors(hotUsersData);
-        setLatestArticles(latestArticlesData);
+        // 提取数据
+        setHotArticles(hotArticlesResponse.data);
+        setHotAuthors(hotUsersResponse.data);
+        setLatestArticles(latestArticlesResponse.data);
       } catch (err) {
         console.error('加载数据失败:', err);
         setError('加载数据失败，请稍后重试');
@@ -51,7 +54,7 @@ const Rankings: React.FC = () => {
   }, [timeRange]);
 
   // 处理时间范围变化
-  const handleTimeRangeChange = (value: string) => {
+  const handleTimeRangeChange = (value: string) : void => {
     setTimeRange(value);
   };
 
@@ -65,14 +68,14 @@ const Rankings: React.FC = () => {
         <div className="mx-auto">
           {/* 热门选项 - 参考B站热门样式 */}
           <div className=" rounded-lg mb-8 flex items-center justify-start overflow-x-auto gap-8">
-            <div 
+            <div
               className={`flex font-extrabold items-center gap-2 px-6 py-3 rounded-lg cursor-pointer transition-all duration-200 ${timeRange === 'day' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
               onClick={() => handleTimeRangeChange('day')}
             >
               <BarChartOutlined />
               <span>综合热门</span>
             </div>
-            <div 
+            <div
               className={`flex font-extrabold items-center gap-2 px-6 py-3 rounded-lg cursor-pointer transition-all duration-200 ${timeRange === 'week' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
               onClick={() => handleTimeRangeChange('week')}
             >
@@ -117,9 +120,9 @@ const Rankings: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             {/* 标题 */}
                             <a href={`/article/${article.id}`}
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               className="text-black font-semibold text-xl mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight  cursor-pointer hover:text-blue-600">
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-black font-semibold text-xl mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight  cursor-pointer hover:text-blue-600">
                               {article.title}
                             </a>
 
@@ -160,9 +163,9 @@ const Rankings: React.FC = () => {
                           {/* 封面图 */}
                           {article.coverImage && (
                             <div className="flex-shrink-0 w-48 sm:w-48 h-32 sm:h-32 rounded-lg overflow-hidden">
-                              <img 
-                                src={article.coverImage} 
-                                alt={article.title} 
+                              <img
+                                src={article.coverImage}
+                                alt={article.title}
                                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                               />
                             </div>
@@ -248,9 +251,9 @@ const Rankings: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             {/* 标题 */}
                             <a href={`/article/${article.id}`}
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               className="text-black font-bold text-base mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight drop-shadow-sm cursor-pointer hover:text-blue-600">
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-black font-bold text-base mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight drop-shadow-sm cursor-pointer hover:text-blue-600">
                               {article.title}
                             </a>
 

@@ -41,22 +41,22 @@ const AccountSettings: React.FC = () => {
       title: '邮箱验证',
       description: emailVerified ? '邮箱已验证' : '邮箱未验证',
       type: 'status',
-      action: handleVerifyEmail,
+      action: handleVerifyEmail
     },
     {
       id: 'phone',
       title: '手机验证',
       description: phoneVerified ? '手机已验证' : '手机未验证',
       type: 'status',
-      action: handleVerifyPhone,
+      action: handleVerifyPhone
     },
     {
       id: 'password',
       title: '修改密码',
       description: '定期修改密码可以提高账号安全性',
       type: 'button',
-      action: handleChangePassword,
-    },
+      action: handleChangePassword
+    }
   ];
 
   const accountActions: SettingItem[] = [
@@ -65,7 +65,7 @@ const AccountSettings: React.FC = () => {
       title: '退出登录',
       description: '退出当前账号',
       type: 'button',
-      action: handleLogout,
+      action: handleLogout
     },
     {
       id: 'delete',
@@ -73,8 +73,8 @@ const AccountSettings: React.FC = () => {
       description: '永久删除当前账号及所有数据',
       type: 'button',
       action: handleDeleteAccount,
-      danger: true,
-    },
+      danger: true
+    }
   ];
 
   return (
@@ -92,23 +92,23 @@ const AccountSettings: React.FC = () => {
               key={item.id}
               actions={[
                 item.type === 'status' && (
-                  <Button 
-                    type="primary" 
-                    size="small" 
+                  <Button
+                    type="primary"
+                    size="small"
                     onClick={item.action}
                   >
                     {item.id === 'email' ? '重新验证' : '立即验证'}
                   </Button>
                 ),
                 item.type === 'button' && (
-                  <Button 
-                    type="primary" 
-                    size="small" 
+                  <Button
+                    type="primary"
+                    size="small"
                     onClick={item.action}
                   >
                     立即操作
                   </Button>
-                ),
+                )
               ].filter(Boolean)}
             >
               <List.Item.Meta
@@ -144,25 +144,25 @@ const AccountSettings: React.FC = () => {
                       cancelText="取消"
                       okType="danger"
                     >
-                      <Button 
-                        danger 
-                        size="small" 
+                      <Button
+                        danger
+                        size="small"
                         icon={<DeleteOutlined />}
                       >
                         {item.title}
                       </Button>
                     </Popconfirm>
                   ) : (
-                    <Button 
-                      type="default" 
-                      size="small" 
+                    <Button
+                      type="default"
+                      size="small"
                       icon={<LogoutOutlined />}
                       onClick={item.action}
                     >
                       {item.title}
                     </Button>
                   )
-                ),
+                )
               ]}
             >
               <List.Item.Meta

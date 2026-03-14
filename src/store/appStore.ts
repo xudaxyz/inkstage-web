@@ -13,9 +13,9 @@ export const useAppStore = create<AppState>((set) => ({
   theme: 'light',
   isLoading: false,
   toggleTheme: () => set((state) => ({
-    theme: state.theme === 'light' ? 'dark' : 'light',
+    theme: state.theme === 'light' ? 'dark' : 'light'
   })),
-  setLoading: (loading) => set({ isLoading: loading }),
+  setLoading: (loading) => set({ isLoading: loading })
 }));
 
 // 导出应用状态选择器
@@ -25,6 +25,6 @@ export const useApp = () => {
     theme: store.theme,
     isLoading: store.isLoading,
     toggleTheme: store.toggleTheme,
-    setLoading: store.setLoading,
+    setLoading: store.setLoading
   };
 };

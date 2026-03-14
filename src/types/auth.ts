@@ -1,12 +1,5 @@
 import { GenderEnum } from './enums';
 
-// API响应基础类型
-export interface ApiResponse<T = unknown> {
-    code: number;
-    message: string;
-    data: T;
-}
-
 // 验证码请求参数
 export interface SendCodeParams {
     account: string; // 邮箱或手机号
@@ -45,7 +38,7 @@ export interface RefreshTokenParams {
 
 // 用户信息响应
 export interface UserInfo {
-    id: string;
+    id: number;
     name: string;
     email: string;
     avatar?: string;
@@ -56,6 +49,12 @@ export interface UserInfo {
     birthDate: string,
     location: string,
     role?: string;
+}
+
+// 文件上传参数
+export interface UploadFileParams {
+    file: File;
+    expiry?: number;
 }
 
 // OAuth2令牌响应

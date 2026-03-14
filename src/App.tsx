@@ -4,30 +4,30 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import AppRoutes from './routes';
 // 导入WebSocket服务
 import websocketService from './services/websocketService';
-import {useEffect} from "react";
+import { useEffect } from 'react';
 
-function App() {
-    useEffect(() => {
-        // 连接WebSocket
-        websocketService.connect()
-            .then(() => {
-                console.log('WebSocket连接成功');
-            })
-            .catch((error) => {
-                console.error('WebSocket连接失败:', error);
-            });
+function App () {
+  useEffect(() => {
+    // 连接WebSocket
+    websocketService.connect()
+      .then(() => {
+        console.log('WebSocket连接成功');
+      })
+      .catch((error) => {
+        console.error('WebSocket连接失败:', error);
+      });
 
-        // 组件卸载时断开WebSocket连接
-        return () => {
-            websocketService.disconnect();
-        };
-    }, []);
+    // 组件卸载时断开WebSocket连接
+    return () => {
+      websocketService.disconnect();
+    };
+  }, []);
 
-    return (
-        <Router>
-            <AppRoutes />
-        </Router>
-    );
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
+  );
 }
 
-export default App
+export default App;

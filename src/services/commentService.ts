@@ -1,99 +1,107 @@
-import apiClient from './apiClient';
-import {API_ENDPOINTS} from './apiEndpoints';
-import type {ApiResponse} from "../types/auth.ts";
-import type {CommentStatusEnum, CommentTopStatus} from "../types/enums/CommentEnum.ts";
+import { apiClient, API_ENDPOINTS } from '../api';
+import type { ApiResponse } from '../types/common';
+import type { CommentStatusEnum, CommentTopStatus } from '../types/enums/CommentEnum';
+import type {
+  CommentQueryParams,
+  CommentCreateParams,
+  CommentUpdateParams,
+  ArticleCommentResponse
+} from '../types/comment';
 
-// 评论查询参数
-export interface CommentQueryParams {
-    articleId: number;
-    pageNum?: number;
-    pageSize?: number;
-    offset?: number;
-    sortBy?: 'hot' | 'new';
-}
+// 参数验证函数
+const validateCommentQueryParams = (params: CommentQueryParams): void => {
+  if (params.articleId == null || params.articleId <= 0) {
+    throw new Error('文章ID必须是正整数');
+  }
+  if (params.pageNum != null && params.pageNum <= 0) {
+    throw new Error('页码必须是正整数');
+  }
+  if (params.pageSize != null && params.pageSize <= 0) {
+    throw new Error('每页数量必须是正整数');
+  }
+  if (params.offset != null && params.offset < 0) {
+    throw new Error('偏移量必须是非负整数');
+  }
+  if (params.sortBy != null && !['hot', 'new'].includes(params.sortBy)) {
+    throw new Error('排序方式必须是hot或new');
+  }
+};
 
-// 评论创建参数
-export interface CommentCreateParams {
-    articleId: number;
-    parentId?: number;
-    content: string;
-}
+const validateCommentCreateParams = (params: CommentCreateParams): void => {
+  if (params.articleId == null || params.articleId <= 0) {
+    throw new Error('文章ID必须是正整数');
+  }
+  if (params.parentId != null && params.parentId <= 0) {
+    throw new Error('父评论ID必须是正整数');
+  }
+  if (!params.content || params.content.trim().length === 0) {
+    throw new Error('评论内容不能为空');
+  }
+};
 
-// 评论更新参数
-export interface CommentUpdateParams {
-    id: number;
-    content: string;
-}
+const validateCommentUpdateParams = (params: CommentUpdateParams): void => {
+  if (params.id == null || params.id <= 0) {
+    throw new Error('评论ID必须是正整数');
+  }
+  if (!params.content || params.content.trim().length === 0) {
+    throw new Error('评论内容不能为空');
+  }
+};
 
-// 评论删除参数
-export interface CommentDeleteParams {
-    id: number;
-}
-
-// ArticleCommentVO
-export interface ArticleComment {
-    id: number;
-    parentId: number;
-    content: string;
-    floor: string;
-    likeCount: number;
-    replyCount: number;
-    status: CommentStatusEnum;
-    top: CommentTopStatus;
-    topOrder: number;
-    createTime: string;
-    updateTime: string;
-    articleId: number;
-    userId: number;
-    nickname: string;
-    avatar: string;
-    gender: number;
-    userStatus: number;
-    dislikeCount: number;
-    isLiked: boolean;
-    isDisliked: boolean;
-    replies: ArticleComment[];
-}
-
-// 文章列表响应类型
-export interface ArticleCommentResponse {
-    record: ArticleComment[];
-    total: number;
-    size: number;
-    current: number;
-    pages: number;
-}
+const validateIdParam = (id: number): void => {
+  if (id == null || id <= 0) {
+    throw new Error('ID必须是正整数');
+  }
+};
 
 // 获取评论列表
 export const getComments = async (params: CommentQueryParams): Promise<ApiResponse<ArticleCommentResponse>> => {
-    return await apiClient.get(API_ENDPOINTS.FRONT.COMMENT.LIST, {params});
+  validateCommentQueryParams(params);
+  return await apiClient.get(API_ENDPOINTS.FRONT.COMMENT.LIST, { params });
 };
 
 // 创建评论
 export const createComment = async (params: CommentCreateParams): Promise<ApiResponse<number>> => {
-    return await apiClient.post(API_ENDPOINTS.FRONT.COMMENT.CREATE, params);
+  validateCommentCreateParams(params);
+  return await apiClient.post(API_ENDPOINTS.FRONT.COMMENT.CREATE, params);
 };
 
 // 更新评论
 export const updateComment = async (params: CommentUpdateParams): Promise<ApiResponse<boolean>> => {
-    return await apiClient.put(API_ENDPOINTS.FRONT.COMMENT.UPDATE, params);
+  validateCommentUpdateParams(params);
+  return await apiClient.put(API_ENDPOINTS.FRONT.COMMENT.UPDATE, params);
 };
 
 // 删除评论
 export const deleteComment = async (id: number): Promise<ApiResponse<boolean>> => {
-    return await apiClient.delete(API_ENDPOINTS.FRONT.COMMENT.DELETE(id));
+  validateIdParam(id);
+  return await apiClient.delete(API_ENDPOINTS.FRONT.COMMENT.DELETE(id));
+};
+
+// 点赞评论
+export const likeComment = async (id: number): Promise<ApiResponse<boolean>> => {
+  validateIdParam(id);
+  return await apiClient.post(API_ENDPOINTS.FRONT.COMMENT.LIKE(id));
+};
+
+// 点踩评论
+export const dislikeComment = async (id: number): Promise<ApiResponse<boolean>> => {
+  validateIdParam(id);
+  return await apiClient.post(API_ENDPOINTS.FRONT.COMMENT.DISLIKE(id));
 };
 
 const commentService = {
-    getComments,
-    createComment,
-    updateComment,
-    deleteComment,
+  getComments,
+  createComment,
+  updateComment,
+  deleteComment,
+  likeComment,
+  dislikeComment,
 
-    // 管理员相关方法
-    admin: {
-        // 分页获取评论列表
-        getCommentsByPage: async (params: {
+  // 管理员相关方法
+  admin: {
+    // 分页获取评论列表
+    getCommentsByPage: async (params: {
             page?: number;
             pageSize?: number;
             keyword?: string;
@@ -101,24 +109,42 @@ const commentService = {
             userId?: number;
             status?: CommentStatusEnum;
         } = {}): Promise<ApiResponse<ArticleCommentResponse>> => {
-            return await apiClient.get(API_ENDPOINTS.ADMIN.COMMENT.LIST_PAGE, { params });
-        },
+      if (params.page != null && params.page <= 0) {
+        throw new Error('页码必须是正整数');
+      }
+      if (params.pageSize != null && params.pageSize <= 0) {
+        throw new Error('每页数量必须是正整数');
+      }
+      if (params.articleId != null && params.articleId <= 0) {
+        throw new Error('文章ID必须是正整数');
+      }
+      if (params.userId != null && params.userId <= 0) {
+        throw new Error('用户ID必须是正整数');
+      }
+      return await apiClient.get(API_ENDPOINTS.ADMIN.COMMENT.LIST_PAGE, { params });
+    },
 
-        // 更新评论状态
-        updateCommentStatus: async (id: number, status: CommentStatusEnum, reviewReason?: string): Promise<ApiResponse<boolean>> => {
-            return await apiClient.put(API_ENDPOINTS.ADMIN.COMMENT.UPDATE_STATUS(id), { status, reviewReason });
-        },
+    // 更新评论状态
+    updateCommentStatus: async (id: number, status: CommentStatusEnum, reviewReason?: string): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.put(API_ENDPOINTS.ADMIN.COMMENT.UPDATE_STATUS(id), { status, reviewReason });
+    },
 
-        // 更新评论置顶状态
-        updateCommentTop: async (id: number, top: CommentTopStatus, topOrder?: number): Promise<ApiResponse<boolean>> => {
-            return await apiClient.put(API_ENDPOINTS.ADMIN.COMMENT.UPDATE_TOP(id), { top, topOrder });
-        },
+    // 更新评论置顶状态
+    updateCommentTop: async (id: number, top: CommentTopStatus, topOrder?: number): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      if (topOrder != null && topOrder < 0) {
+        throw new Error('置顶顺序必须是非负整数');
+      }
+      return await apiClient.put(API_ENDPOINTS.ADMIN.COMMENT.UPDATE_TOP(id), { top, topOrder });
+    },
 
-        // 删除评论
-        deleteComment: async (id: number): Promise<ApiResponse<boolean>> => {
-            return await apiClient.delete(API_ENDPOINTS.ADMIN.COMMENT.DELETE(id));
-        }
+    // 删除评论
+    deleteComment: async (id: number): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.delete(API_ENDPOINTS.ADMIN.COMMENT.DELETE(id));
     }
+  }
 };
 
 export default commentService;

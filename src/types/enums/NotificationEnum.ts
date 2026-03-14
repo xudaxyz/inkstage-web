@@ -10,7 +10,7 @@ export const NotificationType = {
   FOLLOW: 400,           // 关注通知
   MESSAGE: 500,          // 私信通知
   REPORT: 600,           // 举报处理通知
-  FEEDBACK: 700,         // 反馈处理通知
+  FEEDBACK: 700         // 反馈处理通知
 } as const;
 
 export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
@@ -27,13 +27,13 @@ export const NotificationTypeMap: Record<NotificationType, string> = {
   [NotificationType.FOLLOW]: '关注通知',
   [NotificationType.MESSAGE]: '私信通知',
   [NotificationType.REPORT]: '举报处理通知',
-  [NotificationType.FEEDBACK]: '反馈处理通知',
+  [NotificationType.FEEDBACK]: '反馈处理通知'
 };
 
 // 已读状态枚举
 export const ReadStatus = {
   UNREAD: 0,  // 未读
-  READ: 1,    // 已读
+  READ: 1    // 已读
 } as const;
 
 export type ReadStatus = typeof ReadStatus[keyof typeof ReadStatus];
@@ -41,5 +41,5 @@ export type ReadStatus = typeof ReadStatus[keyof typeof ReadStatus];
 // 已读状态描述映射
 export const ReadStatusMap: Record<ReadStatus, string> = {
   [ReadStatus.UNREAD]: '未读',
-  [ReadStatus.READ]: '已读',
+  [ReadStatus.READ]: '已读'
 };
