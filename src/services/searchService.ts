@@ -44,32 +44,32 @@ const searchService = {
             size: params.size || 10,
             sortBy: params.sortBy || 'relevance'
         };
-        return await apiClient.get(API_ENDPOINTS.SEARCH.ARTICLES, {
+        return await apiClient.get(API_ENDPOINTS.FRONT.SEARCH.ARTICLES, {
             params: queryDTO,
         });
     },
 
     // 获取热门搜索词
     getHotWords: async (): Promise<ApiResponse<HotWordsData>> => {
-        return await apiClient.get(API_ENDPOINTS.SEARCH.HOT_WORDS);
+        return await apiClient.get(API_ENDPOINTS.FRONT.SEARCH.HOT_WORDS);
     },
 
     // 获取搜索历史
     getSearchHistory: async (): Promise<ApiResponse<SearchHistoryData>> => {
-        return await apiClient.get(API_ENDPOINTS.SEARCH.HISTORY.LIST);
+        return await apiClient.get(API_ENDPOINTS.FRONT.SEARCH.HISTORY.LIST);
     },
 
     // 删除搜索历史
     deleteSearchHistory: async (id: number): Promise<ApiResponse<void>> => {
         return await apiClient.delete(
-            `${API_ENDPOINTS.SEARCH.HISTORY.DELETE}/${id}`
+            API_ENDPOINTS.FRONT.SEARCH.HISTORY.DELETE(id)
         );
     },
 
     // 清空搜索历史
     clearSearchHistory: async (): Promise<ApiResponse<void>> => {
         return await apiClient.delete(
-            API_ENDPOINTS.SEARCH.HISTORY.CLEAR
+            API_ENDPOINTS.FRONT.SEARCH.HISTORY.CLEAR
         );
     },
 };

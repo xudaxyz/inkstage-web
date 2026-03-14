@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import {API_ENDPOINTS} from './apiEndpoints';
 import type {
   SendCodeResponse,
   RegisterParams,
@@ -7,6 +8,7 @@ import type {
   ApiResponse,
   UserInfo,
 } from '../types/auth';
+import {AuthOperationTypeEnum} from "../types/enums/AuthOperationTypeEnum.ts";
 
 /**
  * 认证服务
@@ -20,7 +22,7 @@ const authService = {
       type: "email" | "phone";
       purpose: string
   }): Promise<ApiResponse<SendCodeResponse>> => {
-    return apiClient.post('/front/auth/send-code', params);
+    return apiClient.post(API_ENDPOINTS.FRONT.AUTH.SEND_CODE, params);
   },
 
   /**
@@ -28,7 +30,7 @@ const authService = {
    */
   register: async (params: RegisterParams): Promise<ApiResponse<TokenResponse>> => {
     const authParams = {
-      operationType: 'REGISTER',
+      operationType: AuthOperationTypeEnum.REGISTER,
       account: params.account,
       authType: params.authType,
       password: params.password || '',
@@ -39,7 +41,7 @@ const authService = {
       scope: 'read write',
     };
 
-    return apiClient.post('/front/auth/register', authParams);
+    return apiClient.post(API_ENDPOINTS.FRONT.AUTH.REGISTER, authParams);
   },
 
   /**
@@ -47,7 +49,7 @@ const authService = {
    */
   login: async (params: LoginParams): Promise<ApiResponse<TokenResponse>> => {
     const authParams = {
-      operationType: 'LOGIN',
+      operationType: AuthOperationTypeEnum.LOGIN,
       account: params.account,
       authType: params.authType,
       password: params.password || '',
@@ -56,8 +58,9 @@ const authService = {
       clientSecret: import.meta.env.VITE_CLIENT_SECRET,
       scope: 'read write',
     };
+    console.log("authParams", authParams)
 
-    return apiClient.post('/front/auth/login', authParams);
+    return apiClient.post(API_ENDPOINTS.FRONT.AUTH.LOGIN, authParams);
   },
 
   /**
@@ -72,21 +75,21 @@ const authService = {
       scope: 'read write',
     };
 
-    return apiClient.post('/auth/token', oauthParams);
+    return apiClient.post(API_ENDPOINTS.COMMON.AUTH.REFRESH_TOKEN, oauthParams);
   },
 
   /**
    * 获取个人资料
    */
   getProfile: async (): Promise<ApiResponse<UserInfo>> => {
-    return apiClient.get('/front/user/profile');
+    return apiClient.get(API_ENDPOINTS.FRONT.USER.PROFILE);
   },
 
   /**
    * 更新个人资料
    */
   updateProfile: async (params: Partial<UserInfo>): Promise<ApiResponse<UserInfo>> => {
-    return apiClient.put('/front/user/profile', params);
+    return apiClient.put(API_ENDPOINTS.FRONT.USER.PROFILE, params);
   },
 
   /**
@@ -99,7 +102,7 @@ const authService = {
       formData.append('expiry', expiry.toString());
     }
 
-    return await apiClient.post('/upload/user/avatar', formData, {
+    return await apiClient.post(API_ENDPOINTS.COMMON.UPLOAD.AVATAR, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -116,7 +119,7 @@ const authService = {
       formData.append('expiry', expiry.toString());
     }
 
-    return await apiClient.post('/upload/user/cover-image', formData, {
+    return await apiClient.post(API_ENDPOINTS.COMMON.UPLOAD.COVER, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }

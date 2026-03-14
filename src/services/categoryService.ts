@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import {API_ENDPOINTS} from './apiEndpoints';
 import type {ApiResponse} from '../types/auth';
 import {StatusEnum} from '../types/enums';
 
@@ -33,7 +34,7 @@ const categoryService = {
      * @returns 分类列表
      */
     getAllCategories: async (): Promise<ApiResponse<FrontendCategory[]>> => {
-        return await apiClient.get('/front/category');
+        return await apiClient.get(API_ENDPOINTS.FRONT.CATEGORY.ALL);
     },
 
     /**
@@ -41,7 +42,7 @@ const categoryService = {
      * @returns 激活状态的分类列表
      */
     getActiveCategories: async (): Promise<ApiResponse<FrontendCategory[]>> => {
-        return await apiClient.get('/front/category/active');
+        return await apiClient.get(API_ENDPOINTS.FRONT.CATEGORY.ACTIVE);
     },
 
     /**
@@ -50,7 +51,7 @@ const categoryService = {
      * @returns 分类信息
      */
     getCategoryById: async (id: number): Promise<ApiResponse<FrontendCategory>> => {
-        return await apiClient.get(`/front/category/${id}`);
+        return await apiClient.get(API_ENDPOINTS.FRONT.CATEGORY.DETAIL(id));
     },
 
     // 管理员相关方法
@@ -68,7 +69,7 @@ const categoryService = {
         pageSize: number;
         pages: number;
     }>> => {
-        return await apiClient.get(`/admin/category/all`, {
+        return await apiClient.get(API_ENDPOINTS.ADMIN.CATEGORY.LIST, {
             params: { keyword, pageNum, pageSize }
         });
     },
@@ -79,7 +80,7 @@ const categoryService = {
      * @returns 添加后的分类信息
      */
     adminAddCategory: async (category: Omit<AdminCategory, 'id' | 'articleCount' | 'createTime' | 'updateTime'>): Promise<ApiResponse<AdminCategory>> => {
-        return await apiClient.post('/admin/category', category);
+        return await apiClient.post(API_ENDPOINTS.ADMIN.CATEGORY.CREATE, category);
     },
 
     /**
@@ -89,7 +90,7 @@ const categoryService = {
      * @returns 更新后的分类信息
      */
     adminUpdateCategory: async (id: number, category: Omit<AdminCategory, 'id' | 'articleCount' | 'createTime' | 'updateTime'>): Promise<ApiResponse<AdminCategory>> => {
-        return await apiClient.put(`/admin/category/${id}`, category);
+        return await apiClient.put(API_ENDPOINTS.ADMIN.CATEGORY.UPDATE(id), category);
     },
 
     /**
@@ -98,7 +99,7 @@ const categoryService = {
      * @returns 响应结果
      */
     adminDeleteCategory: async (id: number): Promise<ApiResponse<void>> => {
-        return await apiClient.delete(`/admin/category/${id}`);
+        return await apiClient.delete(API_ENDPOINTS.ADMIN.CATEGORY.DELETE(id));
     },
 
     /**
@@ -108,7 +109,7 @@ const categoryService = {
      * @returns 更新后的分类信息
      */
     adminUpdateCategoryStatus: async (id: number, status: StatusEnum): Promise<ApiResponse<AdminCategory>> => {
-        return await apiClient.put(`/admin/category/${id}/status`, null, {
+        return await apiClient.put(API_ENDPOINTS.ADMIN.CATEGORY.UPDATE_STATUS(id), null, {
             params: {status}
         });
     },

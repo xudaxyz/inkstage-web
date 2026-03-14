@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import {API_ENDPOINTS} from './apiEndpoints';
 import type {ApiResponse} from '../types/auth';
 import {StatusEnum} from '../types/enums';
 
@@ -33,7 +34,7 @@ const tagService = {
      * @returns 标签列表
      */
     getAllTags: async (): Promise<ApiResponse<Tag[]>> => {
-        return await apiClient.get('/front/tag');
+        return await apiClient.get(API_ENDPOINTS.FRONT.TAG.ALL);
     },
 
     /**
@@ -41,7 +42,7 @@ const tagService = {
      * @returns 激活状态的标签列表
      */
     getActiveTags: async (): Promise<ApiResponse<Tag[]>> => {
-        return await apiClient.get('/front/tag/active');
+        return await apiClient.get(API_ENDPOINTS.FRONT.TAG.ACTIVE);
     },
 
     /**
@@ -50,7 +51,7 @@ const tagService = {
      * @returns 标签信息
      */
     getTagById: async (id: number): Promise<ApiResponse<Tag>> => {
-        return await apiClient.get(`/front/tag/${id}`);
+        return await apiClient.get(API_ENDPOINTS.FRONT.TAG.DETAIL(id));
     },
 
     /**
@@ -59,7 +60,7 @@ const tagService = {
      * @returns 标签列表
      */
     getTagsByArticleId: async (articleId: number): Promise<ApiResponse<Tag[]>> => {
-        return await apiClient.get(`/front/tag/article/${articleId}`);
+        return await apiClient.get(API_ENDPOINTS.FRONT.TAG.BY_ARTICLE(articleId));
     },
 
     // 管理员相关方法
@@ -77,7 +78,7 @@ const tagService = {
         pageSize: number;
         pages: number;
     }>> => {
-        return await apiClient.get(`/admin/tag/all`, {
+        return await apiClient.get(API_ENDPOINTS.ADMIN.TAG.LIST, {
             params: { keyword, pageNum, pageSize }
         });
     },
@@ -88,7 +89,7 @@ const tagService = {
      * @returns 添加后的标签信息
      */
     adminAddTag: async (tag: Omit<AdminTag, 'id' | 'articleCount' | 'usageCount' | 'createTime' | 'updateTime'>): Promise<ApiResponse<AdminTag>> => {
-        return await apiClient.post('/admin/tag', tag);
+        return await apiClient.post(API_ENDPOINTS.ADMIN.TAG.CREATE, tag);
     },
 
     /**
@@ -98,7 +99,7 @@ const tagService = {
      * @returns 更新后的标签信息
      */
     adminUpdateTag: async (id: number, tag: Omit<AdminTag, 'id' | 'articleCount' | 'usageCount' | 'createTime' | 'updateTime'>): Promise<ApiResponse<AdminTag>> => {
-        return await apiClient.put(`/admin/tag/${id}`, tag);
+        return await apiClient.put(API_ENDPOINTS.ADMIN.TAG.UPDATE(id), tag);
     },
 
     /**
@@ -107,7 +108,7 @@ const tagService = {
      * @returns 响应结果
      */
     adminDeleteTag: async (id: number): Promise<ApiResponse<void>> => {
-        return await apiClient.delete(`/admin/tag/${id}`);
+        return await apiClient.delete(API_ENDPOINTS.ADMIN.TAG.DELETE(id));
     },
 
     /**
@@ -117,7 +118,7 @@ const tagService = {
      * @returns 更新后的标签信息
      */
     adminUpdateTagStatus: async (id: number, status: StatusEnum): Promise<ApiResponse<AdminTag>> => {
-        return await apiClient.put(`/admin/tag/${id}/status`, null, {
+        return await apiClient.put(API_ENDPOINTS.ADMIN.TAG.UPDATE_STATUS(id), null, {
             params: {status}
         });
     },

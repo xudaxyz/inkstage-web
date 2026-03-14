@@ -47,53 +47,53 @@ const notificationService = {
   // 获取通知列表（支持分页）
   getNotificationList: async (type: NotificationType | undefined, pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<NotificationListResponse>> => {
     const params = type ? { type, pageNum, pageSize } : { pageNum, pageSize };
-    return await apiClient.get(API_ENDPOINTS.NOTIFICATION.LIST, { params });
+    return await apiClient.get(API_ENDPOINTS.FRONT.NOTIFICATION.LIST, { params });
   },
 
   // 标记通知为已读
   markAsRead: async (id: number): Promise<ApiResponse<boolean>> => {
-    return await apiClient.put(API_ENDPOINTS.NOTIFICATION.MARK_READ(id));
+    return await apiClient.put(API_ENDPOINTS.FRONT.NOTIFICATION.MARK_READ(id));
   },
 
   // 标记所有通知为已读
   markAllAsRead: async (): Promise<ApiResponse<boolean>> => {
-    return await apiClient.put(API_ENDPOINTS.NOTIFICATION.MARK_ALL_READ);
+    return await apiClient.put(API_ENDPOINTS.FRONT.NOTIFICATION.MARK_ALL_READ);
   },
 
   // 删除通知
   deleteNotification: async (id: number): Promise<ApiResponse<boolean>> => {
-    return await apiClient.delete(API_ENDPOINTS.NOTIFICATION.DELETE(id));
+    return await apiClient.delete(API_ENDPOINTS.FRONT.NOTIFICATION.DELETE(id));
   },
 
   // 获取未读通知数量
   getUnreadCount: async (): Promise<ApiResponse<number>> => {
-    return await apiClient.get(API_ENDPOINTS.NOTIFICATION.UNREAD_COUNT);
+    return await apiClient.get(API_ENDPOINTS.FRONT.NOTIFICATION.UNREAD_COUNT);
   },
 
   // 同步未读通知数量
   syncUnreadCount: async (): Promise<ApiResponse<void>> => {
-    return await apiClient.post(API_ENDPOINTS.NOTIFICATION.SYNC_UNREAD);
+    return await apiClient.post(API_ENDPOINTS.FRONT.NOTIFICATION.SYNC_UNREAD);
   },
 
   // 分页获取通知列表
   getNotificationListWithPage: async (type?: NotificationType, pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<NotificationListResponse>> => {
     const params = type ? { type, pageNum, pageSize } : { pageNum, pageSize };
-    return await apiClient.get(API_ENDPOINTS.NOTIFICATION.LIST_PAGE, { params });
+    return await apiClient.get(API_ENDPOINTS.FRONT.NOTIFICATION.LIST_PAGE, { params });
   },
 
   // 获取通知设置
   getNotificationSetting: async (): Promise<ApiResponse<NotificationSetting>> => {
-    return await apiClient.get(API_ENDPOINTS.NOTIFICATION.SETTING.GET);
+    return await apiClient.get(API_ENDPOINTS.FRONT.NOTIFICATION.SETTING.GET);
   },
 
   // 保存通知设置
   saveNotificationSetting: async (setting: NotificationSetting): Promise<ApiResponse<boolean>> => {
-    return await apiClient.put(API_ENDPOINTS.NOTIFICATION.SETTING.SAVE, setting);
+    return await apiClient.put(API_ENDPOINTS.FRONT.NOTIFICATION.SETTING.SAVE, setting);
   },
 
   // 恢复默认通知设置
   resetNotificationSetting: async (): Promise<ApiResponse<boolean>> => {
-    return await apiClient.put(API_ENDPOINTS.NOTIFICATION.SETTING.RESET);
+    return await apiClient.put(API_ENDPOINTS.FRONT.NOTIFICATION.SETTING.RESET);
   },
 };
 

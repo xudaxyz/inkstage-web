@@ -21,7 +21,7 @@ let refreshSubscribers: ((token: string) => void)[] = [];
 apiClient.interceptors.request.use(
     (config) => {
         // 对于刷新令牌端点，不添加访问令牌，因为这是用于刷新令牌的公开端点
-        if (config.url !== API_ENDPOINTS.AUTH.TOKEN) {
+        if (config.url !== API_ENDPOINTS.COMMON.AUTH.TOKEN) {
             const token = localStorage.getItem('access_token');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
@@ -45,19 +45,19 @@ apiClient.interceptors.response.use(
         // 处理401错误
         if (error.response?.status === 401) {
             // 检查是否是刷新令牌请求本身失败
-            if (originalRequest.url === API_ENDPOINTS.AUTH.TOKEN) {
-                // 刷新令牌请求失败，清理本地存储并跳转到登录页面
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                errorHandler.handleAuthError('登录已过期，请重新登录');
-                // 1秒后跳转到相应的登录页面
-                setTimeout(() => {
-                    const currentPath = window.location.pathname;
-                    window.location.href = currentPath.startsWith('/admin') ? '/admin/login' : '/login';
-                }, 1000);
-                // 终止Promise链，避免无限循环
-                return new Promise(() => {new Error("用户未登录")});
-            }
+        if (originalRequest.url === API_ENDPOINTS.COMMON.AUTH.TOKEN) {
+            // 刷新令牌请求失败，清理本地存储并跳转到登录页面
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            errorHandler.handleAuthError('登录已过期，请重新登录');
+            // 1秒后跳转到相应的登录页面
+            setTimeout(() => {
+                const currentPath = window.location.pathname;
+                window.location.href = currentPath.startsWith('/admin') ? '/admin/login' : '/login';
+            }, 1000);
+            // 终止Promise链，避免无限循环
+            return new Promise(() => {new Error("用户未登录")});
+        }
 
             // 检查是否已经在处理刷新令牌
             if (!isRefreshing) {
@@ -66,7 +66,7 @@ apiClient.interceptors.response.use(
                 const refreshToken = localStorage.getItem('refresh_token');
                 if (refreshToken) {
                     try {
-                        const response = await apiClient.post(API_ENDPOINTS.AUTH.TOKEN, {
+                        const response = await apiClient.post(API_ENDPOINTS.COMMON.AUTH.TOKEN, {
                             grant_type: 'refresh_token',
                             refresh_token: refreshToken,
                             client_id: import.meta.env.VITE_CLIENT_ID,

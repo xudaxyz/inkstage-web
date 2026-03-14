@@ -99,7 +99,7 @@ export interface PageResult<T> {
 // 获取用户公开资料
 export const getUserPublicProfile = async (userId: number): Promise<UserInfo> => {
     try {
-        const response = await apiClient.get(API_ENDPOINTS.USER.PUBLIC_PROFILE(userId));
+        const response = await apiClient.get(API_ENDPOINTS.FRONT.USER.PUBLIC_PROFILE(userId));
         return response.data;
     } catch (error) {
         console.error('获取用户资料失败:', error);
@@ -110,7 +110,7 @@ export const getUserPublicProfile = async (userId: number): Promise<UserInfo> =>
 // 获取当前用户资料
 export const getCurrentUserProfile = async (): Promise<UserInfo> => {
     try {
-        const response = await apiClient.get(API_ENDPOINTS.USER.PROFILE);
+        const response = await apiClient.get(API_ENDPOINTS.FRONT.USER.PROFILE);
         return response.data;
     } catch (error) {
         console.error('获取当前用户资料失败:', error);
@@ -121,7 +121,7 @@ export const getCurrentUserProfile = async (): Promise<UserInfo> => {
 // 更新用户资料
 export const updateUserProfile = async (userData: Partial<UserInfo>): Promise<UserInfo> => {
     try {
-        const response = await apiClient.put(API_ENDPOINTS.USER.PROFILE, userData);
+        const response = await apiClient.put(API_ENDPOINTS.FRONT.USER.PROFILE, userData);
         return response.data;
     } catch (error) {
         console.error('更新用户资料失败:', error);

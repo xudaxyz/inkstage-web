@@ -41,32 +41,32 @@ export interface ReadingHistoryResponse {
 const readingHistoryService = {
     // 保存或更新阅读历史
     saveReadingHistory: async (data: ReadingHistoryRequest): Promise<ApiResponse<boolean>> => {
-        return await apiClient.post(API_ENDPOINTS.READING_HISTORY.SAVE, data);
+        return await apiClient.post(API_ENDPOINTS.FRONT.READING_HISTORY.SAVE, data);
     },
 
     // 获取阅读历史列表
     getReadingHistoryList: async (page: number = 1, size: number = 10): Promise<ApiResponse<ReadingHistoryResponse>> => {
-        return await apiClient.get(API_ENDPOINTS.READING_HISTORY.LIST, {params: {page, size}});
+        return await apiClient.get(API_ENDPOINTS.FRONT.READING_HISTORY.LIST, {params: {page, size}});
     },
 
     // 删除单条阅读历史
     deleteReadingHistory: async (articleId: number): Promise<ApiResponse<boolean>> => {
-        return await apiClient.delete(API_ENDPOINTS.READING_HISTORY.DELETE(articleId));
+        return await apiClient.delete(API_ENDPOINTS.FRONT.READING_HISTORY.DELETE(articleId));
     },
 
     // 清空阅读历史
     clearReadingHistory: async (): Promise<ApiResponse<boolean>> => {
-        return await apiClient.delete(API_ENDPOINTS.READING_HISTORY.CLEAR);
+        return await apiClient.delete(API_ENDPOINTS.FRONT.READING_HISTORY.CLEAR);
     },
 
     // 获取单篇文章的阅读历史
     getReadingHistoryByArticleId: async (articleId: number): Promise<ApiResponse<ReadingHistory>> => {
-        return await apiClient.get(API_ENDPOINTS.READING_HISTORY.DETAIL(articleId));
+        return await apiClient.get(API_ENDPOINTS.FRONT.READING_HISTORY.DETAIL(articleId));
     },
 
     // 批量获取阅读历史
     getReadingHistoriesByArticleIds: async (articleIds: number[]): Promise<ApiResponse<ReadingHistory[]>> => {
-        return await apiClient.post(API_ENDPOINTS.READING_HISTORY.BATCH, articleIds);
+        return await apiClient.post(API_ENDPOINTS.FRONT.READING_HISTORY.BATCH, articleIds);
     },
 };
 

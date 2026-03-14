@@ -66,22 +66,22 @@ export interface ArticleCommentResponse {
 
 // 获取评论列表
 export const getComments = async (params: CommentQueryParams): Promise<ApiResponse<ArticleCommentResponse>> => {
-    return await apiClient.get(API_ENDPOINTS.COMMENT.LIST, {params});
+    return await apiClient.get(API_ENDPOINTS.FRONT.COMMENT.LIST, {params});
 };
 
 // 创建评论
 export const createComment = async (params: CommentCreateParams): Promise<ApiResponse<number>> => {
-    return await apiClient.post(API_ENDPOINTS.COMMENT.CREATE, params);
+    return await apiClient.post(API_ENDPOINTS.FRONT.COMMENT.CREATE, params);
 };
 
 // 更新评论
 export const updateComment = async (params: CommentUpdateParams): Promise<ApiResponse<boolean>> => {
-    return await apiClient.put(API_ENDPOINTS.COMMENT.UPDATE, params);
+    return await apiClient.put(API_ENDPOINTS.FRONT.COMMENT.UPDATE, params);
 };
 
 // 删除评论
 export const deleteComment = async (id: number): Promise<ApiResponse<boolean>> => {
-    return await apiClient.delete(`${API_ENDPOINTS.COMMENT.DELETE}/${id}`);
+    return await apiClient.delete(API_ENDPOINTS.FRONT.COMMENT.DELETE(id));
 };
 
 const commentService = {

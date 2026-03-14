@@ -36,8 +36,8 @@ export const rankingService = {
    */
   getHotArticles: async (limit: number = 20, timeRange: string = 'week') => {
     try {
-      const response = await apiClient.get<HotArticle[]>(API_ENDPOINTS.INDEX.HOT_ARTICLES, {
-        params: { limit, timeRange }
+      const response = await apiClient.get<HotArticle[]>(API_ENDPOINTS.FRONT.INDEX.HOT_ARTICLES, {
+        params: { limit, timeRange },
       });
       return response.data;
     } catch (error) {
@@ -53,8 +53,8 @@ export const rankingService = {
    */
   getLatestArticles: async (limit: number = 5) => {
     try {
-      const response = await apiClient.get<HotArticle[]>(API_ENDPOINTS.INDEX.LATEST_ARTICLES, {
-        params: { limit }
+      const response = await apiClient.get<HotArticle[]>(API_ENDPOINTS.FRONT.INDEX.LATEST_ARTICLES, {
+        params: { limit },
       });
       return response.data;
     } catch (error) {
@@ -70,8 +70,8 @@ export const rankingService = {
    */
   getHotUsers: async (limit: number = 10) => {
     try {
-      const response = await apiClient.get<HotUser[]>(API_ENDPOINTS.INDEX.HOT_USERS, {
-        params: { limit }
+      const response = await apiClient.get<HotUser[]>(API_ENDPOINTS.FRONT.INDEX.HOT_USERS, {
+        params: { limit },
       });
       return response.data;
     } catch (error) {

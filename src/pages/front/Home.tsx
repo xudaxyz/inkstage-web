@@ -10,7 +10,7 @@ import LatestArticles from '../../components/front/LatestArticles.tsx';
 import HotTags from '../../components/front/HotTags.tsx';
 import type {IndexArticleList, BannerArticle, LatestArticle} from '../../services/articleService.ts';
 import articleService from '../../services/articleService.ts';
-import type {Category} from '../../services/categoryService.ts';
+import type {FrontendCategory as Category} from '../../services/categoryService.ts';
 import categoryService from '../../services/categoryService.ts';
 import type {Tag} from '../../services/tagService.ts';
 import tagService from '../../services/tagService.ts';

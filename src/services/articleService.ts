@@ -173,12 +173,12 @@ export interface AdminArticleList {
 const articleService = {
     // 创建文章
     createArticle: async (article: Omit<Article, 'createdTime' | 'updatedTime'>): Promise<ApiResponse<Article>> => {
-        return await apiClient.post(API_ENDPOINTS.ARTICLE.CREATE, article);
+        return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.CREATE, article);
     },
 
     // 更新文章
     updateArticle: async (id: number, article: Partial<Article>): Promise<ApiResponse<Article>> => {
-        return await apiClient.put(API_ENDPOINTS.ARTICLE.UPDATE(id), article);
+        return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.UPDATE(id), article);
     },
 
     // 保存草稿
@@ -189,7 +189,7 @@ const articleService = {
         };
 
         if (article.id) {
-            return await apiClient.put(API_ENDPOINTS.ARTICLE.SAVE_DRAFT(Number(article.id)), draftArticle);
+            return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.SAVE_DRAFT(Number(article.id)), draftArticle);
         } else {
             // 创建新文章时，移除可能存在的 id 属性
             const {...newArticle} = draftArticle;
@@ -199,7 +199,7 @@ const articleService = {
 
     // 删除文章
     deleteArticle: async (id: number): Promise<ApiResponse<void>> => {
-        return await apiClient.post(API_ENDPOINTS.ARTICLE.DELETE(id));
+        return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.DELETE(id));
     },
 
     // 上传图片
@@ -207,7 +207,7 @@ const articleService = {
         const formData = new FormData();
         formData.append('file', file as File);
 
-        return await apiClient.post(API_ENDPOINTS.UPLOAD.ARTICLE_COVER_IMG, formData, {
+        return await apiClient.post(API_ENDPOINTS.COMMON.UPLOAD.ARTICLE_COVER_IMG, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -232,67 +232,67 @@ const articleService = {
             sortBy: query.sortBy || 'publishTime',
             sortOrder: query.sortOrder || 'desc'
         };
-        return await apiClient.post(API_ENDPOINTS.INDEX.LIST, queryDTO);
+        return await apiClient.post(API_ENDPOINTS.FRONT.INDEX.LIST, queryDTO);
     },
 
     // 获取轮播图文章
     getBannerArticles: async (limit: number = 3): Promise<ApiResponse<BannerArticle[]>> => {
-        return await apiClient.get(API_ENDPOINTS.INDEX.BANNER, {params: {limit}});
+        return await apiClient.get(API_ENDPOINTS.FRONT.INDEX.BANNER, {params: {limit}});
     },
 
     // 获取最新文章
     getLatestArticles: async (limit: number = 5): Promise<ApiResponse<LatestArticle[]>> => {
-        return await apiClient.get(API_ENDPOINTS.INDEX.LATEST_ARTICLES, {params: {limit}});
+        return await apiClient.get(API_ENDPOINTS.FRONT.INDEX.LATEST_ARTICLES, {params: {limit}});
     },
 
     // 获取文章详情
     getArticleDetail: async (id: number): Promise<ApiResponse<ArticleDetailInfo>> => {
-        return await apiClient.get(`${API_ENDPOINTS.ARTICLE.DETAIL}/${id}`);
+        return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.DETAIL(id));
     },
 
     // 获取用户文章列表
     getUserArticles: async (userId: number, page: number = 1, size: number = 10): Promise<ApiResponse<IndexArticleListResponse>> => {
-        return await apiClient.get(API_ENDPOINTS.ARTICLE.USER_ARTICLES(userId), {params: {page, size}});
+        return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.USER_ARTICLES(userId), {params: {page, size}});
     },
 
     // 获取作者相关文章
     getAuthorRelatedArticles: async (userId: number, excludeArticleId: number, limit: number = 3): Promise<ApiResponse<IndexArticleList[]>> => {
-        return await apiClient.get(API_ENDPOINTS.ARTICLE.AUTHOR_RELATED, {params: {userId, excludeArticleId, limit}});
+        return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.AUTHOR_RELATED, {params: {userId, excludeArticleId, limit}});
     },
 
     // 点赞文章
     likeArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
-        return await apiClient.post(API_ENDPOINTS.ARTICLE.LIKE(articleId));
+        return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.LIKE(articleId));
     },
 
     // 取消点赞
     unlikeArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
-        return await apiClient.delete(API_ENDPOINTS.ARTICLE.UNLIKE(articleId));
+        return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.UNLIKE(articleId));
     },
 
     // 检查点赞状态
     checkLikeStatus: async (articleId: number): Promise<ApiResponse<boolean>> => {
-        return await apiClient.get(API_ENDPOINTS.ARTICLE.LIKE_STATUS(articleId));
+        return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.LIKE_STATUS(articleId));
     },
 
     // 收藏文章
     collectArticle: async (params: { articleId: number; folderId?: number; folderName?: string; folderDescription?: string }): Promise<ApiResponse<boolean>> => {
-        return await apiClient.post(API_ENDPOINTS.ARTICLE.COLLECT, params);
+        return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.COLLECT, params);
     },
 
     // 取消收藏
     unCollectArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
-        return await apiClient.post(API_ENDPOINTS.ARTICLE.UN_COLLECT(articleId));
+        return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.UN_COLLECT(articleId));
     },
 
     // 检查收藏状态
     checkCollectStatus: async (articleId: number): Promise<ApiResponse<boolean>> => {
-        return await apiClient.get(API_ENDPOINTS.ARTICLE.COLLECT_STATUS(articleId));
+        return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.COLLECT_STATUS(articleId));
     },
 
     // 增加文章阅读量
     incrementReadCount: async (articleId: number): Promise<ApiResponse<number>> => {
-        return await apiClient.post(API_ENDPOINTS.ARTICLE.INCREMENT_READ(articleId));
+        return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.INCREMENT_READ(articleId));
     },
 
     // 获取当前用户文章列表
@@ -302,7 +302,7 @@ const articleService = {
         page?: number;
         size?: number;
     }): Promise<ApiResponse<IndexArticleListResponse<MyArticleList>>> => {
-        return await apiClient.get(API_ENDPOINTS.USER.MY_ARTICLES, {params});
+        return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.MY_ARTICLES, {params});
     },
 
     // 获取当前用户收藏文章列表
@@ -314,7 +314,7 @@ const articleService = {
         sortBy?: string;
         sortOrder?: string;
     }): Promise<ApiResponse<IndexArticleListResponse<MyArticleCollectionList>>> => {
-        return await apiClient.get('/front/article/collections', {params});
+        return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.LIST, {params});
     },
 
     // 获取用户的收藏文件夹列表
@@ -324,22 +324,37 @@ const articleService = {
         articleCount: number;
         defaultFolder: DefaultStatusEnum | string;
     }>>> => {
-        return await apiClient.get('/front/article/collections/folders');
+        return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.FOLDERS);
     },
 
     // 获取用户的总收藏数
     getTotalCollectionCount: async (): Promise<ApiResponse<number>> => {
-        return await apiClient.get('/front/article/collections/total');
+        return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.TOTAL);
     },
 
     // 移动收藏文章到其他文件夹
     moveCollectionArticle: async (articleId: number, targetFolderId: number): Promise<ApiResponse<boolean>> => {
-        return await apiClient.put('/front/article/collections/move', { articleId, folderId: targetFolderId });
+        return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.MOVE, { articleId, folderId: targetFolderId });
     },
     
     // 创建收藏文件夹
     createCollectionFolder: async (params: { folderName: string; folderDescription?: string }): Promise<ApiResponse<number>> => {
-        return await apiClient.post('/front/article/collections/folders', params);
+        return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.CREATE_FOLDER, params);
+    },
+
+    // 更新收藏文件夹
+    updateCollectionFolder: async (folderId: number, name: string, description?: string): Promise<ApiResponse<boolean>> => {
+        return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.UPDATE_FOLDER(folderId), { name, description });
+    },
+
+    // 删除收藏文件夹
+    deleteCollectionFolder: async (folderId: number): Promise<ApiResponse<boolean>> => {
+        return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.DELETE_FOLDER(folderId));
+    },
+
+    // 彻底删除文章
+    permanentDeleteArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+        return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.PERMANENT_DELETE(id));
     },
 
     // 管理员相关方法
