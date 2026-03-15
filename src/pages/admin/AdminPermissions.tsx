@@ -151,17 +151,17 @@ const AdminPermissions: React.FC = () => {
   const [form] = Form.useForm();
 
   // 搜索和筛选权限
-  const handleSearch = (value: string) => {
+  const handleSearch = (value: string): void => {
     setSearchText(value);
     filterPermissions(value, selectedRole);
   };
 
-  const handleRoleChange = (value: string) => {
+  const handleRoleChange = (value: string): void => {
     setSelectedRole(value);
     filterPermissions(searchText, value);
   };
 
-  const filterPermissions = (search: string, role: string) => {
+  const filterPermissions = (search: string, role: string): void => {
     let filtered = [...permissions];
 
     if (search) {
@@ -180,7 +180,7 @@ const AdminPermissions: React.FC = () => {
   };
 
   // 打开编辑权限模态框
-  const handleEditPermission = (permission: Permission) => {
+  const handleEditPermission = (permission: Permission): void => {
     setIsEditing(true);
     setCurrentPermission(permission);
     form.setFieldsValue({
@@ -194,20 +194,20 @@ const AdminPermissions: React.FC = () => {
   };
 
   // 打开查看权限模态框
-  const handleViewPermission = (permission: Permission) => {
+  const handleViewPermission = (permission: Permission): void => {
     setCurrentPermission(permission);
     setIsViewModalVisible(true);
   };
 
   // 删除权限
-  const handleDeletePermission = (id: number) => {
+  const handleDeletePermission = (id: number): void => {
     setPermissions(permissions.filter(permission => permission.id !== id));
     setFilteredPermissions(filteredPermissions.filter(permission => permission.id !== id));
     message.success('权限删除成功');
   };
 
   // 切换权限状态
-  const handleToggleStatus = (id: number, status: boolean) => {
+  const handleToggleStatus = (id: number, status: boolean): void => {
     const updatedPermissions = permissions.map(permission =>
       permission.id === id ? { ...permission, status: !status } : permission
     );
@@ -217,7 +217,7 @@ const AdminPermissions: React.FC = () => {
   };
 
   // 保存权限
-  const handleSavePermission = () => {
+  const handleSavePermission = (): void => {
     form.validateFields().then(values => {
       if (isEditing && currentPermission) {
         // 编辑现有权限
@@ -251,7 +251,7 @@ const AdminPermissions: React.FC = () => {
   };
 
   // 获取角色标签颜色
-  const getRoleColor = (role: string) => {
+  const getRoleColor = (role: string): string => {
     switch (role) {
       case 'admin': return 'red';
       case 'editor': return 'blue';
@@ -266,13 +266,13 @@ const AdminPermissions: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number) => index + 1
+      render: (_: unknown, __: unknown, index: number): number => index + 1
     },
     {
       title: '权限名称',
       dataIndex: 'name',
       key: 'name',
-      render: (text: string) => <Text className="font-medium">{text}</Text>
+      render: (text: string): React.ReactNode => <Text className="font-medium">{text}</Text>
     },
     {
       title: '权限代码',
@@ -284,14 +284,14 @@ const AdminPermissions: React.FC = () => {
       title: '描述',
       dataIndex: 'description',
       key: 'description',
-      render: (text: string) => <Text ellipsis={{ tooltip: text }}>{text}</Text>
+      render: (text: string): React.ReactNode => <Text ellipsis={{ tooltip: text }}>{text}</Text>
     },
     {
       title: '角色',
       dataIndex: 'role',
       key: 'role',
       width: 100,
-      render: (role: string) => (
+      render: (role: string): React.ReactNode => (
         <Tag color={getRoleColor(role)}>
           {roleOptions.find(opt => opt.value === role)?.label}
         </Tag>
@@ -302,7 +302,7 @@ const AdminPermissions: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: boolean, record: Permission) => (
+      render: (status: boolean, record: Permission): React.ReactNode => (
         <Switch
           checked={status}
           onChange={(checked) => handleToggleStatus(record.id, checked)}
@@ -319,7 +319,7 @@ const AdminPermissions: React.FC = () => {
       title: '操作',
       key: 'action',
       width: 180,
-      render: (_: unknown, record: Permission) => (
+      render: (_: unknown, record: Permission): React.ReactNode => (
         <Space size="middle">
           <Button
             type="text"

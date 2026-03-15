@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
-import { useUser } from '../../store';
+import { useUserStore } from '../../store';
 
 // 登录表单数据类型
 interface AdminLoginFormData {
@@ -19,21 +19,21 @@ interface AdminLoginFormData {
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useUser();
+  const { login, isLoading } = useUserStore();
   const [showPassword, setShowPassword] = useState(false);
   const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
   const [formData, setFormData] = useState<AdminLoginFormData | null>(null);
   const [form] = Form.useForm<AdminLoginFormData>();
 
   // 表单提交处理
-  const handleLogin = (values: AdminLoginFormData) => {
+  const handleLogin = (values: AdminLoginFormData): void => {
     // 保存表单数据，弹出验证码模态框
     setFormData(values);
     setCaptchaModalVisible(true);
   };
 
   // 验证码成功后的登录处理
-  const handleCaptchaSuccess = async () => {
+  const handleCaptchaSuccess = async (): Promise<void> => {
     if (!formData) return;
 
     try {

@@ -17,12 +17,12 @@ const AdminAnalytics: React.FC = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState('month');
 
   // 搜索处理
-  const handleSearch = () => {
+  const handleSearch = () : void => {
     // 这里可以添加搜索逻辑
   };
 
   // 时间范围变化处理
-  const handleTimeRangeChange = (value: string) => {
+  const handleTimeRangeChange = (value: string) : void => {
     setSelectedTimeRange(value);
     // 这里可以添加时间范围变化逻辑
   };
@@ -65,7 +65,11 @@ const AdminAnalytics: React.FC = () => {
               title="总用户数"
               value={mockStatistics.totalUsers}
               prefix={<UserOutlined />}
-              valueStyle={{ color: '#108ee9' }}
+              styles={{
+                content:{
+                  color: '#108ee9'
+                }
+              }}
             />
           </Card>
         </Col>
@@ -75,7 +79,11 @@ const AdminAnalytics: React.FC = () => {
               title="总文章数"
               value={mockStatistics.totalArticles}
               prefix={<FileTextOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{
+                content:{
+                  color: '#52c41a'
+                }
+              }}
             />
           </Card>
         </Col>
@@ -85,7 +93,11 @@ const AdminAnalytics: React.FC = () => {
               title="总评论数"
               value={mockStatistics.totalComments}
               prefix={<MessageOutlined />}
-              valueStyle={{ color: '#faad14' }}
+              styles={{
+                content:{
+                  color: '#faad14'
+                }
+              }}
             />
           </Card>
         </Col>
@@ -95,7 +107,11 @@ const AdminAnalytics: React.FC = () => {
               title="总浏览量"
               value={mockStatistics.totalViews}
               prefix={<EyeOutlined />}
-              valueStyle={{ color: '#f5222d' }}
+              styles={{
+                content:{
+                  color: '#f5222d'
+                }
+              }}
             />
           </Card>
         </Col>
@@ -107,7 +123,7 @@ const AdminAnalytics: React.FC = () => {
           <Card className="border border-gray-100 shadow-sm">
             <Title level={5} className="mb-4">文章浏览量趋势</Title>
             <div className="h-80 bg-gray-50 rounded-md flex items-center justify-center">
-              <Space direction="vertical" align="center">
+              <Space orientation="vertical" align="center">
                 <BarChartOutlined style={{ fontSize: 48, color: '#108ee9' }} />
                 <Text>文章浏览量趋势图表</Text>
                 <Text type="secondary">显示过去6个月的浏览量数据</Text>
@@ -119,7 +135,7 @@ const AdminAnalytics: React.FC = () => {
           <Card className="border border-gray-100 shadow-sm">
             <Title level={5} className="mb-4">用户增长趋势</Title>
             <div className="h-80 bg-gray-50 rounded-md flex items-center justify-center">
-              <Space direction="vertical" align="center">
+              <Space orientation="vertical" align="center">
                 <LineChartOutlined style={{ fontSize: 48, color: '#52c41a' }} />
                 <Text>用户增长趋势图表</Text>
                 <Text type="secondary">显示过去6个月的用户增长数据</Text>
@@ -134,7 +150,7 @@ const AdminAnalytics: React.FC = () => {
           <Card className="border border-gray-100 shadow-sm">
             <Title level={5} className="mb-4">文章分类分布</Title>
             <div className="h-80 bg-gray-50 rounded-md flex items-center justify-center">
-              <Space direction="vertical" align="center">
+              <Space orientation="vertical" align="center">
                 <PieChartOutlined style={{ fontSize: 48, color: '#faad14' }} />
                 <Text>文章分类分布图表</Text>
                 <Text type="secondary">显示各分类文章数量占比</Text>
@@ -146,7 +162,7 @@ const AdminAnalytics: React.FC = () => {
           <Card className="border border-gray-100 shadow-sm">
             <Title level={5} className="mb-4">用户活跃度分析</Title>
             <div className="h-80 bg-gray-50 rounded-md flex items-center justify-center">
-              <Space direction="vertical" align="center">
+              <Space orientation="vertical" align="center">
                 <LineChartOutlined style={{ fontSize: 48, color: '#f5222d' }} />
                 <Text>用户活跃度分析图表</Text>
                 <Text type="secondary">显示用户活跃情况</Text>

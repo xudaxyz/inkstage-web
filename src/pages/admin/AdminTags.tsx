@@ -23,9 +23,10 @@ import {
   TagOutlined,
   CalendarOutlined
 } from '@ant-design/icons';
-import tagService, { type AdminTag } from '../../services/tagService';
+import tagService from '../../services/tagService';
+import { type AdminTag } from '../../types/tag';
 import { StatusEnum, StatusEnumLabel } from '../../types/enums';
-import { formatDateTime, formatDateTimeShort } from '../../utils/date';
+import { formatDateTime, formatDateTimeShort } from '../../utils';
 
 const { Search } = Input;
 const { Text } = Typography;
@@ -47,7 +48,7 @@ const AdminTags: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   // 加载标签数据
-  const loadTags = async (pageNum: number = 1, pageSize: number = 10, keyword: string = '') => {
+  const loadTags = async (pageNum: number = 1, pageSize: number = 10, keyword: string = ''): Promise<void> => {
     setLoading(true);
     try {
       const response = await tagService.adminGetTagsByPage(keyword, pageNum, pageSize);
@@ -59,8 +60,8 @@ const AdminTags: React.FC = () => {
         setTags(formattedTags);
         setFilteredTags(formattedTags);
         setPagination({
-          current: response.data.pageNum,
-          pageSize: response.data.pageSize,
+          current: response.data.pages,
+          pageSize: response.data.size,
           total: response.data.total
         });
       } else {
@@ -80,20 +81,20 @@ const AdminTags: React.FC = () => {
   }, []);
 
   // 处理分页变化
-  const handleTableChange = (pagination: PaginationProps) => {
+  const handleTableChange = (pagination: PaginationProps): void => {
     const current = pagination.current || 1;
     const pageSize = pagination.pageSize || 10;
     loadTags(current, pageSize, searchKeyword);
   };
 
   // 搜索和筛选标签
-  const handleSearch = (value: string) => {
+  const handleSearch = (value: string): void => {
     setSearchKeyword(value);
     loadTags(1, pagination.pageSize, value);
   };
 
   // 打开编辑标签模态框
-  const handleEditTag = (tag: AdminTag) => {
+  const handleEditTag = (tag: AdminTag): void => {
     setIsEditing(true);
     setCurrentTag(tag);
     form.setFieldsValue({
@@ -106,17 +107,17 @@ const AdminTags: React.FC = () => {
   };
 
   // 打开查看标签模态框
-  const handleViewTag = (tag: AdminTag) => {
+  const handleViewTag = (tag: AdminTag): void => {
     setCurrentTag(tag);
     setIsViewModalVisible(true);
   };
 
   // 删除标签
-  const handleDeleteTag = async (id: number) => {
+  const handleDeleteTag = async (id: number): Promise<void> => {
     try {
       await tagService.adminDeleteTag(id);
       message.success('标签删除成功');
-      loadTags(pagination.current, pagination.pageSize);
+      await loadTags(pagination.current, pagination.pageSize);
     } catch (error) {
       console.error('删除标签失败:', error);
       message.error('删除标签失败');
@@ -124,7 +125,7 @@ const AdminTags: React.FC = () => {
   };
 
   // 切换标签状态
-  const handleToggleStatus = async (id: number, status: StatusEnum) => {
+  const handleToggleStatus = async (id: number, status: StatusEnum): Promise<void> => {
     try {
       // 先更新本地状态，提供即时反馈
       const updatedTags = tags.map(tag =>
@@ -141,12 +142,12 @@ const AdminTags: React.FC = () => {
       console.error('更新标签状态失败:', error);
       message.error('更新标签状态失败');
       // 失败时重新加载数据
-      loadTags(pagination.current, pagination.pageSize);
+      await loadTags(pagination.current, pagination.pageSize);
     }
   };
 
   // 保存标签
-  const handleSaveTag = async () => {
+  const handleSaveTag = async (): Promise<void> => {
     form.validateFields().then(async (values) => {
       try {
         if (isEditing && currentTag) {
@@ -169,7 +170,7 @@ const AdminTags: React.FC = () => {
           message.success('标签添加成功');
         }
         setIsModalVisible(false);
-        loadTags(pagination.current, pagination.pageSize);
+        await loadTags(pagination.current, pagination.pageSize);
       } catch (error) {
         console.error('保存标签失败:', error);
         message.error('保存标签失败');
@@ -185,14 +186,14 @@ const AdminTags: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1
+      render: (_: unknown, __: unknown, index: number): number => (pagination.current - 1) * pagination.pageSize + index + 1
     },
     {
       title: '标签名称',
       dataIndex: 'name',
       key: 'name',
       width: 150,
-      render: (text: string) => <Text className="font-medium">{text}</Text>
+      render: (text: string): React.ReactNode => <Text className="font-medium">{text}</Text>
     },
     {
       title: '别名',
@@ -223,7 +224,7 @@ const AdminTags: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: StatusEnum, record: AdminTag) => (
+      render: (status: StatusEnum, record: AdminTag): React.ReactNode => (
         <Switch
           checked={status === StatusEnum.ENABLED}
           onChange={() => handleToggleStatus(record.id, status)}
@@ -235,13 +236,13 @@ const AdminTags: React.FC = () => {
       dataIndex: 'createTime',
       key: 'createTime',
       width: 180,
-      render: (createTime: string) => formatDateTimeShort(createTime)
+      render: (createTime: string): string => formatDateTimeShort(createTime)
     },
     {
       title: '操作',
       key: 'action',
       width: 200,
-      render: (_: unknown, record: AdminTag) => (
+      render: (_: unknown, record: AdminTag): React.ReactNode => (
         <Space size="middle">
           <Button
             variant={'text'}

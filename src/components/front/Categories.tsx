@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { FrontendCategory } from '../../services/categoryService.ts';
+import type { FrontendCategory } from '../../types/category';
 
 interface CategoriesProps {
     categories?: FrontendCategory[];
@@ -36,7 +36,7 @@ const Categories: React.FC<CategoriesProps> = ({
   }, [selectedId, allCategories]);
 
   // 处理分类选择
-  const handleCategorySelect = (category: FrontendCategory) => {
+  const handleCategorySelect = (category: FrontendCategory): void => {
     setSelectedCategory(category.name);
     if (onSelect) {
       onSelect(category.id === 0 ? '全部' : category);

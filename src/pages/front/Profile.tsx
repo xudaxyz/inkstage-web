@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../../store';
+import { useUserStore } from '../../store';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { isLoggedIn } = useUser();
+  const { isLoggedIn } = useUserStore();
 
   useEffect(() => {
     // 检查用户是否登录

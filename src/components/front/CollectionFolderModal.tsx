@@ -37,7 +37,7 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
     }
   }, [visible]);
 
-  const handleCreateFolder = async () => {
+  const handleCreateFolder = async (): Promise<void> => {
     if (!newFolderName.trim()) {
       message.info('请输入收藏夹名称');
       return;
@@ -56,7 +56,7 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     if (selectedFolderId === 0) {
       message.error('请选择收藏夹');
       return;

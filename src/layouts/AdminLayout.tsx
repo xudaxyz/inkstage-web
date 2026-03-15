@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, ConfigProvider, Switch  } from 'antd';
 import { UserOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UsergroupAddOutlined, FileTextOutlined, TagOutlined, SettingOutlined, LogoutOutlined, DashboardOutlined, MessageOutlined, BarChartOutlined, MoonOutlined, SunOutlined, AppstoreOutlined, BellOutlined, LockOutlined } from '@ant-design/icons';
-import { useUser } from '../store';
+import { useUserStore } from '../store';
 
 const { Header, Sider, Content } = Layout;
 
@@ -13,7 +13,7 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useUser();
+  const { user, logout } = useUserStore();
   const [collapsed, setCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
 
@@ -99,12 +99,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   ];
 
   // 处理菜单点击
-  const handleMenuClick = () => {
+  const handleMenuClick = () : void => {
     // 不再在这里设置current状态，由useEffect根据路由变化来更新
   };
 
   // 处理退出登录
-  const handleLogout = async () => {
+  const handleLogout = async () : Promise<void> => {
     try {
       logout();
       navigate('/admin/login');

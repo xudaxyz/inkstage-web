@@ -15,14 +15,20 @@ if (import.meta.env.PROD) {
   });
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    {import.meta.env.PROD ? (
-      <Sentry.ErrorBoundary fallback={<div className="text-center p-8">应用程序出现错误，请刷新页面重试</div>}>
+const rootElement = document.getElementById('root');
+
+if (rootElement) {
+  createRoot(rootElement).render(
+    <StrictMode>
+      {import.meta.env.PROD ? (
+        <Sentry.ErrorBoundary fallback={<div className="text-center p-8">应用程序出现错误，请刷新页面重试</div>}>
+          <App />
+        </Sentry.ErrorBoundary>
+      ) : (
         <App />
-      </Sentry.ErrorBoundary>
-    ) : (
-      <App />
-    )}
-  </StrictMode>
-);
+      )}
+    </StrictMode>
+  );
+} else {
+  console.error('Root element not found');
+}

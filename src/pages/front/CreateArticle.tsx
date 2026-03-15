@@ -10,9 +10,10 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import articleService from '../../services/articleService.ts';
-import tagService, { type Tag } from '../../services/tagService.ts';
+import tagService from '../../services/tagService.ts';
+import { type FrontTag } from '../../types/tag';
 import categoryService from '../../services/categoryService.ts';
-import { useUser } from '../../store';
+import { useUserStore } from '../../store';
 import { ArticleStatusEnum, ArticleReviewStatusEnum, ArticleOriginalEnum, ArticleVisibleEnum, AllowStatusEnum } from '../../types/enums';
 import RichTextEditor from '../../components/editor/RichTextEditor.tsx';
 import './CreateArticle.css';
@@ -35,13 +36,13 @@ const CreateArticle: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user } = useUserStore();
   const { articleId } = useParams<{ articleId: string }>();
   const isEditMode = !!articleId;
 
   // 加载分类和标签数据
   useEffect(() => {
-    const loadCategoriesAndTags = async () => {
+    const loadCategoriesAndTags = async (): Promise<void> => {
       try {
         setLoading(true);
         setError('');
@@ -87,7 +88,7 @@ const CreateArticle: React.FC = () => {
     };
 
     // 加载文章详情
-    const loadArticleDetail = async (id: string) => {
+    const loadArticleDetail = async (id: string): Promise<void> => {
       try {
         const articleRes = await articleService.getArticleDetail(parseInt(id));
         if (articleRes.code === 200 && articleRes.data) {
@@ -97,7 +98,7 @@ const CreateArticle: React.FC = () => {
           form.setFieldsValue({
             title: article.title,
             category: article.categoryId.toString(),
-            tags: article.tags.map((tag: Tag) => tag.id.toString()),
+            tags: article.tags.map((tag: FrontTag) => tag.id.toString()),
             allowComment: article.allowComment,
             allowForward: article.allowForward,
             original: article.original,
@@ -121,7 +122,7 @@ const CreateArticle: React.FC = () => {
           }
 
           // 设置标签
-          setSelectedTags(article.tags.map((tag: Tag) => tag.id));
+          setSelectedTags(article.tags.map((tag: FrontTag) => tag.id));
         } else {
           message.error(articleRes.message || '获取文章详情失败');
         }
@@ -136,7 +137,7 @@ const CreateArticle: React.FC = () => {
 
 
   // 处理标签选择
-  const handleTagChange = (values: string[]) => {
+  const handleTagChange = (values: string[]): void => {
     setSelectedTags(values.map(v => parseInt(v)));
   };
 
@@ -149,12 +150,13 @@ const CreateArticle: React.FC = () => {
         allowComment: string
         allowForward: string
         original: string
-    }) => {
+    }): Promise<void> => {
     setIsSubmitting(true);
     try {
       const articleData = {
         title: values.title,
         content: editorContent,
+        contentHtml: editorContent,
         summary: summary,
         categoryId: parseInt(values.category),
         tagIds: selectedTags,
@@ -190,14 +192,15 @@ const CreateArticle: React.FC = () => {
   };
 
   // 处理保存草稿
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = async (): Promise<void> => {
     setIsSubmitting(true);
     try {
       const values = await form.validateFields();
       const articleData = {
-        id: articleId,
+        id: Number(articleId),
         title: values.title || '未命名文章',
         content: editorContent,
+        contentHtml: editorContent,
         summary: summary,
         categoryId: parseInt(values.category || '0'), // 默认分类
         tagIds: selectedTags,
@@ -486,7 +489,7 @@ const CreateArticle: React.FC = () => {
                   fileList={fileList}
                   name="coverImage"
                   multiple={false}
-                  customRequest={async (options) => {
+                  customRequest={async (options): Promise<void> => {
                     const { file, onSuccess, onError } = options;
                     try {
                       setLoading(true);
@@ -497,7 +500,7 @@ const CreateArticle: React.FC = () => {
                         // 生成本地预览
                         if (file instanceof File) {
                           const reader = new FileReader();
-                          reader.onload = (e) => {
+                          reader.onload = (e) : void => {
                             if (e.target?.result) {
                               setCoverImage(e.target.result as string);
                             }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, notification, Modal } from 'antd';
-import { formatDateTimeShort } from '../../utils/date';
+import { formatDateTimeShort } from '../../utils';
 import {
   ArrowLeftOutlined,
   LikeOutlined,
@@ -17,15 +17,15 @@ import {
   EditOutlined,
   DeleteOutlined
 } from '@ant-design/icons';
-import Header from '../../components/common/Header.tsx';
-import Footer from '../../components/common/Footer.tsx';
-import CommentSection from '../../components/front/CommentSection.tsx';
-import CollectionFolderModal from '../../components/front/CollectionFolderModal.tsx';
-import { useUser, useArticle } from '../../store';
+import Header from '../../components/common/Header';
+import Footer from '../../components/common/Footer';
+import CommentSection from '../../components/front/CommentSection';
+import CollectionFolderModal from '../../components/front/CollectionFolderModal';
+import { useUserStore, useArticleStore } from '../../store';
 import useCollection from '../../hooks/useCollection';
-import articleService from '../../services/articleService.ts';
-import readingHistoryService from '../../services/readingHistoryService.ts';
-import type { Tag } from '../../services/tagService.ts';
+import articleService from '../../services/articleService';
+import readingHistoryService from '../../services/readingHistoryService';
+import type { FrontTag } from '../../types/tag';
 import MarkdownIt from 'markdown-it';
 
 // 初始化Markdown渲染器
@@ -47,7 +47,7 @@ const ArticleDetail: React.FC = () => {
   const [scrollPosition, setScrollPosition] = useState<number>(0);
 
   // 获取当前用户信息
-  const { user, isLoggedIn } = useUser();
+  const { user, isLoggedIn } = useUserStore();
 
   // 获取文章状态
   const {
@@ -65,7 +65,7 @@ const ArticleDetail: React.FC = () => {
     unLikeArticle,
     updateCommentCount,
     reset
-  } = useArticle();
+  } = useArticleStore();
 
   // 使用收藏Hook
   const {
@@ -99,7 +99,7 @@ const ArticleDetail: React.FC = () => {
   }, [article]);
 
   // 计算阅读进度
-  const calculateProgress = useCallback(() => {
+  const calculateProgress = useCallback((): number => {
     if (!contentRef.current) return 0;
 
     const content = contentRef.current;
@@ -119,7 +119,7 @@ const ArticleDetail: React.FC = () => {
   }, []);
 
   // 保存阅读历史
-  const saveReadingHistory = useCallback(async () => {
+  const saveReadingHistory = useCallback(async (): Promise<void> => {
     if (!id || !isLoggedIn) return;
 
     const progress = calculateProgress();
@@ -148,7 +148,7 @@ const ArticleDetail: React.FC = () => {
     readingStartTimeRef.current = Date.now();
 
     // 组件卸载时重置状态
-    return () => {
+    return () : void => {
       reset();
     };
   }, [id, fetchArticleDetail, incrementReadCount, reset]);
@@ -162,12 +162,12 @@ const ArticleDetail: React.FC = () => {
 
   // 监听滚动事件，计算阅读进度
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = (): void => {
       calculateProgress();
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () : void => window.removeEventListener('scroll', handleScroll);
   }, [calculateProgress]);
 
   // 定期保存阅读历史（每10秒）
@@ -175,29 +175,29 @@ const ArticleDetail: React.FC = () => {
     if (!id || !isLoggedIn) return;
 
     const timer = setInterval(saveReadingHistory, 10000);
-    return () => clearInterval(timer);
+    return () : void  => clearInterval(timer);
   }, [id, isLoggedIn, saveReadingHistory]);
 
   // 页面离开时保存阅读历史
   useEffect(() => {
     if (!id || !isLoggedIn) return;
 
-    const handleBeforeUnload = () => {
+    const handleBeforeUnload = (): void => {
       void saveReadingHistory();
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    return () : void => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [id, isLoggedIn, saveReadingHistory]);
 
-  const scrollToHeading = (id: string) => {
+  const scrollToHeading = (id: string): void => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const handleLike = async () => {
+  const handleLike = async (): Promise<void> => {
     if (!isLoggedIn || !article) {
       message.info('请先登录');
       return;
@@ -213,7 +213,7 @@ const ArticleDetail: React.FC = () => {
   };
 
 
-  const handleCollect = async () => {
+  const handleCollect = async (): Promise<void> => {
     if (!isLoggedIn || !article) {
       message.info('请先登录');
       return;
@@ -263,7 +263,7 @@ const ArticleDetail: React.FC = () => {
   };
 
   // 保存收藏到指定文件夹
-  const handleSaveToFolder = async (folderId: number) => {
+  const handleSaveToFolder = async (folderId: number): Promise<void> => {
     const articleId = Number(id);
     if (isNaN(articleId)) {
       message.error('文章ID无效');
@@ -283,7 +283,7 @@ const ArticleDetail: React.FC = () => {
   };
 
   // 打开文件夹选择模态框
-  const openFolderModal = async (articleId: number) => {
+  const openFolderModal = async (articleId: number): Promise<void> => {
     if (!articleId) {
       message.error('文章ID不存在');
       return;
@@ -293,22 +293,22 @@ const ArticleDetail: React.FC = () => {
     setFolderModalVisible(true);
   };
 
-  const handleShare = () => {
+  const handleShare = (): void => {
     void message.info('分享功能即将上线');
   };
 
   // 处理文章编辑
-  const handleEdit = () => {
+  const handleEdit = (): void => {
     navigate(`/edit-article/${id}`);
   };
 
   // 处理文章删除
-  const handleDelete = () => {
+  const handleDelete = (): void => {
     setDeleteModalVisible(true);
   };
 
   // 确认删除文章
-  const confirmDelete = async () => {
+  const confirmDelete = async (): Promise<void> => {
     try {
       setDeleteModalVisible(false);
       if (!id) {
@@ -592,7 +592,7 @@ const ArticleDetail: React.FC = () => {
               {/* 文章标签 */}
               {article.tags && Array.isArray(article.tags) && (
                 <div className="mb-10 flex flex-wrap gap-2">
-                  {article.tags.map((tag: Tag, index) => (
+                  {article.tags.map((tag: FrontTag, index: number) => (
                     <span key={tag.id || index}
                       className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors">
                       {tag.name}
@@ -683,7 +683,7 @@ const ArticleDetail: React.FC = () => {
                   <List
                     size="small"
                     dataSource={relatedArticles}
-                    renderItem={(item) => (
+                    renderItem={(item) : React.ReactNode => (
                       <List.Item className="py-3">
                         <List.Item.Meta
                           title={

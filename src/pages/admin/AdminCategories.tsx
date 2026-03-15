@@ -9,9 +9,10 @@ import {
   AppstoreOutlined,
   CalendarOutlined
 } from '@ant-design/icons';
-import categoryService, { type AdminCategory } from '../../services/categoryService';
+import categoryService from '../../services/categoryService';
+import  { type AdminCategory } from '../../types/category';
 import { StatusEnum, StatusEnumLabel } from '../../types/enums';
-import { formatDateTime, formatDateTimeShort } from '../../utils/date';
+import { formatDateTime, formatDateTimeShort } from '../../utils';
 
 const { Search } = Input;
 const { Text } = Typography;
@@ -33,7 +34,7 @@ const AdminCategories: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   // 加载分类数据
-  const loadCategories = async (pageNum: number = 1, pageSize: number = 10, keyword: string = '') => {
+  const loadCategories = async (pageNum: number = 1, pageSize: number = 10, keyword: string = '') : Promise<void> => {
     setLoading(true);
     try {
       const response = await categoryService.adminGetCategoriesByPage(keyword, pageNum, pageSize);
@@ -61,25 +62,25 @@ const AdminCategories: React.FC = () => {
   };
 
   // 组件挂载时加载数据
-  useEffect(() => {
+  useEffect((): void => {
     loadCategories();
   }, []);
 
   // 处理分页变化
-  const handleTableChange = (pagination: PaginationProps) => {
+  const handleTableChange = async (pagination: PaginationProps): Promise<void> => {
     const current = pagination.current || 1;
     const pageSize = pagination.pageSize || 10;
-    loadCategories(current, pageSize, searchKeyword);
+    await loadCategories(current, pageSize, searchKeyword);
   };
 
   // 搜索和筛选分类
-  const handleSearch = (value: string) => {
+  const handleSearch = async (value: string): Promise<void> => {
     setSearchKeyword(value);
-    loadCategories(1, pagination.pageSize, value);
+    await loadCategories(1, pagination.pageSize, value);
   };
 
   // 打开编辑分类模态框
-  const handleEditCategory = (category: AdminCategory) => {
+  const handleEditCategory = (category: AdminCategory): void => {
     setIsEditing(true);
     setCurrentCategory(category);
     form.setFieldsValue({
@@ -92,13 +93,13 @@ const AdminCategories: React.FC = () => {
   };
 
   // 打开查看分类模态框
-  const handleViewCategory = (category: AdminCategory) => {
+  const handleViewCategory = (category: AdminCategory): void => {
     setCurrentCategory(category);
     setIsViewModalVisible(true);
   };
 
   // 删除分类
-  const handleDeleteCategory = async (id: number) => {
+  const handleDeleteCategory = async (id: number): Promise<void> => {
     try {
       await categoryService.adminDeleteCategory(id);
       message.success('分类删除成功');
@@ -110,7 +111,7 @@ const AdminCategories: React.FC = () => {
   };
 
   // 切换分类状态
-  const handleToggleStatus = async (id: number, status: StatusEnum) => {
+  const handleToggleStatus = async (id: number, status: StatusEnum): Promise<void> => {
     try {
       // 先更新本地状态，提供即时反馈
       const updatedCategories = categories.map(category =>
@@ -132,7 +133,7 @@ const AdminCategories: React.FC = () => {
   };
 
   // 保存分类
-  const handleSaveCategory = async () => {
+  const handleSaveCategory = async (): Promise<void> => {
     form.validateFields().then(async (values) => {
       try {
         if (isEditing && currentCategory) {
@@ -171,14 +172,14 @@ const AdminCategories: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1
+      render: (_: unknown, __: unknown, index: number): number => (pagination.current - 1) * pagination.pageSize + index + 1
     },
     {
       title: '分类名称',
       dataIndex: 'name',
       key: 'name',
       width: 150,
-      render: (text: string) => <Text className="font-medium">{text}</Text>
+      render: (text: string): React.ReactNode => <Text className="font-medium">{text}</Text>
     },
     {
       title: '别名',
@@ -203,7 +204,7 @@ const AdminCategories: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: StatusEnum, record: AdminCategory) => (
+      render: (status: StatusEnum, record: AdminCategory): React.ReactNode => (
         <Switch
           checked={status === StatusEnum.ENABLED}
           onChange={() => handleToggleStatus(record.id, status)}
@@ -215,13 +216,13 @@ const AdminCategories: React.FC = () => {
       dataIndex: 'createTime',
       key: 'createTime',
       width: 180,
-      render: (createTime: string) => formatDateTimeShort(createTime)
+      render: (createTime: string): string => formatDateTimeShort(createTime)
     },
     {
       title: '操作',
       key: 'action',
       width: 200,
-      render: (_: unknown, record: AdminCategory) => (
+      render: (_: unknown, record: AdminCategory): React.ReactNode => (
         <Space size="middle">
           <Button
             variant={'text'}

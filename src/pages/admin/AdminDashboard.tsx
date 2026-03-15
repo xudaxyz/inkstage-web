@@ -189,7 +189,7 @@ const AdminDashboard: React.FC = () => {
 
 
   // 获取状态标签颜色
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'success':
         return 'green';
@@ -210,7 +210,7 @@ const AdminDashboard: React.FC = () => {
       title: '文章标题',
       dataIndex: 'title',
       key: 'title',
-      render: (text: string) => <Text ellipsis={{ tooltip: text }}>{text}</Text>
+      render: (text: string): React.ReactNode => <Text ellipsis={{ tooltip: text }}>{text}</Text>
     },
     {
       title: '作者',
@@ -221,7 +221,7 @@ const AdminDashboard: React.FC = () => {
       title: '浏览量',
       dataIndex: 'views',
       key: 'views',
-      render: (views: number) => (
+      render: (views: number): React.ReactNode => (
         <div className="flex items-center gap-1">
           <EyeOutlined className="text-gray-400"/>
           <span>{views}</span>
@@ -232,7 +232,7 @@ const AdminDashboard: React.FC = () => {
       title: '评论数',
       dataIndex: 'comments',
       key: 'comments',
-      render: (comments: number) => (
+      render: (comments: number): React.ReactNode => (
         <div className="flex items-center gap-1">
           <MessageOutlined className="text-gray-400"/>
           <span>{comments}</span>
@@ -248,7 +248,7 @@ const AdminDashboard: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
+      render: (status: string): React.ReactNode => (
         <Tag color={status === 'published' ? 'green' : 'orange'}>
           {status === 'published' ? '已发布' : '草稿'}
         </Tag>

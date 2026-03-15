@@ -16,9 +16,10 @@ import {
   FolderOutlined
 } from '@ant-design/icons';
 import { ROUTES } from '../../../routes/constants';
-import articleService, { type MyArticleCollectionList } from '../../../services/articleService';
+import articleService from '../../../services/articleService';
+import { type MyArticleCollectionList } from '../../../types/article';
 import { DefaultStatusEnum, ArticleOriginalMap } from '../../../types/enums';
-import { formatDateTimeShort } from '../../../utils/date';
+import { formatDateTimeShort } from '../../../utils';
 
 // 收藏夹类型定义
 interface CollectionFolder {
@@ -160,7 +161,7 @@ const MyCollections: React.FC = () => {
   }, [fetchCollections, fetchFolders, fetchTotalCollectionCount]);
 
   // 取消单个收藏
-  const handleSingleDelete = async (articleId: string) => {
+  const handleSingleDelete = async (articleId: string) : Promise<void> => {
     try {
       setLoading(true);
       const result = await articleService.unCollectArticle(Number(articleId));
@@ -183,28 +184,28 @@ const MyCollections: React.FC = () => {
   };
 
   // 分享文章
-  const handleShare = () => {
+  const handleShare = () : void => {
     message.success('分享功能已触发');
   };
 
   // 举报文章
-  const handleReport = () => {
+  const handleReport = () : void => {
     message.success('举报功能已触发');
   };
 
   // 打开新建收藏夹模态框
-  const handleOpenCreateModal = () => {
+  const handleOpenCreateModal = () : void => {
     form.resetFields();
     setIsCreateModalVisible(true);
   };
 
   // 关闭新建收藏夹模态框
-  const handleCloseCreateModal = () => {
+  const handleCloseCreateModal = () : void => {
     setIsCreateModalVisible(false);
   };
 
   // 提交新建收藏夹表单
-  const handleCreateFolder = async (values: { folderName: string; folderDescription?: string }) => {
+  const handleCreateFolder = async (values: { folderName: string; folderDescription?: string }) : Promise<void> => {
     setCreateFolderLoading(true);
     try {
       const response = await articleService.createCollectionFolder({

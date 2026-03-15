@@ -7,8 +7,8 @@ export const ROUTES = {
 
   // 文章相关
   CREATE_ARTICLE: '/create-article',
-  EDIT_ARTICLE: (id: string) => `/edit-article/${id}`,
-  ARTICLE_DETAIL: (id: string) => `/article/${id}`,
+  EDIT_ARTICLE: (id: string): string => `/edit-article/${id}`,
+  ARTICLE_DETAIL: (id: string): string => `/article/${id}`,
 
   // 个人中心
   PROFILE: '/profile',
@@ -21,5 +21,5 @@ export const ROUTES = {
 
   // 其他
   RANKINGS: '/rankings',
-  USER_PROFILE: (id: string) => `/author/${id}`
+  USER_PROFILE: (id: string): string => `/author/${id}`
 };

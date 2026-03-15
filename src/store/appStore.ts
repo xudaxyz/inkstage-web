@@ -12,14 +12,14 @@ export interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   theme: 'light',
   isLoading: false,
-  toggleTheme: () => set((state) => ({
+  toggleTheme: (): void => set((state) => ({
     theme: state.theme === 'light' ? 'dark' : 'light'
   })),
-  setLoading: (loading) => set({ isLoading: loading })
+  setLoading: (loading: boolean): void => set({ isLoading: loading })
 }));
 
 // 导出应用状态选择器
-export const useApp = () => {
+export const useApp = (): AppState => {
   const store = useAppStore();
   return {
     theme: store.theme,
@@ -28,3 +28,7 @@ export const useApp = () => {
     setLoading: store.setLoading
   };
 };
+
+// 导出应用状态的具体选择器，减少不必要的重渲染
+export const useTheme = () => useAppStore((state) => state.theme);
+export const useAppLoading = () => useAppStore((state) => state.isLoading);

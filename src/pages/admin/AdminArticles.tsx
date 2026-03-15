@@ -53,7 +53,7 @@ const AdminArticles: React.FC = () => {
   const [categories, setCategories] = useState<Array<{value: number; label: string}>>([]);
 
   // 获取文章列表
-  const fetchArticles = useCallback(async (page = pagination.current, pageSize = pagination.pageSize) => {
+  const fetchArticles = useCallback(async (page = pagination.current, pageSize = pagination.pageSize) : Promise<void> => {
     console.log('fetchArticles called with selectedCategory:', selectedCategory);
     setLoading(true);
     try {
@@ -142,14 +142,19 @@ const AdminArticles: React.FC = () => {
   }, []);
 
   // 组件挂载时获取文章列表和分类列表
-  useEffect(() => {
-    console.log('useEffect called with fetchArticles');
-    fetchArticles();
+  useEffect((): void => {
+    const loadData = async (): Promise<void> => {
+      await fetchArticles();
+    };
+    void loadData();
   }, [fetchArticles]);
 
   // 组件挂载时获取分类列表
-  useEffect(() => {
-    fetchCategories();
+  useEffect((): void => {
+    const loadCategories = async (): Promise<void> => {
+      await fetchCategories();
+    };
+    void loadCategories();
   }, [fetchCategories]);
 
   // 打开编辑文章模态框
@@ -245,7 +250,7 @@ const AdminArticles: React.FC = () => {
   };
 
   // 获取状态标签颜色
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string) : string | undefined => {
     switch (status) {
       case ArticleStatusEnum.PUBLISHED:
         return 'green';
@@ -268,13 +273,13 @@ const AdminArticles: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1
+      render: (_: unknown, __: unknown, index: number) : number => (pagination.current - 1) * pagination.pageSize + index + 1
     },
     {
       title: '标题',
       dataIndex: 'title',
       key: 'title',
-      render: (text: string) => <Text ellipsis={{ tooltip: text }} className="font-medium">{text}</Text>
+      render: (text: string) : React.ReactNode => <Text ellipsis={{ tooltip: text }} className="font-medium">{text}</Text>
     },
     {
       title: '作者',
@@ -293,7 +298,7 @@ const AdminArticles: React.FC = () => {
       dataIndex: 'articleStatus',
       key: 'articleStatus',
       width: 100,
-      render: (status: string) => (
+      render: (status: string) : React.ReactNode => (
         <Tag color={getStatusColor(status)}>
           {ArticleStatusMap[status as keyof typeof ArticleStatusMap] || status}
         </Tag>
@@ -328,7 +333,7 @@ const AdminArticles: React.FC = () => {
       dataIndex: 'top',
       key: 'top',
       width: 100,
-      render: (top: string) => (
+      render: (top: string) : React.ReactNode => (
         <Tag color={top === 'TOP' ? 'red' : 'default'}>
           {top === 'TOP' ? '是' : '否'}
         </Tag>
@@ -338,7 +343,7 @@ const AdminArticles: React.FC = () => {
       title: '标签',
       dataIndex: 'tags',
       key: 'tags',
-      render: (tags: string[]) => (
+      render: (tags: string[]) : React.ReactNode => (
         <Space size="small">
           {tags.map((tag, index) => (
             <Tag key={index}>{tag}</Tag>
@@ -350,7 +355,7 @@ const AdminArticles: React.FC = () => {
       title: '操作',
       key: 'action',
       width: 180,
-      render: (_: unknown, record: AdminArticleList) => (
+      render: (_: unknown, record: AdminArticleList) : React.ReactNode => (
         <Space size="middle">
           <Button
             type="text"

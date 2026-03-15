@@ -12,11 +12,12 @@ import {
 } from '@ant-design/icons';
 import Header from '../../components/common/Header.tsx';
 import Footer from '../../components/common/Footer.tsx';
-import type { IndexArticleList } from '../../services/articleService.ts';
+import type { IndexArticleList } from '../../types/article';
 import articleService from '../../services/articleService.ts';
 import { getUserPublicProfile } from '../../services/userService.ts';
 import { GenderEnum } from '../../types/enums';
-import { formatDateOnly, formatDateTimeShort } from '../../utils/date';
+import { formatDateOnly, formatDateTimeShort } from '../../utils';
+import LazyImage from '../../components/common/LazyImage';
 
 // 作者信息类型定义
 interface AuthorInfo {
@@ -69,7 +70,7 @@ const UserProfile: React.FC = () => {
 
   // 获取作者信息
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchUserProfile = async (): Promise<void> => {
       if (id) {
         try {
           setLoading(true);
@@ -77,7 +78,7 @@ const UserProfile: React.FC = () => {
 
           // 验证userData是否存在
           if (!userData) {
-            throw new Error('获取用户数据失败：返回数据为空');
+              new Error('获取用户数据失败：返回数据为空');
           }
 
           // 转换数据格式
@@ -131,7 +132,7 @@ const UserProfile: React.FC = () => {
 
   // 获取用户文章列表
   useEffect(() => {
-    const fetchUserArticles = async () => {
+    const fetchUserArticles = async (): Promise<void> => {
       if (id) {
         try {
           setArticlesLoading(true);
@@ -153,7 +154,7 @@ const UserProfile: React.FC = () => {
   }, [id]);
 
   // 处理关注/取消关注
-  const handleFollow = () => {
+  const handleFollow = (): void => {
     setIsFollowing(!isFollowing);
     message.success(isFollowing ? '已取消关注' : '关注成功');
   };
@@ -368,7 +369,7 @@ const UserProfile: React.FC = () => {
                             {article.coverImage && (
                               <div className="w-full md:w-56 h-36 rounded-lg overflow-hidden shrink-0 shadow-md transform transition-all duration-300 group-hover:scale-105">
                                 <a href={`/article/${article.id}`} target="_blank" rel="noopener noreferrer" className="block">
-                                  <img
+                                  <LazyImage
                                     src={article.coverImage}
                                     alt={article.title}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

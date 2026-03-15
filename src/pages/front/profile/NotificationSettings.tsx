@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Switch, List, message, Popconfirm, Divider } from 'antd';
 import { BellOutlined, MailOutlined, PushpinOutlined } from '@ant-design/icons';
-import notificationService, { type NotificationSetting } from '../../../services/notificationService';
+import notificationService from '../../../services/notificationService';
+import { type NotificationSetting } from '../../../types/notification';
 
 const NotificationSettings: React.FC = () => {
   const [notificationSettings, setNotificationSettings] = useState<NotificationSetting>({
@@ -23,7 +24,7 @@ const NotificationSettings: React.FC = () => {
 
   // 加载通知设置
   useEffect(() => {
-    const fetchNotificationSetting = async () => {
+    const fetchNotificationSetting = async () : Promise<void> => {
       try {
         const response = await notificationService.getNotificationSetting();
         if (response.code === 200) {
@@ -58,7 +59,7 @@ const NotificationSettings: React.FC = () => {
     fetchNotificationSetting();
   }, []);
 
-  const handleSettingChange = async (key: keyof NotificationSetting, value: boolean) => {
+  const handleSettingChange = async (key: keyof NotificationSetting, value: boolean) : Promise<void> => {
     const newSettings = {
       ...notificationSettings,
       [key]: value
@@ -82,7 +83,7 @@ const NotificationSettings: React.FC = () => {
     }
   };
 
-  const handleResetToDefault = async () => {
+  const handleResetToDefault = async () : Promise<void> => {
     try {
       const response = await notificationService.resetNotificationSetting();
       if (response.code === 200 && response.data) {

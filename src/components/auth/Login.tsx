@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
-import { useUser } from '../../store';
+import { useUserStore } from '../../store';
 
 // 登录表单数据类型
 interface LoginFormData {
@@ -20,7 +20,7 @@ interface LoginFormData {
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isLoading, sendCode } = useUser();
+  const { login, isLoading, sendCode } = useUserStore();
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState<'password' | 'code'>('code');
   const [captchaModalVisible, setCaptchaModalVisible] = useState(false);

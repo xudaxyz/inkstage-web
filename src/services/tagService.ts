@@ -2,7 +2,7 @@ import { apiClient, API_ENDPOINTS } from '../api';
 import type { ApiResponse } from '../types/common';
 import { StatusEnum } from '../types/enums';
 import type {
-  Tag,
+  FrontTag,
   AdminTag,
   TagCreateUpdateParams,
   TagPageResponse
@@ -42,7 +42,7 @@ const tagService = {
      * 获取所有标签
      * @returns 标签列表
      */
-  getAllTags: async (): Promise<ApiResponse<Tag[]>> => {
+  getAllTags: async (): Promise<ApiResponse<FrontTag[]>> => {
     return await apiClient.get(API_ENDPOINTS.FRONT.TAG.ALL);
   },
 
@@ -50,7 +50,7 @@ const tagService = {
      * 获取激活状态的标签
      * @returns 激活状态的标签列表
      */
-  getActiveTags: async (): Promise<ApiResponse<Tag[]>> => {
+  getActiveTags: async (): Promise<ApiResponse<FrontTag[]>> => {
     return await apiClient.get(API_ENDPOINTS.FRONT.TAG.ACTIVE);
   },
 
@@ -59,7 +59,7 @@ const tagService = {
      * @param id 标签ID
      * @returns 标签信息
      */
-  getTagById: async (id: number): Promise<ApiResponse<Tag>> => {
+  getTagById: async (id: number): Promise<ApiResponse<FrontTag>> => {
     validateIdParam(id);
     return await apiClient.get(API_ENDPOINTS.FRONT.TAG.DETAIL(id));
   },
@@ -69,7 +69,7 @@ const tagService = {
      * @param articleId 文章ID
      * @returns 标签列表
      */
-  getTagsByArticleId: async (articleId: number): Promise<ApiResponse<Tag[]>> => {
+  getTagsByArticleId: async (articleId: number): Promise<ApiResponse<FrontTag[]>> => {
     validateIdParam(articleId);
     return await apiClient.get(API_ENDPOINTS.FRONT.TAG.BY_ARTICLE(articleId));
   },

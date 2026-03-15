@@ -11,10 +11,11 @@ import {
   LikeOutlined,
   FileTextOutlined
 } from '@ant-design/icons';
-import userService, { type AdminUser } from '../../services/userService';
+import userService from '../../services/userService';
+import { type AdminUser } from '../../types/user';
 import type { Dayjs } from 'dayjs';
 import { UserRoleEnum, UserRoleEnumLabel, UserStatusEnum, UserStatusEnumLabel } from '../../types/enums';
-import { formatDateTimeShort, formatDateTime } from '../../utils/date';
+import { formatDateTimeShort, formatDateTime } from '../../utils';
 
 const { Option } = Select;
 const { Search } = Input;
@@ -67,7 +68,7 @@ const AdminUsers: React.FC = () => {
     status?: UserStatusEnum | '',
     startDate?: Dayjs | null,
     endDate?: Dayjs | null
-  ) => {
+  ): Promise<void> => {
     setLoading(true);
     try {
       const response = await userService.admin.getUsersByPage({
@@ -128,40 +129,40 @@ const AdminUsers: React.FC = () => {
   }, [searchText, selectedRole, selectedStatus]);
 
   // 获取用户列表（使用当前分页状态）
-  const fetchUsers = useCallback(() => {
+  const fetchUsers = useCallback((): void => {
     void fetchUsersWithParams(pagination.pageNum, pagination.pageSize, searchText, selectedRole, selectedStatus, startDate, endDate);
   }, [fetchUsersWithParams, pagination.pageNum, pagination.pageSize, searchText, selectedRole, selectedStatus, startDate, endDate]);
 
   // 搜索和筛选用户
-  const handleSearch = (value: string) => {
+  const handleSearch = (value: string): void => {
     // 先更新状态
     setSearchText(value);
     setPagination(prev => ({ ...prev, pageNum: 1 }));
     void fetchUsersWithParams(1, pagination.pageSize, value);
   };
 
-  const handleRoleChange = (value: UserRoleEnum | '') => {
+  const handleRoleChange = (value: UserRoleEnum | ''): void => {
     // 先更新状态
     setSelectedRole(value);
     setPagination(prev => ({ ...prev, pageNum: 1 }));
     void fetchUsersWithParams(1, pagination.pageSize, searchText, value);
   };
 
-  const handleStatusChange = (value: UserStatusEnum | '') => {
+  const handleStatusChange = (value: UserStatusEnum | ''): void => {
     // 先更新状态
     setSelectedStatus(value);
     setPagination(prev => ({ ...prev, pageNum: 1 }));
     void fetchUsersWithParams(1, pagination.pageSize, searchText, selectedRole, value);
   };
 
-  const handleStartDateChange = (date: Dayjs | null) => {
+  const handleStartDateChange = (date: Dayjs | null): void => {
     // 先更新状态
     setStartDate(date);
     setPagination(prev => ({ ...prev, pageNum: 1 }));
     void fetchUsersWithParams(1, pagination.pageSize, searchText, selectedRole, selectedStatus, date);
   };
 
-  const handleEndDateChange = (date: Dayjs | null) => {
+  const handleEndDateChange = (date: Dayjs | null): void => {
     // 先更新状态
     setEndDate(date);
     setPagination(prev => ({ ...prev, pageNum: 1 }));
@@ -174,7 +175,7 @@ const AdminUsers: React.FC = () => {
   }, [fetchUsers]);
 
   // 打开查看用户模态框
-  const handleViewUser = async (user: AdminUser) => {
+  const handleViewUser = async (user: AdminUser): Promise<void> => {
     setLoading(true);
     try {
       const response = await userService.admin.getUserById(user.id);
@@ -194,19 +195,19 @@ const AdminUsers: React.FC = () => {
   };
 
   // 打开删除确认模态框
-  const handleOpenDeleteModal = (id: number) => {
+  const handleOpenDeleteModal = (id: number): void => {
     setUserToDelete(id);
     setDeleteModalVisible(true);
   };
 
   // 关闭删除确认模态框
-  const handleCloseDeleteModal = () => {
+  const handleCloseDeleteModal = (): void => {
     setDeleteModalVisible(false);
     setUserToDelete(null);
   };
 
   // 删除用户
-  const handleDeleteUser = async () => {
+  const handleDeleteUser = async (): Promise<void> => {
     if (!userToDelete) return;
 
     setDeleteLoading(true);
@@ -229,19 +230,19 @@ const AdminUsers: React.FC = () => {
   };
 
   // 打开编辑用户模态框
-  const handleOpenEditModal = (user: AdminUser) => {
+  const handleOpenEditModal = (user: AdminUser): void => {
     setEditUser(user);
     setEditModalVisible(true);
   };
 
   // 关闭编辑用户模态框
-  const handleCloseEditModal = () => {
+  const handleCloseEditModal = (): void => {
     setEditModalVisible(false);
     setEditUser(null);
   };
 
   // 处理编辑表单字段变化
-  const handleEditFieldChange = <K extends keyof AdminUser>(field: K, value: AdminUser[K]) => {
+  const handleEditFieldChange = <K extends keyof AdminUser>(field: K, value: AdminUser[K]): void => {
     if (editUser) {
       setEditUser(prev => {
         if (!prev) return prev;
@@ -254,7 +255,7 @@ const AdminUsers: React.FC = () => {
   };
 
   // 保存编辑的用户信息
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = async (): Promise<void> => {
     if (!editUser) return;
 
     setEditLoading(true);
@@ -277,21 +278,21 @@ const AdminUsers: React.FC = () => {
   };
 
   // 打开修改角色模态框
-  const handleOpenChangeRoleModal = (user: AdminUser) => {
+  const handleOpenChangeRoleModal = (user: AdminUser): void => {
     setUserToChangeRole(user);
     setTargetRole(user.role);
     setChangeRoleModalVisible(true);
   };
 
   // 关闭修改角色模态框
-  const handleCloseChangeRoleModal = () => {
+  const handleCloseChangeRoleModal = (): void => {
     setChangeRoleModalVisible(false);
     setUserToChangeRole(null);
     setTargetRole('');
   };
 
   // 保存角色修改
-  const handleSaveRoleChange = async () => {
+  const handleSaveRoleChange = async (): Promise<void> => {
     if (!userToChangeRole || !targetRole) return;
 
     setEditLoading(true);
@@ -319,20 +320,20 @@ const AdminUsers: React.FC = () => {
   const [userToChangeStatus, setUserToChangeStatus] = useState<AdminUser | null>(null);
   const [targetStatus, setTargetStatus] = useState<UserStatusEnum | ''>('');
 
-  const handleOpenChangeStatusModal = (user: AdminUser) => {
+  const handleOpenChangeStatusModal = (user: AdminUser): void => {
     setUserToChangeStatus(user);
     setTargetStatus(user.status);
     setChangeStatusModalVisible(true);
   };
 
-  const handleCloseChangeStatusModal = () => {
+  const handleCloseChangeStatusModal = (): void => {
     setChangeStatusModalVisible(false);
     setUserToChangeStatus(null);
     setTargetStatus('');
   };
 
   // 保存状态修改
-  const handleSaveStatusChange = async () => {
+  const handleSaveStatusChange = async (): Promise<void> => {
     if (!userToChangeStatus || !targetStatus) return;
 
     setEditLoading(true);
@@ -356,7 +357,7 @@ const AdminUsers: React.FC = () => {
   };
 
   // 获取角色标签颜色
-  const getRoleColor = (role: UserRoleEnum | undefined) => {
+  const getRoleColor = (role: UserRoleEnum | undefined): string => {
     if (!role) return 'default';
     if (role === UserRoleEnum.USER) return 'green'; // USER
     if (role === UserRoleEnum.ADMIN) return 'blue';  // ADMIN
@@ -365,7 +366,7 @@ const AdminUsers: React.FC = () => {
   };
 
   // 获取状态标签颜色
-  const getStatusColor = (status: UserStatusEnum) => {
+  const getStatusColor = (status: UserStatusEnum): string => {
     switch (status) {
       case UserStatusEnum.NORMAL:
         return 'green';
@@ -384,14 +385,14 @@ const AdminUsers: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number) => index + 1
+      render: (_: unknown, __: unknown, index: number): number => index + 1
     },
     {
       title: '用户名',
       dataIndex: 'username',
       key: 'username',
       width: 150,
-      render: (text: string) => <span className="font-medium">{text}</span>
+      render: (text: string): React.ReactNode => <span className="font-medium">{text}</span>
     },
     {
       title: '昵称',
@@ -416,7 +417,7 @@ const AdminUsers: React.FC = () => {
       dataIndex: 'role',
       key: 'role',
       width: 80,
-      render: (role: UserRoleEnum | undefined) => (
+      render: (role: UserRoleEnum | undefined): React.ReactNode => (
         <Tag color={getRoleColor(role)}>
           {role ? UserRoleEnumLabel[role] : '未知'}
         </Tag>
@@ -427,7 +428,7 @@ const AdminUsers: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: UserStatusEnum) => (
+      render: (status: UserStatusEnum): React.ReactNode => (
         <Tag color={getStatusColor(status)}>
           {statusOptions.find(opt => opt.value === status)?.label}
         </Tag>
@@ -438,20 +439,20 @@ const AdminUsers: React.FC = () => {
       dataIndex: 'registerTime',
       key: 'registerTime',
       width: 180,
-      render: (time: string) => time ? formatDateTimeShort(time) : '未知'
+      render: (time: string): string => time ? formatDateTimeShort(time) : '未知'
     },
     {
       title: '最后登录',
       dataIndex: 'lastLoginTime',
       key: 'lastLoginTime',
       width: 180,
-      render: (time: string) => time ? formatDateTimeShort(time) : '未知'
+      render: (time: string): string => time ? formatDateTimeShort(time) : '未知'
     },
     {
       title: '操作',
       key: 'action',
       width: 120,
-      render: (_: unknown, record: AdminUser) => {
+      render: (_: unknown, record: AdminUser): React.ReactNode => {
         return (
           <Space size="middle">
             <Button

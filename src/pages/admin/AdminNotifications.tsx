@@ -133,17 +133,17 @@ const AdminNotifications: React.FC = () => {
   const [form] = Form.useForm();
 
   // 搜索和筛选通知
-  const handleSearch = (value: string) => {
+  const handleSearch = (value: string): void => {
     setSearchText(value);
     filterNotifications(value, selectedType);
   };
 
-  const handleTypeChange = (value: string) => {
+  const handleTypeChange = (value: string): void => {
     setSelectedType(value);
     filterNotifications(searchText, value);
   };
 
-  const filterNotifications = (search: string, type: string) => {
+  const filterNotifications = (search: string, type: string): void => {
     let filtered = [...notifications];
 
     if (search) {
@@ -162,7 +162,7 @@ const AdminNotifications: React.FC = () => {
   };
 
   // 打开编辑通知模态框
-  const handleEditNotification = (notification: Notification) => {
+  const handleEditNotification = (notification: Notification): void => {
     setIsEditing(true);
     setCurrentNotification(notification);
     form.setFieldsValue({
@@ -176,20 +176,20 @@ const AdminNotifications: React.FC = () => {
   };
 
   // 打开查看通知模态框
-  const handleViewNotification = (notification: Notification) => {
+  const handleViewNotification = (notification: Notification): void => {
     setCurrentNotification(notification);
     setIsViewModalVisible(true);
   };
 
   // 删除通知
-  const handleDeleteNotification = (id: number) => {
+  const handleDeleteNotification = (id: number): void => {
     setNotifications(notifications.filter(notification => notification.id !== id));
     setFilteredNotifications(filteredNotifications.filter(notification => notification.id !== id));
     message.success('通知删除成功');
   };
 
   // 切换通知状态
-  const handleToggleStatus = (id: number, status: boolean) => {
+  const handleToggleStatus = (id: number, status: boolean): void => {
     const updatedNotifications = notifications.map(notification =>
       notification.id === id ? { ...notification, status: !status } : notification
     );
@@ -199,7 +199,7 @@ const AdminNotifications: React.FC = () => {
   };
 
   // 保存通知
-  const handleSaveNotification = () => {
+  const handleSaveNotification = (): void => {
     form.validateFields().then(values => {
       if (isEditing && currentNotification) {
         // 编辑现有通知
@@ -233,7 +233,7 @@ const AdminNotifications: React.FC = () => {
   };
 
   // 获取类型标签颜色
-  const getTypeColor = (type: string) => {
+  const getTypeColor = (type: string): string => {
     switch (type) {
       case 'system': return 'blue';
       case 'feature': return 'green';
@@ -252,26 +252,26 @@ const AdminNotifications: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number) => index + 1
+      render: (_: unknown, __: unknown, index: number): number => index + 1
     },
     {
       title: '标题',
       dataIndex: 'title',
       key: 'title',
-      render: (text: string) => <Text ellipsis={{ tooltip: text }} className="font-medium">{text}</Text>
+      render: (text: string): React.ReactNode => <Text ellipsis={{ tooltip: text }} className="font-medium">{text}</Text>
     },
     {
       title: '内容',
       dataIndex: 'content',
       key: 'content',
-      render: (text: string) => <Text ellipsis={{ tooltip: text }}>{text}</Text>
+      render: (text: string): React.ReactNode => <Text ellipsis={{ tooltip: text }}>{text}</Text>
     },
     {
       title: '类型',
       dataIndex: 'type',
       key: 'type',
       width: 100,
-      render: (type: string) => (
+      render: (type: string): React.ReactNode => (
         <Tag color={getTypeColor(type)}>
           {typeOptions.find(opt => opt.value === type)?.label}
         </Tag>
@@ -288,7 +288,7 @@ const AdminNotifications: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: boolean, record: Notification) => (
+      render: (status: boolean, record: Notification): React.ReactNode => (
         <Switch
           checked={status}
           onChange={(checked) => handleToggleStatus(record.id, checked)}
@@ -305,7 +305,7 @@ const AdminNotifications: React.FC = () => {
       title: '操作',
       key: 'action',
       width: 180,
-      render: (_: unknown, record: Notification) => (
+      render: (_: unknown, record: Notification): React.ReactNode => (
         <Space size="middle">
           <Button
             type="text"

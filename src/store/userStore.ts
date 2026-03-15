@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import authService from '../services/authService';
-import type { UserInfo as AuthUserInfo, ApiResponse, TokenResponse } from '../types/auth';
+import type { UserInfo as AuthUserInfo, TokenResponse } from '../types/auth';
+import type { ApiResponse } from '../types/common';
 import type { GenderEnum } from '../types/enums';
 
 // 用户状态接口
 export interface UserState {
     user: {
-        id: string | null;
+        id: number | null;
         name: string | null;
         email: string | null;
         avatar?: string;
@@ -23,9 +24,9 @@ export interface UserState {
     isLoading: boolean;
     accessTokenExpiresAt: number | null;
     setUser: (userData: {
-        id: string;
-        name: string;
-        email: string;
+        id: number | null;
+        name: string | null;
+        email: string | null;
         avatar?: string;
         nickname?: string;
         coverImage?: string;
@@ -51,7 +52,7 @@ export interface UserState {
             refresh_token: string;
             expires_in: number;
             userInfo: {
-                id: string;
+                id: number;
                 name: string;
                 email: string;
                 avatar?: string;
@@ -79,7 +80,7 @@ export interface UserState {
             refresh_token: string;
             expires_in: number;
             userInfo: {
-                id: string;
+                id: number;
                 name: string;
                 email: string;
                 avatar?: string;
@@ -110,7 +111,7 @@ export interface UserState {
 }
 
 // 辅助函数：标准化用户数据
-const normalizeUserData = (userInfo: AuthUserInfo) => {
+const normalizeUserData = (userInfo: AuthUserInfo): UserState['user'] => {
   const normalizedGender = userInfo.gender;
 
   return {
@@ -129,7 +130,7 @@ const normalizeUserData = (userInfo: AuthUserInfo) => {
 };
 
 // 辅助函数：处理认证响应
-const handleAuthResponse = (get: () => UserState, response: ApiResponse<TokenResponse>) => {
+const handleAuthResponse = (get: () => UserState, response: ApiResponse<TokenResponse>): ApiResponse<TokenResponse> => {
   if (response.code !== 200) {
     return response;
   }
@@ -161,7 +162,7 @@ export const useUserStore = create<UserState>()(
       isLoading: false,
       accessTokenExpiresAt: null,
 
-      setUser: (userData, accessToken = '', refreshToken = '', expiresIn = 3600) => {
+      setUser: (userData: { id: number | null; name: string | null; email: string | null; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }, accessToken: string = '', refreshToken: string = '', expiresIn: number = 3600): void => {
         const expiresAt = Date.now() + expiresIn * 1000;
         set({
           user: userData,
@@ -177,7 +178,7 @@ export const useUserStore = create<UserState>()(
         localStorage.setItem('access_token_expires_at', expiresAt.toString());
       },
 
-      logout: () => {
+      logout: (): void => {
         set({
           user: { id: null, name: null, email: null },
           isLoggedIn: false,
@@ -188,12 +189,12 @@ export const useUserStore = create<UserState>()(
         localStorage.removeItem('access_token_expires_at');
       },
 
-      updateUser: (userData) => set((state) => ({
+      updateUser: (userData: Partial<UserState['user']>) : unknown => set((state) => ({
         user: { ...state.user, ...userData }
       })),
 
       // 登录方法
-      login: async (params) => {
+      login: async (params: { account: string; authType: 'password' | 'code'; password?: string; code?: string; remember?: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; name: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }; }; }> => {
         set({ isLoading: true });
         try {
           const response = await authService.login(params);
@@ -204,7 +205,7 @@ export const useUserStore = create<UserState>()(
       },
 
       // 注册方法
-      register: async (params) => {
+      register: async (params: { account: string; authType: 'password' | 'code'; password?: string; code?: string; agreeTerms: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; name: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }; }; }> => {
         set({ isLoading: true });
         try {
           const response = await authService.register(params);
@@ -215,7 +216,7 @@ export const useUserStore = create<UserState>()(
       },
 
       // 发送验证码方法
-      sendCode: async (params) => {
+      sendCode: async (params: { account: string; type: 'email' | 'phone'; purpose: string; }): Promise<{ code: number; message: string; data: { expireTime: number; }; }> => {
         set({ isLoading: true });
         try {
           return await authService.sendCode(params);
@@ -225,7 +226,7 @@ export const useUserStore = create<UserState>()(
       },
 
       // 检查令牌是否即将过期（提前5分钟）
-      checkTokenExpiry: () => {
+      checkTokenExpiry: (): boolean => {
         const expiresAt = get().accessTokenExpiresAt;
         if (!expiresAt) return true;
         const now = Date.now();
@@ -234,7 +235,7 @@ export const useUserStore = create<UserState>()(
       },
 
       // 刷新令牌
-      refreshToken: async () => {
+      refreshToken: async (): Promise<void> => {
         const refreshToken = localStorage.getItem('refresh_token');
         if (!refreshToken || !get().isLoggedIn) {
           get().logout();
@@ -268,7 +269,7 @@ export const useUserStore = create<UserState>()(
       },
 
       // 获取个人资料
-      getProfile: async () => {
+      getProfile: async (): Promise<void> => {
         if (!get().isLoggedIn) {
           return;
         }
@@ -306,25 +307,22 @@ export const useUserStore = create<UserState>()(
   )
 );
 
-// 导出用户状态选择器
-export const useUser = () => {
-  const store = useUserStore();
-  return {
-    user: store.user,
-    isLoggedIn: store.isLoggedIn,
-    isLoading: store.isLoading,
-    accessTokenExpiresAt: store.accessTokenExpiresAt,
-    setUser: store.setUser,
-    login: store.login,
-    logout: store.logout,
-    updateUser: store.updateUser,
-    register: store.register,
-    sendCode: store.sendCode,
-    getProfile: store.getProfile,
-    checkTokenExpiry: store.checkTokenExpiry,
-    refreshToken: store.refreshToken
-  };
-};
+// 导出用户状态的具体选择器，减少不必要的重渲染
+// 选择器 Hooks
+export const useUser = (): UserState['user'] => useUserStore((state) => state.user);
+export const useIsLoggedIn = (): boolean => useUserStore((state) => state.isLoggedIn);
+export const useIsLoading = (): boolean => useUserStore((state) => state.isLoading);
+export const useAccessTokenExpiresAt = (): number | null => useUserStore((state) => state.accessTokenExpiresAt);
+export const useUserId = (): number | null => useUserStore((state) => state.user.id);
+export const useUserRole = (): string | undefined => useUserStore((state) => state.user.role);
+export const useUserInfo = (): { id: number | null; name: string | null; email: string | null; avatar?: string; nickname?: string; role?: string } => useUserStore((state) => ({
+  id: state.user.id,
+  name: state.user.name,
+  email: state.user.email,
+  avatar: state.user.avatar,
+  nickname: state.user.nickname,
+  role: state.user.role
+}));
 
 // 导出store实例，用于在非React组件中访问
 export const userStore = useUserStore;

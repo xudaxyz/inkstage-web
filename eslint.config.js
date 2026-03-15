@@ -31,7 +31,6 @@ export default defineConfig([
         'exports': 'never',
         'functions': 'never'
       }],
-      'indent': ['error', 2, { 'SwitchCase': 1 }],
       'linebreak-style': ['error', 'unix'],
       'no-trailing-spaces': 'error',
       'eol-last': 'error',

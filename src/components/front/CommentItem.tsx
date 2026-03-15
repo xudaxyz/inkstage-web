@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Avatar, Popconfirm, Dropdown } from 'antd';
 import { LikeOutlined, DislikeOutlined, MessageOutlined, EditOutlined, DeleteOutlined, FlagOutlined, EllipsisOutlined } from '@ant-design/icons';
-import type { ArticleComment } from '../../services/commentService';
+import type { ArticleComment } from '../../types/comment';
 import { CommentTopStatus } from '../../types/enums/CommentEnum.ts';
 import ReplyItem from './ReplyItem';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
-import { formatDateTimeShort } from '../../utils/date';
+import { formatDateTimeShort } from '../../utils';
 
 interface CommentItemProps {
   comment: ArticleComment;
@@ -28,21 +28,21 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
   const { toggleLike, toggleDislike, deleteComment, refreshComments } = useCommentStore();
 
-  const handleReply = (commentId: number) => {
+  const handleReply = (commentId: number) : void => {
     setShowReplyForm(prev => ({
       ...prev,
       [commentId]: !prev[commentId]
     }));
   };
 
-  const handleDelete = async (commentId: number) => {
+  const handleDelete = async (commentId: number) : Promise<void> => {
     const success = await deleteComment(commentId);
     if (success) {
       await refreshComments(articleId);
     }
   };
 
-  const toggleExpand = () => {
+  const toggleExpand = () : void => {
     setIsExpanded(!isExpanded);
   };
 

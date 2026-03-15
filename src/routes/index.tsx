@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useUser } from '../store';
+import { useUserStore } from '../store';
 import React, { lazy, Suspense } from 'react';
 
 // 导入布局组件
@@ -40,8 +40,8 @@ const AdminSettings = lazy(() => import('../pages/admin/AdminSettings'));
 
 
 // 管理员路由保护组件
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isLoggedIn } = useUser();
+const AdminRoute = ({ children }: { children: React.ReactNode }): React.ReactNode => {
+  const { user, isLoggedIn } = useUserStore();
 
   if (!isLoggedIn) {
     return <Navigate to="/admin/login" replace />;
@@ -54,7 +54,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   return <AdminLayout>{children}</AdminLayout>;
 };
 
-const AppRoutes = () => {
+const AppRoutes = (): React.ReactNode => {
   return (
     <Suspense fallback={<div className="flex items-center justify-center min-h-screen">加载中...</div>}>
       <Routes>

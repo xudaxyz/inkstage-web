@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { message } from 'antd';
 import articleService from '../services/articleService';
 
@@ -18,14 +18,26 @@ interface FolderApiResponse {
     defaultFolder: number | string;
 }
 
-const useCollection = () => {
+const useCollection = (): {
+  isCollecting: boolean;
+  isLoadingFolders: boolean;
+  folders: CollectionFolder[];
+  selectedFolderId: number;
+  setSelectedFolderId: React.Dispatch<React.SetStateAction<number>>;
+  fetchFolders: () => Promise<CollectionFolder[]>;
+  collectArticle: (articleId: number, folderId?: number) => Promise<boolean>;
+  unCollectArticle: (articleId: number) => Promise<boolean>;
+  moveCollection: (articleId: number, targetFolderId: number) => Promise<boolean>;
+  createFolder: (folderName: string) => Promise<boolean>;
+  checkCollectionStatus: (articleId: number) => Promise<boolean>;
+} => {
   const [isCollecting, setIsCollecting] = useState(false);
   const [isLoadingFolders, setIsLoadingFolders] = useState(false);
   const [folders, setFolders] = useState<CollectionFolder[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<number>(0);
 
   // 获取收藏文件夹列表
-  const fetchFolders = useCallback(async () => {
+  const fetchFolders = useCallback(async (): Promise<CollectionFolder[]> => {
     setIsLoadingFolders(true);
     try {
       const response = await articleService.getCollectionFolders();
@@ -57,7 +69,7 @@ const useCollection = () => {
   }, []);
 
   // 收藏文章
-  const collectArticle = useCallback(async (articleId: number, folderId: number = 0) => {
+  const collectArticle = useCallback(async (articleId: number, folderId: number = 0): Promise<boolean> => {
     setIsCollecting(true);
     try {
       const response = await articleService.collectArticle({ articleId, folderId });
@@ -77,7 +89,7 @@ const useCollection = () => {
   }, []);
 
   // 取消收藏
-  const unCollectArticle = useCallback(async (articleId: number) => {
+  const unCollectArticle = useCallback(async (articleId: number): Promise<boolean> => {
     setIsCollecting(true);
     try {
       const response = await articleService.unCollectArticle(articleId);
@@ -97,7 +109,7 @@ const useCollection = () => {
   }, []);
 
   // 移动收藏到指定文件夹
-  const moveCollection = useCallback(async (articleId: number, targetFolderId: number) => {
+  const moveCollection = useCallback(async (articleId: number, targetFolderId: number): Promise<boolean> => {
     setIsCollecting(true);
     try {
       const response = await articleService.moveCollectionArticle(articleId, targetFolderId);
@@ -117,7 +129,7 @@ const useCollection = () => {
   }, []);
 
   // 创建新收藏夹
-  const createFolder = useCallback(async (folderName: string) => {
+  const createFolder = useCallback(async (folderName: string): Promise<boolean> => {
     try {
       const response = await articleService.createCollectionFolder({ folderName });
       if (response.code === 200 && response.data) {
@@ -136,7 +148,7 @@ const useCollection = () => {
   }, [fetchFolders]);
 
   // 检查文章是否已收藏
-  const checkCollectionStatus = useCallback(async (articleId: number) => {
+  const checkCollectionStatus = useCallback(async (articleId: number): Promise<boolean> => {
     try {
       const response = await articleService.checkCollectStatus(articleId);
       if (response.code === 200) {

@@ -26,7 +26,7 @@ const SlideCaptchaModal: React.FC<SlideCaptchaModalProps> = memo(({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSuccess = () => {
+  const handleSuccess = (): void => {
     setIsLoading(true);
     // 模拟接口校验延迟
     setTimeout(() => {
@@ -36,7 +36,7 @@ const SlideCaptchaModal: React.FC<SlideCaptchaModalProps> = memo(({
     }, 500);
   };
 
-  const handleFail = () => {
+  const handleFail = (): void => {
     setIsLoading(false);
     onFail?.();
   };

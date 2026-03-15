@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from 'antd';
-import type { LatestArticle } from '../../services/articleService.ts';
-import { formatDateTimeShort } from '../../utils/date';
+import type { LatestArticle } from '../../types/article';
+import { formatDateTimeShort } from '../../utils';
 
 interface LatestArticlesProps {
     articles?: LatestArticle[];

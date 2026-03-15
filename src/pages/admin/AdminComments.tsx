@@ -55,7 +55,7 @@ const AdminComments: React.FC = () => {
   });
 
   // 获取评论列表
-  const fetchComments = useCallback(async () => {
+  const fetchComments = useCallback(async (): Promise<void> => {
     setLoading(true);
     try {
       const response = await commentService.admin.getCommentsByPage({
@@ -106,19 +106,19 @@ const AdminComments: React.FC = () => {
   }, [pagination, searchText, selectedStatus, selectedArticleId]);
 
   // 搜索和筛选评论
-  const handleSearch = (value: string) => {
+  const handleSearch = (value: string): void => {
     setSearchText(value);
     setPagination(prev => ({ ...prev, current: 1 }));
     fetchComments();
   };
 
-  const handleStatusChange = (value: CommentStatusEnum) => {
+  const handleStatusChange = (value: CommentStatusEnum): void => {
     setSelectedStatus(value);
     setPagination(prev => ({ ...prev, current: 1 }));
     fetchComments();
   };
 
-  const handleArticleChange = (value: string) => {
+  const handleArticleChange = (value: string): void => {
     setSelectedArticleId(value);
     setPagination(prev => ({ ...prev, current: 1 }));
     fetchComments();
@@ -130,7 +130,7 @@ const AdminComments: React.FC = () => {
   }, [fetchComments]);
 
   // 打开编辑评论模态框
-  const handleEditComment = (comment: Comment) => {
+  const handleEditComment = (comment: Comment): void => {
     setIsEditing(true);
     setCurrentComment(comment);
     form.setFieldsValue({
@@ -142,18 +142,18 @@ const AdminComments: React.FC = () => {
   };
 
   // 打开查看评论模态框
-  const handleViewComment = (comment: Comment) => {
+  const handleViewComment = (comment: Comment): void => {
     setCurrentComment(comment);
     setIsViewModalVisible(true);
   };
 
   // 删除评论
-  const handleDeleteComment = async (id: number) => {
+  const handleDeleteComment = async (id: number): Promise<void> => {
     try {
       const response = await commentService.admin.deleteComment(id);
       if (response.code === 200) {
         message.success('评论删除成功');
-        fetchComments();
+        await fetchComments();
       } else {
         message.error('删除评论失败');
       }
@@ -164,12 +164,12 @@ const AdminComments: React.FC = () => {
   };
 
   // 更新评论置顶状态
-  const handleUpdateTop = async (id: number, top: boolean) => {
+  const handleUpdateTop = async (id: number, top: boolean): Promise<void> => {
     try {
       const response = await commentService.admin.updateCommentTop(id, top ? CommentTopStatus.TOP : CommentTopStatus.NOT_TOP);
       if (response.code === 200) {
         message.success(top ? '评论置顶成功' : '取消评论置顶成功');
-        fetchComments();
+        await fetchComments();
       } else {
         message.error('更新评论置顶状态失败');
       }
@@ -180,7 +180,7 @@ const AdminComments: React.FC = () => {
   };
 
   // 保存评论
-  const handleSaveComment = () => {
+  const handleSaveComment = (): void => {
     form.validateFields().then(values => {
       if (isEditing && currentComment) {
         // 编辑现有评论
@@ -192,7 +192,6 @@ const AdminComments: React.FC = () => {
           } : comment
         );
         setComments(updatedComments);
-        message.success('评论更新成功');
       }
       setIsModalVisible(false);
     }).catch(error => {
@@ -201,7 +200,7 @@ const AdminComments: React.FC = () => {
   };
 
   // 获取状态标签颜色
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case CommentStatusEnum.APPROVED:
         return 'green';
@@ -222,13 +221,13 @@ const AdminComments: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number) => index + 1
+      render: (_: unknown, __: unknown, index: number): number => index + 1
     },
     {
       title: '内容',
       dataIndex: 'content',
       key: 'content',
-      render: (text: string) => <Text ellipsis={{ tooltip: text }} className="font-medium">{text}</Text>
+      render: (text: string): React.ReactNode => <Text ellipsis={{ tooltip: text }} className="font-medium">{text}</Text>
     },
     {
       title: '作者',
@@ -241,14 +240,14 @@ const AdminComments: React.FC = () => {
       dataIndex: 'article',
       key: 'article',
       width: 150,
-      render: (text: string) => <Text ellipsis={{ tooltip: text }}>{text}</Text>
+      render: (text: string): React.ReactNode => <Text ellipsis={{ tooltip: text }}>{text}</Text>
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: string) => (
+      render: (status: string): React.ReactNode => (
         <Tag color={getStatusColor(status)}>
           {CommentStatusMap[status as keyof typeof CommentStatusMap] || status}
         </Tag>
@@ -259,7 +258,7 @@ const AdminComments: React.FC = () => {
       dataIndex: 'top',
       key: 'top',
       width: 80,
-      render: (top: boolean) => (
+      render: (top: boolean): React.ReactNode => (
         <Tag color={top ? 'red' : 'default'}>
           {top ? CommentTopMap[CommentTopStatus.TOP] : CommentTopMap[CommentTopStatus.NOT_TOP]}
         </Tag>
@@ -281,7 +280,7 @@ const AdminComments: React.FC = () => {
       title: '操作',
       key: 'action',
       width: 250,
-      render: (_: unknown, record: Comment) => (
+      render: (_: unknown, record: Comment): React.ReactNode => (
         <Space size="middle">
           <Button
             type="text"

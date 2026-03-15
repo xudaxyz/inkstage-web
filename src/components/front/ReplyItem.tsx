@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Avatar, Dropdown } from 'antd';
 import { LikeOutlined, DislikeOutlined, MessageOutlined, FlagOutlined, EllipsisOutlined } from '@ant-design/icons';
-import type { ArticleComment } from '../../services/commentService';
+import type { ArticleComment } from '../../types/comment';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
-import { formatDateTimeShort } from '../../utils/date';
+import { formatDateTimeShort } from '../../utils';
 
 interface ReplyItemProps {
   reply: ArticleComment;
@@ -25,7 +25,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
 
   const { toggleLike, toggleDislike, refreshComments } = useCommentStore();
 
-  const handleReply = () => {
+  const handleReply = () : void => {
     setShowReplyForm(!showReplyForm);
   };
 
@@ -120,4 +120,4 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
   );
 };
 
-export default ReplyItem;
+export default React.memo(ReplyItem);

@@ -3,12 +3,12 @@ import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { UserOutlined, FileTextOutlined, StarOutlined, HistoryOutlined, BellOutlined, SettingOutlined } from '@ant-design/icons';
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
-import { useUser } from '../store';
+import { useUserStore } from '../store';
 
 const ProfileLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isLoggedIn } = useUser();
+  const { isLoggedIn } = useUserStore();
   const currentPath = location.pathname;
 
   // 检查用户登录状态

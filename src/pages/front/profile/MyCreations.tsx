@@ -11,7 +11,8 @@ import {
   EyeOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import articleService, { type MyArticleList } from '../../../services/articleService.ts';
+import articleService from '../../../services/articleService.ts';
+import { type MyArticleList } from '../../../types/article';
 import { ROUTES } from '../../../routes/constants';
 import {
   ArticleOriginalEnum,
@@ -23,7 +24,7 @@ import {
   ArticleStatusMap,
   ArticleReviewStatusMap
 } from '../../../types/enums';
-import { formatDateTimeShort } from '../../../utils/date';
+import { formatDateTimeShort } from '../../../utils';
 
 // 文章类型定义
 interface Article {
@@ -62,7 +63,7 @@ const MyCreations: React.FC = () => {
       setDebouncedSearchText(searchText);
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () : void => clearTimeout(timer);
   }, [searchText]);
 
   // 创作统计数据
@@ -115,7 +116,7 @@ const MyCreations: React.FC = () => {
   }, [fetchArticles]);
 
   // 分享文章
-  const handleShare = (articleId: string) => {
+  const handleShare = (articleId: string) : void => {
     // 实现分享逻辑
     void message.success('分享功能已触发');
     // 可以添加复制链接到剪贴板的功能
@@ -128,24 +129,24 @@ const MyCreations: React.FC = () => {
   };
 
   // 编辑文章
-  const handleEdit = (articleId: string) => {
+  const handleEdit = (articleId: string) : void => {
     navigate(ROUTES.EDIT_ARTICLE(articleId));
   };
 
   // 打开删除确认对话框
-  const showDeleteConfirm = (articleId: string) => {
+  const showDeleteConfirm = (articleId: string) : void => {
     setDeleteArticleId(articleId);
     setDeleteModalVisible(true);
   };
 
   // 关闭删除确认对话框
-  const handleDeleteCancel = () => {
+  const handleDeleteCancel = () : void => {
     setDeleteModalVisible(false);
     setDeleteArticleId('');
   };
 
   // 删除文章
-  const handleDelete = async () => {
+  const handleDelete = async () : Promise<void> => {
     if (!deleteArticleId) return;
 
     try {
@@ -165,13 +166,13 @@ const MyCreations: React.FC = () => {
   };
 
   // 状态变化时重置页码
-  const handleStatusChange = (articleStatus: ArticleStatusEnum) => {
+  const handleStatusChange = (articleStatus: ArticleStatusEnum) : void => {
     setCurrentStatus(articleStatus);
     setCurrentPage(1);
   };
 
   // 获取状态文本
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: string) : string => {
     switch (status) {
       case 'PUBLISHED':
         return '已发布';

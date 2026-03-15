@@ -12,7 +12,7 @@ const AdminSettings: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // 保存设置
-  const handleSaveSettings = () => {
+  const handleSaveSettings = (): void => {
     form.validateFields().then(() => {
       setIsSaving(true);
       // 模拟保存操作

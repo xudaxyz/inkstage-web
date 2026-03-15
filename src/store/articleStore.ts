@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import articleService from '../services/articleService';
-import type { ArticleDetailInfo } from '../services/articleService';
+import type { ArticleDetailInfo } from '../types/article';
 
 // 文章状态接口
 export interface ArticleState {
@@ -35,7 +35,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   collectLoading: false,
 
   // 获取文章详情
-  fetchArticleDetail: async (id) => {
+  fetchArticleDetail: async (id: number): Promise<void> => {
     set({ loading: true, error: null });
     try {
       const response = await articleService.getArticleDetail(id);
@@ -51,7 +51,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 获取作者相关文章
-  fetchRelatedArticles: async (userId, articleId) => {
+  fetchRelatedArticles: async (userId: number, articleId: number): Promise<void> => {
     set({ relatedArticlesLoading: true });
     try {
       const response = await articleService.getAuthorRelatedArticles(userId, articleId);
@@ -72,7 +72,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 增加文章阅读量
-  incrementReadCount: async (articleId) => {
+  incrementReadCount: async (articleId: number): Promise<void> => {
     try {
       await articleService.incrementReadCount(articleId);
     } catch (error) {
@@ -81,7 +81,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 点赞文章
-  likeArticle: async (articleId) => {
+  likeArticle: async (articleId: number): Promise<void> => {
     const article = get().article;
     if (!article) return;
 
@@ -123,7 +123,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 取消点赞
-  unLikeArticle: async (articleId) => {
+  unLikeArticle: async (articleId: number): Promise<void> => {
     const article = get().article;
     if (!article) return;
 
@@ -165,7 +165,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 收藏文章
-  collectArticle: async (articleId) => {
+  collectArticle: async (articleId: number): Promise<void> => {
     const article = get().article;
     if (!article) return;
 
@@ -207,7 +207,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 取消收藏
-  unCollectArticle: async (articleId) => {
+  unCollectArticle: async (articleId: number): Promise<void> => {
     const article = get().article;
     if (!article) return;
 
@@ -249,7 +249,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 更新评论数
-  updateCommentCount: (count) => {
+  updateCommentCount: (count: number): void => {
     set((state) => ({
       article: state.article ? {
         ...state.article,
@@ -259,7 +259,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 重置状态
-  reset: () => {
+  reset: (): void => {
     set({
       article: null,
       loading: false,
@@ -272,28 +272,25 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   }
 }));
 
-// 导出文章状态选择器
-export const useArticle = () => {
-  const store = useArticleStore();
-  return {
-    article: store.article,
-    loading: store.loading,
-    error: store.error,
-    relatedArticles: store.relatedArticles,
-    relatedArticlesLoading: store.relatedArticlesLoading,
-    likeLoading: store.likeLoading,
-    collectLoading: store.collectLoading,
-    fetchArticleDetail: store.fetchArticleDetail,
-    fetchRelatedArticles: store.fetchRelatedArticles,
-    incrementReadCount: store.incrementReadCount,
-    likeArticle: store.likeArticle,
-    unLikeArticle: store.unLikeArticle,
-    collectArticle: store.collectArticle,
-    unCollectArticle: store.unCollectArticle,
-    updateCommentCount: store.updateCommentCount,
-    reset: store.reset
-  };
-};
+// 导出文章状态的具体选择器，减少不必要的重渲染
+export const useArticle = () : ArticleDetailInfo | null => useArticleStore((state) => state.article);
+export const useArticleLoading = () : boolean => useArticleStore((state) => state.loading);
+export const useArticleError = () : string | null => useArticleStore((state) => state.error);
+export const useRelatedArticles = (): ArticleState['relatedArticles'] => useArticleStore((state) => state.relatedArticles);
+export const useRelatedArticlesLoading = () : boolean => useArticleStore((state) => state.relatedArticlesLoading);
+export const useLikeLoading = () : boolean => useArticleStore((state) => state.likeLoading);
+export const useCollectLoading = () : boolean => useArticleStore((state) => state.collectLoading);
+export const useArticleId = () : number | undefined => useArticleStore((state) => state.article?.id);
+export const useArticleTitle = () : string | undefined => useArticleStore((state) => state.article?.title);
+export const useArticleContent = () : string | undefined => useArticleStore((state) => state.article?.content);
+export const useArticleStats = (): { likeCount: number; commentCount: number; collectionCount: number; readCount: number; isLiked: boolean; isCollected: boolean } => useArticleStore((state) => ({
+  likeCount: state.article?.likeCount || 0,
+  commentCount: state.article?.commentCount || 0,
+  collectionCount: state.article?.collectionCount || 0,
+  readCount: state.article?.readCount || 0,
+  isLiked: state.article?.isLiked || false,
+  isCollected: state.article?.isCollected || false
+}));
 
 // 导出store实例，用于在非React组件中访问
 export const articleStore = useArticleStore;

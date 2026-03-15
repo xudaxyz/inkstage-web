@@ -2,10 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Empty, message, Select, Spin, Badge, Pagination } from 'antd';
 import { CheckOutlined, DeleteOutlined, FilterOutlined, BellOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import notificationService, { type Notification } from '../../../services/notificationService';
+import notificationService from '../../../services/notificationService';
+import { type Notification } from '../../../types/notification';
 import websocketService from '../../../services/websocketService';
 import { NotificationType, NotificationTypeMap, ReadStatus } from '../../../types/enums';
-import { formatDateOnly, formatTimeShort } from '../../../utils/date';
+import { formatDateOnly, formatTimeShort } from '../../../utils';
 
 const Notifications: React.FC = () => {
   const navigate = useNavigate();
@@ -78,7 +79,7 @@ const Notifications: React.FC = () => {
         setNotifications(formattedNotifications);
         setTotal(response.data.total || 0);
         // 更新未读数量
-        fetchUnreadCount();
+        await fetchUnreadCount();
       } else {
         setError(response.message || '获取通知列表失败');
         message.error(response.message || '获取通知列表失败');
@@ -93,7 +94,7 @@ const Notifications: React.FC = () => {
   }, [selectedType, pageNum, pageSize, fetchUnreadCount]);
 
   // 标记通知为已读
-  const markAsRead = async (id: number) => {
+  const markAsRead = async (id: number) : Promise<void> => {
     try {
       const response = await notificationService.markAsRead(id);
       if (response.code === 200 && response.data) {
@@ -102,7 +103,7 @@ const Notifications: React.FC = () => {
         ));
         message.success('已标记为已读');
         // 更新未读数量
-        fetchUnreadCount();
+        await fetchUnreadCount();
       } else {
         message.error(response.message || '标记已读失败');
       }
@@ -113,7 +114,7 @@ const Notifications: React.FC = () => {
   };
 
   // 标记所有通知为已读
-  const markAllAsRead = async () => {
+  const markAllAsRead = async () : Promise<void> => {
     try {
       const response = await notificationService.markAllAsRead();
       if (response.code === 200 && response.data) {
@@ -131,14 +132,14 @@ const Notifications: React.FC = () => {
   };
 
   // 删除通知
-  const deleteNotification = async (id: number) => {
+  const deleteNotification = async (id: number) : Promise<void> => {
     try {
       const response = await notificationService.deleteNotification(id);
       if (response.code === 200 && response.data) {
         setNotifications(prev => prev.filter(notification => notification.id !== id));
         message.success('通知已删除');
         // 更新未读数量
-        fetchUnreadCount();
+        await fetchUnreadCount();
       } else {
         message.error(response.message || '删除通知失败');
       }
@@ -149,7 +150,7 @@ const Notifications: React.FC = () => {
   };
 
   // 处理通知点击
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = (notification: Notification) : void => {
     if (!notification.readStatus) {
       markAsRead(notification.id);
     }
@@ -171,13 +172,13 @@ const Notifications: React.FC = () => {
     fetchUnreadCount();
 
     // 监听WebSocket消息
-    const handleNotification = (data: unknown) => {
+    const handleNotification = (data: unknown) : void => {
       console.log('收到新通知:', data);
       // 重新获取通知列表
       fetchNotifications();
     };
 
-    const handleUnreadCount = (data: unknown) => {
+    const handleUnreadCount = (data: unknown) : void => {
       console.log('未读通知数量更新:', data);
       if (typeof data === 'number') {
         setUnreadCount(data);
@@ -189,7 +190,7 @@ const Notifications: React.FC = () => {
     websocketService.on('unreadCount', handleUnreadCount);
 
     // 清理事件监听器
-    return () => {
+    return () : void => {
       websocketService.off('notification', handleNotification);
       websocketService.off('unreadCount', handleUnreadCount);
     };

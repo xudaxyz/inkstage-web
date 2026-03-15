@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Input, Switch, Badge } from 'antd';
 import { BellOutlined, EditOutlined, MenuOutlined, CloseOutlined, SearchOutlined, SunOutlined, MoonOutlined, UserOutlined, FileTextOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useUser } from '../../store';
+import { useIsLoggedIn, useUser, useUserStore } from '../../store';
 import notificationService from '../../services/notificationService';
 
 const Header: React.FC = () => {
   // 从localStorage中读取初始主题
-  const getInitialTheme = () => {
+  const getInitialTheme = (): boolean => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark');
@@ -26,7 +26,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
 
   // 根据路由路径计算活跃导航项
-  const activeNavItem = React.useMemo(() => {
+  const activeNavItem = React.useMemo((): string => {
     const path = location.pathname;
     if (path === '/' || path === '/recommend') {
       return 'recommend';
@@ -39,10 +39,12 @@ const Header: React.FC = () => {
   }, [location.pathname]);
 
   // 获取用户状态
-  const { isLoggedIn, user, logout } = useUser();
+const isLoggedIn = useIsLoggedIn();
+const user = useUser();
+  const { logout } = useUserStore();
 
   // 切换主题模式
-  const toggleTheme = () => {
+  const toggleTheme = (): void => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
     // 保存主题到localStorage
@@ -56,23 +58,23 @@ const Header: React.FC = () => {
   };
 
   // 切换下拉菜单
-  const toggleDropdown = () => {
+  const toggleDropdown = (): void => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
   // 关闭下拉菜单
-  const closeDropdown = () => {
+  const closeDropdown = (): void => {
     setIsDropdownOpen(false);
   };
 
   // 退出登录
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     logout();
     closeDropdown();
   };
 
   // 获取未读通知数量
-  const fetchUnreadCount = useCallback(async () => {
+  const fetchUnreadCount = useCallback(async (): Promise<void> => {
     try {
       const response = await notificationService.getUnreadCount();
       if (response.code === 200) {
@@ -84,18 +86,18 @@ const Header: React.FC = () => {
   }, []);
 
   // 切换移动端菜单
-  const toggleMobileMenu = () => {
+  const toggleMobileMenu = (): void => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   // 关闭移动端菜单
-  const closeMobileMenu = () => {
+  const closeMobileMenu = (): void => {
     setIsMobileMenuOpen(false);
   };
 
   // 监听点击事件，点击外部区域关闭下拉菜单和移动端菜单
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         closeDropdown();
       }
@@ -105,13 +107,13 @@ const Header: React.FC = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
+    return (): void => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   // 监听登录状态，获取未读通知数量
-  useEffect(() => {
+  useEffect((): void => {
     if (isLoggedIn) {
       // 延迟调用，避免在effect中直接触发状态更新
       setTimeout(fetchUnreadCount, 0);
@@ -165,7 +167,7 @@ const Header: React.FC = () => {
               type="primary"
               size="middle"
               shape="round"
-              className="rounded-full px-6 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
+              className="rounded-full px-6 bg-linear-to-r from-green-500 to-green-600 text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
             >
               <EditOutlined /> 写文章
             </Button>
@@ -228,7 +230,7 @@ const Header: React.FC = () => {
             >
               {/* 用户头像 */}
               <div
-                className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white hover:scale-110 transition-all duration-300">
+                className="w-8 h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white hover:scale-110 transition-all duration-300">
                 {user.avatar ? (
                   <img
                     src={user.avatar}
@@ -298,7 +300,7 @@ const Header: React.FC = () => {
                 variant="solid"
                 size="middle"
                 shape="round"
-                className="rounded-full px-6 bg-gradient-to-r text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border-none"
+                className="rounded-full px-6 bg-linear-to-r text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border-none"
               >
                                 注册
               </Button>
@@ -380,7 +382,7 @@ const Header: React.FC = () => {
                   color="danger"
                   variant="solid"
                   size="middle"
-                  className="w-full rounded-full px-6 bg-gradient-to-r text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border-none"
+                  className="w-full rounded-full px-6 bg-linear-to-r text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border-none"
                 >
                                     注册
                 </Button>

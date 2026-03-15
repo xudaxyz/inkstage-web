@@ -8,7 +8,7 @@ import {
   WomanOutlined,
   LockOutlined
 } from '@ant-design/icons';
-import { useUser } from '../../../store';
+import { useUserStore } from '../../../store';
 import authService from '../../../services/authService.ts';
 import type { UploadProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
@@ -28,7 +28,7 @@ type ProfileFormValues = {
 const { TextArea } = Input;
 
 const ProfileInfo: React.FC = () => {
-  const { user, updateUser, getProfile } = useUser();
+  const { user, updateUser, getProfile } = useUserStore();
   const [form] = Form.useForm();
   const [isModified, setIsModified] = useState(false);
 
@@ -54,7 +54,7 @@ const ProfileInfo: React.FC = () => {
   }, [user, form]);
 
   // 处理表单提交
-  const handleSubmit = async (values: ProfileFormValues) => {
+  const handleSubmit = async (values: ProfileFormValues) : Promise<void> => {
     try {
       const submitData = {
         ...values,

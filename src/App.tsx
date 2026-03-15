@@ -6,7 +6,9 @@ import AppRoutes from './routes';
 import websocketService from './services/websocketService';
 import { useEffect } from 'react';
 
-function App () {
+import type { ReactNode } from 'react';
+
+function App (): ReactNode {
   useEffect(() => {
     // 连接WebSocket
     websocketService.connect()
@@ -18,7 +20,7 @@ function App () {
       });
 
     // 组件卸载时断开WebSocket连接
-    return () => {
+    return (): void => {
       websocketService.disconnect();
     };
   }, []);

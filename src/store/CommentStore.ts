@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import commentService, {
-  type ArticleComment,
-  type CommentCreateParams,
-  type CommentUpdateParams
-} from '../services/commentService';
+import commentService from '../services/commentService';
+import {
+    type ArticleComment,
+    type CommentCreateParams,
+    type CommentUpdateParams
+} from '../types/comment';
 import { message } from 'antd';
 
 interface CommentState {
@@ -34,146 +35,154 @@ interface CommentState {
 }
 
 const useCommentStore = create<CommentState>((set, get) => {
-  // 递归更新评论状态
-  const updateCommentStatus = (comments: ArticleComment[], commentId: number, updateFn: (comment: ArticleComment) => ArticleComment): ArticleComment[] => {
-    return comments.map(comment => {
-      if (comment.id === commentId) {
-        return updateFn(comment);
-      }
-      if (comment.replies && comment.replies.length > 0) {
-        return {
-          ...comment,
-          replies: updateCommentStatus(comment.replies, commentId, updateFn)
-        };
-      }
-      return comment;
-    });
-  };
-
-  return {
-    // 初始状态
-    comments: [],
-    commentCount: 0,
-    sortBy: 'hot',
-    loading: false,
-    page: 1,
-    isSubmitting: false,
-
-    // 状态设置函数
-    setComments: (comments) => set({ comments }),
-    setCommentCount: (commentCount) => set({ commentCount }),
-    setSortBy: (sortBy) => set({ sortBy }),
-    setLoading: (loading) => set({ loading }),
-    setPage: (page) => set({ page }),
-    setIsSubmitting: (isSubmitting) => set({ isSubmitting }),
-
-    // 方法
-    fetchComments: async (articleId, page) => {
-      const sortBy = get().sortBy;
-
-      try {
-        get().setLoading(true);
-
-        const response = await commentService.getComments({
-          articleId,
-          pageNum: page,
-          pageSize: 10,
-          sortBy
+    // 递归更新评论状态
+    const updateCommentStatus = (comments: ArticleComment[], commentId: number, updateFn: (comment: ArticleComment) => ArticleComment): ArticleComment[] => {
+        return comments.map(comment => {
+            if (comment.id === commentId) {
+                return updateFn(comment);
+            }
+            if (comment.replies && comment.replies.length > 0) {
+                return {
+                    ...comment,
+                    replies: updateCommentStatus(comment.replies, commentId, updateFn)
+                };
+            }
+            return comment;
         });
+    };
 
-        if (response.code === 200 && response.data) {
-          const formattedComments = response.data.record || [];
-          get().setComments(formattedComments);
-          get().setPage(page);
-          get().setCommentCount(response.data.total || 0);
+    return {
+        // 初始状态
+        comments: [],
+        commentCount: 0,
+        sortBy: 'hot',
+        loading: false,
+        page: 1,
+        isSubmitting: false,
+
+        // 状态设置函数
+        setComments: (comments: ArticleComment[]): void => set({ comments }),
+        setCommentCount: (commentCount: number): void => set({ commentCount }),
+        setSortBy: (sortBy: 'hot' | 'new'): void => set({ sortBy }),
+        setLoading: (loading: boolean): void => set({ loading }),
+        setPage: (page: number): void => set({ page }),
+        setIsSubmitting: (isSubmitting: boolean): void => set({ isSubmitting }),
+
+        // 方法
+        fetchComments: async (articleId: number, page: number): Promise<void> => {
+            const sortBy = get().sortBy;
+
+            try {
+                get().setLoading(true);
+
+                const response = await commentService.getComments({
+                    articleId,
+                    pageNum: page,
+                    pageSize: 10,
+                    sortBy
+                });
+
+                if (response.code === 200 && response.data) {
+                    const formattedComments = response.data.record || [];
+                    get().setComments(formattedComments);
+                    get().setPage(page);
+                    get().setCommentCount(response.data.total || 0);
+                }
+            } catch (error) {
+                console.error('获取评论失败:', error);
+            } finally {
+                get().setLoading(false);
+            }
+        },
+
+        createComment: async (params: CommentCreateParams): Promise<boolean> => {
+            get().setIsSubmitting(true);
+            const response = await commentService.createComment(params);
+            if (response.code !== 200) {
+                message.error(response.message || '创建评论失败');
+            }
+            get().setIsSubmitting(false);
+            return response.code === 200;
+        },
+
+        updateComment: async (params: CommentUpdateParams): Promise<boolean> => {
+            get().setIsSubmitting(true);
+            const response = await commentService.updateComment(params);
+
+            if (response.code !== 200) {
+                message.error(response.message || '更新评论失败');
+            }
+            get().setIsSubmitting(false);
+            return response.code === 200;
+        },
+
+        deleteComment: async (commentId: number): Promise<boolean> => {
+            get().setIsSubmitting(true);
+            const response = await commentService.deleteComment(commentId);
+
+            if (response.code !== 200) {
+                message.error(response.message || '删除评论失败');
+                return true;
+            }
+            get().setIsSubmitting(false);
+            return response.code === 200;
+
+        },
+
+        toggleLike: async (commentId: number): Promise<void> => {
+            try {
+                // 乐观更新
+                const currentComments = get().comments;
+                const updatedComments = updateCommentStatus(currentComments, commentId, comment => ({
+                    ...comment,
+                    likeCount: comment.isLiked ? comment.likeCount - 1 : comment.likeCount + 1,
+                    isLiked: !comment.isLiked,
+                    isDisliked: false
+                }));
+                get().setComments(updatedComments);
+
+                // 调用真实的API
+                await commentService.likeComment(commentId);
+            } catch (error) {
+                console.error('点赞失败:', error);
+                // 失败时回滚
+                // 这里可以重新获取评论列表来恢复状态
+            }
+        },
+
+        toggleDislike: async (commentId: number): Promise<void> => {
+            try {
+                // 乐观更新
+                const currentComments = get().comments;
+                const updatedComments = updateCommentStatus(currentComments, commentId, comment => ({
+                    ...comment,
+                    dislikeCount: comment.isDisliked ? comment.dislikeCount - 1 : comment.dislikeCount + 1,
+                    isDisliked: !comment.isDisliked,
+                    isLiked: false
+                }));
+                get().setComments(updatedComments);
+
+                // 调用真实的API
+                await commentService.dislikeComment(commentId);
+            } catch (error) {
+                console.error('点踩失败:', error);
+                // 失败时回滚
+                // 这里可以重新获取评论列表来恢复状态
+            }
+        },
+
+        refreshComments: async (articleId: number): Promise<void> => {
+            await get().fetchComments(articleId, 1);
         }
-      } catch (error) {
-        console.error('获取评论失败:', error);
-      } finally {
-        get().setLoading(false);
-      }
-    },
-
-    createComment: async (params) => {
-      get().setIsSubmitting(true);
-      const response = await commentService.createComment(params);
-      if (response.code !== 200) {
-        message.error(response.message || '创建评论失败');
-      }
-      get().setIsSubmitting(false);
-      return response.code === 200;
-    },
-
-    updateComment: async (params) => {
-      get().setIsSubmitting(true);
-      const response = await commentService.updateComment(params);
-
-      if (response.code !== 200) {
-        message.error(response.message || '更新评论失败');
-      }
-      get().setIsSubmitting(false);
-      return response.code === 200;
-    },
-
-    deleteComment: async (commentId) => {
-      get().setIsSubmitting(true);
-      const response = await commentService.deleteComment(commentId);
-
-      if (response.code !== 200) {
-        message.error(response.message || '删除评论失败');
-        return true;
-      }
-      get().setIsSubmitting(false);
-      return response.code === 200;
-
-    },
-
-    toggleLike: async (commentId) => {
-      try {
-        // 乐观更新
-        const currentComments = get().comments;
-        const updatedComments = updateCommentStatus(currentComments, commentId, comment => ({
-          ...comment,
-          likeCount: comment.isLiked ? comment.likeCount - 1 : comment.likeCount + 1,
-          isLiked: !comment.isLiked,
-          isDisliked: false
-        }));
-        get().setComments(updatedComments);
-
-        // 调用真实的API
-        await commentService.likeComment(commentId);
-      } catch (error) {
-        console.error('点赞失败:', error);
-        // 失败时回滚
-        // 这里可以重新获取评论列表来恢复状态
-      }
-    },
-
-    toggleDislike: async (commentId) => {
-      try {
-        // 乐观更新
-        const currentComments = get().comments;
-        const updatedComments = updateCommentStatus(currentComments, commentId, comment => ({
-          ...comment,
-          dislikeCount: comment.isDisliked ? comment.dislikeCount - 1 : comment.dislikeCount + 1,
-          isDisliked: !comment.isDisliked,
-          isLiked: false
-        }));
-        get().setComments(updatedComments);
-
-        // 调用真实的API
-        await commentService.dislikeComment(commentId);
-      } catch (error) {
-        console.error('点踩失败:', error);
-        // 失败时回滚
-        // 这里可以重新获取评论列表来恢复状态
-      }
-    },
-
-    refreshComments: async (articleId) => {
-      await get().fetchComments(articleId, 1);
-    }
-  };
+    };
 });
+
+// 导出评论状态的具体选择器，减少不必要的重渲染
+export const useComments = () : ArticleComment[] => useCommentStore((state) => state.comments);
+export const useCommentCount = () : number => useCommentStore((state) => state.commentCount);
+export const useSortBy = () : string | undefined => useCommentStore((state) => state.sortBy);
+export const useCommentLoading = () : boolean => useCommentStore((state) => state.loading);
+export const useCommentPage = () : number => useCommentStore((state) => state.page);
+export const useIsSubmitting = () : boolean => useCommentStore((state) => state.isSubmitting);
 
 export default useCommentStore;

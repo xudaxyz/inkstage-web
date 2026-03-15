@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
-import { useUser } from '../../store';
+import { useUserStore } from '../../store';
 
 
 // 注册表单数据类型
@@ -25,7 +25,7 @@ type PasswordStrength = 'weak' | 'medium' | 'strong';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { register, sendCode, isLoading } = useUser();
+  const { register, sendCode, isLoading } = useUserStore();
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>('weak');
   const [registerType, setRegisterType] = useState<'password' | 'code'>('code');
@@ -35,7 +35,7 @@ const Register: React.FC = () => {
   const [form] = Form.useForm<RegisterFormData>();
 
   // 开始倒计时
-  const startCountdown = () => {
+  const startCountdown = (): void => {
     setCodeCountdown(60);
     const timer = setInterval(() => {
       setCodeCountdown((prev) => {
@@ -69,20 +69,20 @@ const Register: React.FC = () => {
   };
 
   // 密码变化处理
-  const handlePasswordChange = (value: string) => {
+  const handlePasswordChange = (value: string): void => {
     setPasswordStrength(checkPasswordStrength(value));
   };
 
 
   // 表单提交处理
-  const handleRegister = (values: RegisterFormData) => {
+  const handleRegister = (values: RegisterFormData): void => {
     // 保存表单数据，弹出验证码模态框
     setFormData(values);
     setCaptchaModalVisible(true);
   };
 
   // 验证码成功后的注册处理
-  const handleCaptchaSuccess = async () => {
+  const handleCaptchaSuccess = async (): Promise<void> => {
     if (!formData) return;
 
     try {
@@ -137,7 +137,7 @@ const Register: React.FC = () => {
   };
 
   // 发送验证码
-  const handleSendCode = async () => {
+  const handleSendCode = async (): Promise<void> => {
     const account = form.getFieldValue('account');
     if (!account) {
       message.error('请先输入邮箱或手机号');
@@ -198,7 +198,7 @@ const Register: React.FC = () => {
           rules={[
             { required: true, message: '请输入用户名、邮箱或手机号' },
             {
-              validator: (_, value) => {
+              validator: (_, value): Promise<void> => {
                 if (!value) return Promise.resolve();
                 // 简单的邮箱或手机号验证
                 const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -231,7 +231,7 @@ const Register: React.FC = () => {
                 { required: true, message: '请输入密码' },
                 { min: 6, max: 32, message: '密码长度必须在6-32个字符之间' },
                 {
-                  validator: (_, value) => {
+                  validator: (_, value): Promise<void> => {
                     if (!value) return Promise.resolve();
                     if (value.length < 6) return Promise.reject(new Error('密码长度至少6位'));
                     return Promise.resolve();
@@ -289,7 +289,7 @@ const Register: React.FC = () => {
               rules={[
                 { required: true, message: '请确认密码' },
                 {
-                  validator: (_, value) => {
+                  validator: (_, value): Promise<void> => {
                     const password = form.getFieldValue('password');
                     if (!value || password === value) {
                       return Promise.resolve();
