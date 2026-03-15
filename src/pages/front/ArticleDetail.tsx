@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, notification, Modal } from 'antd';
+import { Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, notification, Modal, Typography } from 'antd';
 import { formatDateTimeShort } from '../../utils';
 import {
   ArrowLeftOutlined,
@@ -482,28 +482,26 @@ const ArticleDetail: React.FC = () => {
             {/* 响应式调整 */}
             <div className="md:pr-4">
               {/* 文章标题 */}
-              <h1 className="text-3xl font-semibold mb-4 text-gray-800 leading-snug">
+              <h1 className="text-4xl font-bold mb-6 text-gray-800 leading-tight tracking-tight">
                 {article.title}
               </h1>
 
               {/* 作者信息和统计数据 */}
               <div
-                className="flex flex-wrap items-center justify-between gap-5 md:gap-5 mb-8 text-gray-500 pb-4 border-b border-gray-100">
-                <div className="flex flex-wrap items-center gap-5 md:gap-5">
+                className="flex flex-wrap items-center justify-between gap-5 md:gap-6 mb-8 text-gray-500 pb-4 border-b border-gray-100">
+                <div className="flex flex-wrap items-center gap-4 md:gap-6">
                   <div className="flex items-center gap-3">
-                    <Avatar size={40} src={article.avatar || undefined} alt={article.authorName}/>
+                    <Avatar size={40} src={article.avatar || undefined} alt={article.authorName} className="border border-gray-100 shadow-sm"/>
                     <div>
-                      <span
-                        className="font-medium text-gray-700">{article.authorName || '未知作者'}</span>
+                      <span className="font-medium text-gray-800">{article.authorName || '未知作者'}</span>
                     </div>
                   </div>
                   {article.categoryName && (
-                    <span className="text-gray-500 mr-2 flex items-center">
-                      <span className="w-px h-4 bg-gray-300 mr-3"></span>
+                    <span className="text-sm bg-gray-50 text-gray-600 px-3 py-1 rounded-full">
                       {article.categoryName}
                     </span>
                   )}
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 text-sm">
                     <Tooltip title="阅读量">
                       <div className="flex items-center gap-2">
                         <EyeOutlined className="text-gray-400"/>
@@ -512,22 +510,22 @@ const ArticleDetail: React.FC = () => {
                     </Tooltip>
                     <Tooltip title="点赞数">
                       <div className="flex items-center gap-2">
-                        <LikeOutlined
-                          className={`${article.isLiked ? 'text-red-500' : 'text-gray-400'}`}/>
+                        <LikeOutlined className={`${article.isLiked ? 'text-red-500' : 'text-gray-400'}`}/>
                         <span>{article.likeCount || 0}</span>
                       </div>
                     </Tooltip>
                     <Tooltip title="评论数">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         <MessageOutlined className="text-gray-400"/>
                         <span>{article.commentCount || 0}</span>
                       </div>
                     </Tooltip>
                   </div>
-                  <div className="flex items-center text-sm">
+                    <div className="flex items-center text-sm">
                     <span
-                      className="text-gray-400">{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</span>
-                  </div>
+                        className="text-sm text-gray-400">{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}
+                    </span>
+                    </div>
                 </div>
                 {isAuthor && (
                   <Dropdown
@@ -551,9 +549,9 @@ const ArticleDetail: React.FC = () => {
                   >
                     <Button
                       type="text"
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
                     >
-                                            管理 <DownOutlined/>
+                      管理 <DownOutlined/>
                     </Button>
                   </Dropdown>
                 )}
@@ -562,18 +560,18 @@ const ArticleDetail: React.FC = () => {
               {/* 文章摘要 */}
               {article.summary && (
                 <div
-                  className="mb-8 text-sm text-gray-500 italic border-l-4 border-gray-200 pl-4 py-2 bg-gray-50 rounded-r">
+                  className="mb-8 text-sm text-gray-600 italic border-l-4 border-blue-200 pl-6 py-4 bg-blue-50 rounded-r-lg shadow-sm">
                   {article.summary}
                 </div>
               )}
 
               {/* 文章封面图 */}
               {article.coverImage && (
-                <div className="mb-8 rounded-lg overflow-hidden shadow-md">
+                <div className="mb-8 rounded-xl overflow-hidden shadow-lg">
                   <img
                     src={article.coverImage}
                     alt={article.title}
-                    className="w-full h-64 md:h-80 object-cover transition-transform duration-300 hover:scale-105"
+                    className="w-full h-72 md:h-96 object-cover transition-transform duration-500 hover:scale-105"
                   />
                 </div>
               )}
@@ -581,20 +579,30 @@ const ArticleDetail: React.FC = () => {
               {/* 文章内容 */}
               <div
                 ref={contentRef}
-                className="mb-12 text-gray-700 leading-relaxed"
+                className="mb-12"
               >
-                <div
-                  className="prose max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-a:text-blue-600 prose-a:no-underline prose-a:hover:underline prose-ul:list-disc prose-ol:list-decimal prose-img:rounded-lg prose-img:my-6 prose-blockquote:border-l-4 prose-blockquote:border-gray-200 prose-blockquote:pl-4 prose-blockquote:italic prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-table:border prose-table:border-gray-200 prose-table:w-full prose-table:my-6"
-                  dangerouslySetInnerHTML={{ __html: renderedContent }}
-                />
+                <Typography
+                  className="prose max-w-none"
+                  style={{
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+                    lineHeight: 1.65,
+                    letterSpacing: 0.3,
+                    fontSize: '16px'
+                  }}
+                >
+                  <div
+                    className="prose max-w-none prose-headings:text-gray-800 prose-headings:font-semibold prose-headings:text-xl prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-p:text-base prose-strong:text-gray-900 prose-strong:font-semibold prose-a:text-blue-600 prose-a:no-underline prose-a:hover:underline prose-ul:list-disc prose-ul:mb-6 prose-ol:list-decimal prose-ol:mb-6 prose-img:rounded-xl prose-img:my-8 prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-gray-200 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:mb-6 prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-pre:bg-gray-50 prose-pre:rounded-xl prose-pre:p-4 prose-pre:my-6 prose-pre:shadow-sm prose-table:border prose-table:border-gray-200 prose-table:w-full prose-table:my-6 prose-table:shadow-sm"
+                    dangerouslySetInnerHTML={{ __html: renderedContent }}
+                  />
+                </Typography>
               </div>
 
               {/* 文章标签 */}
               {article.tags && Array.isArray(article.tags) && (
-                <div className="mb-10 flex flex-wrap gap-2">
+                <div className="mb-12 flex flex-wrap gap-3">
                   {article.tags.map((tag: FrontTag, index: number) => (
                     <span key={tag.id || index}
-                      className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors">
+                      className="text-xs bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full hover:bg-blue-100 transition-colors shadow-sm">
                       {tag.name}
                     </span>
                   ))}
@@ -603,14 +611,14 @@ const ArticleDetail: React.FC = () => {
 
               {/* 操作按钮 */}
               <div
-                className="flex flex-wrap items-center justify-center gap-20 px-10 py-6 border-t border-gray-100">
+                className="flex flex-wrap items-center justify-center gap-6 px-6 py-8 border-t border-gray-100">
                 <Button
                   onClick={handleLike}
                   size="large"
                   shape="round"
                   loading={likeLoading}
                   icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''}/>}
-                  className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} px-4 py-2 rounded-full hover:shadow-sm transition-all`}
+                  className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300`}
                 >
                   {article.isLiked ? '已点赞' : '点赞'}
                 </Button>
@@ -620,7 +628,7 @@ const ArticleDetail: React.FC = () => {
                   shape="round"
                   loading={collectLoading}
                   icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''}/>}
-                  className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} px-4 py-2 rounded-full hover:shadow-sm transition-all`}
+                  className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300`}
                 >
                   {article.isCollected ? '已收藏' : '收藏'}
                 </Button>
@@ -629,9 +637,9 @@ const ArticleDetail: React.FC = () => {
                   size="large"
                   shape="round"
                   icon={<ShareAltOutlined/>}
-                  className="text-gray-600 border-gray-200 px-4 py-2 rounded-full hover:shadow-sm transition-all"
+                  className="text-gray-600 border-gray-200 px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300"
                 >
-                                    分享
+                  分享
                 </Button>
               </div>
 
@@ -651,28 +659,26 @@ const ArticleDetail: React.FC = () => {
             {/* 响应式调整 */}
             <div className="sticky mb-10">
               {/* 作者信息 */}
-              <Card
-                style={{ marginBottom: 30, background: 'white' }}>
-                <div className="text-center mb-4">
-                  <Avatar size={80} src={article.avatar || undefined} alt={article.authorName}/>
-                  <h3 className="mt-4 text-lg font-semibold text-gray-800 mb-1">{article.authorName || '未知作者'}</h3>
-                  <div className="text-center text-sm text-gray-500">
-                    <p className="mt-2">
-                      {article.signature || '暂无简介'}
-                    </p>
-                  </div>
-                  <Divider className="my-4"/>
-                  <Button
-                    type="primary"
-                    className="w-[60%] py-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors rounded-md">
-                                        关注作者
-                  </Button>
+            <Card  style={{ marginBottom: '32px', background: 'white' }} className="mb-8 border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="text-center">
+                <Avatar size={88} src={article.avatar || undefined} alt={article.authorName} className="border-2 border-gray-100 shadow-md"/>
+                <h3 className="mt-4 text-lg font-semibold text-gray-800 mb-1">{article.authorName || '未知作者'}</h3>
+                <div className="text-center text-sm text-gray-500">
+                  <p className="mt-2">
+                    {article.signature || '暂无简介'}
+                  </p>
                 </div>
-
-              </Card>
+                <Divider className="my-6"/>
+                <Button
+                  type="primary"
+                  className="w-[60%] py-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors rounded-lg shadow-sm hover:shadow-md">
+                  关注作者
+                </Button>
+              </div>
+            </Card>
 
               {/* 作者相关文章 */}
-              <Card className="mb-8 border border-gray-100 rounded-lg shadow-sm"
+              <Card style={{ marginBottom: '32px', background: 'white' }} className="mb-8 border border-gray-100 rounded-lg shadow-sm"
                 title="作者相关文章">
                 {relatedArticlesLoading ? (
                   <div className="text-center py-4">
@@ -712,12 +718,12 @@ const ArticleDetail: React.FC = () => {
 
               {/* 文章目录 */}
               {toc.length > 0 && (
-                <Card className="border border-gray-100 rounded-lg shadow-sm" title="文章目录">
+                <Card variant={'borderless'}>
                   <div className="text-sm">
                     {toc.map((item, index) => (
                       <div
                         key={index}
-                        className={`mb-2 pl-${(item.level - 1) * 4} cursor-pointer hover:text-blue-600 transition-colors`}
+                        className={`mb-2 pl-${(item.level - 1) * 4} cursor-pointer hover:text-blue-600 transition-colors py-1 px-2 rounded-md hover:bg-blue-50`}
                         onClick={() => scrollToHeading(item.id)}
                       >
                         <LinkOutlined className="mr-1 text-gray-400"/>

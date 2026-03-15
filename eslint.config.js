@@ -31,7 +31,7 @@ export default defineConfig([
         'exports': 'never',
         'functions': 'never'
       }],
-      'linebreak-style': ['error', 'unix'],
+      'linebreak-style': ['error', 'windows'],
       'no-trailing-spaces': 'error',
       'eol-last': 'error',
       'object-curly-spacing': ['error', 'always'],
