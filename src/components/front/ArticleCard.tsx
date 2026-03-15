@@ -1,7 +1,7 @@
 import React from 'react';
 import { Avatar } from 'antd';
 import { LikeOutlined, EyeOutlined, MessageOutlined, CalendarOutlined } from '@ant-design/icons';
-import { formatDateTimeShort } from '../../utils/date';
+import { formatDateTimeShort } from '../../utils';
 import LazyImage from '../common/LazyImage';
 
 interface Article {

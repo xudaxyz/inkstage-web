@@ -29,6 +29,6 @@ export const useApp = (): AppState => {
   };
 };
 
-// 导出应用状态的具体选择器，减少不必要的重渲染
-export const useTheme = () => useAppStore((state) => state.theme);
-export const useAppLoading = () => useAppStore((state) => state.isLoading);
+// 导出应用状态的具体选择器
+export const useTheme = () : string => useAppStore((state) => state.theme);
+export const useAppLoading = (): boolean => useAppStore((state) => state.isLoading);
