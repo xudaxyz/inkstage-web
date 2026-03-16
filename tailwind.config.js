@@ -74,6 +74,7 @@ export default {
       // 扩展字体
       fontFamily: {
         sans: [
+          'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
           'Segoe UI',
@@ -96,7 +97,8 @@ export default {
   },
   // 配置插件
   plugins: [
-      require('@tailwindcss/forms')
+      require('@tailwindcss/forms'),
+      require('@tailwindcss/typography')
   ],
   // 配置深色模式
   darkMode: 'class',

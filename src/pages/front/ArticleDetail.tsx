@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, notification, Modal, Typography } from 'antd';
+import { Avatar, message, Button, Tooltip, Divider, List, Card, Dropdown, notification, Modal } from 'antd';
 import { formatDateTimeShort } from '../../utils';
 import {
   ArrowLeftOutlined,
@@ -21,19 +21,12 @@ import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import CommentSection from '../../components/front/CommentSection';
 import CollectionFolderModal from '../../components/front/CollectionFolderModal';
+import ArticleContent from '../../components/front/ArticleContent';
 import { useUserStore, useArticleStore } from '../../store';
 import useCollection from '../../hooks/useCollection';
 import articleService from '../../services/articleService';
 import readingHistoryService from '../../services/readingHistoryService';
 import type { FrontTag } from '../../types/tag';
-import MarkdownIt from 'markdown-it';
-
-// 初始化Markdown渲染器
-const md: MarkdownIt = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true
-});
 
 const ArticleDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -379,8 +372,7 @@ const ArticleDetail: React.FC = () => {
     );
   }
 
-  // 渲染Markdown内容
-  const renderedContent = md.render(article.content || '');
+
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans">
@@ -488,8 +480,8 @@ const ArticleDetail: React.FC = () => {
 
               {/* 作者信息和统计数据 */}
               <div
-                className="flex flex-wrap items-center justify-between gap-5 md:gap-6 mb-8 text-gray-500 pb-4 border-b border-gray-100">
-                <div className="flex flex-wrap items-center gap-4 md:gap-6">
+                className="flex flex-wrap items-center justify-between gap-5 mb-8 text-gray-500 pb-4 border-b border-gray-100">
+                <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-3">
                     <Avatar size={40} src={article.avatar || undefined} alt={article.authorName} className="border border-gray-100 shadow-sm"/>
                     <div>
@@ -497,7 +489,7 @@ const ArticleDetail: React.FC = () => {
                     </div>
                   </div>
                   {article.categoryName && (
-                    <span className="text-sm bg-gray-50 text-gray-600 px-3 py-1 rounded-full">
+                    <span className="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded-4xl">
                       {article.categoryName}
                     </span>
                   )}
@@ -579,22 +571,8 @@ const ArticleDetail: React.FC = () => {
               {/* 文章内容 */}
               <div
                 ref={contentRef}
-                className="mb-12"
               >
-                <Typography
-                  className="prose max-w-none"
-                  style={{
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-                    lineHeight: 1.65,
-                    letterSpacing: 0.3,
-                    fontSize: '16px'
-                  }}
-                >
-                  <div
-                    className="prose max-w-none prose-headings:text-gray-800 prose-headings:font-semibold prose-headings:text-xl prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-p:text-base prose-strong:text-gray-900 prose-strong:font-semibold prose-a:text-blue-600 prose-a:no-underline prose-a:hover:underline prose-ul:list-disc prose-ul:mb-6 prose-ol:list-decimal prose-ol:mb-6 prose-img:rounded-xl prose-img:my-8 prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-gray-200 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:mb-6 prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-pre:bg-gray-50 prose-pre:rounded-xl prose-pre:p-4 prose-pre:my-6 prose-pre:shadow-sm prose-table:border prose-table:border-gray-200 prose-table:w-full prose-table:my-6 prose-table:shadow-sm"
-                    dangerouslySetInnerHTML={{ __html: renderedContent }}
-                  />
-                </Typography>
+                <ArticleContent content={article.content || ''} />
               </div>
 
               {/* 文章标签 */}
