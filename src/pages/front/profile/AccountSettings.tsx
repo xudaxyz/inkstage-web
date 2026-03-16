@@ -15,23 +15,23 @@ const AccountSettings: React.FC = () => {
   const [emailVerified] = useState(true);
   const [phoneVerified] = useState(false);
 
-  const handleVerifyEmail = () => {
+  const handleVerifyEmail = () : void => {
     message.success('验证邮件已发送，请查收');
   };
 
-  const handleVerifyPhone = () => {
+  const handleVerifyPhone = () : void => {
     message.success('验证码已发送');
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = () : void => {
     message.info('跳转到修改密码页面');
   };
 
-  const handleLogout = () => {
+  const handleLogout = () : void => {
     message.success('已退出登录');
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = () : void => {
     message.success('账号已删除');
   };
 

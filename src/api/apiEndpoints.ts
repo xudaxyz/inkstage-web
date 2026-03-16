@@ -44,7 +44,9 @@ export const API_ENDPOINTS = {
     // 用户相关
     USER: {
       PROFILE: '/front/user/profile', // 获取/更新用户资料
-      PUBLIC_PROFILE: (userId: number): string => `/front/user/profile/${userId}` // 获取用户公开资料
+      PUBLIC_PROFILE: (userId: number): string => `/front/user/profile/${userId}`, // 获取用户公开资料
+      UPDATE_USERNAME: '/front/user/username', // 修改用户名
+      USERNAME_MODIFICATION_TIME_LEFT: '/front/user/username/modification-time-left' // 获取修改用户名的剩余时间
     },
 
     // 标签相关

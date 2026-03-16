@@ -40,6 +40,19 @@ export const updateUserProfile = async (userData: Partial<UserInfo>): Promise<Us
   return await apiClient.put(API_ENDPOINTS.FRONT.USER.PROFILE, userData);
 };
 
+// 修改用户名
+export const updateUsername = async (newUsername: string): Promise<ApiResponse<UserInfo>> => {
+  return await apiClient.put(API_ENDPOINTS.FRONT.USER.UPDATE_USERNAME, null, {
+      params: { newUsername }
+  });
+};
+
+// 获取修改用户名的剩余时间
+export const getUsernameModificationTimeLeft = async (): Promise<number> => {
+  const response = await apiClient.get(API_ENDPOINTS.FRONT.USER.USERNAME_MODIFICATION_TIME_LEFT);
+  return response.data;
+};
+
 // 后台用户管理相关方法
 const admin = {
   // 分页获取用户列表
@@ -83,5 +96,7 @@ export default {
   getUserPublicProfile,
   getCurrentUserProfile,
   updateUserProfile,
+  updateUsername,
+  getUsernameModificationTimeLeft,
   admin
 };

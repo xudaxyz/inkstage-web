@@ -4,7 +4,7 @@ import type { ApiPageResponse } from './common';
 // 用户信息类型定义
 export interface UserInfo {
     id: number;
-    name: string;
+    username: string;
     nickname: string;
     email: string;
     avatar: string;
