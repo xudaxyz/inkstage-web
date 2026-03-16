@@ -39,7 +39,7 @@ export interface RefreshTokenParams {
 // 用户信息响应
 export interface UserInfo {
     id: number;
-    name: string;
+    username: string;
     email: string;
     avatar?: string;
     nickname: string,

@@ -15,7 +15,7 @@ export const ROUTES = {
   PROFILE_INFO: '/profile/info',
   MY_CREATIONS: '/profile/creations',
   MY_COLLECTIONS: '/profile/collections',
-  READING_HISTORY: '/profile/history',
+  READING_HISTORY: '/profile/histories',
   NOTIFICATIONS: '/profile/notifications',
   ACCOUNT_SETTINGS: '/profile/settings',
 

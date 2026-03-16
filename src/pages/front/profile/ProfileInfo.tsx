@@ -42,9 +42,9 @@ const ProfileInfo: React.FC = () => {
   useEffect(() => {
     if (user) {
       form.setFieldsValue({
-        name: user.name,
+        username: user.username,
         email: user.email,
-        nickname: user.nickname || user.name,
+        nickname: user.nickname || user.username,
         gender: user.gender || GenderEnum.UNKNOWN,
         birthDate: user.birthDate ? dayjs(user.birthDate) : null,
         location: user.location,
@@ -63,7 +63,7 @@ const ProfileInfo: React.FC = () => {
         birthDate: values.birthDate ? (typeof values.birthDate === 'string' ? values.birthDate : values.birthDate.format('YYYY-MM-DD')) : undefined
       };
 
-      // 调用后端接口更新个人资料
+      // 更新个人资料
       const response = await authService.updateProfile(submitData);
       if (response.code === 200) {
         // 更新前端状态，确保birthDate映射到birthDate
@@ -71,7 +71,7 @@ const ProfileInfo: React.FC = () => {
           ...response.data,
           birthDate: response.data.birthDate,
           gender: response.data.gender || GenderEnum.UNKNOWN,
-          name: user.name, // 保留原始的登录账号，避免被覆盖
+          name: user.username,
           avatar: user.avatar,
           coverImage: user.coverImage
         };
@@ -254,7 +254,7 @@ const ProfileInfo: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
             <div className="pr-4">
               <Form.Item
-                name="name"
+                name="username"
                 label="登录账号"
               >
                 <Input disabled className="h-12 rounded-lg bg-gray-50 border-gray-200 text-gray-500"/>

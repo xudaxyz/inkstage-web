@@ -9,7 +9,7 @@ import type { GenderEnum } from '../types/enums';
 export interface UserState {
     user: {
         id: number | null;
-        name: string | null;
+        username: string | null;
         email: string | null;
         avatar?: string;
         nickname?: string;
@@ -25,7 +25,7 @@ export interface UserState {
     accessTokenExpiresAt: number | null;
     setUser: (userData: {
         id: number | null;
-        name: string | null;
+        username: string | null;
         email: string | null;
         avatar?: string;
         nickname?: string;
@@ -53,7 +53,7 @@ export interface UserState {
             expires_in: number;
             userInfo: {
                 id: number;
-                name: string;
+                username: string;
                 email: string;
                 avatar?: string;
                 nickname?: string;
@@ -81,7 +81,7 @@ export interface UserState {
             expires_in: number;
             userInfo: {
                 id: number;
-                name: string;
+                username: string;
                 email: string;
                 avatar?: string;
                 nickname?: string;
@@ -116,7 +116,7 @@ const normalizeUserData = (userInfo: AuthUserInfo): UserState['user'] => {
 
   return {
     id: userInfo.id,
-    name: userInfo.name,
+    username: userInfo.username,
     email: userInfo.email,
     avatar: userInfo.avatar,
     nickname: userInfo.nickname,
@@ -155,14 +155,14 @@ export const useUserStore = create<UserState>()(
     (set, get) => ({
       user: {
         id: null,
-        name: null,
+        username: null,
         email: null
       },
       isLoggedIn: false,
       isLoading: false,
       accessTokenExpiresAt: null,
 
-      setUser: (userData: { id: number | null; name: string | null; email: string | null; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }, accessToken: string = '', refreshToken: string = '', expiresIn: number = 3600): void => {
+      setUser: (userData: { id: number | null; username: string | null; email: string | null; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }, accessToken: string = '', refreshToken: string = '', expiresIn: number = 3600): void => {
         const expiresAt = Date.now() + expiresIn * 1000;
         set({
           user: userData,
@@ -180,7 +180,7 @@ export const useUserStore = create<UserState>()(
 
       logout: (): void => {
         set({
-          user: { id: null, name: null, email: null },
+          user: { id: null, username: null, email: null },
           isLoggedIn: false,
           accessTokenExpiresAt: null
         });
@@ -194,7 +194,7 @@ export const useUserStore = create<UserState>()(
       })),
 
       // 登录方法
-      login: async (params: { account: string; authType: 'password' | 'code'; password?: string; code?: string; remember?: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; name: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }; }; }> => {
+      login: async (params: { account: string; authType: 'password' | 'code'; password?: string; code?: string; remember?: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; username: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }; }; }> => {
         set({ isLoading: true });
         try {
           const response = await authService.login(params);
@@ -205,7 +205,7 @@ export const useUserStore = create<UserState>()(
       },
 
       // 注册方法
-      register: async (params: { account: string; authType: 'password' | 'code'; password?: string; code?: string; agreeTerms: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; name: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }; }; }> => {
+      register: async (params: { account: string; authType: 'password' | 'code'; password?: string; code?: string; agreeTerms: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; username: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }; }; }> => {
         set({ isLoading: true });
         try {
           const response = await authService.register(params);
@@ -315,9 +315,9 @@ export const useIsLoading = (): boolean => useUserStore((state) => state.isLoadi
 export const useAccessTokenExpiresAt = (): number | null => useUserStore((state) => state.accessTokenExpiresAt);
 export const useUserId = (): number | null => useUserStore((state) => state.user.id);
 export const useUserRole = (): string | undefined => useUserStore((state) => state.user.role);
-export const useUserInfo = (): { id: number | null; name: string | null; email: string | null; avatar?: string; nickname?: string; role?: string } => useUserStore((state) => ({
+export const useUserInfo = (): { id: number | null; username: string | null; email: string | null; avatar?: string; nickname?: string; role?: string } => useUserStore((state) => ({
   id: state.user.id,
-  name: state.user.name,
+  username: state.user.username,
   email: state.user.email,
   avatar: state.user.avatar,
   nickname: state.user.nickname,

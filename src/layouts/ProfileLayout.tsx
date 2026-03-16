@@ -42,10 +42,10 @@ const ProfileLayout: React.FC = () => {
       path: '/profile/collections'
     },
     {
-      key: '/profile/history',
+      key: '/profile/histories',
       icon: <HistoryOutlined />,
       label: '阅读历史',
-      path: '/profile/history'
+      path: '/profile/histories'
     },
     {
       key: '/profile/notifications',

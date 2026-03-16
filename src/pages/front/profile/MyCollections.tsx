@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Input, message, Tag, Empty, Card, Space, Popover, Divider, Pagination, Spin, Modal, Form } from 'antd';
+import { Button, Input, message, Tag, Empty, Card, Space, Popover, Divider, Pagination, Spin, Modal, Form, notification } from 'antd';
 import {
   DeleteOutlined,
   EyeOutlined,
@@ -13,7 +13,9 @@ import {
   DownCircleTwoTone,
   FolderTwoTone,
   FolderAddTwoTone,
-  FolderOutlined
+  FolderOutlined,
+  FolderOpenOutlined,
+  FolderAddOutlined
 } from '@ant-design/icons';
 import { ROUTES } from '../../../routes/constants';
 import articleService from '../../../services/articleService';
@@ -51,6 +53,14 @@ const MyCollections: React.FC = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [createFolderLoading, setCreateFolderLoading] = useState(false);
   const [form] = Form.useForm();
+  // 移动功能相关状态
+  const [moveModalVisible, setMoveModalVisible] = useState(false);
+  const [selectedArticleId, setSelectedArticleId] = useState<number>(0);
+  const [selectedTargetFolderId, setSelectedTargetFolderId] = useState<number>(0);
+  const [isMoving, setIsMoving] = useState(false);
+  const [isCreateFolderForMove, setIsCreateFolderForMove] = useState(false);
+  const [newFolderNameForMove, setNewFolderNameForMove] = useState('');
+  const [newFolderDescriptionForMove, setNewFolderDescriptionForMove] = useState('');
 
   // 获取收藏文件夹列表
   const fetchFolders = useCallback(async () => {
@@ -225,6 +235,106 @@ const MyCollections: React.FC = () => {
       console.error('创建收藏夹失败:', error);
     } finally {
       setCreateFolderLoading(false);
+    }
+  };
+
+  // 打开移动模态框
+  const handleOpenMoveModal = (articleId: number) : void => {
+    setSelectedArticleId(articleId);
+    setSelectedTargetFolderId(0);
+    setIsCreateFolderForMove(false);
+    setNewFolderNameForMove('');
+    setNewFolderDescriptionForMove('');
+    setMoveModalVisible(true);
+  };
+
+  // 关闭移动模态框
+  const handleCloseMoveModal = () : void => {
+    setMoveModalVisible(false);
+  };
+
+  // 处理移动操作
+  const handleMoveArticle = async () : Promise<void> => {
+    if (selectedArticleId <= 0) {
+      message.error('文章ID无效');
+      return;
+    }
+
+    if (selectedTargetFolderId <= 0) {
+      message.error('请选择目标收藏夹');
+      return;
+    }
+
+    setIsMoving(true);
+    try {
+      const response = await articleService.moveCollectionArticle(selectedArticleId, selectedTargetFolderId);
+      if (response.code === 200 && response.data) {
+        notification.success({
+          title: '移动成功',
+          description: '文章已成功移动到指定收藏夹',
+          duration: 3,
+          placement: 'top'
+        });
+        setMoveModalVisible(false);
+        // 重新加载数据
+        await fetchCollections();
+        await fetchFolders();
+      } else {
+        message.error(response.message || '移动失败');
+      }
+    } catch (error) {
+      message.error('移动失败，请重试');
+      console.error('移动收藏失败:', error);
+    } finally {
+      setIsMoving(false);
+    }
+  };
+
+  // 处理创建新文件夹并移动
+  const handleCreateFolderAndMove = async () : Promise<void> => {
+    if (selectedArticleId <= 0) {
+      message.error('文章ID无效');
+      return;
+    }
+
+    if (!newFolderNameForMove || newFolderNameForMove.trim().length === 0) {
+      message.error('请输入新收藏夹名称');
+      return;
+    }
+
+    setIsMoving(true);
+    try {
+      // 创建新收藏夹
+      const createResponse = await articleService.createCollectionFolder({
+        folderName: newFolderNameForMove,
+        folderDescription: newFolderDescriptionForMove
+      });
+      if (createResponse.code === 200 && createResponse.data) {
+        const newFolderId = createResponse.data;
+        // 移动文章到新文件夹
+        const moveResponse = await articleService.moveCollectionArticle(selectedArticleId, newFolderId);
+        if (moveResponse.code === 200 && moveResponse.data) {
+          notification.success({
+            title: '移动成功',
+            description: '文章已成功移动到新收藏夹',
+            duration: 3,
+            placement: 'top'
+          });
+          setMoveModalVisible(false);
+          // 重新加载数据
+          await fetchFolders();
+          await fetchCollections();
+        } else {
+          message.error(moveResponse.message || '移动失败');
+        }
+      } else {
+        message.error(createResponse.message || '创建收藏夹失败');
+      }
+    } catch (error) {
+      message.error('操作失败，请重试');
+      console.error('创建文件夹并移动失败:', error);
+    } finally {
+      setIsMoving(false);
     }
   };
 
@@ -437,7 +547,7 @@ const MyCollections: React.FC = () => {
                                 <img
                                   src={collection.avatar}
                                   alt={collection.authorName}
-                                  className="w-7 h-7 rounded-full object-cover"
+                                  className="w-7 h-7 rounded-full object-cover mr-2"
                                 />
                                 <span>{collection.authorName}</span>
                               </div>
@@ -477,6 +587,14 @@ const MyCollections: React.FC = () => {
                                     onClick={handleReport}
                                   >
                                                                         举报
+                                  </Button>
+                                  <Button
+                                    icon={<FolderOpenOutlined />}
+                                    size="small"
+                                    type="text"
+                                    onClick={() => handleOpenMoveModal(collection.articleId)}
+                                  >
+                                                                        移动
                                   </Button>
                                   <Button
                                     icon={<DeleteOutlined/>}
@@ -573,6 +691,93 @@ const MyCollections: React.FC = () => {
             </div>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 移动收藏模态框 */}
+      <Modal
+        title="移动收藏"
+        open={moveModalVisible}
+        onCancel={handleCloseMoveModal}
+        onOk={isCreateFolderForMove ? handleCreateFolderAndMove : handleMoveArticle}
+        okText={isCreateFolderForMove ? '创建并移动' : '移动'}
+        cancelText="取消"
+        confirmLoading={isMoving}
+      >
+        {!isCreateFolderForMove ? (
+          <div className="space-y-4">
+            <p>请选择目标收藏夹：</p>
+            <div className="space-y-2">
+              {folders.map((folder) => (
+                <div
+                  key={folder.id}
+                  className={`flex items-center p-3 rounded-lg cursor-pointer transition-all ${
+                    selectedTargetFolderId === Number(folder.id)
+                      ? 'bg-blue-50 border border-blue-200'
+                      : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setSelectedTargetFolderId(Number(folder.id))}
+                >
+                  <FolderOutlined
+                    className={`mr-3 ${folder.isDefault ? 'text-blue-500' : 'text-gray-500'}`}
+                  />
+                  <span className="text-gray-800">{folder.name}</span>
+                  {folder.isDefault && (
+                    <span
+                      className="ml-2 text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full"
+                    >
+                      默认
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <Button
+                type="text"
+                icon={<FolderAddOutlined />}
+                onClick={() => setIsCreateFolderForMove(true)}
+              >
+                新建收藏夹
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p>创建新收藏夹并移动：</p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  收藏夹名称
+                </label>
+                <Input
+                  placeholder="输入收藏夹名称"
+                  value={newFolderNameForMove}
+                  onChange={(e) => setNewFolderNameForMove(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  收藏夹描述（可选）
+                </label>
+                <Input.TextArea
+                  placeholder="输入收藏夹描述"
+                  rows={3}
+                  value={newFolderDescriptionForMove}
+                  onChange={(e) => setNewFolderDescriptionForMove(e.target.value)}
+                />
+              </div>
+              <div className="mt-2">
+                <Button
+                  type="text"
+                  icon={<FolderOutlined />}
+                  onClick={() => setIsCreateFolderForMove(false)}
+                >
+                  选择现有收藏夹
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
