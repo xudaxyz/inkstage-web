@@ -20,7 +20,7 @@ import { formatDateOnly, formatDateTimeShort } from '../../utils';
 import LazyImage from '../../components/common/LazyImage';
 
 // 作者信息类型定义
-interface AuthorInfo {
+interface UserInfo {
   id: number;
   nickname: string;
   avatar: string;
@@ -45,7 +45,7 @@ interface AuthorInfo {
 
 const UserProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [author, setAuthor] = useState<AuthorInfo>({
+  const [user, setUser] = useState<UserInfo>({
     id: 0,
     nickname: '',
     avatar: '',
@@ -77,34 +77,35 @@ const UserProfile: React.FC = () => {
           const userData = await getUserPublicProfile(Number(id));
 
           // 验证userData是否存在
-          if (!userData) {
-              new Error('获取用户数据失败：返回数据为空');
+          if (userData.code !== 200) {
+              message.error(userData.message || '用户不存在');
+              return;
           }
-
+          const userInfo = userData.data;
           // 转换数据格式
-          const formattedAuthor: AuthorInfo = {
-            id: userData.id || 0,
-            nickname: userData.nickname || '未知用户',
-            avatar: userData.avatar || '',
-            coverImage: userData.coverImage || '',
-            signature: userData.signature || '',
-            gender: userData.gender || GenderEnum.UNKNOWN,
-            location: userData.location || '',
-            joinTime: userData.registerTime ? formatDateOnly(userData.registerTime) : '',
-            articleCount: userData.articleCount || 0,
-            readCount: 0, // 暂时使用0，后续可以从API获取
-            likeCount: userData.likeCount || 0,
-            commentCount: userData.commentCount || 0,
-            followerCount: userData.followerCount || 0,
-            followingCount: userData.followCount || 0,
+          const formattedUser: UserInfo = {
+            id: userInfo.id || 0,
+            nickname: userInfo.nickname || '未知用户',
+            avatar: userInfo.avatar || '',
+            coverImage: userInfo.coverImage || '',
+            signature: userInfo.signature || '',
+            gender: userInfo.gender || GenderEnum.UNKNOWN,
+            location: userInfo.location || '',
+            joinTime: userInfo.registerTime ? formatDateOnly(userInfo.registerTime) : '',
+            articleCount: userInfo.articleCount || 0,
+            readCount: 0,
+            likeCount: userInfo.likeCount || 0,
+            commentCount: userInfo.commentCount || 0,
+            followerCount: userInfo.followerCount || 0,
+            followingCount: userInfo.followCount || 0,
             socialLinks: {}
           };
-          setAuthor(formattedAuthor);
+          setUser(formattedUser);
         } catch (error) {
           console.error('获取用户资料失败:', error);
           message.error('获取用户资料失败');
           // 重置为默认值，避免页面显示异常
-          setAuthor({
+          setUser({
             id: 0,
             nickname: '未知用户',
             avatar: '',
@@ -127,7 +128,7 @@ const UserProfile: React.FC = () => {
       }
     };
 
-    fetchUserProfile();
+    void fetchUserProfile();
   }, [id]);
 
   // 获取用户文章列表
@@ -150,13 +151,13 @@ const UserProfile: React.FC = () => {
       }
     };
 
-    fetchUserArticles();
+    void fetchUserArticles();
   }, [id]);
 
   // 处理关注/取消关注
   const handleFollow = (): void => {
     setIsFollowing(!isFollowing);
-    message.success(isFollowing ? '已取消关注' : '关注成功');
+    void message.success(isFollowing ? '已取消关注' : '关注成功');
   };
 
   return (
@@ -177,7 +178,7 @@ const UserProfile: React.FC = () => {
               <div
                 className="h-80 w-full bg-linear-to-r from-blue-500 to-purple-600"
                 style={{
-                  backgroundImage: author.coverImage ? `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url(${author.coverImage})` : 'linear-gradient(to right, #3b82f6, #8b5cf6)',
+                  backgroundImage: user.coverImage ? `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url(${user.coverImage})` : 'linear-gradient(to right, #3b82f6, #8b5cf6)',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   transition: 'background-position 0.5s ease'
@@ -206,10 +207,10 @@ const UserProfile: React.FC = () => {
                   <div className="shrink-0">
                     <Avatar
                       size={140}
-                      src={author.avatar}
+                      src={user.avatar}
                       className="border-4 border-white shadow-xl transform transition-transform duration-300 hover:scale-105"
                     >
-                      {author.nickname?.charAt(0) || 'U'}
+                      {user.nickname?.charAt(0) || 'U'}
                     </Avatar>
                   </div>
 
@@ -217,12 +218,12 @@ const UserProfile: React.FC = () => {
                   <div className="text-white flex-1">
                     {/* 第一行：用户名和性别 */}
                     <div className="flex items-center gap-3 mb-3">
-                      <h2 className="text-3xl font-bold tracking-tight">{author.nickname}</h2>
+                      <h2 className="text-3xl font-bold tracking-tight">{user.nickname}</h2>
                       <span className="text-sm px-3 py-1 bg-white/20 rounded-full backdrop-blur-sm">
-                        {author?.gender === GenderEnum.MALE && (
+                        {user?.gender === GenderEnum.MALE && (
                           <span><ManOutlined/></span>
                         )}
-                        {author?.gender === GenderEnum.FEMALE && (
+                        {user?.gender === GenderEnum.FEMALE && (
                           <span><WomanOutlined/></span>
                         )}
                       </span>
@@ -230,14 +231,14 @@ const UserProfile: React.FC = () => {
 
                     {/* 第二行：个人简介 */}
                     <div className="mb-4 max-w-[600px]">
-                      {author.signature ? (
+                      {user.signature ? (
                         <>
                           <p
                             className={`text-gray-200 text-lg leading-relaxed transition-all duration-300 ${showFullSignature ? 'line-clamp-none' : 'line-clamp-1'}`}
                           >
-                            {author.signature}
+                            {user.signature}
                           </p>
-                          {author.signature.length > 50 && (
+                          {user.signature.length > 50 && (
                             <button
                               onClick={() => setShowFullSignature(!showFullSignature)}
                               className="text-blue-400 text-sm mt-1 hover:text-blue-300 transition-colors"
@@ -256,25 +257,25 @@ const UserProfile: React.FC = () => {
                     {/* 第三行：加入时间 */}
                     <div className="flex items-center gap-2 mb-6 text-sm text-gray-200">
                       <CalendarOutlined size={16} />
-                      <span>加入于 {author.joinTime}</span>
+                      <span>加入于 {user.joinTime}</span>
                     </div>
 
                     {/* 第四行：统计数据 - 水平放置 */}
                     <div className="flex flex-wrap items-center gap-8">
                       <div className="flex flex-col items-center group">
-                        <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{author.articleCount}</div>
+                        <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{user.articleCount}</div>
                         <div className="text-xs text-gray-200">文章</div>
                       </div>
                       <div className="flex flex-col items-center group">
-                        <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{author.readCount}</div>
+                        <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{user.readCount}</div>
                         <div className="text-xs text-gray-200">阅读</div>
                       </div>
                       <div className="flex flex-col items-center group">
-                        <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{author.followerCount}</div>
+                        <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{user.followerCount}</div>
                         <div className="text-xs text-gray-200">粉丝</div>
                       </div>
                       <div className="flex flex-col items-center group">
-                        <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{author.followingCount}</div>
+                        <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{user.followingCount}</div>
                         <div className="text-xs text-gray-200">关注</div>
                       </div>
                     </div>

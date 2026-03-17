@@ -8,7 +8,7 @@ export interface ReadingHistory {
     summary: string;
     coverImage?: string;
     userId: number;
-    authorName: string;
+    nickname: string;
     avatar: string;
     progress: number;
     duration: number;

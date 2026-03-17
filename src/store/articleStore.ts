@@ -54,7 +54,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   fetchRelatedArticles: async (userId: number, articleId: number): Promise<void> => {
     set({ relatedArticlesLoading: true });
     try {
-      const response = await articleService.getAuthorRelatedArticles(userId, articleId);
+      const response = await articleService.getUserRelatedArticles(userId, articleId);
       if (response.code === 200 && response.data) {
         set({
           relatedArticles: response.data.map((item) => ({

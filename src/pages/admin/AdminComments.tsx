@@ -22,7 +22,7 @@ const { Title, Text } = Typography;
 interface Comment {
     id: number;
     content: string;
-    authorName: string;
+    nickname: string;
     articleTitle: string;
     status: string;
     top: CommentTopStatus;
@@ -70,7 +70,7 @@ const AdminComments: React.FC = () => {
         const commentList = response.data.record.map((comment: {
                     id: number;
                     content: string;
-                    authorName?: string;
+                    nickname?: string;
                     articleTitle?: string;
                     status: string;
                     top: CommentTopStatus;
@@ -80,7 +80,7 @@ const AdminComments: React.FC = () => {
                 }) => ({
           id: comment.id,
           content: comment.content,
-          authorName: comment.authorName || '',
+          nickname: comment.nickname || '',
           articleTitle: comment.articleTitle || '',
           status: comment.status,
           top: comment.top,
@@ -231,8 +231,8 @@ const AdminComments: React.FC = () => {
     },
     {
       title: '作者',
-      dataIndex: 'author',
-      key: 'author',
+      dataIndex: 'nickname',
+      key: 'nickname',
       width: 100
     },
     {
@@ -458,7 +458,7 @@ const AdminComments: React.FC = () => {
             </div>
             <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
               <span className="flex items-center gap-1">
-                <UserOutlined/> {currentComment.authorName}
+                <UserOutlined/> {currentComment.nickname}
               </span>
               <span className="flex items-center gap-1">
                 <MessageOutlined/> {currentComment.articleTitle}

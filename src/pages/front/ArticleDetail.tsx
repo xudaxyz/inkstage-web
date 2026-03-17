@@ -323,7 +323,7 @@ const ArticleDetail: React.FC = () => {
   };
 
   // 检查当前用户是否是文章作者
-  const isAuthor = user && user.id && article && Number(user.id) === article.userId;
+  const isArticleUser = user && user.id && article && Number(user.id) === article.userId;
 
   if (loading) {
     return (
@@ -483,9 +483,9 @@ const ArticleDetail: React.FC = () => {
                 className="flex flex-wrap items-center justify-between gap-5 mb-8 text-gray-500 pb-4 border-b border-gray-100">
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-3">
-                    <Avatar size={40} src={article.avatar || undefined} alt={article.authorName} className="border border-gray-100 shadow-sm"/>
+                    <Avatar size={40} src={article.avatar || undefined} alt={article.nickname} className="border border-gray-100 shadow-sm"/>
                     <div>
-                      <span className="font-medium text-gray-800">{article.authorName || '未知作者'}</span>
+                      <span className="font-medium text-gray-800">{article.nickname || '未知作者'}</span>
                     </div>
                   </div>
                   {article.categoryName && (
@@ -519,7 +519,7 @@ const ArticleDetail: React.FC = () => {
                     </span>
                     </div>
                 </div>
-                {isAuthor && (
+                {isArticleUser && (
                   <Dropdown
                     menu={{
                       items: [
@@ -639,8 +639,8 @@ const ArticleDetail: React.FC = () => {
               {/* 作者信息 */}
             <Card  style={{ marginBottom: '32px', background: 'white' }} className="mb-8 border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="text-center">
-                <Avatar size={88} src={article.avatar || undefined} alt={article.authorName} className="border-2 border-gray-100 shadow-md"/>
-                <h3 className="mt-4 text-lg font-semibold text-gray-800 mb-1">{article.authorName || '未知作者'}</h3>
+                <Avatar size={88} src={article.avatar || undefined} alt={article.nickname} className="border-2 border-gray-100 shadow-md"/>
+                <h3 className="mt-4 text-lg font-semibold text-gray-800 mb-1">{article.nickname || '未知作者'}</h3>
                 <div className="text-center text-sm text-gray-500">
                   <p className="mt-2">
                     {article.signature || '暂无简介'}

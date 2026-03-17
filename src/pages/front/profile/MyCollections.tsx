@@ -134,7 +134,7 @@ const MyCollections: React.FC = () => {
           summary: result.summary,
           coverImage: result.coverImage,
           userId: result.userId,
-          authorName: result.authorName,
+          nickname: result.nickname,
           avatar: result.avatar,
           categoryName: result.categoryName,
           articleStatus: result.articleStatus,
@@ -546,10 +546,10 @@ const MyCollections: React.FC = () => {
                               <div className="flex items-center">
                                 <img
                                   src={collection.avatar}
-                                  alt={collection.authorName}
+                                  alt={collection.nickname}
                                   className="w-7 h-7 rounded-full object-cover mr-2"
                                 />
-                                <span>{collection.authorName}</span>
+                                <span>{collection.nickname}</span>
                               </div>
                               <Space size={4}>
                                 <EyeOutlined/> {collection.readCount}

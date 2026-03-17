@@ -84,14 +84,14 @@ const Register: React.FC = () => {
   // 验证码成功后的注册处理
   const handleCaptchaSuccess = async (): Promise<void> => {
     if (!formData) return;
-
+    // 显示加载状态
+    const successMessage = message.loading('注册中，请稍候...', 0);
     try {
-      // 显示加载状态
-      const successMessage = message.loading('注册中，请稍候...', 0);
       const response = await register({
         account: formData.account,
         authType: registerType,
         password: formData.password || '',
+        confirmPassword: formData.confirmPassword || '',
         code: formData.code || '',
         agreeTerms: formData.agreeTerms || false
       });
@@ -131,6 +131,7 @@ const Register: React.FC = () => {
       }
       console.error('注册失败:', error);
     } finally {
+      successMessage();
       setCaptchaModalVisible(false);
       setFormData(null);
     }
@@ -371,6 +372,7 @@ const Register: React.FC = () => {
               e.preventDefault();
               // 切换注册类型
               const newRegisterType = registerType === 'password' ? 'code' : 'password';
+              console.log('newRegisterType', newRegisterType );
               setRegisterType(newRegisterType);
               // 重置相关字段
               if (newRegisterType === 'code') {

@@ -21,7 +21,7 @@ export const API_ENDPOINTS = {
       DELETE: (id: number): string => `/front/article/delete/${id}`, // 删除文章
       PERMANENT_DELETE: (id: number): string => `/front/article/permanent-delete/${id}`, // 彻底删除文章
       USER_ARTICLES: (userId: number): string => `/front/article/user/${userId}`, // 获取用户文章列表
-      AUTHOR_RELATED: '/front/article/author/related', // 获取作者相关文章
+      USER_RELATED: '/front/article/user-related', // 获取作者相关文章
       LIKE: (id: number): string => `/front/article/like/${id}`, // 点赞文章
       UNLIKE: (id: number): string => `/front/article/like/${id}`, // 取消点赞
       LIKE_STATUS: (id: number): string => `/front/article/like/${id}/status`, // 检查点赞状态
@@ -200,7 +200,7 @@ export const PUBLIC_ENDPOINTS = [
   // 这里添加用户文章列表接口的基础路径，具体ID会动态生成
   '/front/article/user/',
   // 作者相关文章接口
-  '/front/article/author/related',
+  '/front/article/user-related',
   // 文章阅读量增加接口
   '/front/article/read/'
 ];

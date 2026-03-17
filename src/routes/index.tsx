@@ -72,7 +72,7 @@ const AppRoutes = (): React.ReactNode => {
         {/* 热门排行榜路由 */}
         <Route path="/rankings" element={<Rankings />} />
         {/* 用户主页路由 */}
-        <Route path="/author/:id" element={<UserProfile />} />
+        <Route path="/user/:id" element={<UserProfile />} />
         {/* 个人中心路由 */}
         <Route path="/profile" element={<ProfileLayout />}>
           <Route index element={<Profile />} />

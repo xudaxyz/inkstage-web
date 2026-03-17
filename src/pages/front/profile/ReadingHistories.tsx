@@ -42,14 +42,14 @@ const ReadingHistories: React.FC = () => {
 
   // 初始加载和分页变化时获取数据
   useEffect(() => {
-    fetchReadingHistory();
+    void fetchReadingHistory();
   }, [fetchReadingHistory]);
 
   // 按日期分组
   const groupedHistories = useMemo(() => {
     const filteredHistories = histories.filter(history =>
       history.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      history.authorName.toLowerCase().includes(searchText.toLowerCase())
+      history.nickname.toLowerCase().includes(searchText.toLowerCase())
     );
 
     return filteredHistories.reduce((groups: Record<string, ReadingHistory[]>, history) => {
@@ -107,7 +107,7 @@ const ReadingHistories: React.FC = () => {
       if (response.code === 200) {
         message.success('已删除阅读历史');
         // 重新加载数据
-        fetchReadingHistory();
+        await fetchReadingHistory();
       } else {
         message.error(response.message || '删除阅读历史失败');
       }
@@ -213,10 +213,10 @@ const ReadingHistories: React.FC = () => {
                             <div className="flex items-center">
                               <img
                                 src={history.avatar}
-                                alt={history.authorName}
+                                alt={history.nickname}
                                 className="w-7 h-7 rounded-full object-cover mr-2"
                               />
-                              <span>{history.authorName}</span>
+                              <span>{history.nickname}</span>
                               <Divider orientation="vertical" className="bg-gray-300" style={{ height: '16px', margin: '0 12px' }} />
                             </div>
 

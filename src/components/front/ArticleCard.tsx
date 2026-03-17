@@ -9,7 +9,7 @@ interface Article {
     title: string;
     summary: string;
     coverImage?: string;
-    authorName: string;
+    nickname: string;
     userId: number;
     avatar: string;
     likeCount: number;
@@ -23,7 +23,7 @@ interface ArticleCardProps {
 }
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
-  const { title, summary, coverImage, authorName, avatar, likeCount, readCount, commentCount, publishTime } = article;
+  const { title, summary, coverImage, nickname, avatar, likeCount, readCount, commentCount, publishTime } = article;
 
   return (
     <div className="border-b border-gray-200 pt-2 pb-4 mb-4 hover:bg-gray-50 transition-colors duration-200 w-full">
@@ -49,14 +49,14 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap mt-auto">
             {/* 用户信息 */}
             <div className="flex items-center gap-2">
-              <Avatar src={avatar} alt={authorName} className="w-6 h-6"/>
+              <Avatar src={avatar} alt={nickname} className="w-6 h-6"/>
               {article.userId ? (
-                <a href={`/author/${article.userId}`}
+                <a href={`/user/${article.userId}`}
                   className="font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                  {authorName}
+                  {nickname}
                 </a>
               ) : (
-                <span className="font-medium text-gray-700">{authorName}</span>
+                <span className="font-medium text-gray-700">{nickname}</span>
               )}
             </div>
 

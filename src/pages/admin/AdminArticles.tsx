@@ -76,7 +76,7 @@ const AdminArticles: React.FC = () => {
         const articleList = response.data.record.map((article: AdminArticleList) => ({
           id: article.id,
           title: article.title,
-          authorName: article.authorName,
+          nickname: article.nickname,
           categoryName: article.categoryName,
           articleStatus: article.articleStatus,
           publishTime: article.publishTime,
@@ -165,7 +165,7 @@ const AdminArticles: React.FC = () => {
     const category = categories.find(cat => cat.label === article.categoryName);
     form.setFieldsValue({
       title: article.title,
-      author: article.authorName,
+      nickname: article.nickname,
       category: category?.value || 0,
       tags: article.tags.join(','),
       status: article.articleStatus
@@ -283,8 +283,8 @@ const AdminArticles: React.FC = () => {
     },
     {
       title: '作者',
-      dataIndex: 'authorName',
-      key: 'authorName',
+      dataIndex: 'nickname',
+      key: 'nickname',
       width: 100
     },
     {
@@ -491,7 +491,7 @@ const AdminArticles: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            name="author"
+            name="nickname"
             label="作者"
             rules={[
               { required: true, message: '请输入作者' },
@@ -557,7 +557,7 @@ const AdminArticles: React.FC = () => {
               <Title level={3}>{currentArticle.title}</Title>
               <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
                 <span className="flex items-center gap-1">
-                  <UserOutlined/> {currentArticle.authorName}
+                  <UserOutlined/> {currentArticle.nickname}
                 </span>
                 <span className="flex items-center gap-1">
                   <CalendarOutlined/> {currentArticle.publishTime}

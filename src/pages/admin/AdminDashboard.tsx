@@ -103,7 +103,7 @@ const mockHotArticles = [
   {
     key: '1',
     title: 'React最佳实践',
-    author: '张三',
+    nickname: '张三',
     views: 1234,
     comments: 56,
     date: '2026-03-01',
@@ -112,7 +112,7 @@ const mockHotArticles = [
   {
     key: '2',
     title: 'TypeScript高级特性',
-    author: '李四',
+    nickname: '李四',
     views: 987,
     comments: 45,
     date: '2026-03-02',
@@ -121,7 +121,7 @@ const mockHotArticles = [
   {
     key: '3',
     title: 'Node.js性能优化',
-    author: '王五',
+    nickname: '王五',
     views: 876,
     comments: 34,
     date: '2026-03-03',
@@ -130,7 +130,7 @@ const mockHotArticles = [
   {
     key: '4',
     title: 'Tailwind CSS使用指南',
-    author: '赵六',
+    nickname: '赵六',
     views: 765,
     comments: 23,
     date: '2026-03-04',
@@ -139,7 +139,7 @@ const mockHotArticles = [
   {
     key: '5',
     title: 'React Hooks深入理解',
-    author: '孙七',
+    nickname: '孙七',
     views: 654,
     comments: 12,
     date: '2026-03-05',
@@ -214,8 +214,8 @@ const AdminDashboard: React.FC = () => {
     },
     {
       title: '作者',
-      dataIndex: 'author',
-      key: 'author'
+      dataIndex: 'nickname',
+      key: 'nickname'
     },
     {
       title: '浏览量',

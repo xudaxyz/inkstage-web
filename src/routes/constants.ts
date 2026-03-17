@@ -21,5 +21,5 @@ export const ROUTES = {
 
   // 其他
   RANKINGS: '/rankings',
-  USER_PROFILE: (id: string): string => `/author/${id}`
+  USER_PROFILE: (id: string): string => `/user/${id}`
 };

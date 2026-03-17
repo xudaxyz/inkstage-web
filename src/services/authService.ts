@@ -10,14 +10,14 @@ import type { ApiResponse } from '../types/common';
 import { AuthOperationTypeEnum } from '../types/enums/AuthOperationTypeEnum.ts';
 
 // 参数验证函数
-const validateAccount = (account: string): boolean => {
+const validateAccount = (account: string, authType?: 'password' | 'code'): boolean => {
   if (!account || account.trim().length === 0) {
     throw new Error('账号不能为空');
   }
   // 邮箱或手机号验证
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneRegex = /^1[3-9]\d{9}$/;
-  if (!emailRegex.test(account) && !phoneRegex.test(account)) {
+  if (authType === 'code' && !emailRegex.test(account) && !phoneRegex.test(account)) {
     throw new Error('请输入有效的邮箱或手机号');
   }
   return true;
@@ -76,6 +76,7 @@ const validateLoginParams = (params: LoginParams): boolean => {
 };
 
 const validateRegisterParams = (params: RegisterParams): boolean => {
+    console.log('params', params);
   if (!params || typeof params !== 'object') {
     throw new Error('参数必须是对象');
   }

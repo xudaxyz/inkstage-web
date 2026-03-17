@@ -18,7 +18,7 @@ const Rankings: React.FC = () => {
   // 状态管理
   const [timeRange, setTimeRange] = useState<string>('week');
   const [hotArticles, setHotArticles] = useState<HotArticle[]>([]);
-  const [hotAuthors, setHotAuthors] = useState<HotUser[]>([]);
+  const [hotUsers, setHotUsers] = useState<HotUser[]>([]);
   const [latestArticles, setLatestArticles] = useState<HotArticle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +40,7 @@ const Rankings: React.FC = () => {
         ]);
         // 提取数据
         setHotArticles(hotArticlesResponse.data);
-        setHotAuthors(hotUsersResponse.data);
+        setHotUsers(hotUsersResponse.data);
         setLatestArticles(latestArticlesResponse.data);
       } catch (err) {
         console.error('加载数据失败:', err);
@@ -133,9 +133,9 @@ const Rankings: React.FC = () => {
 
                             {/* 作者信息 */}
                             <div className="flex items-center text-gray-500 text-sm mb-3 flex-wrap gap-2">
-                              <Avatar size={20} src={article.avatar} alt={article.authorName} className="mr-2" />
-                              <span className="hover:text-blue-600 transition-colors duration-200 cursor-pointer" onClick={() => navigate(`/author/${article.authorId}`)}>
-                                {article.authorName}
+                              <Avatar size={20} src={article.avatar} alt={article.nickname} className="mr-2" />
+                              <span className="hover:text-blue-600 transition-colors duration-200 cursor-pointer" onClick={() => navigate(`/user/${article.userId}`)}>
+                                {article.nickname}
                               </span>
                               <Tag  color="blue" className="whitespace-nowrap">
                                 {article.categoryName}
@@ -192,10 +192,10 @@ const Rankings: React.FC = () => {
                 >
                   <List
                     itemLayout="horizontal"
-                    dataSource={hotAuthors}
-                    renderItem={(author, index) => (
+                    dataSource={hotUsers}
+                    renderItem={(user, index) => (
                       <List.Item
-                        key={author.id}
+                        key={user.id}
                         className={`py-3 border-b border-gray-100 last:border-b-0 ${index < 3 ? 'bg-blue-50 rounded-lg' : ''} hover:bg-gray-50 transition-colors duration-200`}
                       >
                         <div className="flex items-center w-full gap-3">
@@ -205,20 +205,20 @@ const Rankings: React.FC = () => {
                           </span>
 
                           {/* 头像 */}
-                          <Avatar size={40} src={author.avatar} alt={author.nickname} className="mr-3 hover:scale-105 transition-transform duration-200" />
+                          <Avatar size={40} src={user.avatar} alt={user.nickname} className="mr-3 hover:scale-105 transition-transform duration-200" />
 
                           {/* 用户信息 */}
                           <div className="flex-1 min-w-0">
                             {/* 姓名 */}
-                            <span className="text-gray-800 hover:text-blue-600 font-medium text-sm mb-1 block transition-colors duration-200 cursor-pointer" onClick={() => navigate(`/author/${author.id}`)}>
-                              {author.nickname}
+                            <span className="text-gray-800 hover:text-blue-600 font-medium text-sm mb-1 block transition-colors duration-200 cursor-pointer" onClick={() => navigate(`/user/${user.id}`)}>
+                              {user.nickname}
                             </span>
 
                             {/* 统计数据 */}
                             <div className="flex items-center text-gray-500 text-xs gap-2 sm:gap-3 flex-wrap">
-                              <span>{author.followerCount} 粉丝</span>
-                              <span>{author.articleCount} 文章</span>
-                              <span>{author.likeCount} 获赞</span>
+                              <span>{user.followerCount} 粉丝</span>
+                              <span>{user.articleCount} 文章</span>
+                              <span>{user.likeCount} 获赞</span>
                             </div>
                           </div>
                         </div>
@@ -259,9 +259,9 @@ const Rankings: React.FC = () => {
 
                             {/* 作者信息 */}
                             <div className="flex items-center text-gray-500 text-xs mb-1">
-                              <Avatar size={16} src={article.avatar} alt={article.authorName} className="mr-1" />
-                              <span className="hover:text-blue-600 transition-colors duration-200 cursor-pointer" onClick={() => navigate(`/author/${article.authorId}`)}>
-                                {article.authorName}
+                              <Avatar size={16} src={article.avatar} alt={article.nickname} className="mr-1" />
+                              <span className="hover:text-blue-600 transition-colors duration-200 cursor-pointer" onClick={() => navigate(`/user/${article.userId}`)}>
+                                {article.nickname}
                               </span>
                             </div>
 

@@ -186,7 +186,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   {'A'}
                 </Avatar>
                 <span className="text-sm text-gray-400 font-medium">
-                  {user.name || '管理员'}
+                  {user.nickname || '管理员'}
                 </span>
               </div>
             </Dropdown>

@@ -160,13 +160,13 @@ const articleService = {
   },
 
   // 获取作者相关文章
-  getAuthorRelatedArticles: async (userId: number, excludeArticleId: number, limit: number = 3): Promise<ApiResponse<IndexArticleList[]>> => {
+  getUserRelatedArticles: async (userId: number, excludeArticleId: number, limit: number = 3): Promise<ApiResponse<IndexArticleList[]>> => {
     validateIdParam(userId);
     validateIdParam(excludeArticleId);
     if (limit < 1 || limit > 10) {
       throw new Error('limit必须是1-10之间的数字');
     }
-    return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.AUTHOR_RELATED, { params: { userId, excludeArticleId, limit } });
+    return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.USER_RELATED, { params: { userId, excludeArticleId, limit } });
   },
 
   // 点赞文章

@@ -44,7 +44,7 @@ export interface IndexArticleList {
     summary: string;
     coverImage: string;
     avatar: string;
-    authorName: string;
+    nickname: string;
     userId: number;
     readCount: number;
     likeCount: number;
@@ -76,7 +76,7 @@ export interface MyArticleCollectionList {
     summary: string;
     coverImage: string;
     userId: number;
-    authorName: string;
+    nickname: string;
     avatar: string; // 作者头像
     categoryName: string;
     articleStatus: ArticleStatusEnum;
@@ -129,7 +129,7 @@ export interface ArticleDetailInfo {
     isLiked: boolean;
     isCollected: boolean;
     userId: number;
-    authorName: string;
+    nickname: string;
     avatar: string;
     signature: string;
     gender: GenderEnum;
@@ -144,7 +144,7 @@ export interface ArticleDetailInfo {
 export interface AdminArticleList {
     id: number;
     title: string;
-    authorName: string;
+    nickname: string;
     categoryName: string;
     articleStatus: ArticleStatusEnum;
     publishTime: string;
@@ -161,8 +161,8 @@ export interface AdminArticleList {
 export interface HotArticle {
   id: number;
   title: string;
-  authorName: string;
-  authorId: number;
+  nickname: string;
+  userId: number;
   avatar: string;
   readCount: number;
   likeCount: number;

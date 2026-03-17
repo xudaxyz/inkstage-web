@@ -25,7 +25,7 @@ const validateAdminUserQuery = (params: AdminUserQuery): void => {
 };
 
 // 获取用户公开资料
-export const getUserPublicProfile = async (userId: number): Promise<UserInfo> => {
+export const getUserPublicProfile = async (userId: number): Promise<ApiResponse<UserInfo>> => {
   validateIdParam(userId);
   return await apiClient.get(API_ENDPOINTS.FRONT.USER.PUBLIC_PROFILE(userId));
 };
