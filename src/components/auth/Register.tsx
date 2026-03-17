@@ -201,10 +201,10 @@ const Register: React.FC = () => {
             {
               validator: (_, value): Promise<void> => {
                 if (!value) return Promise.resolve();
-                // 简单的邮箱或手机号验证
+                // 邮箱或手机号验证
                 const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
                 const isPhone = /^1[3-9]\d{9}$/.test(value);
-                const isUsername = /^[a-zA-Z0-9_]{3,50}$/.test(value);
+                const isUsername = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,16}$/.test(value);
 
                 if (isEmail || isPhone || isUsername) {
                   return Promise.resolve();
