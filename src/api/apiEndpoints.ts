@@ -46,7 +46,10 @@ export const API_ENDPOINTS = {
       PROFILE: '/front/user/profile', // 获取/更新用户资料
       PUBLIC_PROFILE: (userId: number): string => `/front/user/profile/${userId}`, // 获取用户公开资料
       UPDATE_USERNAME: '/front/user/username', // 修改用户名
-      USERNAME_MODIFICATION_TIME_LEFT: '/front/user/username/modification-time-left' // 获取修改用户名的剩余时间
+      USERNAME_MODIFICATION_TIME_LEFT: '/front/user/username/modification-time-left', // 获取修改用户名的剩余时间
+      FOLLOW: (userId: number): string => `/front/user/follow/${userId}`, // 关注用户
+      UNFOLLOW: (userId: number): string => `/front/user/unfollow/${userId}`, // 取消关注用户
+      FOLLOW_STATUS: (userId: number): string => `/front/user/follow/status/${userId}` // 检查关注状态
     },
 
     // 标签相关

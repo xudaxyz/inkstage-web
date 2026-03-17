@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Avatar, Button, message, Dropdown, Spin } from 'antd';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Avatar, Button, message, Dropdown, Spin, Empty } from 'antd';
 import {
-  UserOutlined,
   CalendarOutlined,
   HeartOutlined,
   MessageOutlined,
@@ -14,10 +13,11 @@ import Header from '../../components/common/Header.tsx';
 import Footer from '../../components/common/Footer.tsx';
 import type { IndexArticleList } from '../../types/article';
 import articleService from '../../services/articleService.ts';
-import { getUserPublicProfile } from '../../services/userService.ts';
+import { getUserPublicProfile, followUser, unfollowUser } from '../../services/userService.ts';
 import { GenderEnum } from '../../types/enums';
 import { formatDateOnly, formatDateTimeShort } from '../../utils';
 import LazyImage from '../../components/common/LazyImage';
+import { useUserStore } from '../../store';
 
 // 作者信息类型定义
 interface UserInfo {
@@ -30,7 +30,6 @@ interface UserInfo {
   location: string;
   joinTime: string;
   articleCount: number;
-  readCount: number;
   likeCount: number;
   commentCount: number;
   followerCount: number;
@@ -44,7 +43,9 @@ interface UserInfo {
 }
 
 const UserProfile: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, nickname: paramNickname } = useParams<{ id: string; nickname: string }>();
+  const navigate = useNavigate();
+  const { user: currentUser, isLoggedIn } = useUserStore();
   const [user, setUser] = useState<UserInfo>({
     id: 0,
     nickname: '',
@@ -55,7 +56,6 @@ const UserProfile: React.FC = () => {
     location: '',
     joinTime: '',
     articleCount: 0,
-    readCount: 0,
     likeCount: 0,
     commentCount: 0,
     followerCount: 0,
@@ -67,6 +67,7 @@ const UserProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [articlesLoading, setArticlesLoading] = useState(true);
   const [showFullSignature, setShowFullSignature] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   // 获取作者信息
   useEffect(() => {
@@ -93,7 +94,6 @@ const UserProfile: React.FC = () => {
             location: userInfo.location || '',
             joinTime: userInfo.registerTime ? formatDateOnly(userInfo.registerTime) : '',
             articleCount: userInfo.articleCount || 0,
-            readCount: 0,
             likeCount: userInfo.likeCount || 0,
             commentCount: userInfo.commentCount || 0,
             followerCount: userInfo.followerCount || 0,
@@ -101,6 +101,13 @@ const UserProfile: React.FC = () => {
             socialLinks: {}
           };
           setUser(formattedUser);
+
+          // 更新页面标题
+          document.title = `${formattedUser.nickname} - 个人主页`;
+
+          if (!paramNickname) {
+            navigate(`/user/${formattedUser.id}/${formattedUser.nickname}`, { replace: true });
+          }
         } catch (error) {
           console.error('获取用户资料失败:', error);
           message.error('获取用户资料失败');
@@ -115,13 +122,13 @@ const UserProfile: React.FC = () => {
             location: '',
             joinTime: '',
             articleCount: 0,
-            readCount: 0,
             likeCount: 0,
             commentCount: 0,
             followerCount: 0,
             followingCount: 0,
             socialLinks: {}
           });
+          document.title = '用户不存在 - 个人主页';
         } finally {
           setLoading(false);
         }
@@ -129,7 +136,7 @@ const UserProfile: React.FC = () => {
     };
 
     void fetchUserProfile();
-  }, [id]);
+  }, [id, navigate, paramNickname]);
 
   // 获取用户文章列表
   useEffect(() => {
@@ -155,9 +162,44 @@ const UserProfile: React.FC = () => {
   }, [id]);
 
   // 处理关注/取消关注
-  const handleFollow = (): void => {
-    setIsFollowing(!isFollowing);
-    void message.success(isFollowing ? '已取消关注' : '关注成功');
+  const handleFollow = async (): Promise<void> => {
+    if (!isLoggedIn) {
+      message.error('请先登录');
+      return;
+    }
+
+    if (currentUser?.id === user.id) {
+      message.error('不能关注自己');
+      return;
+    }
+
+    try {
+      setFollowLoading(true);
+      if (isFollowing) {
+        // 取消关注
+        const response = await unfollowUser(user.id);
+        if (response.code === 200) {
+          setIsFollowing(false);
+          message.success('已取消关注');
+        } else {
+          message.error(response.message || '取消关注失败');
+        }
+      } else {
+        // 关注
+        const response = await followUser(user.id);
+        if (response.code === 200) {
+          setIsFollowing(true);
+          message.success('关注成功');
+        } else {
+          message.error(response.message || '关注失败');
+        }
+      }
+    } catch (error) {
+      console.error('关注操作失败:', error);
+      message.error('操作失败，请稍后重试');
+    } finally {
+      setFollowLoading(false);
+    }
   };
 
   return (
@@ -195,6 +237,7 @@ const UserProfile: React.FC = () => {
                   <Button
                     type={isFollowing ? 'default' : 'primary'}
                     onClick={handleFollow}
+                    loading={followLoading}
                     className={`h-14 px-12 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${isFollowing ? 'bg-white/90 text-gray-800 hover:bg-white shadow-lg' : 'bg-white text-blue-600 hover:bg-blue-50 shadow-lg'}`}
                   >
                     {isFollowing ? '已关注' : '关注'}
@@ -221,10 +264,10 @@ const UserProfile: React.FC = () => {
                       <h2 className="text-3xl font-bold tracking-tight">{user.nickname}</h2>
                       <span className="text-sm px-3 py-1 bg-white/20 rounded-full backdrop-blur-sm">
                         {user?.gender === GenderEnum.MALE && (
-                          <span><ManOutlined/></span>
+                          <span style={{ color: '#1890ff' }}><ManOutlined/></span>
                         )}
                         {user?.gender === GenderEnum.FEMALE && (
-                          <span><WomanOutlined/></span>
+                          <span style={{ color: '#ff4d4f' }}><WomanOutlined/></span>
                         )}
                       </span>
                     </div>
@@ -264,19 +307,15 @@ const UserProfile: React.FC = () => {
                     <div className="flex flex-wrap items-center gap-8">
                       <div className="flex flex-col items-center group">
                         <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{user.articleCount}</div>
-                        <div className="text-xs text-gray-200">文章</div>
-                      </div>
-                      <div className="flex flex-col items-center group">
-                        <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{user.readCount}</div>
-                        <div className="text-xs text-gray-200">阅读</div>
+                        <div className="text-xs text-gray-200">文章数</div>
                       </div>
                       <div className="flex flex-col items-center group">
                         <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{user.followerCount}</div>
-                        <div className="text-xs text-gray-200">粉丝</div>
+                        <div className="text-xs text-gray-200">粉丝数</div>
                       </div>
                       <div className="flex flex-col items-center group">
                         <div className="font-semibold text-2xl mb-1 group-hover:text-blue-300 transition-colors">{user.followingCount}</div>
-                        <div className="text-xs text-gray-200">关注</div>
+                        <div className="text-xs text-gray-200">关注数</div>
                       </div>
                     </div>
                   </div>
@@ -386,8 +425,10 @@ const UserProfile: React.FC = () => {
                     {/* 空状态 */}
                     {articles.length === 0 && (
                       <div className="py-16 text-center">
-                        <UserOutlined size={48} className="text-gray-300 mb-4" />
-                        <p className="text-gray-500">暂无文章</p>
+                          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                 description="暂无文章"
+                                 className="py-8"
+                          />
                       </div>
                     )}
                   </>

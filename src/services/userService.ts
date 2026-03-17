@@ -30,6 +30,24 @@ export const getUserPublicProfile = async (userId: number): Promise<ApiResponse<
   return await apiClient.get(API_ENDPOINTS.FRONT.USER.PUBLIC_PROFILE(userId));
 };
 
+// 关注用户
+export const followUser = async (userId: number): Promise<ApiResponse<boolean>> => {
+  validateIdParam(userId);
+  return await apiClient.post(API_ENDPOINTS.FRONT.USER.FOLLOW(userId));
+};
+
+// 取消关注用户
+export const unfollowUser = async (userId: number): Promise<ApiResponse<boolean>> => {
+  validateIdParam(userId);
+  return await apiClient.post(API_ENDPOINTS.FRONT.USER.UNFOLLOW(userId));
+};
+
+// 检查关注状态
+export const checkFollowStatus = async (userId: number): Promise<ApiResponse<boolean>> => {
+  validateIdParam(userId);
+  return await apiClient.get(API_ENDPOINTS.FRONT.USER.FOLLOW_STATUS(userId));
+};
+
 // 获取当前用户资料
 export const getCurrentUserProfile = async (): Promise<UserInfo> => {
   return await apiClient.get(API_ENDPOINTS.FRONT.USER.PROFILE);
