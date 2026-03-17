@@ -15,11 +15,12 @@ import categoryService from '../../services/categoryService';
 import { type AdminArticleList } from '../../types/article';
 import { type AdminCategory } from '../../types/category';
 import {
-  AllowStatusEnum, ArticleOriginalEnum,
-  ArticleStatusEnum,
-  ArticleStatusMap,
-  ArticleVisibleEnum
+    AllowStatusEnum, ArticleOriginalEnum, type ArticleReviewStatusEnum, ArticleReviewStatusMap,
+    ArticleStatusEnum,
+    ArticleStatusMap,
+    ArticleVisibleEnum
 } from '../../types/enums';
+import { formatDateTime, formatDateTimeShort } from '../../utils';
 
 const { Option } = Select;
 const { Search } = Input;
@@ -53,7 +54,7 @@ const AdminArticles: React.FC = () => {
   const [categories, setCategories] = useState<Array<{value: number; label: string}>>([]);
 
   // 获取文章列表
-  const fetchArticles = useCallback(async (page = pagination.current, pageSize = pagination.pageSize) : Promise<void> => {
+  const fetchArticles = useCallback(async (page = 1, pageSize = 10) : Promise<void> => {
     console.log('fetchArticles called with selectedCategory:', selectedCategory);
     setLoading(true);
     try {
@@ -84,7 +85,7 @@ const AdminArticles: React.FC = () => {
           likeCount: article.likeCount,
           commentCount: article.commentCount,
           top: article.top,
-          tags: article.tags || [],
+          reviewStatus: article.reviewStatus,
           createTime: article.createTime,
           updateTime: article.updateTime
         }));
@@ -103,7 +104,7 @@ const AdminArticles: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchText, selectedCategory, selectedStatus, pagination]);
+  }, [searchText, selectedCategory, selectedStatus]);
 
   // 搜索和筛选文章
   const handleSearch = (value: string) : void => {
@@ -167,7 +168,7 @@ const AdminArticles: React.FC = () => {
       title: article.title,
       nickname: article.nickname,
       category: category?.value || 0,
-      tags: article.tags.join(','),
+      reviewStatus: article.reviewStatus,
       status: article.articleStatus
     });
     setIsModalVisible(true);
@@ -221,7 +222,7 @@ const AdminArticles: React.FC = () => {
             title: values.title,
             content: '', // 这里需要从后端获取完整内容，暂时为空
             categoryId: Number(values.category),
-            tagIds: [], // 这里需要从后端获取完整标签，暂时为空
+            tags: values.tags,
             status: values.status as ArticleStatusEnum,
             visible: ArticleVisibleEnum.PUBLIC,
             allowComment: AllowStatusEnum.ALLOWED,
@@ -308,7 +309,10 @@ const AdminArticles: React.FC = () => {
       title: '发布时间',
       dataIndex: 'publishTime',
       key: 'publishTime',
-      width: 180
+      width: 180,
+        render: (publishTime: string) : React.ReactNode => (
+            formatDateTime(publishTime)
+        )
     },
     {
       title: '阅读量',
@@ -340,14 +344,12 @@ const AdminArticles: React.FC = () => {
       )
     },
     {
-      title: '标签',
-      dataIndex: 'tags',
-      key: 'tags',
-      render: (tags: string[]) : React.ReactNode => (
+      title: '审核状态',
+      dataIndex: 'reviewStatus',
+      key: 'reviewStatus',
+      render: (reviewStatus: ArticleReviewStatusEnum) : React.ReactNode => (
         <Space size="small">
-          {tags.map((tag, index) => (
-            <Tag key={index}>{tag}</Tag>
-          ))}
+            {ArticleReviewStatusMap[reviewStatus]}
         </Space>
       )
     },
@@ -456,7 +458,7 @@ const AdminArticles: React.FC = () => {
                 current: page,
                 pageSize: pageSize
               }));
-              fetchArticles(page, pageSize);
+              void fetchArticles(page, pageSize);
             }
           }}
         />
@@ -560,7 +562,7 @@ const AdminArticles: React.FC = () => {
                   <UserOutlined/> {currentArticle.nickname}
                 </span>
                 <span className="flex items-center gap-1">
-                  <CalendarOutlined/> {currentArticle.publishTime}
+                  <CalendarOutlined/> {currentArticle.publishTime ? formatDateTimeShort(currentArticle.publishTime) : ''}
                 </span>
                 <span className="flex items-center gap-1">
                   <EyeOutlined/> {currentArticle.readCount} 浏览
@@ -584,14 +586,6 @@ const AdminArticles: React.FC = () => {
             <div className="border-t pt-4">
               <h4 className="font-medium mb-2">分类</h4>
               <Tag>{currentArticle.categoryName}</Tag>
-            </div>
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">标签</h4>
-              <Space size="small">
-                {currentArticle.tags.map((tag, index) => (
-                  <Tag key={index}>{tag}</Tag>
-                ))}
-              </Space>
             </div>
             <div className="border-t pt-4">
               <h4 className="font-medium mb-2">内容</h4>

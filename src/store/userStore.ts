@@ -209,7 +209,6 @@ export const useUserStore = create<UserState>()(
       register: async (params: { account: string; authType: 'password' | 'code'; password?: string; confirmPassword?: string; code?: string; agreeTerms: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; username: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }; }; }> => {
         set({ isLoading: true });
         try {
-            console.log("register param:", params);
           const response = await authService.register(params);
           return handleAuthResponse(get, response);
         } finally {

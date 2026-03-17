@@ -9,13 +9,13 @@ import {
   InboxOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import articleService from '../../services/articleService.ts';
-import tagService from '../../services/tagService.ts';
+import articleService from '../../services/articleService';
+import tagService from '../../services/tagService';
 import { type FrontTag } from '../../types/tag';
-import categoryService from '../../services/categoryService.ts';
+import categoryService from '../../services/categoryService';
 import { useUserStore } from '../../store';
-import { ArticleStatusEnum, ArticleReviewStatusEnum, ArticleOriginalEnum, ArticleVisibleEnum, AllowStatusEnum } from '../../types/enums';
-import RichTextEditor from '../../components/editor/RichTextEditor.tsx';
+import { ArticleStatusEnum, ArticleReviewStatusEnum, ArticleOriginalEnum, ArticleVisibleEnum, AllowStatusEnum, StatusEnum } from '../../types/enums';
+import RichTextEditor from '../../components/editor/RichTextEditor';
 import './CreateArticle.css';
 
 const { Option } = Select;
@@ -24,7 +24,7 @@ const { Dragger } = Upload;
 
 const CreateArticle: React.FC = () => {
   const [form] = Form.useForm();
-  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [, setSelectedTags] = useState<number[]>([]);
   const [availableTags, setAvailableTags] = useState<{ value: string, label: string }[]>([]);
   const [coverImage, setCoverImage] = useState<string>('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -68,7 +68,7 @@ const CreateArticle: React.FC = () => {
 
         // 转换标签数据格式
         const formattedTags = tagRes.data.map((tag) => ({
-          value: tag.id.toString(),
+          value: tag.id?.toString() || '',
           label: tag.name
         }));
 
@@ -98,7 +98,7 @@ const CreateArticle: React.FC = () => {
           form.setFieldsValue({
             title: article.title,
             category: article.categoryId.toString(),
-            tags: article.tags.map((tag: FrontTag) => tag.id.toString()),
+            tags: article.tags.map((tag: FrontTag) => tag.id?.toString()),
             allowComment: article.allowComment,
             allowForward: article.allowForward,
             original: article.original,
@@ -138,14 +138,16 @@ const CreateArticle: React.FC = () => {
 
   // 处理标签选择
   const handleTagChange = (values: string[]): void => {
-    setSelectedTags(values.map(v => parseInt(v)));
+    // 分离已存在的标签ID和新输入的标签名称
+    const existingTags = values.filter(v => !isNaN(Number(v))).map(v => parseInt(v));
+    setSelectedTags(existingTags);
   };
 
   // 处理表单提交
   const handleSubmit = async (values: {
         title: string;
         category: string;
-        tagIds: number[];
+        tags: string[];
         visible: string;
         allowComment: string
         allowForward: string
@@ -153,13 +155,44 @@ const CreateArticle: React.FC = () => {
     }): Promise<void> => {
     setIsSubmitting(true);
     try {
+      // 构建标签数组
+      const tags: FrontTag[] = [];
+
+      // 处理已存在的标签和新标签
+      for (const tagValue of values.tags) {
+        if (!isNaN(Number(tagValue))) {
+          // 已存在的标签，只包含id和name
+          const tagId = parseInt(tagValue);
+          const tag = availableTags.find(t => t.value === tagValue);
+          if (tag) {
+            tags.push({
+              id: tagId,
+              name: tag.label,
+              slug: '',
+              description: '',
+              status: StatusEnum.ENABLED
+            });
+          }
+        } else {
+          // 新标签，只包含name
+          tags.push({
+            id: 0, // 0表示新标签
+            name: tagValue,
+            slug: '',
+            description: '',
+            status: StatusEnum.ENABLED
+          });
+        }
+      }
+
+      // 准备文章数据，包含所有标签信息
       const articleData = {
         title: values.title,
         content: editorContent,
         contentHtml: editorContent,
         summary: summary,
         categoryId: parseInt(values.category),
-        tagIds: selectedTags,
+        tags: tags,
         coverImage: serverCoverImageUrl || coverImage,
         status: ArticleStatusEnum.PUBLISHED,
         reviewStatus: ArticleReviewStatusEnum.PENDING,
@@ -170,10 +203,10 @@ const CreateArticle: React.FC = () => {
       };
 
       let result;
+
       if (isEditMode && articleId) {
         result = await articleService.updateArticle(Number(articleId), articleData);
       } else {
-        console.log('articleData', articleData);
         result = await articleService.createArticle(articleData);
       }
 
@@ -184,7 +217,8 @@ const CreateArticle: React.FC = () => {
         // 操作成功后导航到我的创作页面
         navigate('/profile/creations');
       }
-    } catch {
+    } catch (error) {
+      console.error('提交文章失败:', error);
       message.error(isEditMode ? '更新失败，请重试' : '发布失败，请重试');
     } finally {
       setIsSubmitting(false);
@@ -196,6 +230,7 @@ const CreateArticle: React.FC = () => {
     setIsSubmitting(true);
     try {
       const values = await form.validateFields();
+
       const articleData = {
         id: Number(articleId),
         title: values.title || '未命名文章',
@@ -203,7 +238,7 @@ const CreateArticle: React.FC = () => {
         contentHtml: editorContent,
         summary: summary,
         categoryId: parseInt(values.category || '0'), // 默认分类
-        tagIds: selectedTags,
+        tags: [], // 草稿文章不保存标签
         coverImage: serverCoverImageUrl || coverImage,
         status: ArticleStatusEnum.DRAFT,
         reviewStatus: undefined,
@@ -215,7 +250,8 @@ const CreateArticle: React.FC = () => {
 
       await articleService.saveDraft(articleData);
       message.success('草稿保存成功！');
-    } catch {
+    } catch (error) {
+      console.error('保存草稿失败:', error);
       message.error('保存失败，请重试');
     } finally {
       setIsSubmitting(false);
@@ -351,9 +387,7 @@ const CreateArticle: React.FC = () => {
                 >
                   <Select placeholder="请选择分类" className="w-full" loading={loading}>
                     {categories.map(category => (
-                      <Option key={category.value} value={category.value}>
-                        {category.label}
-                      </Option>
+                      <Option key={category.value} value={category.value}>{category.label}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -365,17 +399,16 @@ const CreateArticle: React.FC = () => {
                 <div>
                   <Form.Item name="tags" noStyle>
                     <Select
-                      mode="multiple"
-                      placeholder="请选择标签"
+                      mode="tags"
+                      placeholder="请选择标签，或输入新标签名称"
                       style={{ width: '100%' }}
                       onChange={handleTagChange}
                       maxTagCount={5}
                       loading={loading}
+                      tokenSeparators={[',', ' ']}
                     >
                       {availableTags.map(tag => (
-                        <Option key={tag.value} value={tag.value}>
-                          {tag.label}
-                        </Option>
+                        <Option key={tag.value} value={tag.value}>{tag.label}</Option>
                       ))}
                     </Select>
                   </Form.Item>

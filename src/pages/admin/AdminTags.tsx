@@ -51,7 +51,7 @@ const AdminTags: React.FC = () => {
   const loadTags = async (pageNum: number = 1, pageSize: number = 10, keyword: string = ''): Promise<void> => {
     setLoading(true);
     try {
-      const response = await tagService.adminGetTagsByPage(keyword, pageNum, pageSize);
+      const response = await tagService.admin.getTagsByPage(keyword, pageNum, pageSize);
       if (response.code === 200 && response.data) {
         const formattedTags = response.data.record.map((tag: AdminTag) => ({
           ...tag,
@@ -115,7 +115,7 @@ const AdminTags: React.FC = () => {
   // 删除标签
   const handleDeleteTag = async (id: number): Promise<void> => {
     try {
-      await tagService.adminDeleteTag(id);
+      await tagService.admin.deleteTag(id);
       message.success('标签删除成功');
       await loadTags(pagination.current, pagination.pageSize);
     } catch (error) {
@@ -135,7 +135,7 @@ const AdminTags: React.FC = () => {
       setFilteredTags(updatedTags);
 
       // 然后调用 API 更新后端数据
-      await tagService.adminUpdateTagStatus(id, status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED);
+      await tagService.admin.updateTagStatus(id, status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED);
       message.success(`标签已${status === StatusEnum.ENABLED ? '禁用' : '启用'}`);
 
     } catch (error) {
@@ -152,7 +152,7 @@ const AdminTags: React.FC = () => {
       try {
         if (isEditing && currentTag) {
           // 编辑现有标签
-          await tagService.adminUpdateTag(currentTag.id, {
+          await tagService.admin.updateTag(currentTag.id, {
             name: values.name,
             slug: values.slug,
             description: values.description,
@@ -161,7 +161,7 @@ const AdminTags: React.FC = () => {
           message.success('标签更新成功');
         } else {
           // 添加新标签
-          await tagService.adminAddTag({
+          await tagService.admin.addTag({
             name: values.name,
             slug: values.slug,
             description: values.description,

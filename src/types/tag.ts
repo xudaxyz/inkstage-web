@@ -19,6 +19,7 @@ export interface AdminTag {
     slug: string;
     description: string;
     articleCount: number;
+    userId: number;
     usageCount: number;
     status: StatusEnum;
     createTime?: string;
@@ -26,7 +27,7 @@ export interface AdminTag {
 }
 
 // 标签创建/更新参数
-export type TagCreateUpdateParams = Omit<AdminTag, 'id' | 'articleCount' | 'usageCount' | 'createTime' | 'updateTime'>;
+export type TagCreateUpdateParams = Omit<AdminTag, 'id' | 'articleCount' | 'usageCount' | 'userId' | 'createTime' | 'updateTime'>;
 
 // 标签分页响应
 export type TagPageResponse = ApiPageResponse<AdminTag>;

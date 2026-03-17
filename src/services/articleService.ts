@@ -320,21 +320,29 @@ const articleService = {
   },
 
   // 管理员相关方法
-  admin: {
-    // 分页获取文章列表
-    getArticlesByPage: async (params: {
-            page?: number;
-            pageSize?: number;
-            keyword?: string;
-            categoryId?: number;
-            articleStatus?: ArticleStatusEnum | '';
-        } = {}): Promise<ApiResponse<AdminArticleListResponse>> => {
-      validatePageParams(params);
-      if (params.categoryId) {
-        validateIdParam(params.categoryId);
-      }
-      return await apiClient.get(API_ENDPOINTS.ADMIN.ARTICLE.LIST_PAGE, { params });
-    },
+    admin: {
+      // 分页获取文章列表
+      getArticlesByPage: async (params: {
+              page?: number;
+              pageSize?: number;
+              keyword?: string;
+              categoryId?: number;
+              articleStatus?: ArticleStatusEnum | null;
+          } = {}): Promise<ApiResponse<AdminArticleListResponse>> => {
+        validatePageParams(params);
+        if (params.categoryId) {
+          validateIdParam(params.categoryId);
+        }
+        const requestBody = {
+          pageNum: params.page || 1,
+          pageSize: params.pageSize || 10,
+          keyword: params.keyword || '',
+          categoryId: params.categoryId || 0,
+          articleStatus: params.articleStatus || null
+        };
+        console.log(requestBody);
+        return await apiClient.post(API_ENDPOINTS.ADMIN.ARTICLE.LIST_PAGE, requestBody);
+      },
 
     // 获取文章详情
     getArticleById: async (id: number): Promise<ApiResponse<Article>> => {

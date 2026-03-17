@@ -17,7 +17,7 @@ export interface Article {
     summary: string;
     contentHtml: string;
     categoryId: number;
-    tagIds: number[];
+    tags?: FrontTag[];
     coverImage?: string;
     status: ArticleStatusEnum;
     reviewStatus?: ArticleReviewStatusEnum;
@@ -152,7 +152,7 @@ export interface AdminArticleList {
     likeCount: number;
     commentCount: number;
     top: string;
-    tags: string[];
+    reviewStatus: ArticleReviewStatusEnum;
     createTime: string;
     updateTime: string;
 }

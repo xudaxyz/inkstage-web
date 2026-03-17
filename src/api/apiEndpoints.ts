@@ -136,7 +136,7 @@ export const API_ENDPOINTS = {
 
     // 文章管理
     ARTICLE: {
-      LIST_PAGE: '/admin/article/page', // 分页获取文章
+      LIST_PAGE: '/admin/article/list', // 分页获取文章
       GET: (id: number): string => `/admin/article/${id}`, // 获取文章详情
       DELETE: (id: number): string => `/admin/article/${id}`, // 删除文章
       UPDATE_STATUS: (id: number): string => `/admin/article/${id}/status` // 更新文章状态
@@ -161,7 +161,7 @@ export const API_ENDPOINTS = {
 
     // 分类管理
     CATEGORY: {
-      LIST: '/admin/category/all', // 分页获取分类
+      LIST: '/admin/category/list', // 分页获取分类
       CREATE: '/admin/category', // 添加分类
       UPDATE: (id: number): string => `/admin/category/${id}`, // 更新分类
       DELETE: (id: number): string => `/admin/category/${id}`, // 删除分类
