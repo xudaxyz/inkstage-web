@@ -7,6 +7,8 @@ import websocketService from './services/websocketService';
 import { useEffect } from 'react';
 // 导入用户状态管理
 import { useUserStore } from './store';
+// 导入全局通知组件
+import Notification from './components/common/Notification';
 
 import type { ReactNode } from 'react';
 
@@ -40,6 +42,7 @@ function App (): ReactNode {
 
   return (
     <Router>
+      <Notification />
       <AppRoutes />
     </Router>
   );

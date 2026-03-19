@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Button, Input, Form, message, Checkbox } from 'antd';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
-import { useUserStore } from '../../store';
+import { useAuth } from '../../hooks/useAuth';
 
 // 登录表单数据类型
 interface LoginFormData {
@@ -19,8 +19,7 @@ interface LoginFormData {
 }
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
-  const { login, isLoading, sendCode } = useUserStore();
+  const { handleLogin, isLoading, sendCode } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState<'password' | 'code'>('code');
   const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
@@ -28,7 +27,7 @@ const Login: React.FC = () => {
   const [form] = Form.useForm<LoginFormData>();
 
   // 表单提交处理
-  const handleLogin = (values: LoginFormData) : void => {
+  const handleFormSubmit = (values: LoginFormData) : void => {
     // 保存表单数据，弹出验证码模态框
     setFormData(values);
     setCaptchaModalVisible(true);
@@ -39,7 +38,7 @@ const Login: React.FC = () => {
     if (!formData) return;
 
     try {
-      const response = await login({
+      const response = await handleLogin({
         account: formData.account,
         authType: loginType,
         password: formData.password || '',
@@ -47,29 +46,8 @@ const Login: React.FC = () => {
         remember: formData.remember || false
       });
 
-      if (response.code === 200) {
-        // 关闭加载状态，显示成功提示
-        message.success({
-          content: response.message || '登录成功，欢迎回来！',
-          duration: 3,
-          className: 'text-lg font-medium'
-        });
-        // 检查是否有登录后重定向的页面
-        const redirectUrl = localStorage.getItem('redirect_after_login');
-        if (redirectUrl) {
-          // 延迟跳转，让用户看到成功提示
-          setTimeout(() => {
-            localStorage.removeItem('redirect_after_login');
-            window.location.href = redirectUrl;
-          }, 1000);
-        } else {
-          // 延迟跳转，让用户看到成功提示
-          setTimeout(() => {
-            navigate('/');
-          }, 1000);
-        }
-      } else {
-        message.error(response.message || '登录失败，请稍后重试！');
+      if (response.code !== 200) {
+          message.error(response.message || '登录失败，请稍后重试！');
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -135,7 +113,7 @@ const Login: React.FC = () => {
       {/* 登录表单 */}
       <Form
         form={form}
-        onFinish={handleLogin}
+        onFinish={handleFormSubmit}
         layout="vertical"
         className="w-full"
       >

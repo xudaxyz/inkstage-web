@@ -1,21 +1,31 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Table, Input, Button, Space, Tag, Modal, Form, Select, message, Typography, Popconfirm } from 'antd';
+import { Card, Table, Input, Button, Space, Tag, Modal, Form, Select, message, Typography, Popconfirm, Tabs, Descriptions, Badge, Divider } from 'antd';
 import {
   SearchOutlined,
   DeleteOutlined,
   EyeOutlined,
   EditOutlined,
   CalendarOutlined,
-  EyeInvisibleOutlined,
+  CommentOutlined,
   TagOutlined,
-  UserOutlined
+  UserOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ReloadOutlined,
+  StarOutlined,
+  PushpinOutlined,
+  PushpinFilled,
+  GlobalOutlined,
+  LockOutlined,
+  LinkOutlined,
+  FileSearchOutlined
 } from '@ant-design/icons';
 import articleService from '../../services/articleService';
 import categoryService from '../../services/categoryService';
-import { type AdminArticleList } from '../../types/article';
+import { type AdminArticleList, type AdminArticleDetail } from '../../types/article';
 import { type AdminCategory } from '../../types/category';
 import {
-    AllowStatusEnum, ArticleOriginalEnum, type ArticleReviewStatusEnum, ArticleReviewStatusMap,
+    AllowStatusEnum, ArticleOriginalEnum, ArticleReviewStatusEnum, ArticleReviewStatusMap,
     ArticleStatusEnum,
     ArticleStatusMap,
     ArticleVisibleEnum
@@ -25,7 +35,7 @@ import { formatDateTime, formatDateTimeShort } from '../../utils';
 const { Option } = Select;
 const { Search } = Input;
 const { Title, Text } = Typography;
-
+const { TabPane } = Tabs;
 
 // 状态选项
 const statusOptions = Object.entries(ArticleStatusMap).map(([value, label]) => ({
@@ -33,7 +43,24 @@ const statusOptions = Object.entries(ArticleStatusMap).map(([value, label]) => (
   label
 }));
 
+// 可见性选项
+const visibleOptions = [
+  { value: ArticleVisibleEnum.PUBLIC, label: '公开' },
+  { value: ArticleVisibleEnum.PRIVATE, label: '私有' },
+  { value: ArticleVisibleEnum.FOLLOWERS_ONLY, label: '仅关注者可见' }
+];
 
+// 允许状态选项
+const allowOptions = [
+  { value: AllowStatusEnum.ALLOWED, label: '允许' },
+  { value: AllowStatusEnum.PROHIBITED, label: '不允许' }
+];
+
+// 原创状态选项
+const originalOptions = [
+  { value: ArticleOriginalEnum.ORIGINAL, label: '原创' },
+  { value: ArticleOriginalEnum.REPRINT, label: '转载' }
+];
 
 const AdminArticles: React.FC = () => {
   const [articles, setArticles] = useState<AdminArticleList[]>([]);
@@ -43,15 +70,17 @@ const AdminArticles: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
-  const [currentArticle, setCurrentArticle] = useState<AdminArticleList | null>(null);
+  const [currentArticle, setCurrentArticle] = useState<AdminArticleDetail | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
+  const [reviewForm] = Form.useForm();
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0
   });
   const [categories, setCategories] = useState<Array<{value: number; label: string}>>([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   // 获取文章列表
   const fetchArticles = useCallback(async (page = 1, pageSize = 10) : Promise<void> => {
@@ -161,7 +190,7 @@ const AdminArticles: React.FC = () => {
   // 打开编辑文章模态框
   const handleEditArticle = (article: AdminArticleList) : void => {
     setIsEditing(true);
-    setCurrentArticle(article);
+    setCurrentArticle(article as unknown as AdminArticleDetail);
     // 查找分类ID
     const category = categories.find(cat => cat.label === article.categoryName);
     form.setFieldsValue({
@@ -177,15 +206,9 @@ const AdminArticles: React.FC = () => {
   // 打开查看文章模态框
   const handleViewArticle = async (article: AdminArticleList) : Promise<void> => {
     try {
-      const response = await articleService.getArticleDetail(article.id);
+      const response = await articleService.admin.getArticleById(article.id);
       if (response.code === 200 && response.data) {
-        // 合并文章详情数据
-        const detailedArticle = {
-          ...article,
-          content: response.data.content,
-          summary: response.data.summary
-        };
-        setCurrentArticle(detailedArticle);
+        setCurrentArticle(response.data);
         setIsViewModalVisible(true);
       } else {
         message.error('获取文章详情失败');
@@ -220,7 +243,7 @@ const AdminArticles: React.FC = () => {
           // 编辑现有文章
           const response = await articleService.updateArticle(currentArticle.id, {
             title: values.title,
-            content: '', // 这里需要从后端获取完整内容，暂时为空
+            content: currentArticle.content,
             categoryId: Number(values.category),
             tags: values.tags,
             status: values.status as ArticleStatusEnum,
@@ -250,6 +273,42 @@ const AdminArticles: React.FC = () => {
     });
   };
 
+  // 审核文章
+  const handleReviewArticle = async (action: 'approve' | 'reject' | 'reprocess') : Promise<void> => {
+    if (!currentArticle) return;
+
+    setReviewLoading(true);
+    try {
+      let response;
+      if (action === 'approve') {
+        response = await articleService.admin.approveArticle(currentArticle.id);
+      } else if (action === 'reject') {
+        const values = await reviewForm.validateFields();
+        response = await articleService.admin.rejectArticle(currentArticle.id, values.rejectReason);
+      } else {
+        response = await articleService.admin.reprocessArticle(currentArticle.id);
+      }
+
+      if (response.code === 200 && response.data) {
+        message.success(action === 'approve' ? '审核通过' : action === 'reject' ? '审核拒绝' : '重新审核');
+        // 重新获取文章详情
+        const detailResponse = await articleService.admin.getArticleById(currentArticle.id);
+        if (detailResponse.code === 200 && detailResponse.data) {
+          setCurrentArticle(detailResponse.data);
+        }
+        // 刷新文章列表
+        await fetchArticles();
+      } else {
+        message.error('审核操作失败');
+      }
+    } catch (error) {
+      console.error('审核操作失败:', error);
+      message.error('审核操作失败');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
   // 获取状态标签颜色
   const getStatusColor = (status: string) : string | undefined => {
     switch (status) {
@@ -263,6 +322,22 @@ const AdminArticles: React.FC = () => {
         return 'gray';
       case ArticleStatusEnum.RECYCLE:
         return 'red';
+      default:
+        return 'default';
+    }
+  };
+
+  // 获取审核状态标签颜色
+  const getReviewStatusColor = (status: ArticleReviewStatusEnum) : string | undefined => {
+    switch (status) {
+      case ArticleReviewStatusEnum.PENDING:
+        return 'blue';
+      case 'APPROVED':
+        return 'green';
+      case 'REJECTED':
+        return 'red';
+      case 'APPEALING':
+        return 'orange';
       default:
         return 'default';
     }
@@ -348,9 +423,9 @@ const AdminArticles: React.FC = () => {
       dataIndex: 'reviewStatus',
       key: 'reviewStatus',
       render: (reviewStatus: ArticleReviewStatusEnum) : React.ReactNode => (
-        <Space size="small">
-            {ArticleReviewStatusMap[reviewStatus]}
-        </Space>
+        <Tag color={getReviewStatusColor(reviewStatus)}>
+          {ArticleReviewStatusMap[reviewStatus]}
+        </Tag>
       )
     },
     {
@@ -546,7 +621,7 @@ const AdminArticles: React.FC = () => {
         title="文章详情"
         open={isViewModalVisible}
         onCancel={() => setIsViewModalVisible(false)}
-        width={800}
+        width={1000}
         footer={[
           <Button key="close" onClick={() => setIsViewModalVisible(false)}>
                         关闭
@@ -555,6 +630,7 @@ const AdminArticles: React.FC = () => {
       >
         {currentArticle && (
           <div className="space-y-6">
+            {/* 文章标题和基本信息 */}
             <div>
               <Title level={3}>{currentArticle.title}</Title>
               <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
@@ -568,31 +644,238 @@ const AdminArticles: React.FC = () => {
                   <EyeOutlined/> {currentArticle.readCount} 浏览
                 </span>
                 <span className="flex items-center gap-1">
-                  <EyeInvisibleOutlined/> {currentArticle.commentCount} 评论
+                  <CommentOutlined /> {currentArticle.commentCount} 评论
                 </span>
                 <span className="flex items-center gap-1">
-                  <span>点赞: {currentArticle.likeCount}</span>
+                  <StarOutlined/> {currentArticle.likeCount} 点赞
                 </span>
                 <span className="flex items-center gap-1">
-                  <Tag color={currentArticle.top === 'TOP' ? 'red' : 'default'}>
-                    {currentArticle.top === 'TOP' ? '置顶' : '普通'}
-                  </Tag>
+                  <span>收藏: {currentArticle.collectionCount}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <span>分享: {currentArticle.shareCount}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  {currentArticle.top === 'TOP' ? <PushpinFilled className="text-red-500" /> : <PushpinOutlined className="text-gray-400" />}
+                  {currentArticle.top === 'TOP' ? '置顶' : '普通'}
                 </span>
                 <Tag color={getStatusColor(currentArticle.articleStatus)}>
                   {ArticleStatusMap[currentArticle.articleStatus as keyof typeof ArticleStatusMap] || currentArticle.articleStatus}
                 </Tag>
+                <Tag color={getReviewStatusColor(currentArticle.reviewStatus || 'PENDING')}>
+                  {ArticleReviewStatusMap[currentArticle.reviewStatus]}
+                </Tag>
               </div>
             </div>
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">分类</h4>
-              <Tag>{currentArticle.categoryName}</Tag>
-            </div>
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">内容</h4>
-              <Text className="text-gray-600 whitespace-pre-wrap">
-                {currentArticle.title || '文章内容预览...'}
-              </Text>
-            </div>
+
+            <Tabs defaultActiveKey="basic" className="mt-4">
+              {/* 基本信息 */}
+              <TabPane tab="基本信息" key="basic">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* 左侧信息 */}
+                  <div className="space-y-4">
+                    {/* 分类和标签 */}
+                    <Card size="small" title="分类和标签">
+                      <div className="space-y-2">
+                        <div>
+                          <span className="font-medium">分类: </span>
+                          <Tag>{currentArticle.categoryName}</Tag>
+                        </div>
+                        <div>
+                          <span className="font-medium">标签: </span>
+                          <Space wrap>
+                            {currentArticle.tags?.map(tag => (
+                              <Tag key={tag.id}>{tag.name}</Tag>
+                            )) || <Text className="font-light pl-1" style={{ fontSize: '12px' }} type="warning">暂无标签</Text>}
+                          </Space>
+                        </div>
+                      </div>
+                    </Card>
+
+                    {/* 状态信息 */}
+                    <Card size="small" title="状态信息">
+                      <Descriptions size="small" column={1}>
+                        <Descriptions.Item label="文章状态">
+                          <Tag color={getStatusColor(currentArticle.articleStatus)}>
+                            {ArticleStatusMap[currentArticle.articleStatus as keyof typeof ArticleStatusMap] || currentArticle.articleStatus}
+                          </Tag>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="审核状态">
+                          <Tag color={getReviewStatusColor(currentArticle.reviewStatus || 'PENDING')}>
+                            {ArticleReviewStatusMap[currentArticle.reviewStatus || 'PENDING']}
+                          </Tag>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="可见性">
+                          <span className="flex items-center gap-1">
+                            {currentArticle.visible === ArticleVisibleEnum.PUBLIC && <GlobalOutlined />}
+                            {currentArticle.visible === ArticleVisibleEnum.PRIVATE && <LockOutlined />}
+                            {currentArticle.visible === ArticleVisibleEnum.FOLLOWERS_ONLY && <UserOutlined />}
+                            {visibleOptions.find(opt => opt.value === currentArticle.visible)?.label}
+                          </span>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="原创状态">
+                          <span>
+                            {originalOptions.find(opt => opt.value === currentArticle.original)?.label}
+                            {currentArticle.original === ArticleOriginalEnum.REPRINT && currentArticle.originalUrl && (
+                              <a href={currentArticle.originalUrl} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-500 hover:underline">
+                                <LinkOutlined /> 来源链接
+                              </a>
+                            )}
+                          </span>
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Card>
+
+                    {/* 权限设置 */}
+                    <Card size="small" title="权限设置">
+                      <Descriptions size="small" column={1}>
+                        <Descriptions.Item label="允许评论">
+                          <Badge status={currentArticle.allowComment === AllowStatusEnum.ALLOWED ? 'success' : 'default'} text={allowOptions.find(opt => opt.value === currentArticle.allowComment)?.label} />
+                        </Descriptions.Item>
+                        <Descriptions.Item label="允许转发">
+                          <Badge status={currentArticle.allowForward === AllowStatusEnum.ALLOWED ? 'success' : 'default'} text={allowOptions.find(opt => opt.value === currentArticle.allowForward)?.label} />
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Card>
+                  </div>
+
+                  {/* 右侧信息 */}
+                  <div className="space-y-4">
+                    {/* 时间信息 */}
+                    <Card size="small" title="时间信息">
+                      <Descriptions size="small" column={1}>
+                        <Descriptions.Item label="创建时间">
+                          {currentArticle.createTime ? formatDateTime(currentArticle.createTime) : '未知'}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="发布时间">
+                          {currentArticle.publishTime ? formatDateTime(currentArticle.publishTime) : '未发布'}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="最后编辑时间">
+                          {currentArticle.lastEditTime ? formatDateTime(currentArticle.lastEditTime) : '无'}
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Card>
+
+                    {/* SEO信息 */}
+                    <Card size="small" title="SEO信息">
+                      <div className="space-y-2">
+                        <div>
+                          <span className="font-medium">SEO标题: </span>
+                          <Text ellipsis={{ tooltip: currentArticle.metaTitle }}>{currentArticle.metaTitle || '未设置'}</Text>
+                        </div>
+                        <div>
+                          <span className="font-medium">SEO描述: </span>
+                          <Text ellipsis={{ tooltip: currentArticle.metaDescription }}>{currentArticle.metaDescription || '未设置'}</Text>
+                        </div>
+                        <div>
+                          <span className="font-medium">SEO关键词: </span>
+                          <Text ellipsis={{ tooltip: currentArticle.metaKeywords }}>{currentArticle.metaKeywords || '未设置'}</Text>
+                        </div>
+                      </div>
+                    </Card>
+
+                    {/* 统计信息 */}
+                    <Card size="small" title="统计信息">
+                      <Descriptions size="small" column={2}>
+                        <Descriptions.Item label="阅读量">{currentArticle.readCount}</Descriptions.Item>
+                        <Descriptions.Item label="点赞数">{currentArticle.likeCount}</Descriptions.Item>
+                        <Descriptions.Item label="评论数">{currentArticle.commentCount}</Descriptions.Item>
+                        <Descriptions.Item label="收藏数">{currentArticle.collectionCount}</Descriptions.Item>
+                        <Descriptions.Item label="分享数">{currentArticle.shareCount}</Descriptions.Item>
+                      </Descriptions>
+                    </Card>
+                  </div>
+                </div>
+              </TabPane>
+
+              {/* 文章内容 */}
+              <TabPane tab="文章内容" key="content">
+                <Card>
+                  {currentArticle.coverImage && (
+                    <div className="mb-4">
+                      <img src={currentArticle.coverImage} alt="封面图" className="w-full h-auto max-h-64 object-cover rounded" />
+                    </div>
+                  )}
+                  <div className="mb-4">
+                    <h4 className="font-medium mb-2">摘要</h4>
+                    <Text className="text-gray-600">{currentArticle.summary || '无摘要'}</Text>
+                  </div>
+                  <Divider />
+                  <div>
+                    <h4 className="font-medium mb-2">正文</h4>
+                    <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentArticle.contentHtml || currentArticle.content || '<p>无内容</p>' }} />
+                  </div>
+                </Card>
+              </TabPane>
+
+              {/* 审核操作 */}
+              <TabPane tab="审核操作" key="review">
+                <Card>
+                  <div className="mb-6">
+                    <h4 className="font-medium mb-4">当前审核状态</h4>
+                    <div className="flex items-center gap-2">
+                      <Tag color={getReviewStatusColor(currentArticle.reviewStatus)} className="text-lg">
+                        {ArticleReviewStatusMap[currentArticle.reviewStatus]}
+                      </Tag>
+                    </div>
+                  </div>
+
+                  <Divider />
+
+                  <div className="mb-6">
+                    <h4 className="font-medium mb-4">审核操作</h4>
+                    <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
+                      <Button
+                        type='primary'
+                        icon={<CheckCircleOutlined />}
+                        onClick={() => handleReviewArticle('approve')}
+                        loading={reviewLoading}
+                        disabled={currentArticle.reviewStatus === 'APPROVED'}
+                      >
+                        审核通过
+                      </Button>
+
+                      <Form form={reviewForm} layout="vertical">
+                        <Form.Item
+                          name="rejectReason"
+                          label="拒绝原因"
+                          rules={[{ required: true, message: '请输入拒绝原因' }]}
+                        >
+                          <Input.TextArea rows={3} placeholder="请输入拒绝原因" />
+                        </Form.Item>
+                        <Button danger
+                          icon={<CloseCircleOutlined />}
+                          onClick={() => handleReviewArticle('reject')}
+                          loading={reviewLoading}
+                          disabled={currentArticle.reviewStatus === 'REJECTED'}
+                        >
+                          审核拒绝
+                        </Button>
+                      </Form>
+
+                      <Button
+                        icon={<ReloadOutlined />}
+                        onClick={() => handleReviewArticle('reprocess')}
+                        loading={reviewLoading}
+                        disabled={currentArticle.reviewStatus === 'PENDING'}
+                      >
+                        重新审核
+                      </Button>
+                    </Space>
+                  </div>
+
+                  <Divider />
+
+                  <div>
+                    <h4 className="font-medium mb-4">审核记录</h4>
+                    <div className="text-gray-500 text-center py-8">
+                      <FileSearchOutlined style={{ fontSize: '24px' }} />
+                      <p className="mt-2">暂无审核记录</p>
+                    </div>
+                  </div>
+                </Card>
+              </TabPane>
+            </Tabs>
           </div>
         )}
       </Modal>

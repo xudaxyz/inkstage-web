@@ -1,12 +1,12 @@
 import type { FrontTag } from './tag.ts';
 import {
-  ArticleStatusEnum,
-  ArticleReviewStatusEnum,
-  ArticleOriginalEnum,
-  ArticleVisibleEnum,
-  AllowStatusEnum,
-  GenderEnum,
-  ArticleCollectionStatusEnum
+    ArticleStatusEnum,
+    ArticleReviewStatusEnum,
+    ArticleOriginalEnum,
+    ArticleVisibleEnum,
+    AllowStatusEnum,
+    GenderEnum,
+    ArticleCollectionStatusEnum, type AllowTopEnum
 } from './enums';
 
 // 文章类型定义
@@ -106,7 +106,7 @@ export interface LatestArticle {
     publishTime: string;
 }
 
-// 文章详情类型
+// 前台文章详情类型
 export interface ArticleDetailInfo {
     id: number;
     title: string;
@@ -140,6 +140,23 @@ export interface ArticleDetailInfo {
     tags: FrontTag[]
 }
 
+
+// 热门文章类型
+export interface HotArticle {
+    id: number;
+    title: string;
+    nickname: string;
+    userId: number;
+    avatar: string;
+    readCount: number;
+    likeCount: number;
+    commentCount: number;
+    publishTime: string;
+    categoryName: string;
+    summary: string;
+    coverImage?: string;
+}
+
 // 后台文章类型定义
 export interface AdminArticleList {
     id: number;
@@ -157,18 +174,40 @@ export interface AdminArticleList {
     updateTime: string;
 }
 
-// 热门文章类型
-export interface HotArticle {
-  id: number;
-  title: string;
-  nickname: string;
-  userId: number;
-  avatar: string;
-  readCount: number;
-  likeCount: number;
-  commentCount: number;
-  publishTime: string;
-  categoryName: string;
-  summary: string;
-  coverImage?: string;
+// 后台文章详情类型
+export interface AdminArticleDetail {
+    id: number;
+    title: string;
+    summary: string;
+    content: string;
+    contentHtml: string;
+    coverImage: string;
+    articleStatus: ArticleStatusEnum;
+    reviewStatus: ArticleReviewStatusEnum;
+    allowComment: AllowStatusEnum;
+    allowForward: AllowStatusEnum;
+    top: AllowTopEnum;
+    visible: ArticleVisibleEnum;
+    original: ArticleOriginalEnum;
+    originalUrl: string;
+    createTime: string;
+    publishTime: string;
+    lastEditTime: string;
+    readCount: number;
+    likeCount: number;
+    commentCount: number;
+    collectionCount: number;
+    shareCount: number;
+    metaTitle: string;
+    metaDescription: string;
+    metaKeywords: string;
+    // 用户
+    userId: number;
+    nickname: string;
+    // 分类
+    categoryId: number;
+    categoryName: string;
+    // 标签
+    tags: FrontTag[]
 }
+

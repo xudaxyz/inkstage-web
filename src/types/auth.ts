@@ -1,4 +1,4 @@
-import { GenderEnum } from './enums';
+import { GenderEnum, UserRoleEnum } from './enums';
 
 // 验证码请求参数
 export interface SendCodeParams {
@@ -48,7 +48,7 @@ export interface UserInfo {
     gender: GenderEnum | undefined,
     birthDate: string,
     location: string,
-    role?: string;
+    role?: UserRoleEnum;
 }
 
 // 文件上传参数

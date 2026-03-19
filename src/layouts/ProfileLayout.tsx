@@ -1,25 +1,12 @@
-import React, { useEffect } from 'react';
-import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation, Outlet } from 'react-router-dom';
 import { UserOutlined, FileTextOutlined, StarOutlined, HistoryOutlined, BellOutlined, SettingOutlined } from '@ant-design/icons';
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
-import { useUserStore } from '../store';
 
 const ProfileLayout: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isLoggedIn } = useUserStore();
   const currentPath = location.pathname;
-
-  // 检查用户登录状态
-  useEffect(() => {
-    if (!isLoggedIn) {
-      // 保存当前路径，登录后可以重定向回来
-      localStorage.setItem('redirect_after_login', currentPath);
-      // 跳转到登录页
-      navigate('/login');
-    }
-  }, [isLoggedIn, navigate, currentPath]);
 
   // 个人中心菜单项
   const menuItems = [

@@ -116,9 +116,9 @@ export const API_ENDPOINTS = {
 
     // 认证相关
     AUTH: {
-      SEND_CODE: '/front/auth/send-code', // 发送验证码
-      REGISTER: '/front/auth/register', // 用户注册
-      LOGIN: '/front/auth/login' // 用户登录
+      SEND_CODE: '/auth/send-code', // 发送验证码
+      REGISTER: '/auth/register', // 用户注册
+      LOGIN: '/auth/login' // 用户登录
     }
   },
 
@@ -126,8 +126,9 @@ export const API_ENDPOINTS = {
   ADMIN: {
     // 用户管理
     USER: {
-      LIST: '/admin/user/all', // 分页获取用户
+      LIST: '/admin/user/list', // 分页获取用户
       DETAIL: (id: number): string => `/admin/user/${id}`, // 获取用户详情
+      PROFILE: '/admin/user/profile', // 获取当前管理员个人资料
       DELETE: (id: number): string => `/admin/user/${id}`, // 删除用户
       UPDATE: (id: number): string => `/admin/user/${id}`, // 更新用户
       UPDATE_STATUS: (id: number): string => `/admin/user/update-status/${id}`, // 更新用户状态
@@ -137,9 +138,12 @@ export const API_ENDPOINTS = {
     // 文章管理
     ARTICLE: {
       LIST_PAGE: '/admin/article/list', // 分页获取文章
-      GET: (id: number): string => `/admin/article/${id}`, // 获取文章详情
+      GET: (id: number): string => `/admin/article/detail/${id}`, // 获取文章详情
       DELETE: (id: number): string => `/admin/article/${id}`, // 删除文章
-      UPDATE_STATUS: (id: number): string => `/admin/article/${id}/status` // 更新文章状态
+      UPDATE_STATUS: (id: number): string => `/admin/article/${id}/status`, // 更新文章状态
+      APPROVE: (id: number): string => `/admin/article/approve/${id}`, // 审核通过文章
+      REJECT: (id: number): string => `/admin/article/reject/${id}`, // 审核拒绝文章
+      REPROCESS: (id: number): string => `/admin/article/reprocess/${id}` // 重新审核文章
     },
 
     // 评论管理
@@ -173,8 +177,8 @@ export const API_ENDPOINTS = {
   COMMON: {
     // 认证相关
     AUTH: {
-      TOKEN: '/front/auth/refresh-token', // 刷新令牌
-      REFRESH_TOKEN: '/front/auth/refresh-token' // 刷新令牌
+      TOKEN: '/auth/refresh-token', // 刷新令牌
+      REFRESH_TOKEN: '/auth/refresh-token' // 刷新令牌
     },
 
     // 文件上传相关
@@ -189,23 +193,47 @@ export const API_ENDPOINTS = {
 
 // 公开端点列表（不需要身份认证的端点）
 export const PUBLIC_ENDPOINTS = [
-  API_ENDPOINTS.FRONT.INDEX.INDEX,
+  // 首页相关
   API_ENDPOINTS.FRONT.INDEX.LIST,
   API_ENDPOINTS.FRONT.INDEX.BANNER,
   API_ENDPOINTS.FRONT.INDEX.LATEST_ARTICLES,
   API_ENDPOINTS.FRONT.INDEX.HOT_ARTICLES,
   API_ENDPOINTS.FRONT.INDEX.HOT_USERS,
-  API_ENDPOINTS.FRONT.TAG.ACTIVE,
-  API_ENDPOINTS.FRONT.CATEGORY.ACTIVE,
-  API_ENDPOINTS.FRONT.COMMENT.LIST,
-  // 这里添加用户公开资料接口的基础路径，具体ID会动态生成
-  '/front/user/profile/',
-  // 这里添加用户文章列表接口的基础路径，具体ID会动态生成
-  '/front/article/user/',
-  // 作者相关文章接口
-  '/front/article/user-related',
-  // 文章阅读量增加接口
-  '/front/article/read/'
+
+  // 文章相关
+  '/front/article/', // 文章详情
+  '/article/', // 文章详情
+  API_ENDPOINTS.FRONT.ARTICLE.USER_RELATED, // 作者相关文章
+  API_ENDPOINTS.FRONT.ARTICLE.INCREMENT_READ, // 文章阅读量增加
+
+  // 用户相关
+  '/front/user/profile/', // 用户公开资料
+
+  // 标签相关
+  API_ENDPOINTS.FRONT.TAG.ACTIVE, // 激活状态的标签
+  API_ENDPOINTS.FRONT.TAG.ALL, // 所有标签
+
+  // 分类相关
+  API_ENDPOINTS.FRONT.CATEGORY.ACTIVE, // 激活状态的分类
+  API_ENDPOINTS.FRONT.CATEGORY.ALL, // 所有分类
+
+  // 评论相关
+  API_ENDPOINTS.FRONT.COMMENT.LIST, // 评论列表
+
+  // 搜索相关
+  API_ENDPOINTS.FRONT.SEARCH.ARTICLES, // 搜索文章
+  API_ENDPOINTS.FRONT.SEARCH.HOT_WORDS, // 热门搜索词
+
+  // 认证相关
+  API_ENDPOINTS.FRONT.AUTH.SEND_CODE, // 发送验证码
+  API_ENDPOINTS.FRONT.AUTH.REGISTER, // 用户注册
+  API_ENDPOINTS.FRONT.AUTH.LOGIN, // 用户登录
+
+  // 公共接口
+  API_ENDPOINTS.COMMON.AUTH.TOKEN, // 刷新令牌
+  API_ENDPOINTS.COMMON.UPLOAD.COVER, // 上传用户封面图
+  API_ENDPOINTS.COMMON.UPLOAD.AVATAR, // 上传用户头像
+  API_ENDPOINTS.COMMON.UPLOAD.ARTICLE_COVER_IMG // 上传文章封面图
 ];
 
 // API端点类型定义

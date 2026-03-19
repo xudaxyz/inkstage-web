@@ -42,6 +42,12 @@ export const AllowStatusEnum = {
   PROHIBITED: 'PROHIBITED'
 } as const;
 
+// 是否置顶
+export const AllowTopEnum = {
+    TOP: 'TOP',
+    NOT_TOP: 'NOT_TOP'
+} as const;
+
 // 导出类型
 export type ArticleStatusEnum = typeof ArticleStatusEnum[keyof typeof ArticleStatusEnum];
 export type ArticleReviewStatusEnum = typeof ArticleReviewStatusEnum[keyof typeof ArticleReviewStatusEnum];
@@ -49,6 +55,7 @@ export type ArticleOriginalEnum = typeof ArticleOriginalEnum[keyof typeof Articl
 export type ArticleVisibleEnum = typeof ArticleVisibleEnum[keyof typeof ArticleVisibleEnum];
 export type ArticleCollectionStatusEnum = typeof ArticleCollectionStatusEnum[keyof typeof ArticleCollectionStatusEnum];
 export type AllowStatusEnum = typeof AllowStatusEnum[keyof typeof AllowStatusEnum];
+export type AllowTopEnum = typeof AllowTopEnum[keyof typeof AllowTopEnum];
 
 // 枚举映射（用于UI显示）
 export const ArticleStatusMap = {
@@ -80,6 +87,11 @@ export const ArticleCollectionStatusMap = {
 export const AllowStatusMap = {
   [AllowStatusEnum.ALLOWED]: '允许',
   [AllowStatusEnum.PROHIBITED]: '禁止'
+};
+
+export const ArticleTopMap = {
+    [AllowTopEnum.TOP]: '置顶',
+    [AllowTopEnum.NOT_TOP]: '不置顶'
 };
 
 export const ArticleReviewStatusMap = {

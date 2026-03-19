@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import { useUserStore } from '../store';
 import { PUBLIC_ENDPOINTS } from '../api';
-import { ROUTES } from '../constants/routes';
+import { ROUTES, isAdminPage } from '../constants/navigation';
 
 /**
  * 错误类型定义
@@ -146,7 +146,12 @@ export class ErrorHandler {
    */
   private shouldRedirectToLogin (url: string ): boolean {
     // 检查是否是公开端点
-    return !PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint));
+    return !PUBLIC_ENDPOINTS.some(endpoint => {
+      if (typeof endpoint === 'string') {
+        return url.includes(endpoint);
+      }
+      return false;
+    });
   }
 
   /**
@@ -166,7 +171,7 @@ export class ErrorHandler {
     // 延迟跳转到登录页
     setTimeout(() => {
       const currentPath = window.location.pathname;
-      window.location.href = currentPath.startsWith('/admin') ? ROUTES.ADMIN_LOGIN : ROUTES.LOGIN;
+      window.location.href = isAdminPage(currentPath) ? ROUTES.ADMIN_LOGIN : ROUTES.LOGIN;
     }, delay);
   }
 

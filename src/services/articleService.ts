@@ -1,14 +1,15 @@
 import { apiClient,  API_ENDPOINTS } from '../api';
 import type { ApiResponse, ApiPageResponse } from '../types/common.ts';
 import type {
-  Article,
-  IndexArticleList,
-  MyArticleList,
-  MyArticleCollectionList,
-  BannerArticle,
-  LatestArticle,
-  ArticleDetailInfo,
-  AdminArticleList
+    Article,
+    IndexArticleList,
+    MyArticleList,
+    MyArticleCollectionList,
+    BannerArticle,
+    LatestArticle,
+    ArticleDetailInfo,
+    AdminArticleList,
+    AdminArticleDetail
 } from '../types/article.ts';
 import {
   ArticleStatusEnum,
@@ -345,7 +346,7 @@ const articleService = {
       },
 
     // 获取文章详情
-    getArticleById: async (id: number): Promise<ApiResponse<Article>> => {
+    getArticleById: async (id: number): Promise<ApiResponse<AdminArticleDetail>> => {
       validateIdParam(id);
       return await apiClient.get(API_ENDPOINTS.ADMIN.ARTICLE.GET(id));
     },
@@ -363,6 +364,27 @@ const articleService = {
         throw new Error('状态必须是大于等于0的数字');
       }
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.UPDATE_STATUS(id), { status });
+    },
+
+    // 审核通过文章
+    approveArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.APPROVE(id));
+    },
+
+    // 审核拒绝文章
+    rejectArticle: async (id: number, reason: string): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      if (!reason || reason.trim().length === 0) {
+        throw new Error('拒绝原因不能为空');
+      }
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.REJECT(id), { reason });
+    },
+
+    // 重新审核文章
+    reprocessArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.REPROCESS(id));
     }
   }
 };

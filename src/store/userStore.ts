@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import authService from '../services/authService';
+import { ROUTES } from '../constants/routes';
 import type { UserInfo as AuthUserInfo, TokenResponse } from '../types/auth';
 import type { ApiResponse } from '../types/common';
-import type { GenderEnum } from '../types/enums';
+import { GenderEnum, UserRoleEnum } from '../types/enums';
 
 // 用户状态接口
 export interface UserState {
@@ -19,7 +20,7 @@ export interface UserState {
         gender?: GenderEnum;
         birthDate?: string;
         location?: string;
-        role?: string;
+        role?: UserRoleEnum;
     };
     isLoggedIn: boolean;
     isLoading: boolean;
@@ -38,7 +39,7 @@ export interface UserState {
         gender?: GenderEnum;
         birthDate?: string;
         location?: string;
-        role?: string;
+        role?: UserRoleEnum;
     };
     isAdminLoggedIn: boolean;
     adminAccessTokenExpiresAt: number | null;
@@ -56,7 +57,7 @@ export interface UserState {
         gender?: GenderEnum;
         birthDate?: string;
         location?: string;
-        role?: string;
+        role?: UserRoleEnum;
     }, accessToken?: string, refreshToken?: string, expiresIn?: number, rememberMe?: boolean, isAdmin?: boolean) => void;
     logout: (isAdmin?: boolean) => void;
     updateUser: (userData: Partial<UserState['user']>, isAdmin?: boolean) => void;
@@ -85,7 +86,7 @@ export interface UserState {
                 gender?: GenderEnum;
                 birthDate?: string;
                 location?: string;
-                role?: string;
+                role?: UserRoleEnum;
             };
         };
     }>;
@@ -114,7 +115,7 @@ export interface UserState {
                 gender?: GenderEnum;
                 birthDate?: string;
                 location?: string;
-                role?: string;
+                role?: UserRoleEnum;
             };
         };
     }>;
@@ -138,6 +139,7 @@ export interface UserState {
 // 辅助函数：标准化用户数据
 const normalizeUserData = (userInfo: AuthUserInfo): UserState['user'] => {
   const normalizedGender = userInfo.gender;
+  const normalizedRole = userInfo.role;
 
   return {
     id: userInfo.id,
@@ -150,7 +152,7 @@ const normalizeUserData = (userInfo: AuthUserInfo): UserState['user'] => {
     gender: normalizedGender,
     birthDate: userInfo.birthDate,
     location: userInfo.location,
-    role: userInfo.role
+    role: normalizedRole
   };
 };
 
@@ -205,7 +207,7 @@ export const useUserStore = create<UserState>()(
       adminAccessTokenExpiresAt: null,
       adminRememberMe: false,
 
-      setUser: (userData: { id: number | null; username: string | null; email: string | null; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }, accessToken: string = '', refreshToken: string = '', expiresIn: number = 3600, rememberMe: boolean = false, isAdmin: boolean = false): void => {
+      setUser: (userData: { id: number | null; username: string | null; email: string | null; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: UserRoleEnum; }, accessToken: string = '', refreshToken: string = '', expiresIn: number = 3600, rememberMe: boolean = false, isAdmin: boolean = false): void => {
         const expiresAt = Date.now() + expiresIn * 1000;
 
         if (isAdmin) {
@@ -280,7 +282,7 @@ export const useUserStore = create<UserState>()(
       },
 
       // 登录方法
-  login: async (params: { account: string; authType: 'password' | 'code'; password?: string; code?: string; remember?: boolean; isAdmin?: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; username: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }; }; }> => {
+  login: async (params: { account: string; authType: 'password' | 'code'; password?: string; code?: string; remember?: boolean; isAdmin?: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; username: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: UserRoleEnum; }; }; }> => {
     set({ isLoading: true });
     try {
       console.log('开始登录，参数:', params);
@@ -311,7 +313,7 @@ export const useUserStore = create<UserState>()(
   },
 
       // 注册方法
-      register: async (params: { account: string; authType: 'password' | 'code'; password?: string; confirmPassword?: string; code?: string; agreeTerms: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; username: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: string; }; }; }> => {
+      register: async (params: { account: string; authType: 'password' | 'code'; password?: string; confirmPassword?: string; code?: string; agreeTerms: boolean; }): Promise<{ code: number; message: string; data: { access_token: string; refresh_token: string; expires_in: number; userInfo: { id: number; username: string; email: string; avatar?: string; nickname?: string; coverImage?: string; signature?: string; gender?: GenderEnum; birthDate?: string; location?: string; role?: UserRoleEnum; }; }; }> => {
         set({ isLoading: true });
         try {
           const response = await authService.register(params);
@@ -393,7 +395,7 @@ export const useUserStore = create<UserState>()(
 
         try {
           set({ isLoading: true });
-          const response = await authService.getProfile();
+          const response = await authService.getProfile(isAdmin);
           if (response.code === 200 && response.data) {
             const userInfo = response.data;
             // 标准化用户数据
@@ -424,6 +426,12 @@ export const useUserStore = create<UserState>()(
 
       // 初始化登录状态
       initAuth: async (): Promise<void> => {
+        // 检查当前是否在登录页面，如果是，则不进行初始化
+        const currentPath = window.location.pathname;
+        if (currentPath === ROUTES.LOGIN || currentPath === ROUTES.ADMIN_LOGIN) {
+          return;
+        }
+
         // 初始化前台用户状态
         const accessToken = localStorage.getItem('access_token');
         const refreshToken = localStorage.getItem('refresh_token');
@@ -448,31 +456,48 @@ export const useUserStore = create<UserState>()(
             // 令牌过期但用户选择了记住我，尝试刷新令牌
             await get().refreshToken(false);
           }
+        } else {
+          // 没有令牌，确保登录状态为false
+          set({
+            isLoggedIn: false,
+            accessTokenExpiresAt: null,
+            rememberMe: false
+          });
         }
 
-        // 初始化后台用户状态
-        const adminAccessToken = localStorage.getItem('admin_access_token');
-        const adminRefreshToken = localStorage.getItem('admin_refresh_token');
-        const adminExpiresAtStr = localStorage.getItem('admin_access_token_expires_at');
-        const adminRememberMe = localStorage.getItem('admin_remember_me') === 'true';
+        // 只有在当前路径是后台路径时才初始化后台用户状态
+        if (currentPath.startsWith('/admin')) {
+          // 初始化后台用户状态
+          const adminAccessToken = localStorage.getItem('admin_access_token');
+          const adminRefreshToken = localStorage.getItem('admin_refresh_token');
+          const adminExpiresAtStr = localStorage.getItem('admin_access_token_expires_at');
+          const adminRememberMe = localStorage.getItem('admin_remember_me') === 'true';
 
-        if (adminAccessToken && adminRefreshToken && adminExpiresAtStr) {
-          const adminExpiresAt = parseInt(adminExpiresAtStr, 10);
-          const now = Date.now();
+          if (adminAccessToken && adminRefreshToken && adminExpiresAtStr) {
+            const adminExpiresAt = parseInt(adminExpiresAtStr, 10);
+            const now = Date.now();
 
-          // 检查令牌是否过期
-          if (adminExpiresAt > now) {
-            // 令牌有效，设置登录状态
+            // 检查令牌是否过期
+            if (adminExpiresAt > now) {
+              // 令牌有效，设置登录状态
+              set({
+                isAdminLoggedIn: true,
+                adminAccessTokenExpiresAt: adminExpiresAt,
+                adminRememberMe: adminRememberMe
+              });
+              // 尝试获取用户信息
+              await get().getProfile(true);
+            } else if (adminRememberMe) {
+              // 令牌过期但用户选择了记住我，尝试刷新令牌
+              await get().refreshToken(true);
+            }
+          } else {
+            // 没有令牌，确保登录状态为false
             set({
-              isAdminLoggedIn: true,
-              adminAccessTokenExpiresAt: adminExpiresAt,
-              adminRememberMe: adminRememberMe
+              isAdminLoggedIn: false,
+              adminAccessTokenExpiresAt: null,
+              adminRememberMe: false
             });
-            // 尝试获取用户信息
-            await get().getProfile(true);
-          } else if (adminRememberMe) {
-            // 令牌过期但用户选择了记住我，尝试刷新令牌
-            await get().refreshToken(true);
           }
         }
       }
@@ -480,10 +505,16 @@ export const useUserStore = create<UserState>()(
     {
       name: 'user-storage',
       partialize: (state) => ({
+        // 前台用户状态
         user: state.user,
         isLoggedIn: state.isLoggedIn,
         accessTokenExpiresAt: state.accessTokenExpiresAt,
-        rememberMe: state.rememberMe
+        rememberMe: state.rememberMe,
+        // 后台用户状态
+        adminUser: state.adminUser,
+        isAdminLoggedIn: state.isAdminLoggedIn,
+        adminAccessTokenExpiresAt: state.adminAccessTokenExpiresAt,
+        adminRememberMe: state.adminRememberMe
       })
     }
   )

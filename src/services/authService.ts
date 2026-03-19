@@ -222,7 +222,10 @@ const authService = {
   /**
    * 获取个人资料
    */
-  getProfile: async (): Promise<ApiResponse<UserInfo>> => {
+  getProfile: async (isAdmin: boolean = false): Promise<ApiResponse<UserInfo>> => {
+    if (isAdmin) {
+      return apiClient.get(API_ENDPOINTS.ADMIN.USER.PROFILE);
+    }
     return apiClient.get(API_ENDPOINTS.FRONT.USER.PROFILE);
   },
 
