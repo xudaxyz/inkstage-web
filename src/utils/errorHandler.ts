@@ -1,5 +1,7 @@
 import { message } from 'antd';
 import { useUserStore } from '../store';
+import { PUBLIC_ENDPOINTS } from '../api';
+import { ROUTES } from '../constants/routes';
 
 /**
  * 错误类型定义
@@ -23,6 +25,7 @@ interface ErrorHandlerConfig {
   redirectToLogin?: boolean;        // 是否跳转到登录页
   redirectDelay?: number;           // 跳转延迟时间（毫秒）
   customMessage?: string;           // 自定义错误消息
+  url?: string;                    // 当前请求的URL
 }
 
 /**
@@ -49,7 +52,7 @@ export class ErrorHandler {
    * @param config 错误处理配置
    */
   public handleError (error: unknown, config?: ErrorHandlerConfig): void {
-    const { showMessage = true, redirectToLogin = false, redirectDelay = 1500, customMessage } = config || {};
+    const { showMessage = true, redirectToLogin = false, redirectDelay = 1500, customMessage, url } = config || {};
 
     // 分析错误类型
     const errorInfo = this.analyzeError(error);
@@ -62,7 +65,15 @@ export class ErrorHandler {
 
     // 处理认证错误
     if (errorInfo.type === ErrorType.AUTH_ERROR || redirectToLogin) {
-      this.redirectToLogin(redirectDelay);
+      // 如果有URL，判断是否需要强制登录
+      if (url) {
+        if (this.shouldRedirectToLogin(url)) {
+          this.redirectToLogin(redirectDelay, url);
+        }
+      } else {
+        // 没有URL，默认跳转到登录页
+        this.redirectToLogin(redirectDelay);
+      }
     }
   }
 
@@ -130,16 +141,32 @@ export class ErrorHandler {
   }
 
   /**
+   * 判断是否需要强制登录
+   * @param url 当前请求的URL
+   */
+  private shouldRedirectToLogin (url: string ): boolean {
+    // 检查是否是公开端点
+    return !PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint));
+  }
+
+  /**
    * 处理认证错误
    * @param delay 跳转延迟时间
+   * @param url 当前请求的URL
    */
-  private redirectToLogin (delay: number): void {
+  private redirectToLogin (delay: number, url?: string): void {
     // 使用userStore的logout方法清除用户信息
     useUserStore.getState().logout();
 
+    // 记录当前页面，用于登录后重定向
+    if (url) {
+      localStorage.setItem('redirect_after_login', window.location.href);
+    }
+
     // 延迟跳转到登录页
     setTimeout(() => {
-      window.location.href = '/login';
+      const currentPath = window.location.pathname;
+      window.location.href = currentPath.startsWith('/admin') ? ROUTES.ADMIN_LOGIN : ROUTES.LOGIN;
     }, delay);
   }
 
@@ -157,12 +184,14 @@ export class ErrorHandler {
   /**
    * 处理认证相关错误
    * @param error 认证错误对象
+   * @param url 当前请求的URL
    */
-  public handleAuthError (error: unknown): void {
+  public handleAuthError (error: unknown, url?: string): void {
     this.handleError(error, {
       showMessage: true,
       redirectToLogin: true,
-      redirectDelay: 1500
+      redirectDelay: 1500,
+      url: url
     });
   }
 

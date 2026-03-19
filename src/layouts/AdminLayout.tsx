@@ -1,7 +1,24 @@
-import React, { useState, useMemo } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, Button, ConfigProvider, Switch  } from 'antd';
-import { UserOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UsergroupAddOutlined, FileTextOutlined, TagOutlined, SettingOutlined, LogoutOutlined, DashboardOutlined, MessageOutlined, BarChartOutlined, MoonOutlined, SunOutlined, AppstoreOutlined, BellOutlined, LockOutlined } from '@ant-design/icons';
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, Switch } from 'antd';
+import {
+    AppstoreOutlined,
+    BarChartOutlined,
+    BellOutlined,
+    DashboardOutlined,
+    FileTextOutlined,
+    LockOutlined,
+    LogoutOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    MessageOutlined,
+    MoonOutlined,
+    SettingOutlined,
+    SunOutlined,
+    TagOutlined,
+    UsergroupAddOutlined,
+    UserOutlined
+} from '@ant-design/icons';
 import { useUserStore } from '../store';
 
 const { Header, Sider, Content } = Layout;
@@ -13,35 +30,26 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useUserStore();
+  const { adminUser, isAdminLoggedIn, refreshToken, logout } = useUserStore();
   const [collapsed, setCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
 
   // 根据路由路径计算当前选中的菜单项
   const current = useMemo(() => {
     const path = location.pathname;
-    if (path === '/admin') {
-      return 'dashboard';
-    } else if (path === '/admin/users') {
-      return 'users';
-    } else if (path === '/admin/articles') {
-      return 'articles';
-    } else if (path === '/admin/categories') {
-      return 'categories';
-    } else if (path === '/admin/tags') {
-      return 'tags';
-    } else if (path === '/admin/comments') {
-      return 'comments';
-    } else if (path === '/admin/notifications') {
-      return 'notifications';
-    } else if (path === '/admin/permissions') {
-      return 'permissions';
-    } else if (path === '/admin/analytics') {
-      return 'analytics';
-    } else if (path === '/admin/settings') {
-      return 'settings';
-    }
-    return 'dashboard';
+    const pathToKeyMap: Record<string, string> = {
+      '/admin': 'dashboard',
+      '/admin/users': 'users',
+      '/admin/articles': 'articles',
+      '/admin/categories': 'categories',
+      '/admin/tags': 'tags',
+      '/admin/comments': 'comments',
+      '/admin/notifications': 'notifications',
+      '/admin/permissions': 'permissions',
+      '/admin/analytics': 'analytics',
+      '/admin/settings': 'settings'
+    };
+    return pathToKeyMap[path] || 'dashboard';
   }, [location.pathname]);
 
   // 导航菜单配置
@@ -106,12 +114,55 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   // 处理退出登录
   const handleLogout = async () : Promise<void> => {
     try {
-      logout();
+      logout(true);
       navigate('/admin/login');
     } catch (error) {
       console.error('退出登录失败:', error);
     }
   };
+
+  // 监听用户活动，自动延长会话
+  const handleUserActivity = useCallback((): void => {
+    // 每5分钟自动刷新令牌
+    if (isAdminLoggedIn) {
+      refreshToken(true).catch(error => {
+        console.error('自动刷新令牌失败:', error);
+      });
+    }
+  }, [isAdminLoggedIn, refreshToken]);
+
+  // 防抖处理用户活动
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const debouncedHandleUserActivity = useCallback((): void => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      handleUserActivity();
+    }, 60000); // 1分钟内只触发一次
+  }, [handleUserActivity]);
+
+  // 初始化和更新会话状态
+  useEffect(() => {
+    if (!isAdminLoggedIn) return;
+
+    // 监听用户活动
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(event => {
+      document.addEventListener(event, debouncedHandleUserActivity);
+    });
+
+    // 每5分钟自动刷新令牌
+    const autoRefreshInterval = setInterval(handleUserActivity, 5 * 60 * 1000);
+
+    return (): void => {
+      clearInterval(autoRefreshInterval);
+      events.forEach(event => {
+        document.removeEventListener(event, debouncedHandleUserActivity);
+      });
+    };
+  }, [isAdminLoggedIn, handleUserActivity, debouncedHandleUserActivity, refreshToken]);
 
   // 用户下拉菜单
   const userMenu = [
@@ -186,7 +237,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   {'A'}
                 </Avatar>
                 <span className="text-sm text-gray-400 font-medium">
-                  {user.nickname || '管理员'}
+                  {adminUser?.nickname || '管理员'}
                 </span>
               </div>
             </Dropdown>

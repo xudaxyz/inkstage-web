@@ -54,10 +54,20 @@ const Login: React.FC = () => {
           duration: 3,
           className: 'text-lg font-medium'
         });
-        // 延迟跳转，让用户看到成功提示
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
+        // 检查是否有登录后重定向的页面
+        const redirectUrl = localStorage.getItem('redirect_after_login');
+        if (redirectUrl) {
+          // 延迟跳转，让用户看到成功提示
+          setTimeout(() => {
+            localStorage.removeItem('redirect_after_login');
+            window.location.href = redirectUrl;
+          }, 1000);
+        } else {
+          // 延迟跳转，让用户看到成功提示
+          setTimeout(() => {
+            navigate('/');
+          }, 1000);
+        }
       } else {
         message.error(response.message || '登录失败，请稍后重试！');
       }

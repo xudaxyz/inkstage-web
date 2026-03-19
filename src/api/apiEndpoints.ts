@@ -173,8 +173,8 @@ export const API_ENDPOINTS = {
   COMMON: {
     // 认证相关
     AUTH: {
-      TOKEN: '/oauth2/token', // 刷新令牌
-      REFRESH_TOKEN: '/auth/token' // 刷新令牌
+      TOKEN: '/front/auth/refresh-token', // 刷新令牌
+      REFRESH_TOKEN: '/front/auth/refresh-token' // 刷新令牌
     },
 
     // 文件上传相关

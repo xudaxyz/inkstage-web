@@ -105,11 +105,8 @@ const validateRegisterParams = (params: RegisterParams): boolean => {
   return true;
 };
 
-const validateRefreshTokenParams = (params: { refresh_token: string }): boolean => {
-  if (!params || typeof params !== 'object') {
-    throw new Error('参数必须是对象');
-  }
-  if (!params.refresh_token || params.refresh_token.trim().length === 0) {
+const validateRefreshTokenParams = ( refresh_token: string ): boolean => {
+  if (!refresh_token) {
     throw new Error('刷新令牌不能为空');
   }
   return true;
@@ -205,27 +202,22 @@ const authService = {
       code: params.code || '',
       clientId: import.meta.env.VITE_CLIENT_ID,
       clientSecret: import.meta.env.VITE_CLIENT_SECRET,
-      scope: 'read write'
+      scope: 'read write',
+      rememberMe: params.remember || false
     };
 
     return apiClient.post(API_ENDPOINTS.FRONT.AUTH.LOGIN, authParams);
   },
 
   /**
-   * 刷新令牌
-   */
-  refreshToken: async (params: { refresh_token: string }): Promise<ApiResponse<TokenResponse>> => {
-    validateRefreshTokenParams(params);
-    const oauthParams = {
-      grant_type: 'refresh_token',
-      refresh_token: params.refresh_token,
-      client_id: import.meta.env.VITE_CLIENT_ID,
-      client_secret: import.meta.env.VITE_CLIENT_SECRET,
-      scope: 'read write'
-    };
-
-    return apiClient.post(API_ENDPOINTS.COMMON.AUTH.REFRESH_TOKEN, oauthParams);
-  },
+     * 刷新令牌
+     */
+    refreshToken: async (refreshToken: string ): Promise<ApiResponse<TokenResponse>> => {
+        console.log('开始刷新令牌，参数:', refreshToken);
+        validateRefreshTokenParams(refreshToken);
+        console.log('发送刷新令牌请求，URL:', '/front/auth/refresh-token');
+        return await apiClient.post('/front/auth/refresh-token', null, { params: { refreshToken } });
+    },
 
   /**
    * 获取个人资料

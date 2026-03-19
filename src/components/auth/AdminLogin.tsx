@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Input, Form, message, Checkbox } from 'antd';
+import { Button, Input, Form, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -41,7 +41,8 @@ const AdminLogin: React.FC = () => {
         account: formData.account,
         authType: 'password',
         password: formData.password,
-        remember: formData.remember || false
+        remember: false,
+        isAdmin: true
       });
 
       if (response.code === 200) {
@@ -139,12 +140,8 @@ const AdminLogin: React.FC = () => {
           />
         </Form.Item>
 
-        {/* 记住我 */}
-        <div className="flex justify-between items-center mb-6">
-          <Form.Item name="remember" valuePropName="checked" noStyle>
-            <Checkbox className="text-sm text-gray-600">记住我</Checkbox>
-          </Form.Item>
-
+        {/* 忘记密码 */}
+        <div className="flex justify-end items-center mb-6">
           <a
             href="#"
             className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200"

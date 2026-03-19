@@ -41,13 +41,13 @@ const AdminSettings = lazy(() => import('../pages/admin/AdminSettings'));
 
 // 管理员路由保护组件
 const AdminRoute = ({ children }: { children: React.ReactNode }): React.ReactNode => {
-  const { user, isLoggedIn } = useUserStore();
+  const { adminUser, isAdminLoggedIn } = useUserStore();
 
-  if (!isLoggedIn) {
+  if (!isAdminLoggedIn) {
     return <Navigate to="/admin/login" replace />;
   }
 
-  if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+  if (adminUser.role !== 'ADMIN' && adminUser.role !== 'SUPER_ADMIN') {
     return <Navigate to="/" replace />;
   }
 

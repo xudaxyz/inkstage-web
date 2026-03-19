@@ -5,11 +5,24 @@ import AppRoutes from './routes';
 // 导入WebSocket服务
 import websocketService from './services/websocketService';
 import { useEffect } from 'react';
+// 导入用户状态管理
+import { useUserStore } from './store';
 
 import type { ReactNode } from 'react';
 
 function App (): ReactNode {
+  const { initAuth } = useUserStore();
+
   useEffect(() => {
+    // 初始化登录状态
+    initAuth()
+      .then(() => {
+        console.log('登录状态初始化完成');
+      })
+      .catch((error) => {
+        console.error('登录状态初始化失败:', error);
+      });
+
     // 连接WebSocket
     websocketService.connect()
       .then(() => {
@@ -23,7 +36,7 @@ function App (): ReactNode {
     return (): void => {
       websocketService.disconnect();
     };
-  }, []);
+  }, [initAuth]);
 
   return (
     <Router>
