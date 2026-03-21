@@ -103,7 +103,7 @@ const AdminComments: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination, searchText, selectedStatus, selectedArticleId]);
+  }, [searchText, selectedStatus, selectedArticleId]);
 
   // 搜索和筛选评论
   const handleSearch = (value: string): void => {

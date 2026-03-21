@@ -118,16 +118,23 @@ export const API_ENDPOINTS = {
     AUTH: {
       SEND_CODE: '/auth/send-code', // 发送验证码
       REGISTER: '/auth/register', // 用户注册
-      LOGIN: '/auth/login' // 用户登录
+      LOGIN: '/auth/login', // 用户登录
+      REFRESH_TOKEN: '/auth/refresh-token' // 刷新令牌
     }
   },
 
   // 后台接口
   ADMIN: {
+    // 认证相关
+    AUTH: {
+      LOGIN: '/auth/login', // 管理员登录
+      REFRESH_TOKEN: '/auth/refresh-token' // 管理员刷新令牌
+    },
+
     // 用户管理
     USER: {
       LIST: '/admin/user/list', // 分页获取用户
-      DETAIL: (id: number): string => `/admin/user/${id}`, // 获取用户详情
+      DETAIL: (id: number): string => `/admin/user/detail/${id}`, // 获取用户详情
       PROFILE: '/admin/user/profile', // 获取当前管理员个人资料
       DELETE: (id: number): string => `/admin/user/${id}`, // 删除用户
       UPDATE: (id: number): string => `/admin/user/${id}`, // 更新用户
@@ -148,7 +155,7 @@ export const API_ENDPOINTS = {
 
     // 评论管理
     COMMENT: {
-      LIST_PAGE: '/admin/comment/page', // 分页获取评论
+      LIST_PAGE: '/admin/comment/list', // 分页获取评论
       DELETE: (id: number): string => `/admin/comment/${id}`, // 删除评论
       UPDATE_STATUS: (id: number): string => `/admin/comment/${id}/status`, // 更新评论状态
       UPDATE_TOP: (id: number): string => `/admin/comment/${id}/top` // 更新评论置顶状态
@@ -156,11 +163,11 @@ export const API_ENDPOINTS = {
 
     // 标签管理
     TAG: {
-      LIST: '/admin/tag/all', // 分页获取标签
-      CREATE: '/admin/tag', // 添加标签
-      UPDATE: (id: number): string => `/admin/tag/${id}`, // 更新标签
-      DELETE: (id: number): string => `/admin/tag/${id}`, // 删除标签
-      UPDATE_STATUS: (id: number): string => `/admin/tag/${id}/status` // 更新标签状态
+      LIST: '/admin/tag/list', // 分页获取标签
+      CREATE: '/admin/tag/add', // 添加标签
+      UPDATE: (id: number): string => `/admin/tag/update/${id}`, // 更新标签
+      DELETE: (id: number): string => `/admin/tag/delete/${id}`, // 删除标签
+      UPDATE_STATUS: (id: number): string => `/admin/tag/status/${id}` // 更新标签状态
     },
 
     // 分类管理

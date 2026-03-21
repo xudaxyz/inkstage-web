@@ -121,7 +121,7 @@ const commentService = {
       if (params.userId != null && params.userId <= 0) {
         throw new Error('用户ID必须是正整数');
       }
-      return await apiClient.get(API_ENDPOINTS.ADMIN.COMMENT.LIST_PAGE, { params });
+      return await apiClient.post(API_ENDPOINTS.ADMIN.COMMENT.LIST_PAGE, { params });
     },
 
     // 更新评论状态

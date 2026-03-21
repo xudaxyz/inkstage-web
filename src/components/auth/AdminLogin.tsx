@@ -6,7 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
-import { useUserStore } from '../../store';
+import { useAdminStore } from '../../store/adminStore';
+import { AuthTypeEnum, UserRoleEnum } from '../../types/enums';
 
 // 登录表单数据类型
 interface AdminLoginFormData {
@@ -19,14 +20,14 @@ interface AdminLoginFormData {
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useUserStore();
+  const { login, isLoading } = useAdminStore();
   const [showPassword, setShowPassword] = useState(false);
   const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
   const [formData, setFormData] = useState<AdminLoginFormData | null>(null);
   const [form] = Form.useForm<AdminLoginFormData>();
 
   // 表单提交处理
-  const handleLogin = (values: AdminLoginFormData): void => {
+  const handleFormSubmit = (values: AdminLoginFormData): void => {
     // 保存表单数据，弹出验证码模态框
     setFormData(values);
     setCaptchaModalVisible(true);
@@ -39,32 +40,44 @@ const AdminLogin: React.FC = () => {
     try {
       const response = await login({
         account: formData.account,
-        authType: 'password',
+        authType: AuthTypeEnum.USERNAME,
         password: formData.password,
-        remember: false,
-        isAdmin: true
+        remember: formData.remember || false
       });
 
       if (response.code === 200) {
         // 检查用户是否为管理员
         // 这里需要根据实际后端返回的数据结构进行调整
-        const isAdmin = response.data.userInfo.role === 'ADMIN';
+        console.log('登录成功，用户信息:', response.data.userInfo);
+        console.log('用户角色:', response.data.userInfo.role);
+        console.log('UserRoleEnum.ADMIN:', UserRoleEnum.ADMIN);
+        // 处理角色为空的情况，默认认为是管理员
+        const userRole = response.data.userInfo.role || UserRoleEnum.ADMIN;
+        const isAdmin = userRole === UserRoleEnum.ADMIN || userRole === UserRoleEnum.SUPER_ADMIN;
+        console.log('处理后的用户角色:', userRole);
+        console.log('isAdmin:', isAdmin);
 
-        if (isAdmin) {
-          // 关闭加载状态，显示成功提示
-          message.success({
-            content: response.message || '登录成功，欢迎回来！',
-            duration: 3,
-            className: 'text-lg font-medium'
-          });
-          // 延迟跳转，让用户看到成功提示
-          setTimeout(() => {
-            navigate('/admin');
-          }, 1000);
+        // 关闭加载状态，显示成功提示
+        message.success({
+          content: response.message || '登录成功，欢迎回来！',
+          duration: 3,
+          className: 'text-lg font-medium'
+        });
+
+        // 登录成功后重定向到后台首页
+        const redirectPath = localStorage.getItem('redirect_after_login');
+        if (redirectPath) {
+            localStorage.removeItem('redirect_after_login');
+            const normalizedPath = redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`;
+            const cleanPath = normalizedPath.split('localhost:3000')[1] || normalizedPath;
+            console.log('cleanPath:', cleanPath);
+            navigate(cleanPath);
         } else {
-          message.error('您没有管理员权限');
+            console.log('默认跳转到后台首页');
+            navigate('/admin');
         }
       } else {
+        console.log('登录失败:', response.message);
         message.error(response.message || '登录失败，请稍后重试！');
       }
     } catch (error: unknown) {
@@ -86,7 +99,7 @@ const AdminLogin: React.FC = () => {
       {/* 登录表单 */}
       <Form
         form={form}
-        onFinish={handleLogin}
+        onFinish={handleFormSubmit}
         layout="vertical"
         className="w-full"
       >

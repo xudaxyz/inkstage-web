@@ -1,4 +1,4 @@
-import { type GenderEnum, type UserRoleEnum, type UserStatusEnum } from './enums';
+import {type GenderEnum, type UserRoleEnum, type UserStatusEnum, type VerificationStatusEnum} from './enums';
 import type { ApiPageResponse } from './common';
 
 // 用户信息类型定义
@@ -52,14 +52,14 @@ export interface AdminUser {
     nickname: string;
     email: string;
     phone: string;
-    role: UserRoleEnum;
-    status: UserStatusEnum;
+    userRole: UserRoleEnum;
+    userStatus: UserStatusEnum;
     registerTime: string;
     lastLoginTime: string;
     articleCount?: number;
     commentCount?: number;
-    emailVerified?: string;
-    phoneVerified?: string;
+    emailVerified: VerificationStatusEnum;
+    phoneVerified: VerificationStatusEnum;
     avatar?: string;
     signature?: string;
     gender?: string;
@@ -81,7 +81,7 @@ export interface AdminUserQuery {
     pageSize: number;
     keyword?: string;
     userRole?: UserRoleEnum;
-    status?: UserStatusEnum;
+    userStatus?: UserStatusEnum;
     startDate?: string;
     endDate?: string;
 }

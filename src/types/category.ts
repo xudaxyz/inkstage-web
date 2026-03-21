@@ -1,4 +1,5 @@
 import { StatusEnum } from './enums';
+import type { ApiPageResponse } from './common.ts';
 
 // 前台分类接口
 export interface FrontendCategory {
@@ -25,10 +26,4 @@ export interface AdminCategory {
 }
 
 // 分类分页响应接口
-export interface CategoryPageResponse<T = AdminCategory> {
-    record: T[];
-    total: number;
-    pageNum: number;
-    pageSize: number;
-    pages: number;
-}
+export type CategoryPageResponse = ApiPageResponse<AdminCategory>;

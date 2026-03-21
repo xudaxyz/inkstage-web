@@ -52,6 +52,7 @@ const AdminTags: React.FC = () => {
     setLoading(true);
     try {
       const response = await tagService.admin.getTagsByPage(keyword, pageNum, pageSize);
+      console.log('tag:', response);
       if (response.code === 200 && response.data) {
         const formattedTags = response.data.record.map((tag: AdminTag) => ({
           ...tag,
@@ -60,8 +61,8 @@ const AdminTags: React.FC = () => {
         setTags(formattedTags);
         setFilteredTags(formattedTags);
         setPagination({
-          current: response.data.pages,
-          pageSize: response.data.size,
+          current: response.data.pageNum,
+          pageSize: response.data.pageSize,
           total: response.data.total
         });
       } else {
@@ -77,20 +78,20 @@ const AdminTags: React.FC = () => {
 
   // 组件挂载时加载数据
   useEffect(() => {
-    loadTags();
+    void loadTags();
   }, []);
 
   // 处理分页变化
   const handleTableChange = (pagination: PaginationProps): void => {
     const current = pagination.current || 1;
     const pageSize = pagination.pageSize || 10;
-    loadTags(current, pageSize, searchKeyword);
+    void loadTags(current, pageSize, searchKeyword);
   };
 
   // 搜索和筛选标签
   const handleSearch = (value: string): void => {
     setSearchKeyword(value);
-    loadTags(1, pagination.pageSize, value);
+    void loadTags(1, pagination.pageSize, value);
   };
 
   // 打开编辑标签模态框
@@ -186,7 +187,7 @@ const AdminTags: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number): number => (pagination.current - 1) * pagination.pageSize + index + 1
+        render: (_: unknown, __: unknown, index: number): number => (pagination.current - 1) * pagination.pageSize + index + 1
     },
     {
       title: '标签名称',

@@ -7,17 +7,23 @@ import websocketService from './services/websocketService';
 import { useEffect } from 'react';
 // 导入用户状态管理
 import { useUserStore } from './store';
+// 导入管理员状态管理
+import { useAdminStore } from './store/adminStore';
 // 导入全局通知组件
 import Notification from './components/common/Notification';
 
 import type { ReactNode } from 'react';
 
 function App (): ReactNode {
-  const { initAuth } = useUserStore();
+  const { initAuth: initUserAuth } = useUserStore();
+  const { initAuth: initAdminAuth } = useAdminStore();
 
   useEffect(() => {
     // 初始化登录状态
-    initAuth()
+    Promise.all([
+      initUserAuth(),
+      initAdminAuth()
+    ])
       .then(() => {
         console.log('登录状态初始化完成');
       })
@@ -38,7 +44,7 @@ function App (): ReactNode {
     return (): void => {
       websocketService.disconnect();
     };
-  }, [initAuth]);
+  }, [initUserAuth, initAdminAuth]);
 
   return (
     <Router>

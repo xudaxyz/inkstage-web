@@ -7,6 +7,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
 import { useAuth } from '../../hooks/useAuth';
+import { AuthTypeEnum } from '../../types/enums';
 
 // 登录表单数据类型
 interface LoginFormData {
@@ -21,7 +22,7 @@ interface LoginFormData {
 const Login: React.FC = () => {
   const { handleLogin, isLoading, sendCode } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [loginType, setLoginType] = useState<'password' | 'code'>('code');
+  const [loginType, setLoginType] = useState<AuthTypeEnum>(AuthTypeEnum.EMAIL);
   const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
   const [formData, setFormData] = useState<LoginFormData | null>(null);
   const [form] = Form.useForm<LoginFormData>();
@@ -135,20 +136,20 @@ const Login: React.FC = () => {
           rules={[
             {
               required: true,
-              message: loginType === 'code' ? '请输入邮箱或手机号' : '请输入用户名、邮箱或手机号'
+              message: loginType === (AuthTypeEnum.EMAIL || AuthTypeEnum.PHONE) ? '请输入邮箱或手机号' : '请输入用户名、邮箱或手机号'
             }
           ]}
           className="mb-4"
         >
           <Input
-            placeholder={loginType === 'code' ? '请输入邮箱或手机号' : '请输入用户名、邮箱或手机号'}
+            placeholder={loginType === (AuthTypeEnum.EMAIL || AuthTypeEnum.PHONE) ? '请输入邮箱或手机号' : '请输入用户名、邮箱或手机号'}
             size="large"
             className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
           />
         </Form.Item>
 
-        {/* 密码登录 */}
-        {loginType === 'password' && (
+        {/* 用户名密码登录 */}
+        {loginType === AuthTypeEnum.USERNAME && (
           <Form.Item
             name="password"
             rules={[
@@ -174,7 +175,7 @@ const Login: React.FC = () => {
         )}
 
         {/* 验证码登录 */}
-        {loginType === 'code' && (
+        {(loginType === AuthTypeEnum.EMAIL || loginType === AuthTypeEnum.PHONE) && (
           <Form.Item
             name="code"
             rules={[{ required: true, message: '请输入验证码' }]}
@@ -209,11 +210,11 @@ const Login: React.FC = () => {
             className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200"
             onClick={(e) => {
               e.preventDefault();
-              setLoginType(loginType === 'password' ? 'code' : 'password');
+              setLoginType(loginType === AuthTypeEnum.USERNAME ? AuthTypeEnum.EMAIL : AuthTypeEnum.USERNAME );
               form.resetFields(['password', 'code']);
             }}
           >
-            {loginType === 'password' ? '验证码登录' : '密码登录'}
+            {loginType === AuthTypeEnum.USERNAME ? '密码登录' : '验证码登录'}
           </a>
         </div>
 

@@ -1,9 +1,12 @@
 import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import errorHandler from '../utils/errorHandler.ts';
-import { API_ENDPOINTS, PUBLIC_ENDPOINTS } from './apiEndpoints';
+import { API_ENDPOINTS } from './apiEndpoints';
 import { ROUTES, isPublicPage, isAdminPage } from '../constants/navigation';
 import { userStore } from '../store/userStore';
+import { adminStore } from '../store/adminStore';
+import TokenService from '../services/tokenService';
+import { SECURE_STORAGE_KEYS, PUBLIC_ENDPOINTS } from '../constants/security';
 
 // 创建axios实例
 const apiClient: AxiosInstance = axios.create({
@@ -27,8 +30,8 @@ apiClient.interceptors.request.use(
       // 根据当前路径选择使用前台还是后台令牌
       const isAdminPath = window.location.pathname.startsWith('/admin');
       const token = isAdminPath
-        ? localStorage.getItem('admin_access_token')
-        : localStorage.getItem('access_token');
+        ? TokenService.getToken(SECURE_STORAGE_KEYS.ADMIN_ACCESS_TOKEN)
+        : TokenService.getToken(SECURE_STORAGE_KEYS.ACCESS_TOKEN);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -63,7 +66,12 @@ const isPublicEndpoint = (url: string): boolean => {
     actualPath = '/' + actualPath;
   }
 
-  // 后台接口默认是非公开的
+  // 后台登录和刷新令牌接口是公开的
+  if (actualPath === API_ENDPOINTS.ADMIN.AUTH.LOGIN || actualPath === API_ENDPOINTS.ADMIN.AUTH.REFRESH_TOKEN) {
+    return true;
+  }
+
+  // 后台其他接口默认是非公开的
   if (actualPath.startsWith('/admin') || actualPath.includes('/admin/')) {
     return false;
   }
@@ -71,10 +79,7 @@ const isPublicEndpoint = (url: string): boolean => {
   // 检查是否在公开端点列表中
   const isPublic = PUBLIC_ENDPOINTS.some(endpoint => {
     // 如果是字符串，直接检查包含关系
-    if (typeof endpoint === 'string') {
-      return actualPath.startsWith(endpoint);
-    }
-    return false;
+    return actualPath.startsWith(endpoint);
   });
 
   console.log('检查公开端点:', { url, actualPath, isPublic });
@@ -85,7 +90,7 @@ const isPublicEndpoint = (url: string): boolean => {
 // 响应拦截器
 apiClient.interceptors.response.use(
   (response) => {
-    console.log('API请求成功:', { url: response.config.url, status: response.status });
+    console.log('API请求成功:url:', response.config.url);
     return response.data;
   },
   async (error) => {
@@ -97,20 +102,25 @@ apiClient.interceptors.response.use(
       console.log('收到401错误，开始处理');
       // 根据当前路径判断是前台还是后台
       const isAdminPath = isAdminPage(window.location.pathname);
-      const tokenKey = isAdminPath ? 'admin_access_token' : 'access_token';
-      const refreshTokenKey = isAdminPath ? 'admin_refresh_token' : 'refresh_token';
+      const tokenKey = isAdminPath ? SECURE_STORAGE_KEYS.ADMIN_ACCESS_TOKEN : SECURE_STORAGE_KEYS.ACCESS_TOKEN;
+      const refreshTokenKey = isAdminPath ? SECURE_STORAGE_KEYS.ADMIN_REFRESH_TOKEN : SECURE_STORAGE_KEYS.REFRESH_TOKEN;
+      const refreshTokenEndpoint = isAdminPath ? API_ENDPOINTS.ADMIN.AUTH.REFRESH_TOKEN : API_ENDPOINTS.COMMON.AUTH.TOKEN;
 
       console.log('当前路径:', window.location.pathname, 'isAdminPath:', isAdminPath);
       console.log('localStorage中的令牌:', {
-        [tokenKey]: localStorage.getItem(tokenKey),
-        [refreshTokenKey]: localStorage.getItem(refreshTokenKey)
+        [tokenKey]: TokenService.getToken(tokenKey),
+        [refreshTokenKey]: TokenService.getToken(refreshTokenKey)
       });
 
       // 检查是否是刷新令牌请求本身失败
-      if (originalRequest.url === API_ENDPOINTS.COMMON.AUTH.TOKEN) {
+      if (originalRequest.url === refreshTokenEndpoint) {
         console.log('刷新令牌请求本身失败，清理本地存储');
         // 刷新令牌请求失败，清理用户状态
-        userStore.getState().logout(isAdminPath);
+        if (isAdminPath) {
+          adminStore.getState().logout();
+        } else {
+          userStore.getState().logout();
+        }
 
         // 对于刷新令牌请求失败，我们应该检查当前页面是否是公开页面
         // 因为刷新令牌请求是由其他API请求触发的，我们无法直接获取原始API请求的URL
@@ -153,36 +163,44 @@ apiClient.interceptors.response.use(
         console.log('开始处理刷新令牌');
         isRefreshing = true;
 
-        const refreshToken = localStorage.getItem(refreshTokenKey);
+        const refreshToken = TokenService.getToken(refreshTokenKey);
         console.log('获取到的refreshToken:', refreshToken);
         if (refreshToken) {
           try {
             console.log('发送刷新令牌请求');
-            const response = await apiClient.post(API_ENDPOINTS.COMMON.AUTH.TOKEN, {
-              grant_type: 'refresh_token',
-              refresh_token: refreshToken,
-              client_id: import.meta.env.VITE_CLIENT_ID,
-              client_secret: import.meta.env.VITE_CLIENT_SECRET
-            }) as {
-                            access_token: string;
-                            refresh_token: string;
+            const response = await apiClient.post(refreshTokenEndpoint, null, { params: { refreshToken } }) as {
+                            code: number;
+                            message: string;
+                            data: {
+                                access_token: string;
+                                refresh_token: string;
+                                userInfo: any;
+                            };
                         };
 
             console.log('刷新令牌成功，响应:', response);
-            localStorage.setItem(tokenKey, response.access_token);
-            localStorage.setItem(refreshTokenKey, response.refresh_token);
+            if (response.code === 200) {
+                TokenService.setToken(tokenKey, response.data.access_token);
+                TokenService.setToken(refreshTokenKey, response.data.refresh_token);
 
-            // 处理等待刷新令牌的请求队列
-            refreshSubscribers.forEach(callback => callback(response.access_token));
-            refreshSubscribers = [];
+                // 处理等待刷新令牌的请求队列
+                refreshSubscribers.forEach(callback => callback(response.data.access_token));
+                refreshSubscribers = [];
 
-            originalRequest.headers.Authorization = `Bearer ${response.access_token}`;
-            isRefreshing = false;
-            return apiClient(originalRequest);
+                originalRequest.headers.Authorization = `Bearer ${response.data.access_token}`;
+                isRefreshing = false;
+                return apiClient(originalRequest);
+            } else {
+                throw new Error(response.message || '刷新令牌失败');
+            }
           } catch (refreshError: unknown) {
             console.log('刷新令牌失败:', refreshError);
             // 刷新令牌失败，清理用户状态
-            userStore.getState().logout(isAdminPath);
+            if (isAdminPath) {
+              adminStore.getState().logout();
+            } else {
+              userStore.getState().logout();
+            }
 
             // 非公开API，跳转到登录页面
             if (refreshError instanceof Error) {
@@ -202,7 +220,11 @@ apiClient.interceptors.response.use(
         } else {
           console.log('没有刷新令牌，清理本地存储');
           // 没有刷新令牌，清理用户状态
-          userStore.getState().logout(isAdminPath);
+          if (isAdminPath) {
+            adminStore.getState().logout();
+          } else {
+            userStore.getState().logout();
+          }
 
           // 非公开API，跳转到登录页面
           errorHandler.handleAuthError('登录状态无效，请重新登录', apiUrl);

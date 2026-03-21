@@ -8,6 +8,7 @@ import type {
 } from '../types/auth';
 import type { ApiResponse } from '../types/common';
 import { AuthOperationTypeEnum } from '../types/enums/AuthOperationTypeEnum.ts';
+import { AuthTypeEnum } from '../types/enums/AuthTypeEnum.ts';
 
 // 参数验证函数
 const validateAccount = (account: string, authType?: 'password' | 'code'): boolean => {
@@ -54,22 +55,16 @@ const validateLoginParams = (params: LoginParams): boolean => {
   if (!params || typeof params !== 'object') {
     throw new Error('参数必须是对象');
   }
-  if (params.authType === 'code') {
+  if (params.authType === AuthTypeEnum.USERNAME) {
     validateAccount(params.account);
   }
-  if (!params.authType || !['password', 'code'].includes(params.authType)) {
-    throw new Error('认证类型必须是password或code');
-  }
-  if (params.authType === 'password' && !params.password) {
-    throw new Error('密码不能为空');
-  }
-  if (params.authType === 'password') {
+  if (params.authType === AuthTypeEnum.USERNAME) {
     if (!params.password) {
       throw new Error('密码不能为空');
     }
     validatePassword(params.password);
   }
-  if (params.authType === 'code' && !params.code) {
+  if ((params.authType === AuthTypeEnum.PHONE || params.authType === AuthTypeEnum.EMAIL) && !params.code) {
     throw new Error('验证码不能为空');
   }
   return true;
@@ -84,7 +79,7 @@ const validateRegisterParams = (params: RegisterParams): boolean => {
   if (!params.authType || !['password', 'code'].includes(params.authType)) {
     throw new Error('认证类型必须是password或code');
   }
-  if (params.authType === 'password') {
+  if (params.authType === AuthTypeEnum.USERNAME) {
     if (!params.password) {
       throw new Error('密码不能为空');
     }
@@ -96,7 +91,7 @@ const validateRegisterParams = (params: RegisterParams): boolean => {
       throw new Error('两次输入的密码不一致');
     }
   }
-  if (params.authType === 'code' && !params.code) {
+  if ((params.authType === AuthTypeEnum.PHONE || params.authType === AuthTypeEnum.EMAIL) && !params.code) {
     throw new Error('验证码不能为空');
   }
   if (!params.agreeTerms) {

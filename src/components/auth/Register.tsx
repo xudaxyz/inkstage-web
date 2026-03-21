@@ -87,9 +87,19 @@ const Register: React.FC = () => {
     // 显示加载状态
     const successMessage = message.loading('注册中，请稍候...', 0);
     try {
+      // 确定认证类型
+      let authType;
+      if (registerType === 'password') {
+        authType = 'USERNAME';
+      } else {
+        // 验证码注册，根据账号类型确定认证类型
+        const isEmail = /^[^@]+@[^@]+\.[^@]+$/.test(formData.account);
+        authType = isEmail ? 'EMAIL' : 'PHONE';
+      }
+      
       const response = await register({
         account: formData.account,
-        authType: registerType,
+        authType: authType as any,
         password: formData.password || '',
         confirmPassword: formData.confirmPassword || '',
         code: formData.code || '',

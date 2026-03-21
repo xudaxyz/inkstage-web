@@ -1,4 +1,5 @@
 import { GenderEnum, UserRoleEnum } from './enums';
+import type { AuthTypeEnum } from './enums';
 
 // 验证码请求参数
 export interface SendCodeParams {
@@ -15,7 +16,7 @@ export interface SendCodeResponse {
 // 登录请求参数
 export interface LoginParams {
     account: string;
-    authType: 'password' | 'code'; // 密码登录或验证码登录
+    authType: AuthTypeEnum;
     password?: string;
     code?: string;
     remember?: boolean;
@@ -24,7 +25,7 @@ export interface LoginParams {
 // 注册请求参数
 export interface RegisterParams {
     account: string;
-    authType: 'password' | 'code'; // 密码登录或验证码登录
+    authType: AuthTypeEnum;
     password?: string;
     confirmPassword?: string;
     code?: string;

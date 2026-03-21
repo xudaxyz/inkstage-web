@@ -4,6 +4,7 @@ import {
   SearchOutlined,
   EyeOutlined,
   UserOutlined,
+  EnvironmentOutlined,
   MailOutlined,
   PhoneOutlined,
   ClockCircleOutlined,
@@ -14,7 +15,13 @@ import {
 import userService from '../../services/userService';
 import { type AdminUser } from '../../types/user';
 import type { Dayjs } from 'dayjs';
-import { UserRoleEnum, UserRoleEnumLabel, UserStatusEnum, UserStatusEnumLabel } from '../../types/enums';
+import {
+    UserRoleEnum,
+    UserRoleEnumLabel,
+    UserStatusEnum,
+    UserStatusEnumLabel,
+    VerificationStatusMap
+} from '../../types/enums';
 import { formatDateTimeShort, formatDateTime } from '../../utils';
 
 const { Option } = Select;
@@ -65,7 +72,7 @@ const AdminUsers: React.FC = () => {
     pageSize: number,
     keyword?: string,
     userRole?: UserRoleEnum | '',
-    status?: UserStatusEnum | '',
+    userStatus?: UserStatusEnum | '',
     startDate?: Dayjs | null,
     endDate?: Dayjs | null
   ): Promise<void> => {
@@ -76,12 +83,12 @@ const AdminUsers: React.FC = () => {
         pageSize: pageSize,
         keyword: keyword !== undefined ? keyword : searchText,
         userRole: userRole !== undefined ? (userRole || undefined) : (selectedRole || undefined),
-        status: status !== undefined ? (status || undefined) : (selectedStatus || undefined),
+        userStatus: userStatus !== undefined ? (userStatus || undefined) : (selectedStatus || undefined),
         startDate: startDate?.toISOString(),
         endDate: endDate?.toISOString()
       });
 
-      console.log(response);
+      console.log('admin users :', response);
 
       if (response.code === 200 && response.data) {
         const userList = response.data.record.map((user: AdminUser) => ({
@@ -91,8 +98,8 @@ const AdminUsers: React.FC = () => {
           nickname: user.nickname,
           email: user.email,
           phone: user.phone,
-          role: user.role,
-          status: user.status,
+          userRole: user.userRole,
+          userStatus: user.userStatus,
           registerTime: user.registerTime,
           lastLoginTime: user.lastLoginTime,
           articleCount: user.articleCount,
@@ -280,7 +287,7 @@ const AdminUsers: React.FC = () => {
   // 打开修改角色模态框
   const handleOpenChangeRoleModal = (user: AdminUser): void => {
     setUserToChangeRole(user);
-    setTargetRole(user.role);
+    setTargetRole(user.userRole);
     setChangeRoleModalVisible(true);
   };
 
@@ -322,7 +329,7 @@ const AdminUsers: React.FC = () => {
 
   const handleOpenChangeStatusModal = (user: AdminUser): void => {
     setUserToChangeStatus(user);
-    setTargetStatus(user.status);
+    setTargetStatus(user.userStatus);
     setChangeStatusModalVisible(true);
   };
 
@@ -414,23 +421,24 @@ const AdminUsers: React.FC = () => {
     },
     {
       title: '角色',
-      dataIndex: 'role',
-      key: 'role',
+      dataIndex: 'userRole',
+      key: 'userRole',
+      align: 'center' as const,
       width: 80,
-      render: (role: UserRoleEnum | undefined): React.ReactNode => (
-        <Tag color={getRoleColor(role)}>
-          {role ? UserRoleEnumLabel[role] : '未知'}
+      render: (userRole: UserRoleEnum | undefined): React.ReactNode => (
+        <Tag color={getRoleColor(userRole)}>
+          {userRole ? UserRoleEnumLabel[userRole] : '未知'}
         </Tag>
       )
     },
     {
       title: '状态',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'userStatus',
+      key: 'userStatus',
       width: 100,
       render: (status: UserStatusEnum): React.ReactNode => (
         <Tag color={getStatusColor(status)}>
-          {statusOptions.find(opt => opt.value === status)?.label}
+          {UserStatusEnumLabel[status]}
         </Tag>
       )
     },
@@ -438,11 +446,12 @@ const AdminUsers: React.FC = () => {
       title: '注册时间',
       dataIndex: 'registerTime',
       key: 'registerTime',
+      align: 'center' as const,
       width: 180,
       render: (time: string): string => time ? formatDateTimeShort(time) : '未知'
     },
     {
-      title: '最后登录',
+      title: '最后登录时间',
       dataIndex: 'lastLoginTime',
       key: 'lastLoginTime',
       width: 180,
@@ -451,6 +460,7 @@ const AdminUsers: React.FC = () => {
     {
       title: '操作',
       key: 'action',
+      align: 'center' as const,
       width: 120,
       render: (_: unknown, record: AdminUser): React.ReactNode => {
         return (
@@ -498,12 +508,12 @@ const AdminUsers: React.FC = () => {
                       <Button
                         type="text"
                         className="w-full justify-start"
-                        disabled={record.status === UserStatusEnum.DISABLED}
+                        disabled={record.userStatus === UserStatusEnum.DISABLED}
                       >
-                        {record.status === UserStatusEnum.DISABLED ? '已禁用' : '禁用用户'}
+                        {record.userStatus === UserStatusEnum.DISABLED ? '已禁用' : '禁用用户'}
                       </Button>
                     ),
-                    disabled: record.status === UserStatusEnum.DISABLED
+                    disabled: record.userStatus === UserStatusEnum.DISABLED
                   },
                   {
                     key: 'delete',
@@ -660,11 +670,11 @@ const AdminUsers: React.FC = () => {
                   </div>
                   <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
                     <Tag color="volcano" variant={'outlined'} className="font-medium px-3 py-1 text-sm">
-                      {roleOptions.find(opt => opt.value === currentUser.role)?.label}
+                      {UserRoleEnumLabel[currentUser.userRole]}
                     </Tag>
-                    <Tag color={getStatusColor(currentUser.status)}
+                    <Tag color={getStatusColor(currentUser.userStatus)}
                       className="text-white font-medium px-3 py-1 text-sm rounded-full">
-                      {statusOptions.find(opt => opt.value === currentUser.status)?.label}
+                      {UserStatusEnumLabel[currentUser.userStatus]}
                     </Tag>
                   </div>
                   {currentUser.signature && (
@@ -685,7 +695,7 @@ const AdminUsers: React.FC = () => {
                       <span>{currentUser.gender || '未知'}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <UserOutlined size={14}/>
+                      <EnvironmentOutlined size={14}/>
                       <span>{currentUser.location || '未设置'}</span>
                     </div>
                   </div>
@@ -753,11 +763,11 @@ const AdminUsers: React.FC = () => {
                   </div>
                   <div className="flex flex-col p-3 bg-gray-50 rounded-md">
                     <span className="text-xs text-gray-500 mb-1">邮箱验证</span>
-                    <span className="text-gray-800 text-sm">{currentUser.emailVerified === '1' ? '已验证' : '未验证'}</span>
+                    <span className="text-gray-800 text-sm">{VerificationStatusMap[currentUser.emailVerified]}</span>
                   </div>
                   <div className="flex flex-col p-3 bg-gray-50 rounded-md">
                     <span className="text-xs text-gray-500 mb-1">手机验证</span>
-                    <span className="text-gray-800 text-sm">{currentUser.phoneVerified === '1' ? '已验证' : '未验证'}</span>
+                    <span className="text-gray-800 text-sm">{VerificationStatusMap[currentUser.phoneVerified]}</span>
                   </div>
                 </div>
               </div>
@@ -947,8 +957,8 @@ const AdminUsers: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">角色</label>
                 <Select
-                  value={editUser.role}
-                  onChange={(value) => handleEditFieldChange('role', value)}
+                  value={editUser.userRole}
+                  onChange={(value) => handleEditFieldChange('userRole', value)}
                   className="w-full"
                 >
                   {roleOptions.map(option => (
@@ -961,8 +971,8 @@ const AdminUsers: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">状态</label>
                 <Select
-                  value={editUser.status}
-                  onChange={(value) => handleEditFieldChange('status', value)}
+                  value={editUser.userStatus}
+                  onChange={(value) => handleEditFieldChange('userStatus', value)}
                   className="w-full"
                 >
                   {statusOptions.map(option => (
@@ -1050,7 +1060,7 @@ const AdminUsers: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">当前角色</label>
               <Input
-                value={UserRoleEnumLabel[userToChangeRole.role]}
+                value={UserRoleEnumLabel[userToChangeRole.userRole]}
                 disabled
                 className="w-full"
               />
@@ -1111,7 +1121,7 @@ const AdminUsers: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">当前状态</label>
               <Input
-                value={UserStatusEnumLabel[userToChangeStatus.status]}
+                value={UserStatusEnumLabel[userToChangeStatus.userStatus]}
                 disabled
                 className="w-full"
               />

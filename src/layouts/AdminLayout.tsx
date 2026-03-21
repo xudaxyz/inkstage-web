@@ -19,7 +19,7 @@ import {
     UsergroupAddOutlined,
     UserOutlined
 } from '@ant-design/icons';
-import { useUserStore } from '../store';
+import { useAdminStore } from '../store/adminStore';
 
 const { Header, Sider, Content } = Layout;
 
@@ -30,7 +30,7 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { adminUser, isAdminLoggedIn, refreshToken, logout } = useUserStore();
+  const { adminUser, isAdminLoggedIn, refreshToken, logout } = useAdminStore();
   const [collapsed, setCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
 
@@ -114,7 +114,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   // 处理退出登录
   const handleLogout = async () : Promise<void> => {
     try {
-      logout(true);
+      logout();
       navigate('/admin/login');
     } catch (error) {
       console.error('退出登录失败:', error);
@@ -125,7 +125,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const handleUserActivity = useCallback((): void => {
     // 每5分钟自动刷新令牌
     if (isAdminLoggedIn) {
-      refreshToken(true).catch(error => {
+      refreshToken().catch(error => {
         console.error('自动刷新令牌失败:', error);
       });
     }

@@ -27,7 +27,7 @@ const AdminCategories: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
-    current: 1,
+    pageNum: 1,
     pageSize: 10,
     total: 0
   });
@@ -46,7 +46,7 @@ const AdminCategories: React.FC = () => {
         setCategories(formattedCategories);
         setFilteredCategories(formattedCategories);
         setPagination({
-          current: response.data.pageNum,
+          pageNum: response.data.pageNum,
           pageSize: response.data.pageSize,
           total: response.data.total
         });
@@ -63,7 +63,7 @@ const AdminCategories: React.FC = () => {
 
   // 组件挂载时加载数据
   useEffect((): void => {
-    loadCategories();
+    void loadCategories();
   }, []);
 
   // 处理分页变化
@@ -103,7 +103,7 @@ const AdminCategories: React.FC = () => {
     try {
       await categoryService.adminDeleteCategory(id);
       message.success('分类删除成功');
-      await loadCategories(pagination.current, pagination.pageSize);
+      await loadCategories(pagination.pageNum, pagination.pageSize);
     } catch (error) {
       console.error('删除分类失败:', error);
       message.error('删除分类失败');
@@ -128,7 +128,7 @@ const AdminCategories: React.FC = () => {
       console.error('更新分类状态失败:', error);
       message.error('更新分类状态失败');
       // 失败时重新加载数据
-      await loadCategories(pagination.current, pagination.pageSize);
+      await loadCategories(pagination.pageNum, pagination.pageSize);
     }
   };
 
@@ -156,7 +156,7 @@ const AdminCategories: React.FC = () => {
           message.success('分类添加成功');
         }
         setIsModalVisible(false);
-        await loadCategories(pagination.current, pagination.pageSize);
+        await loadCategories(pagination.pageNum, pagination.pageSize);
       } catch (error) {
         console.error('保存分类失败:', error);
         message.error('保存分类失败');
@@ -172,7 +172,7 @@ const AdminCategories: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number): number => (pagination.current - 1) * pagination.pageSize + index + 1
+      render: (_: unknown, __: unknown, index: number): number => (pagination.pageNum - 1) * pagination.pageSize + index + 1
     },
     {
       title: '分类名称',
@@ -300,7 +300,7 @@ const AdminCategories: React.FC = () => {
             rowKey="id"
             onChange={handleTableChange}
             pagination={{
-              current: pagination.current,
+              current: pagination.pageNum,
               pageSize: pagination.pageSize,
               total: pagination.total,
               showSizeChanger: true,

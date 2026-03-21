@@ -1,16 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store';
+import type { AuthTypeEnum } from '../types/enums';
 
 /**
- * 认证相关的自定义Hook
+ * 前台认证相关的自定义Hook
  */
 export const useAuth = () => {
   const navigate = useNavigate();
   const {
     user,
-    adminUser,
     isLoggedIn,
-    isAdminLoggedIn,
     isLoading,
     login,
     logout,
@@ -29,25 +28,16 @@ export const useAuth = () => {
   };
 
   /**
-   * 检查管理员是否登录
-   * @returns 是否登录
-   */
-  const checkAdminAuth = (): boolean => {
-    return isAdminLoggedIn;
-  };
-
-  /**
    * 处理登录
    * @param params 登录参数
    * @returns 登录结果
    */
   const handleLogin = async (params: {
     account: string;
-    authType: 'password' | 'code';
+    authType: AuthTypeEnum;
     password?: string;
     code?: string;
     remember?: boolean;
-    isAdmin?: boolean;
   }) => {
       const result = await login(params);
       if (result.code === 200) {
@@ -55,9 +45,13 @@ export const useAuth = () => {
         const redirectPath = localStorage.getItem('redirect_after_login');
         if (redirectPath) {
           localStorage.removeItem('redirect_after_login');
-          navigate(redirectPath);
+          // 确保 redirectPath 是一个正确的路径，以 / 开头
+          const normalizedPath = redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`;
+          // 移除可能的完整 URL 部分
+          const cleanPath = normalizedPath.split('localhost:3000')[1] || normalizedPath;
+          navigate(cleanPath);
         } else {
-          // 默认重定向到首页
+          // 普通用户登录，默认重定向到前台首页
           navigate('/');
         }
       }
@@ -66,10 +60,9 @@ export const useAuth = () => {
 
   /**
    * 处理登出
-   * @param isAdmin 是否是管理员登出
    */
-  const handleLogout = (isAdmin: boolean = false) : void => {
-    logout(isAdmin);
+  const handleLogout = (): void => {
+    logout();
     // 登出后重定向到首页
     navigate('/');
   };
@@ -84,31 +77,17 @@ export const useAuth = () => {
     return requiredRoles.some(role => user.role === role);
   };
 
-  /**
-   * 检查管理员权限
-   * @param requiredRoles 所需角色列表
-   * @returns 是否有权限
-   */
-  const checkAdminPermission = (requiredRoles: string[]): boolean => {
-    if (!isAdminLoggedIn) return false;
-    return requiredRoles.some(role => adminUser.role === role);
-  };
-
   return {
     user,
-    adminUser,
     isLoggedIn,
-    isAdminLoggedIn,
     isLoading,
     checkAuth,
-    checkAdminAuth,
     handleLogin,
     handleLogout,
     register,
     sendCode,
     getProfile,
     refreshToken,
-    checkPermission,
-    checkAdminPermission
+    checkPermission
   };
 };

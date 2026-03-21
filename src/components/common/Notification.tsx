@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { message } from 'antd';
 import { useUserStore } from '../../store';
+import { useAdminStore } from '../../store/adminStore';
 
 /**
  * 全局通知组件，用于显示登录状态变化的提示信息
  */
 const Notification: React.FC = () => {
-  const { isLoggedIn, isAdminLoggedIn } = useUserStore();
+  const { isLoggedIn } = useUserStore();
+  const { isAdminLoggedIn } = useAdminStore();
   const lastLoginStatusRef = useRef<{ isLoggedIn: boolean; isAdminLoggedIn: boolean }>({
     isLoggedIn: isLoggedIn,
     isAdminLoggedIn: isAdminLoggedIn
