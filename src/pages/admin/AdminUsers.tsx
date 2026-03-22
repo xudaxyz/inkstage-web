@@ -410,6 +410,27 @@ const AdminUsers: React.FC = () => {
         }
     };
 
+    // 切换用户状态
+    const handleToggleUserStatus = async (user: AdminUser): Promise<void> => {
+        const newStatus = user.userStatus === UserStatusEnum.DISABLED ? UserStatusEnum.NORMAL : UserStatusEnum.DISABLED;
+
+        setEditLoading(true);
+        try {
+            const response = await userService.admin.updateUserStatus(user.id, newStatus);
+            if (response.code === 200) {
+                message.success(response.message || (newStatus === UserStatusEnum.NORMAL ? '用户已启用' : '用户已禁用'));
+                fetchUsers();
+            } else {
+                message.error(response.message || '状态修改失败');
+            }
+        } catch (error) {
+            console.error('状态修改失败:', error);
+            message.error('状态修改失败');
+        } finally {
+            setEditLoading(false);
+        }
+    };
+
     // 获取角色标签颜色
     const getRoleColor = (role: UserRoleEnum | undefined): string => {
         if (!role) return 'default';
@@ -552,17 +573,16 @@ const AdminUsers: React.FC = () => {
                                               )
                                           },
                                           {
-                                              key: 'disable',
+                                              key: 'toggleStatus',
                                               label: (
                                                   <Button
                                                       type="text"
                                                       className="w-full justify-start"
-                                                      disabled={record.userStatus === UserStatusEnum.DISABLED}
+                                                      onClick={() => handleToggleUserStatus(record)}
                                                   >
-                                                      {record.userStatus === UserStatusEnum.DISABLED ? '已禁用' : '禁用用户'}
+                                                      {record.userStatus === UserStatusEnum.DISABLED ? '启用用户' : '禁用用户'}
                                                   </Button>
-                                              ),
-                                              disabled: record.userStatus === UserStatusEnum.DISABLED
+                                              )
                                           },
                                           {
                                               key: 'delete',
@@ -914,7 +934,7 @@ const AdminUsers: React.FC = () => {
                                                      className="p-4 rounded-md border border-gray-100 hover:shadow-sm transition-all duration-200 bg-white">
                                                     <div className="flex justify-between items-start">
                                                         <div className="flex-1">
-                                                            <p className="text-gray-700 mb-2 text-sm line-clamp-2">{comment.content}</p>
+                                                            <p className="text-gray-700 mb-2 text-sm line-clamp-2 pr-4">{comment.content}</p>
                                                             <div className="flex flex-wrap gap-3 text-xs text-gray-500">
                                 <span className="flex items-center gap-1">
                                   <FileTextOutlined size={12}/>
