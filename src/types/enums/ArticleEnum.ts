@@ -89,9 +89,9 @@ export const AllowStatusMap = {
   [AllowStatusEnum.PROHIBITED]: '禁止'
 };
 
-export const ArticleTopMap = {
+export const AllowTopMap = {
     [AllowTopEnum.TOP]: '置顶',
-    [AllowTopEnum.NOT_TOP]: '不置顶'
+    [AllowTopEnum.NOT_TOP]: '未置顶'
 };
 
 export const ArticleReviewStatusMap = {
