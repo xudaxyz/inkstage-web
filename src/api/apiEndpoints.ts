@@ -156,9 +156,10 @@ export const API_ENDPOINTS = {
     // 评论管理
     COMMENT: {
       LIST_PAGE: '/admin/comment/list', // 分页获取评论
-      DELETE: (id: number): string => `/admin/comment/${id}`, // 删除评论
-      UPDATE_STATUS: (id: number): string => `/admin/comment/${id}/status`, // 更新评论状态
-      UPDATE_TOP: (id: number): string => `/admin/comment/${id}/top` // 更新评论置顶状态
+      DELETE: (id: number): string => `/admin/comment/delete/${id}`, // 删除评论
+      UPDATE: (id: number): string => `/admin/comment/update/${id}`, // 更新评论
+      UPDATE_STATUS: (id: number): string => `/admin/comment/update-status/${id}`, // 更新评论状态
+      UPDATE_TOP: (id: number): string => `/admin/comment/update-top/${id}` // 更新评论置顶状态
     },
 
     // 标签管理

@@ -324,7 +324,7 @@ const articleService = {
     admin: {
       // 分页获取文章列表
       getArticlesByPage: async (params: {
-              page?: number;
+              pageNum?: number;
               pageSize?: number;
               keyword?: string;
               categoryId?: number;
@@ -335,13 +335,12 @@ const articleService = {
           validateIdParam(params.categoryId);
         }
         const requestBody = {
-          pageNum: params.page || 1,
+          pageNum: params.pageNum || 1,
           pageSize: params.pageSize || 10,
           keyword: params.keyword || '',
           categoryId: params.categoryId || 0,
           articleStatus: params.articleStatus || null
         };
-        console.log(requestBody);
         return await apiClient.post(API_ENDPOINTS.ADMIN.ARTICLE.LIST_PAGE, requestBody);
       },
 

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Avatar, Dropdown } from 'antd';
 import { LikeOutlined, DislikeOutlined, MessageOutlined, FlagOutlined, EllipsisOutlined } from '@ant-design/icons';
-import type { ArticleComment } from '../../types/comment';
+import type { FrontArticleCommentList } from '../../types/comment';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
 import { formatDateTimeShort } from '../../utils';
 
 interface ReplyItemProps {
-  reply: ArticleComment;
+  reply: FrontArticleCommentList;
   articleId: number;
   currentUserId?: number;
   currentUserNickname?: string;

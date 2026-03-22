@@ -75,7 +75,7 @@ const AdminArticles: React.FC = () => {
   const [form] = Form.useForm();
   const [reviewForm] = Form.useForm();
   const [pagination, setPagination] = useState({
-    current: 1,
+    pageNum: 1,
     pageSize: 10,
     total: 0
   });
@@ -83,12 +83,11 @@ const AdminArticles: React.FC = () => {
   const [reviewLoading, setReviewLoading] = useState(false);
 
   // 获取文章列表
-  const fetchArticles = useCallback(async (page = 1, pageSize = 10) : Promise<void> => {
-    console.log('fetchArticles called with selectedCategory:', selectedCategory);
+  const fetchArticles = useCallback(async (pageNum = 1, pageSize = 10) : Promise<void> => {
     setLoading(true);
     try {
       const params = {
-        page,
+        pageNum,
         pageSize,
         categoryId: 0,
         keyword: searchText,
@@ -99,7 +98,6 @@ const AdminArticles: React.FC = () => {
         params.categoryId = selectedCategory;
       }
 
-      console.log('fetchArticles params:', params);
       const response = await articleService.admin.getArticlesByPage(params);
 
       if (response.code === 200 && response.data) {
@@ -138,18 +136,17 @@ const AdminArticles: React.FC = () => {
   // 搜索和筛选文章
   const handleSearch = (value: string) : void => {
     setSearchText(value);
-    setPagination(prev => ({ ...prev, current: 1 }));
+    setPagination(prev => ({ ...prev, pageNum: 1 }));
   };
 
   const handleStatusChange = (value: ArticleStatusEnum) : void => {
     setSelectedStatus(value);
-    setPagination(prev => ({ ...prev, current: 1 }));
+    setPagination(prev => ({ ...prev, pageNum: 1 }));
   };
 
   const handleCategoryChange = (value: number | null) : void => {
-    console.log('handleCategoryChange', value);
     setSelectedCategory(value === null ? undefined : value);
-    setPagination(prev => ({ ...prev, current: 1 }));
+    setPagination(prev => ({ ...prev, pageNum: 1 }));
   };
 
   // 获取分类列表
@@ -349,7 +346,7 @@ const AdminArticles: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number) : number => (pagination.current - 1) * pagination.pageSize + index + 1
+      render: (_: unknown, __: unknown, index: number) : number => (pagination.pageNum - 1) * pagination.pageSize + index + 1
     },
     {
       title: '标题',
@@ -435,7 +432,8 @@ const AdminArticles: React.FC = () => {
       render: (_: unknown, record: AdminArticleList) : React.ReactNode => (
         <Space size="middle">
           <Button
-            type="text"
+            variant={'filled'}
+            color={'green'}
             icon={<EyeOutlined/>}
             onClick={() => handleViewArticle(record)}
             className="text-blue-500"
@@ -443,7 +441,8 @@ const AdminArticles: React.FC = () => {
                         查看
           </Button>
           <Button
-            type="text"
+            variant={'filled'}
+            color={'blue'}
             icon={<EditOutlined/>}
             onClick={() => handleEditArticle(record)}
             className="text-green-500"
@@ -458,9 +457,10 @@ const AdminArticles: React.FC = () => {
             cancelText="取消"
           >
             <Button
-              type="text"
+              variant={'filled'}
+              color={'red'}
               icon={<DeleteOutlined/>}
-              className="text-red-500"
+              className="text-white"
             >
                             删除
             </Button>
@@ -522,18 +522,19 @@ const AdminArticles: React.FC = () => {
           loading={loading}
           pagination={{
             showSizeChanger: true,
+            placement: ['bottomCenter'],
             pageSizeOptions: ['10', '20', '50'],
             pageSize: pagination.pageSize,
-            current: pagination.current,
+            current: pagination.pageNum,
             total: pagination.total,
             showTotal: (total) => `共 ${total} 篇文章`,
-            onChange: (page, pageSize) => {
+            onChange: (pageNum, pageSize) => {
               setPagination(prev => ({
                 ...prev,
-                current: page,
+                pageNum: pageNum,
                 pageSize: pageSize
               }));
-              void fetchArticles(page, pageSize);
+              void fetchArticles(pageNum, pageSize);
             }
           }}
         />

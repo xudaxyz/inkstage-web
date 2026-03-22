@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Avatar, Popconfirm, Dropdown } from 'antd';
 import { LikeOutlined, DislikeOutlined, MessageOutlined, EditOutlined, DeleteOutlined, FlagOutlined, EllipsisOutlined } from '@ant-design/icons';
-import type { ArticleComment } from '../../types/comment';
-import { CommentTopStatus } from '../../types/enums/CommentEnum.ts';
+import type { FrontArticleCommentList } from '../../types/comment';
+import { CommentTopStatus } from '../../types/enums';
 import ReplyItem from './ReplyItem';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
 import { formatDateTimeShort } from '../../utils';
 
 interface CommentItemProps {
-  comment: ArticleComment;
+  comment: FrontArticleCommentList;
   articleId: number;
   currentUserId?: number;
   currentUserNickname?: string;

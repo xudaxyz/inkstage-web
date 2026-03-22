@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import commentService from '../services/commentService';
 import {
-    type ArticleComment,
+    type FrontArticleCommentList,
     type CommentCreateParams,
     type CommentUpdateParams
 } from '../types/comment';
@@ -9,7 +9,7 @@ import { message } from 'antd';
 
 interface CommentState {
     // 状态
-    comments: ArticleComment[];
+    comments: FrontArticleCommentList[];
     commentCount: number;
     sortBy: 'hot' | 'new';
     loading: boolean;
@@ -17,7 +17,7 @@ interface CommentState {
     isSubmitting: boolean;
 
     // 操作
-    setComments: (comments: ArticleComment[]) => void;
+    setComments: (comments: FrontArticleCommentList[]) => void;
     setCommentCount: (count: number) => void;
     setSortBy: (sortBy: 'hot' | 'new') => void;
     setLoading: (loading: boolean) => void;
@@ -36,7 +36,7 @@ interface CommentState {
 
 const useCommentStore = create<CommentState>((set, get) => {
     // 递归更新评论状态
-    const updateCommentStatus = (comments: ArticleComment[], commentId: number, updateFn: (comment: ArticleComment) => ArticleComment): ArticleComment[] => {
+    const updateCommentStatus = (comments: FrontArticleCommentList[], commentId: number, updateFn: (comment: FrontArticleCommentList) => FrontArticleCommentList): FrontArticleCommentList[] => {
         return comments.map(comment => {
             if (comment.id === commentId) {
                 return updateFn(comment);
@@ -61,7 +61,7 @@ const useCommentStore = create<CommentState>((set, get) => {
         isSubmitting: false,
 
         // 状态设置函数
-        setComments: (comments: ArticleComment[]): void => set({ comments }),
+        setComments: (comments: FrontArticleCommentList[]): void => set({ comments }),
         setCommentCount: (commentCount: number): void => set({ commentCount }),
         setSortBy: (sortBy: 'hot' | 'new'): void => set({ sortBy }),
         setLoading: (loading: boolean): void => set({ loading }),
@@ -178,7 +178,7 @@ const useCommentStore = create<CommentState>((set, get) => {
 });
 
 // 导出评论状态的具体选择器，减少不必要的重渲染
-export const useComments = () : ArticleComment[] => useCommentStore((state) => state.comments);
+export const useComments = () : FrontArticleCommentList[] => useCommentStore((state) => state.comments);
 export const useCommentCount = () : number => useCommentStore((state) => state.commentCount);
 export const useSortBy = () : string | undefined => useCommentStore((state) => state.sortBy);
 export const useCommentLoading = () : boolean => useCommentStore((state) => state.loading);
