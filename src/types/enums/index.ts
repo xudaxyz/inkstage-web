@@ -8,6 +8,7 @@ export * from './DefaultStatusEnum';
 export * from './NotificationEnum';
 export * from './AuthTypeEnum';
 export * from './AuthOperationTypeEnum';
+export * from './CommentEnum';
 
 // 通用枚举工具类型
 export type EnumLike = Record<string, string | number>;

@@ -1,5 +1,12 @@
-import {type GenderEnum, type UserRoleEnum, type UserStatusEnum, type VerificationStatusEnum} from './enums';
+import {
+    type ArticleStatusEnum,
+    type GenderEnum,
+    type UserRoleEnum,
+    type UserStatusEnum,
+    type VerificationStatusEnum
+} from './enums';
 import type { ApiPageResponse } from './common';
+import type { CommentStatusEnum } from './enums';
 
 // 用户信息类型定义
 export interface UserInfo {
@@ -26,7 +33,7 @@ export interface AdminUserArticle {
     id: number;
     title: string;
     summary: string;
-    articleStatus: string;
+    articleStatus: ArticleStatusEnum;
     reviewStatus: string;
     publishTime: string;
     readCount: number;
@@ -39,7 +46,7 @@ export interface AdminUserComment {
     articleId: number;
     articleTitle: string;
     content: string;
-    status: string;
+    status: CommentStatusEnum;
     top: string;
     likeCount: number;
     replyCount: number;
@@ -61,8 +68,9 @@ export interface AdminUser {
     emailVerified: VerificationStatusEnum;
     phoneVerified: VerificationStatusEnum;
     avatar?: string;
+    coverImage?: string;
     signature?: string;
-    gender?: string;
+    gender: GenderEnum;
     location?: string;
     website?: string;
     followCount?: number;

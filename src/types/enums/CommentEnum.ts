@@ -2,6 +2,7 @@ export const CommentStatusEnum = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED',
+  APPEALING: 'APPEALING',
   DISABLED: 'DISABLED'
 } as const;
 
@@ -17,7 +18,9 @@ export type CommentTopStatus = typeof CommentTopStatus[keyof typeof CommentTopSt
 export const CommentStatusMap = {
   [CommentStatusEnum.PENDING]: '待审核',
   [CommentStatusEnum.APPROVED]: '已通过',
-  [CommentStatusEnum.REJECTED]: '已驳回'
+  [CommentStatusEnum.REJECTED]: '已驳回',
+  [CommentStatusEnum.APPEALING]: '申诉中',
+  [CommentStatusEnum.DISABLED]: '禁用'
 };
 
 export const CommentTopMap = {
