@@ -13,7 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import articleService from '../../../services/articleService.ts';
 import { type MyArticleList } from '../../../types/article';
-import { ROUTES } from '../../../routes/constants';
+import { ROUTES } from '../../../constants/routes';
 import {
   ArticleOriginalEnum,
   ArticleVisibleEnum,
@@ -28,7 +28,7 @@ import { formatDateTimeShort } from '../../../utils';
 
 // 文章类型定义
 interface Article {
-    id: string;
+    id: number;
     title: string;
     summary: string;
     publishTime: string;
@@ -51,7 +51,7 @@ const MyCreations: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(3);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [deleteArticleId, setDeleteArticleId] = useState('');
+  const [deleteArticleId, setDeleteArticleId] = useState<number>();
   const [articles, setArticles] = useState<Article[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -85,7 +85,7 @@ const MyCreations: React.FC = () => {
       if (response.code === 200 && response.data) {
         // 转换后端数据格式
         const formattedArticles: Article[] = response.data.record.map((item: MyArticleList) => ({
-          id: item.id.toString(),
+          id: item.id,
           title: item.title,
           summary: item.summary,
           publishTime: item.publishTime,
@@ -116,7 +116,7 @@ const MyCreations: React.FC = () => {
   }, [fetchArticles]);
 
   // 分享文章
-  const handleShare = (articleId: string) : void => {
+  const handleShare = (articleId: number) : void => {
     // 实现分享逻辑
     void message.success('分享功能已触发');
     // 可以添加复制链接到剪贴板的功能
@@ -129,12 +129,12 @@ const MyCreations: React.FC = () => {
   };
 
   // 编辑文章
-  const handleEdit = (articleId: string) : void => {
-    navigate(ROUTES.EDIT_ARTICLE(articleId));
+  const handleEdit = (articleId: number) : void => {
+    navigate(ROUTES.UPDATE_ARTICLE(articleId));
   };
 
   // 打开删除确认对话框
-  const showDeleteConfirm = (articleId: string) : void => {
+  const showDeleteConfirm = (articleId: number) : void => {
     setDeleteArticleId(articleId);
     setDeleteModalVisible(true);
   };
@@ -142,7 +142,6 @@ const MyCreations: React.FC = () => {
   // 关闭删除确认对话框
   const handleDeleteCancel = () : void => {
     setDeleteModalVisible(false);
-    setDeleteArticleId('');
   };
 
   // 删除文章
@@ -154,7 +153,6 @@ const MyCreations: React.FC = () => {
       await articleService.deleteArticle(Number(deleteArticleId));
       message.success('文章已删除');
       setDeleteModalVisible(false);
-      setDeleteArticleId('');
       // 重新加载文章列表
       await fetchArticles();
     } catch (error) {

@@ -17,7 +17,7 @@ import {
   FolderOpenOutlined,
   FolderAddOutlined
 } from '@ant-design/icons';
-import { ROUTES } from '../../../routes/constants';
+import { ROUTES } from '../../../constants/routes';
 import articleService from '../../../services/articleService';
 import { type MyArticleCollectionList } from '../../../types/article';
 import { DefaultStatusEnum, ArticleOriginalMap } from '../../../types/enums';
@@ -195,12 +195,12 @@ const MyCollections: React.FC = () => {
 
   // 分享文章
   const handleShare = () : void => {
-    message.success('分享功能已触发');
+    void message.success('分享功能已触发');
   };
 
   // 举报文章
   const handleReport = () : void => {
-    message.success('举报功能已触发');
+    void message.success('举报功能已触发');
   };
 
   // 打开新建收藏夹模态框
@@ -508,7 +508,7 @@ const MyCollections: React.FC = () => {
                         <div className="flex items-center mb-2">
                           <h3 className="text-xl font-semibold text-secondary-800 hover:text-primary-600 transition-colors duration-200 flex-1">
                             <a
-                              href={ROUTES.ARTICLE_DETAIL(collection.articleId.toString())}
+                              href={ROUTES.ARTICLE_DETAIL(collection.articleId)}
                               className="hover:underline"
                               target="_blank"
                               rel="noopener noreferrer"

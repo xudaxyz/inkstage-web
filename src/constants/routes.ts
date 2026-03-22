@@ -1,32 +1,39 @@
 // 前端路由常量定义
 export const ROUTES = {
-  // 认证相关
-  LOGIN: '/login',
-  ADMIN_LOGIN: '/admin/login',
-  REGISTER: '/register',
+    // 主页相关
+    HOME: '/',
+    RANKINGS: '/rankings',
 
-  // 主页相关
-  HOME: '/',
+    // 认证相关
+    LOGIN: '/login',
+    ADMIN_LOGIN: '/admin/login',
+    REGISTER: '/register',
 
-  // 用户相关
-  PROFILE: '/profile',
-  ACCOUNT_SETTINGS: '/profile/settings',
+    // 用户相关
+    USER_PROFILE: (id: string): string => `/user/${id}`,
 
-  // 文章相关
-  ARTICLE_DETAIL: (id: number): string => `/article/${id}`,
-  CREATE_ARTICLE: '/article/create',
-  UPDATE_ARTICLE: (id: number): string => `/article/update/${id}`,
+    // 用户个人中心
+    PROFILE: '/profile',
+    PROFILE_INFO: '/profile/info',
+    MY_CREATIONS: '/profile/creations',
+    MY_COLLECTIONS: '/profile/collections',
+    READING_HISTORY: '/profile/histories',
+    NOTIFICATIONS: '/profile/notifications',
+    ACCOUNT_SETTINGS: '/profile/settings',
 
-  // 管理后台
-  ADMIN_DASHBOARD: '/admin',
-  ADMIN_USERS: '/admin/users',
-  ADMIN_ARTICLES: '/admin/articles',
-  ADMIN_COMMENTS: '/admin/comments',
-  ADMIN_TAGS: '/admin/tags',
-  ADMIN_CATEGORIES: '/admin/categories',
+    // 文章相关
+    ARTICLE_DETAIL: (id: number): string => `/article/${id}`,
+    CREATE_ARTICLE: '/article/create',
+    UPDATE_ARTICLE: (id: number): string => `/article/update/${id}`,
 
-  // 其他
-  NOTIFICATIONS: '/notifications',
-  READING_HISTORY: '/reading-history',
-  SEARCH: '/search'
+    // 管理后台
+    ADMIN_DASHBOARD: '/admin',
+    ADMIN_USERS: '/admin/users',
+    ADMIN_ARTICLES: '/admin/articles',
+    ADMIN_COMMENTS: '/admin/comments',
+    ADMIN_TAGS: '/admin/tags',
+    ADMIN_CATEGORIES: '/admin/categories',
+
+    // 其他
+    SEARCH: '/search'
 };

@@ -62,6 +62,7 @@ export interface AdminUser {
     userRole: UserRoleEnum;
     userStatus: UserStatusEnum;
     registerTime: string;
+    usernameLastModifiedTime?: string;
     lastLoginTime: string;
     articleCount?: number;
     commentCount?: number;

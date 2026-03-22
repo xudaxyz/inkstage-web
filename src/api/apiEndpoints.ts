@@ -136,8 +136,8 @@ export const API_ENDPOINTS = {
       LIST: '/admin/user/list', // 分页获取用户
       DETAIL: (id: number): string => `/admin/user/detail/${id}`, // 获取用户详情
       PROFILE: '/admin/user/profile', // 获取当前管理员个人资料
-      DELETE: (id: number): string => `/admin/user/${id}`, // 删除用户
-      UPDATE: (id: number): string => `/admin/user/${id}`, // 更新用户
+      DELETE: (id: number): string => `/admin/user/delete/${id}`, // 删除用户
+      UPDATE: (id: number): string => `/admin/user/update/${id}`, // 更新用户
       UPDATE_STATUS: (id: number): string => `/admin/user/update-status/${id}`, // 更新用户状态
       UPDATE_ROLE: (id: number): string => `/admin/user/update-role/${id}` // 更新用户角色
     },

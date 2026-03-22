@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Table, Input, Button, Space, Tag, Modal, Select, message, Dropdown, DatePicker, Tabs } from 'antd';
+import { Card, Table, Input, Button, Space, Tag, Modal, Select, message, Dropdown, DatePicker, Tabs, Switch } from 'antd';
 import {
     SearchOutlined,
     EyeOutlined,
@@ -25,10 +25,11 @@ import {
     UserRoleEnum,
     UserRoleEnumLabel,
     UserStatusEnum,
-    UserStatusEnumLabel,
+    UserStatusEnumLabel, VerificationStatusEnum,
     VerificationStatusMap
 } from '../../types/enums';
 import { formatDateTimeShort, formatDateTime } from '../../utils';
+import { ROUTES } from '../../constants/routes';
 
 const { Option } = Select;
 const { Search } = Input;
@@ -46,6 +47,12 @@ const statusOptions = [
     { value: UserStatusEnum.NORMAL, label: UserStatusEnumLabel[UserStatusEnum.NORMAL] },
     { value: UserStatusEnum.DISABLED, label: UserStatusEnumLabel[UserStatusEnum.DISABLED] },
     { value: UserStatusEnum.PENDING, label: UserStatusEnumLabel[UserStatusEnum.PENDING] }
+];
+
+// 验证状态选项
+const verificationOptions = [
+    { value: VerificationStatusEnum.VERIFIED, label: VerificationStatusMap[VerificationStatusEnum.VERIFIED] },
+    { value: VerificationStatusEnum.UNVERIFIED, label: VerificationStatusMap[VerificationStatusEnum.UNVERIFIED] }
 ];
 
 const AdminUsers: React.FC = () => {
@@ -69,6 +76,7 @@ const AdminUsers: React.FC = () => {
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [editUser, setEditUser] = useState<AdminUser | null>(null);
     const [editLoading, setEditLoading] = useState(false);
+    const [usernameEditable, setUsernameEditable] = useState(false);
     const [changeRoleModalVisible, setChangeRoleModalVisible] = useState(false);
     const [userToChangeRole, setUserToChangeRole] = useState<AdminUser | null>(null);
     const [targetRole, setTargetRole] = useState<UserRoleEnum | ''>('');
@@ -245,15 +253,45 @@ const AdminUsers: React.FC = () => {
     };
 
     // 打开编辑用户模态框
-    const handleOpenEditModal = (user: AdminUser): void => {
-        setEditUser(user);
-        setEditModalVisible(true);
+    const handleOpenEditModal = async (user: AdminUser): Promise<void> => {
+        setLoading(true);
+        try {
+            // 获取用户详情，确保数据完整
+            const response = await userService.admin.getUserById(user.id);
+            if (response.code === 200) {
+                const userDetail = response.data;
+                const userWithDefaults = {
+                    ...userDetail,
+                    gender: userDetail.gender || GenderEnum.UNKNOWN,
+                    location: userDetail.location || '',
+                    signature: userDetail.signature || '',
+                    emailVerified: userDetail.emailVerified || VerificationStatusEnum.UNVERIFIED,
+                    phoneVerified: userDetail.phoneVerified || VerificationStatusEnum.UNVERIFIED,
+                    website: userDetail.website || '',
+                    avatar: userDetail.avatar || '',
+                    coverImage: userDetail.coverImage || '',
+                    lastLoginIp: userDetail.lastLoginIp || '',
+                    registerIp: userDetail.registerIp || '',
+                    privacy: userDetail.privacy || 'PUBLIC'
+                };
+                setEditUser(userWithDefaults);
+                setEditModalVisible(true);
+            } else {
+                message.error('获取用户详情失败');
+            }
+        } catch (error) {
+            console.error('获取用户详情失败:', error);
+            message.error('获取用户详情失败');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // 关闭编辑用户模态框
     const handleCloseEditModal = (): void => {
         setEditModalVisible(false);
         setEditUser(null);
+        setUsernameEditable(false);
     };
 
     // 处理编辑表单字段变化
@@ -702,7 +740,7 @@ const AdminUsers: React.FC = () => {
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
-                                            <Tag color="volcano" variant={'outlined'}
+                                            <Tag color="blue" variant={'outlined'}
                                                  className="font-medium px-3 py-1 text-sm">
                                                 {UserRoleEnumLabel[currentUser.userRole]}
                                             </Tag>
@@ -825,8 +863,10 @@ const AdminUsers: React.FC = () => {
                                                          className="p-4 rounded-md border border-gray-100 hover:shadow-sm transition-all duration-200 bg-white">
                                                         <div className="flex justify-between items-start">
                                                             <div className="flex-1">
-                                                                <h4 className="font-medium text-gray-800 hover:text-blue-600 transition-colors mb-2 text-sm">
-                                                                    {article.title}
+                                                                <h4 className="font-medium mb-2 text-sm">
+                                                                    <a href={ROUTES.ARTICLE_DETAIL(article.id)} target="_blank" rel="noopener noreferrer" className="text-black hover:text-blue-600 transition-colors">
+                                                                        {article.title}
+                                                                    </a>
                                                                 </h4>
                                                                 <div
                                                                     className="flex flex-wrap gap-3 text-xs text-gray-500">
@@ -970,36 +1010,46 @@ const AdminUsers: React.FC = () => {
             >
                 {editUser && (
                     <div className="py-4 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">用户名</label>
-                                <Input
-                                    value={editUser.username}
-                                    onChange={(e) => handleEditFieldChange('username', e.target.value)}
-                                    className="w-full"
-                                />
+                        {/* 第一行：用户名和上次修改时间 */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-1">
+                                    <label className="text-base font-medium text-gray-700 whitespace-nowrap">用户名:</label>
+                                    <div className="flex-1 flex items-center gap-2 max-w-64">
+                                        <Input
+                                            value={editUser.username}
+                                            variant="underlined"
+                                            onChange={(e) => handleEditFieldChange('username', e.target.value)}
+                                            disabled={!usernameEditable}
+                                            className="flex-1"
+                                        />
+                                        <Switch
+                                            checked={usernameEditable}
+                                            checkedChildren="启用"
+                                            unCheckedChildren="禁用"
+                                            onChange={(checked) => setUsernameEditable(checked)}
+                                        />
+                                    </div>
+                                </div>
                             </div>
+                            <div className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                                {editUser.usernameLastModifiedTime ? (
+                                        <span className="flex items-center text-xs pl-2 text-gray-500">
+                                            上次修改时间: {formatDateTimeShort(editUser.usernameLastModifiedTime)}
+                                        </span>
+                                ) : (
+                                    <span className="text-xs text-gray-500">用户未修改过</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* 第二行：昵称、角色和状态 */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">昵称</label>
                                 <Input
                                     value={editUser.nickname}
                                     onChange={(e) => handleEditFieldChange('nickname', e.target.value)}
-                                    className="w-full"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
-                                <Input
-                                    value={editUser.email}
-                                    onChange={(e) => handleEditFieldChange('email', e.target.value)}
-                                    className="w-full"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">手机号</label>
-                                <Input
-                                    value={editUser.phone}
-                                    onChange={(e) => handleEditFieldChange('phone', e.target.value)}
                                     className="w-full"
                                 />
                             </div>
@@ -1032,23 +1082,101 @@ const AdminUsers: React.FC = () => {
                                 </Select>
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">签名</label>
-                            <Input.TextArea
-                                value={editUser.signature}
-                                onChange={(e) => handleEditFieldChange('signature', e.target.value)}
-                                rows={3}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        {/* 第三行：邮箱和邮箱验证状态 */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">性别</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
                                 <Input
-                                    value={editUser.gender}
-                                    onChange={(e) => handleEditFieldChange('gender', e.target.value as GenderEnum)}
+                                    value={editUser.email}
+                                    onChange={(e) => handleEditFieldChange('email', e.target.value)}
                                     className="w-full"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">邮箱验证状态</label>
+                                <Select
+                                    value={editUser.emailVerified || VerificationStatusEnum.UNVERIFIED}
+                                    onChange={(value) => handleEditFieldChange('emailVerified', value as VerificationStatusEnum)}
+                                    className="w-full"
+                                >
+                                    {verificationOptions.map(option => (
+                                        <Option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </div>
+                        </div>
+
+                        {/* 第四行：手机号和手机验证状态 */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">手机号</label>
+                                <Input
+                                    value={editUser.phone}
+                                    onChange={(e) => handleEditFieldChange('phone', e.target.value)}
+                                    className="w-full"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">手机验证状态</label>
+                                <Select
+                                    value={editUser.phoneVerified || VerificationStatusEnum.UNVERIFIED}
+                                    onChange={(value) => handleEditFieldChange('phoneVerified', value as VerificationStatusEnum)}
+                                    className="w-full"
+                                >
+                                    {verificationOptions.map(option => (
+                                        <Option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </div>
+                        </div>
+
+                        {/* 第五行：性别（单选框）和所在地 */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">性别</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-1">
+                                        <input
+                                            type="radio"
+                                            name="gender"
+                                            checked={editUser.gender === GenderEnum.UNKNOWN}
+                                            onChange={() => handleEditFieldChange('gender', GenderEnum.UNKNOWN)}
+                                        />
+                                        <span>未知</span>
+                                    </label>
+                                    <label className="flex items-center gap-1">
+                                        <input
+                                            type="radio"
+                                            name="gender"
+                                            checked={editUser.gender === GenderEnum.MALE}
+                                            onChange={() => handleEditFieldChange('gender', GenderEnum.MALE)}
+                                        />
+                                        <span>男</span>
+                                    </label>
+                                    <label className="flex items-center gap-1">
+                                        <input
+                                            type="radio"
+                                            name="gender"
+                                            checked={editUser.gender === GenderEnum.FEMALE}
+                                            onChange={() => handleEditFieldChange('gender', GenderEnum.FEMALE)}
+                                        />
+                                        <span>女</span>
+                                    </label>
+                                    <label className="flex items-center gap-1">
+                                        <input
+                                            type="radio"
+                                            name="gender"
+                                            checked={editUser.gender === GenderEnum.SECRET}
+                                            onChange={() => handleEditFieldChange('gender', GenderEnum.SECRET)}
+                                        />
+                                        <span>保密</span>
+                                    </label>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">所在地</label>
@@ -1058,11 +1186,44 @@ const AdminUsers: React.FC = () => {
                                     className="w-full"
                                 />
                             </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">个人网站</label>
+                        </div>
+
+                        {/* 第六行：签名 */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">签名</label>
+                            <Input.TextArea
+                                value={editUser.signature}
+                                onChange={(e) => handleEditFieldChange('signature', e.target.value)}
+                                rows={3}
+                                className="w-full"
+                            />
+                        </div>
+
+                        {/* 第七行：个人网站 */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">个人网站</label>
+                            <Input
+                                value={editUser.website}
+                                onChange={(e) => handleEditFieldChange('website', e.target.value)}
+                                className="w-full"
+                            />
+                        </div>
+
+                        {/* 其他信息 */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">注册时间</label>
                                 <Input
-                                    value={editUser.website}
-                                    onChange={(e) => handleEditFieldChange('website', e.target.value)}
+                                    value={editUser.registerTime ? formatDateTime(editUser.registerTime) : '未知'}
+                                    disabled
+                                    className="w-full"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">注册IP</label>
+                                <Input
+                                    value={editUser.registerIp || '未知'}
+                                    disabled
                                     className="w-full"
                                 />
                             </div>

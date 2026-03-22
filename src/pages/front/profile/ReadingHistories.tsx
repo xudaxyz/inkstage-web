@@ -7,7 +7,7 @@ import {
   MoreOutlined,
   ClockCircleOutlined
 } from '@ant-design/icons';
-import { ROUTES } from '../../../routes/constants';
+import { ROUTES } from '../../../constants/routes';
 import readingHistoryService from '../../../services/readingHistoryService';
 import { type ReadingHistory } from '../../../types/readingHistory';
 import { formatDateOnly, formatTimeShort } from '../../../utils';
@@ -101,7 +101,7 @@ const ReadingHistories: React.FC = () => {
   };
 
   // 删除单个历史
-  const handleDeleteSingle = async (articleId: string) : Promise<void> => {
+  const handleDeleteSingle = async (articleId: number) : Promise<void> => {
     try {
       const response = await readingHistoryService.deleteReadingHistory(Number(articleId));
       if (response.code === 200) {
@@ -118,7 +118,7 @@ const ReadingHistories: React.FC = () => {
   };
 
   // 继续阅读
-  const handleContinueReading = (articleId: string) : void => {
+  const handleContinueReading = (articleId: number) : void => {
     // 跳转到文章详情页
     window.open(ROUTES.ARTICLE_DETAIL(articleId), '_blank');
   };
@@ -191,7 +191,7 @@ const ReadingHistories: React.FC = () => {
                         <div className="flex items-center mb-2">
                           <h3 className="text-xl font-semibold text-secondary-800 hover:text-primary-600 transition-colors duration-200 flex-1">
                             <a
-                              href={ROUTES.ARTICLE_DETAIL(String(history.articleId))}
+                              href={ROUTES.ARTICLE_DETAIL(history.articleId)}
                               className="hover:underline"
                               target="_blank"
                               rel="noopener noreferrer"
@@ -260,7 +260,7 @@ const ReadingHistories: React.FC = () => {
                                     icon={<EyeOutlined />}
                                     size="small"
                                     type="text"
-                                    onClick={() => handleContinueReading(String(history.articleId))}
+                                    onClick={() => handleContinueReading(history.articleId)}
                                   >
                                     继续阅读
                                   </Button>
@@ -269,7 +269,7 @@ const ReadingHistories: React.FC = () => {
                                     size="small"
                                     type="text"
                                     danger
-                                    onClick={() => handleDeleteSingle(String(history.articleId))}
+                                    onClick={() => handleDeleteSingle(history.articleId)}
                                   >
                                     删除
                                   </Button>
