@@ -146,11 +146,16 @@ export const API_ENDPOINTS = {
     ARTICLE: {
       LIST_PAGE: '/admin/article/list', // 分页获取文章
       GET: (id: number): string => `/admin/article/detail/${id}`, // 获取文章详情
-      DELETE: (id: number): string => `/admin/article/${id}`, // 删除文章
-      UPDATE_STATUS: (id: number): string => `/admin/article/${id}/status`, // 更新文章状态
+      DELETE: (id: number): string => `/admin/article/delete/${id}`, // 删除文章
+      UPDATE: (id: number): string => `/admin/article/update/${id}`, // 更新文章
+      UPDATE_STATUS: (id: number): string => `/admin/article/update/article-status/${id}`, // 更新文章状态
       APPROVE: (id: number): string => `/admin/article/approve/${id}`, // 审核通过文章
       REJECT: (id: number): string => `/admin/article/reject/${id}`, // 审核拒绝文章
-      REPROCESS: (id: number): string => `/admin/article/reprocess/${id}` // 重新审核文章
+      REPROCESS: (id: number): string => `/admin/article/reprocess/${id}`, // 重新审核文章
+      TOP: (id: number): string => `/admin/article/top/${id}`, // 置顶文章
+      CANCEL_TOP: (id: number): string => `/admin/article/cancel-top/${id}`, // 取消置顶文章
+      RECOMMEND: (id: number): string => `/admin/article/recommend/${id}`, // 推荐文章
+      CANCEL_RECOMMEND: (id: number): string => `/admin/article/cancel-recommend/${id}` // 取消推荐文章
     },
 
     // 评论管理

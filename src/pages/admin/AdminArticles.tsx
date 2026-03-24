@@ -6,7 +6,6 @@ import {
     Button,
     Space,
     Tag,
-    Modal,
     Form,
     Select,
     message,
@@ -15,8 +14,10 @@ import {
     Tabs,
     Descriptions,
     Badge,
-    Divider
+    Divider,
+    Dropdown, Modal
 } from 'antd';
+import AdminArticleEditor from '../../components/admin/AdminArticleEditor';
 import {
     SearchOutlined,
     DeleteOutlined,
@@ -24,7 +25,6 @@ import {
     EditOutlined,
     CalendarOutlined,
     CommentOutlined,
-    TagOutlined,
     UserOutlined,
     CheckCircleOutlined,
     CloseCircleOutlined,
@@ -35,17 +35,23 @@ import {
     PushpinTwoTone,
     GlobalOutlined,
     LockOutlined,
-    LinkOutlined
+    LinkOutlined,
+    DownOutlined,
+    AuditOutlined,
+    UpOutlined, DislikeOutlined
 } from '@ant-design/icons';
 import articleService from '../../services/articleService';
 import categoryService from '../../services/categoryService';
+import tagService from '../../services/tagService';
 import { type AdminArticleList, type AdminArticleDetail } from '../../types/article';
 import { type AdminCategory } from '../../types/category';
+import { type FrontTag } from '../../types/tag';
 import {
     AllowStatusEnum, AllowTopEnum, AllowTopMap, ArticleOriginalEnum, ArticleReviewStatusEnum, ArticleReviewStatusMap,
     ArticleStatusEnum,
     ArticleStatusMap,
-    ArticleVisibleEnum
+    ArticleVisibleEnum,
+    RecommendedEnum, RecommendedMap
 } from '../../types/enums';
 import { formatDateTime, formatDateTimeShort } from '../../utils';
 
@@ -58,16 +64,16 @@ const statusOptions = Object.entries(ArticleStatusMap).map(([value, label]) => (
     value,
     label
 }));
+// 允许状态选项
+const allowOptions = [
+    { value: AllowStatusEnum.ALLOWED, label: '允许' },
+    { value: AllowStatusEnum.PROHIBITED, label: '不允许' }
+];
 // 可见性选项
 const visibleOptions = [
     { value: ArticleVisibleEnum.PUBLIC, label: '公开' },
     { value: ArticleVisibleEnum.PRIVATE, label: '私有' },
     { value: ArticleVisibleEnum.FOLLOWERS_ONLY, label: '仅关注者可见' }
-];
-// 允许状态选项
-const allowOptions = [
-    { value: AllowStatusEnum.ALLOWED, label: '允许' },
-    { value: AllowStatusEnum.PROHIBITED, label: '不允许' }
 ];
 // 原创状态选项
 const originalOptions = [
@@ -83,8 +89,6 @@ const AdminArticles: React.FC = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isViewModalVisible, setIsViewModalVisible] = useState(false);
     const [currentArticle, setCurrentArticle] = useState<AdminArticleDetail | null>(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [form] = Form.useForm();
     const [rejectForm] = Form.useForm();
     const [pagination, setPagination] = useState({
         pageNum: 1,
@@ -92,6 +96,7 @@ const AdminArticles: React.FC = () => {
         total: 0
     });
     const [categories, setCategories] = useState<Array<{ value: number; label: string }>>([]);
+    const [tags, setTags] = useState<Array<{ value: string; label: string }>>([]);
     const [reviewLoading, setReviewLoading] = useState(false);
     const [rejectModalVisible, setRejectModalVisible] = useState(false);
     // 获取文章列表
@@ -121,6 +126,7 @@ const AdminArticles: React.FC = () => {
                     likeCount: article.likeCount,
                     commentCount: article.commentCount,
                     top: article.top,
+                    recommended: article.recommended,
                     reviewStatus: article.reviewStatus,
                     createTime: article.createTime,
                     updateTime: article.updateTime
@@ -171,6 +177,24 @@ const AdminArticles: React.FC = () => {
             message.error('获取分类列表失败');
         }
     }, []);
+    // 获取标签列表
+    const fetchTags = useCallback(async () => {
+        try {
+            const response = await tagService.getActiveTags();
+            if (response.code === 200 && response.data) {
+                const tagList = response.data.map((tag: FrontTag) => ({
+                    value: tag.id?.toString() || '',
+                    label: tag.name
+                }));
+                setTags(tagList);
+            } else {
+                message.error('获取标签列表失败');
+            }
+        } catch (error) {
+            console.error('获取标签列表失败:', error);
+            message.error('获取标签列表失败');
+        }
+    }, []);
     // 组件挂载时获取文章列表和分类列表
     useEffect((): void => {
         const loadData = async (): Promise<void> => {
@@ -178,27 +202,38 @@ const AdminArticles: React.FC = () => {
         };
         void loadData();
     }, [fetchArticles]);
-    // 组件挂载时获取分类列表
+    // 组件挂载时获取分类列表和标签列表
     useEffect((): void => {
-        const loadCategories = async (): Promise<void> => {
-            await fetchCategories();
+        const loadCategoriesAndTags = async (): Promise<void> => {
+            await Promise.all([fetchCategories(), fetchTags()]);
         };
-        void loadCategories();
-    }, [fetchCategories]);
+        void loadCategoriesAndTags();
+    }, [fetchCategories, fetchTags]);
     // 打开编辑文章模态框
-    const handleEditArticle = (article: AdminArticleList): void => {
-        setIsEditing(true);
-        setCurrentArticle(article as unknown as AdminArticleDetail);
-        // 查找分类ID
-        const category = categories.find(cat => cat.label === article.categoryName);
-        form.setFieldsValue({
-            title: article.title,
-            nickname: article.nickname,
-            category: category?.value || 0,
-            reviewStatus: article.reviewStatus,
-            status: article.articleStatus
-        });
-        setIsModalVisible(true);
+    const handleEditArticle = async (article: AdminArticleList): Promise<void> => {
+        try {
+            // 先关闭模态框并重置状态
+            setIsModalVisible(false);
+            setCurrentArticle(null);
+            // 等待状态重置完成
+            setTimeout(async () => {
+                const response = await articleService.admin.getArticleById(article.id);
+                if (response.code === 200 && response.data) {
+                    const articleDetail = response.data;
+                    // 更新文章数据
+                    setCurrentArticle(articleDetail);
+                    // 打开模态框
+                    setTimeout(() => {
+                        setIsModalVisible(true);
+                    }, 0);
+                } else {
+                    message.error('获取文章详情失败');
+                }
+            }, 100);
+        } catch (error) {
+            console.error('获取文章详情失败:', error);
+            message.error('获取文章详情失败');
+        }
     };
     // 打开查看文章模态框
     const handleViewArticle = async (article: AdminArticleList): Promise<void> => {
@@ -230,41 +265,9 @@ const AdminArticles: React.FC = () => {
             message.error('删除文章失败');
         }
     };
-    // 保存文章
-    const handleSaveArticle = async (): Promise<void> => {
-        form.validateFields().then(async values => {
-            try {
-                if (isEditing && currentArticle) {
-                    // 编辑现有文章
-                    const response = await articleService.updateArticle(currentArticle.id, {
-                        title: values.title,
-                        content: currentArticle.content,
-                        categoryId: Number(values.category),
-                        tags: values.tags,
-                        status: values.status as ArticleStatusEnum,
-                        visible: ArticleVisibleEnum.PUBLIC,
-                        allowComment: AllowStatusEnum.ALLOWED,
-                        allowForward: AllowStatusEnum.ALLOWED,
-                        original: ArticleOriginalEnum.ORIGINAL
-                    });
-                    if (response.code === 200 && response.data) {
-                        message.success('文章更新成功');
-                        await fetchArticles();
-                        setIsModalVisible(false);
-                    } else {
-                        message.error('更新文章失败');
-                    }
-                } else {
-                    message.info('添加文章功能暂未实现');
-                    setIsModalVisible(false);
-                }
-            } catch (error) {
-                console.error('保存文章失败:', error);
-                message.error('保存文章失败');
-            }
-        }).catch(error => {
-            console.error('验证失败:', error);
-        });
+    // 保存文章后的回调
+    const handleSaveSuccess = async (): Promise<void> => {
+        await fetchArticles();
     };
     // 审核文章
     const handleReviewArticle = async (action: 'approve' | 'reject' | 'reprocess', rejectReason?: string): Promise<void> => {
@@ -280,7 +283,7 @@ const AdminArticles: React.FC = () => {
                 response = await articleService.admin.reprocessArticle(currentArticle.id);
             }
             if (response.code === 200 && response.data) {
-                message.success(action === 'approve' ? '审核通过' : action === 'reject' ? '审核拒绝' : '重新审核');
+                message.success(response.message || (action === 'approve' ? '审核通过' : action === 'reject' ? '审核拒绝' : '重新审核'));
                 // 重新获取文章详情
                 const detailResponse = await articleService.admin.getArticleById(currentArticle.id);
                 if (detailResponse.code === 200 && detailResponse.data) {
@@ -307,6 +310,56 @@ const AdminArticles: React.FC = () => {
             rejectForm.resetFields();
         } catch (error) {
             console.error('验证失败:', error);
+        }
+    };
+    // 处理下架/上架文章
+    const handleOfflineArticle = async (id: number, currentStatus: ArticleStatusEnum): Promise<void> => {
+        try {
+            const targetStatus = currentStatus === ArticleStatusEnum.OFFLINE ? ArticleStatusEnum.PUBLISHED : ArticleStatusEnum.OFFLINE;
+            const response = await articleService.admin.updateArticleStatus(id, targetStatus);
+            if (response.code === 200 && response.data) {
+                message.success(response.message || currentStatus === ArticleStatusEnum.OFFLINE ? '文章上架成功' : '文章下架成功');
+                await fetchArticles();
+            } else {
+                message.error(response.message || currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败' : '下架文章失败');
+            }
+        } catch (error) {
+            console.error(currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败:' : '下架文章失败:', error);
+            message.error(currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败' : '下架文章失败');
+        }
+    };
+    // 处理置顶/取消置顶文章
+    const handleTopArticle = async (id: number, currentTopStatus: AllowTopEnum): Promise<void> => {
+        try {
+            const response = currentTopStatus === AllowTopEnum.TOP
+                ? await articleService.admin.cancelTopArticle(id)
+                : await articleService.admin.topArticle(id);
+            if (response.code === 200 && response.data) {
+                message.success(response.message || (currentTopStatus === AllowTopEnum.TOP ? '取消置顶成功' : '文章置顶成功'));
+                await fetchArticles();
+            } else {
+                message.error(response.message || (currentTopStatus === AllowTopEnum.TOP ? '取消置顶失败' : '置顶文章失败'));
+            }
+        } catch (error) {
+            console.error(currentTopStatus === AllowTopEnum.TOP ? '取消置顶失败:' : '置顶文章失败:', error);
+            message.error(currentTopStatus === AllowTopEnum.TOP ? '取消置顶失败' : '置顶文章失败');
+        }
+    };
+    // 处理推荐/取消文章
+    const handleRecommendArticle = async (id: number, currentRecommendStatus: RecommendedEnum): Promise<void> => {
+        try {
+            const response = currentRecommendStatus === RecommendedEnum.RECOMMENDED
+                ? await articleService.admin.cancelRecommendArticle(id)
+                : await articleService.admin.recommendArticle(id);
+            if (response.code === 200 && response.data) {
+                message.success(response.message || (currentRecommendStatus === RecommendedEnum.RECOMMENDED ? '取消推荐成功' : '文章推荐成功'));
+                await fetchArticles();
+            } else {
+                message.error(response.message || (currentRecommendStatus === RecommendedEnum.RECOMMENDED ? '取消推荐失败' : '文章推荐失败'));
+            }
+        } catch (error) {
+            console.error(currentRecommendStatus === RecommendedEnum.RECOMMENDED ? '取消推荐失败:' : '推荐文章失败:', error);
+            message.error(currentRecommendStatus === RecommendedEnum.RECOMMENDED ? '取消推荐失败' : '推荐文章失败');
         }
     };
     // 获取状态标签颜色
@@ -353,10 +406,34 @@ const AdminArticles: React.FC = () => {
             title: '标题',
             dataIndex: 'title',
             key: 'title',
-            width: 240,
-            render: (text: string): React.ReactNode => (
-                <div style={{ width: '100%', maxWidth: '300px' }}>
-                    <Text ellipsis={{ tooltip: text }} className="font-medium">{text}</Text>
+            width: 200,
+            render: (text: string, record: AdminArticleList): React.ReactNode => (
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-center',
+                    justifyContent: 'flex-start',
+                    width: '100%',
+                    maxWidth: '240px',
+                    overflow: 'hidden'
+                }}>
+                    <div
+                        style={{
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                        }}
+                    >
+                        <Text ellipsis={{ tooltip: text }}
+                              className="font-medium cursor-pointer hover:text-blue-600 block whitespace-nowrap overflow-hidden text-ellipsis">
+                            {text}
+                        </Text>
+                    </div>
+                    {record.recommended === RecommendedEnum.RECOMMENDED && (
+                        <Tag color="red"
+                             style={{ fontSize: '10px', marginLeft: '4px', marginTop: '-2px', flexShrink: 0 }}>
+                            推荐
+                        </Tag>
+                    )}
                 </div>
             )
         },
@@ -413,11 +490,11 @@ const AdminArticles: React.FC = () => {
             width: 80
         },
         {
-            title: '是否置顶',
+            title: '置顶',
             dataIndex: 'top',
             align: 'center' as const,
             key: 'top',
-            width: 90,
+            width: 80,
             render: (top: AllowTopEnum): React.ReactNode => (
                 <Tag color={top === AllowTopEnum.TOP ? 'red' : 'default'}>
                     {AllowTopMap[top]}
@@ -428,7 +505,7 @@ const AdminArticles: React.FC = () => {
             title: '审核状态',
             dataIndex: 'reviewStatus',
             key: 'reviewStatus',
-            width: 90,
+            width: 80,
             render: (reviewStatus: ArticleReviewStatusEnum): React.ReactNode => (
                 <Tag color={getReviewStatusColor(reviewStatus)}>
                     {ArticleReviewStatusMap[reviewStatus]}
@@ -440,54 +517,110 @@ const AdminArticles: React.FC = () => {
             key: 'action',
             align: 'center' as const,
             width: 180,
-            render: (_: unknown, record: AdminArticleList): React.ReactNode => (
-                <Space size="middle">
-                    <Button
-                        variant={'filled'}
-                        color={'green'}
-                        icon={<EyeOutlined/>}
-                        onClick={() => handleViewArticle(record)}
-                        className="text-blue-500"
-                    >
-                        查看
-                    </Button>
-                    <Button
-                        variant={'filled'}
-                        color={'blue'}
-                        icon={<EditOutlined/>}
-                        onClick={() => handleEditArticle(record)}
-                        className="text-green-500"
-                    >
-                        编辑
-                    </Button>
-                    <Popconfirm
-                        title="确定要删除这篇文章吗？"
-                        description="删除后将无法恢复"
-                        onConfirm={() => handleDeleteArticle(record.id)}
-                        okText="确定"
-                        cancelText="取消"
-                    >
+            render: (_: unknown, record: AdminArticleList): React.ReactNode => {
+                const moreMenuItems = [
+                    {
+                        key: 'edit',
+                        label: (
+                            <span onClick={() => handleEditArticle(record)}
+                                  className="flex items-center cursor-pointer">
+                                <EditOutlined className="mr-2"/>
+                                编辑
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'delete',
+                        label: (
+                            <Popconfirm
+                                title="确定要删除这篇文章吗？"
+                                description="删除后将无法恢复"
+                                onConfirm={() => handleDeleteArticle(record.id)}
+                                okText="确定"
+                                cancelText="取消"
+                            >
+                                <span className="flex items-center cursor-pointer">
+                                    <DeleteOutlined className="mr-2 text-red-500"/>
+                                    删除
+                                </span>
+                            </Popconfirm>
+                        )
+                    },
+                    {
+                        key: 'offline',
+                        label: (
+                            <span onClick={() => handleOfflineArticle(record.id, record.articleStatus)}
+                                  className="flex items-center cursor-pointer">
+                                {record.articleStatus === ArticleStatusEnum.OFFLINE ? <UpOutlined className="mr-2"/> :
+                                    <DownOutlined className="mr-2"/>}
+                                {record.articleStatus === ArticleStatusEnum.OFFLINE ? '上架' : '下架'}
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'top',
+                        label: (
+                            <span onClick={() => handleTopArticle(record.id, record.top)}
+                                  className="flex items-center cursor-pointer">
+                                {record.top === AllowTopEnum.TOP ? <PushpinTwoTone className="mr-2"/> :
+                                    <PushpinOutlined className="mr-2"/>}
+                                {record.top === AllowTopEnum.TOP ? '取消置顶' : '置顶'}
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'recommended',
+                        label: (
+                            <span onClick={() => handleRecommendArticle(record.id, record.recommended)}
+                                  className="flex items-center cursor-pointer">
+                                {record.recommended === RecommendedEnum.RECOMMENDED ?
+                                    <DislikeOutlined className="mr-2"/> :
+                                    <LikeOutlined className="mr-2"/>}
+                                {record.recommended === RecommendedEnum.RECOMMENDED ? '取消推荐' : '推荐'}
+                            </span>
+                        )
+                    }
+                ];
+                return (
+                    <Space size="middle">
                         <Button
                             variant={'filled'}
-                            color={'red'}
-                            icon={<DeleteOutlined/>}
-                            className="text-white"
+                            color={'blue'}
+                            icon={<EyeOutlined/>}
+                            onClick={() => handleViewArticle(record)}
+                            className="text-blue-500"
                         >
-                            删除
+                            查看
                         </Button>
-                    </Popconfirm>
-                </Space>
-            )
+                        <Button
+                            variant={'filled'}
+                            color={record.reviewStatus === 'APPROVED' ? 'default' : 'green'}
+                            icon={<AuditOutlined/>}
+                            onClick={() => handleViewArticle(record)}
+                            className={record.reviewStatus === 'APPROVED' ? 'w-24 text-gray-500' : 'w-24 text-green-500'}
+                        >
+                            {record.reviewStatus === 'APPROVED' ? '已审核' : '审核'}
+                        </Button>
+                        <Dropdown menu={{ items: moreMenuItems }} trigger={['click']}>
+                            <Button
+                                variant={'filled'}
+                                color={'default'}
+                                className="text-gray-500"
+                            >
+                                更多
+                            </Button>
+                        </Dropdown>
+                    </Space>
+                );
+            }
         }
     ];
     return (
-        <div className="mb-6">
-            <div className="mb-6">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-4">文章管理</h2>
-            </div>
+        <div>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">文章管理</h2>
 
             {/* 搜索和筛选 */}
-            <Card className="mb-6 border border-gray-100 shadow-sm">
+            <Card variant={'borderless'} className="border-b border-gray-100 mb-4">
                 <div className="flex flex-col md:flex-row gap-4">
                     <Search
                         placeholder="搜索标题或作者"
@@ -524,7 +657,7 @@ const AdminArticles: React.FC = () => {
             </Card>
 
             {/* 文章列表 */}
-            <Card className="border border-gray-100 shadow-sm">
+            <Card variant={'borderless'}>
                 <Table
                     columns={columns}
                     dataSource={articles}
@@ -550,82 +683,15 @@ const AdminArticles: React.FC = () => {
                 />
             </Card>
 
-            {/* 添加/编辑文章模态框 */}
-            <Modal
-                title={isEditing ? '编辑文章' : '添加文章'}
-                open={isModalVisible}
-                onOk={handleSaveArticle}
-                onCancel={() => setIsModalVisible(false)}
-                width={600}
-                okText="保存"
-                cancelText="取消"
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    initialValues={{
-                        status: 'draft'
-                    }}
-                >
-                    <Form.Item
-                        name="title"
-                        label="标题"
-                        rules={[
-                            { required: true, message: '请输入标题' },
-                            { min: 2, max: 100, message: '标题长度应在2-100个字符之间' }
-                        ]}
-                    >
-                        <Input placeholder="请输入标题"/>
-                    </Form.Item>
-
-                    <Form.Item
-                        name="nickname"
-                        label="作者"
-                        rules={[
-                            { required: true, message: '请输入作者' },
-                            { min: 2, max: 20, message: '作者名称长度应在2-20个字符之间' }
-                        ]}
-                    >
-                        <Input prefix={<UserOutlined/>} placeholder="请输入作者"/>
-                    </Form.Item>
-
-                    <Form.Item
-                        name="category"
-                        label="分类"
-                        rules={[{ required: true, message: '请选择分类' }]}
-                    >
-                        <Select placeholder="请选择分类">
-                            {categories.map(option => (
-                                <Option key={option.value} value={option.value}>
-                                    {option.label}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                        name="tags"
-                        label="标签"
-                        rules={[{ required: true, message: '请输入标签' }]}
-                    >
-                        <Input prefix={<TagOutlined/>} placeholder="请输入标签，多个标签用逗号分隔"/>
-                    </Form.Item>
-
-                    <Form.Item
-                        name="status"
-                        label="状态"
-                        rules={[{ required: true, message: '请选择状态' }]}
-                    >
-                        <Select placeholder="请选择状态">
-                            {statusOptions.map(option => (
-                                <Option key={option.value} value={option.value}>
-                                    {option.label}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
+            {/* 编辑文章组件 */}
+            <AdminArticleEditor
+                visible={isModalVisible}
+                article={currentArticle}
+                categories={categories}
+                tags={tags}
+                onClose={() => setIsModalVisible(false)}
+                onSave={handleSaveSuccess}
+            />
 
             {/* 查看文章模态框 */}
             <Modal
@@ -738,6 +804,13 @@ const AdminArticles: React.FC = () => {
                       <PushpinOutlined className="text-gray-400"/>}
                                     {AllowTopMap[currentArticle.top as keyof typeof AllowTopMap] || currentArticle.top}
                 </span>
+                                {currentArticle.recommended === RecommendedEnum.RECOMMENDED &&
+                                    <span className="flex items-center gap-1">
+                                        <Tag color={'red'}>
+                                            {RecommendedMap[currentArticle.recommended as keyof typeof RecommendedMap] || currentArticle.recommended}
+                                        </Tag>
+                                            </span>
+                                }
                                 <Tag color={getStatusColor(currentArticle.articleStatus)}>
                                     {ArticleStatusMap[currentArticle.articleStatus as keyof typeof ArticleStatusMap] || currentArticle.articleStatus}
                                 </Tag>
@@ -897,7 +970,7 @@ const AdminArticles: React.FC = () => {
                                         <div>
                                             <div className="text-base font-semibold mb-2">正文:</div>
                                             <div className="prose max-w-none"
-                                                 dangerouslySetInnerHTML={{ __html: currentArticle.contentHtml || currentArticle.content || '<p>无内容</p>' }}/>
+                                                 dangerouslySetInnerHTML={{ __html: currentArticle.content || currentArticle.contentHtml || '<p>无内容</p>' }}/>
                                         </div>
                                     </Card>
                                 </div>

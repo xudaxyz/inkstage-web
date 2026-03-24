@@ -9,7 +9,8 @@ import type {
     LatestArticle,
     ArticleDetailInfo,
     AdminArticleList,
-    AdminArticleDetail
+    AdminArticleDetail,
+    UpdatedAdminArticleFields
 } from '../types/article.ts';
 import {
   ArticleStatusEnum,
@@ -357,12 +358,9 @@ const articleService = {
     },
 
     // 更新文章状态
-    updateArticleStatus: async (id: number, status: number): Promise<ApiResponse<Article>> => {
+    updateArticleStatus: async (id: number, articleStatus: ArticleStatusEnum): Promise<ApiResponse<Article>> => {
       validateIdParam(id);
-      if (status < 0) {
-        throw new Error('状态必须是大于等于0的数字');
-      }
-      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.UPDATE_STATUS(id), { status });
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.UPDATE_STATUS(id), null, { params: { articleStatus } });
     },
 
     // 审核通过文章
@@ -384,6 +382,36 @@ const articleService = {
     reprocessArticle: async (id: number): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.REPROCESS(id));
+    },
+
+    // 置顶文章
+    topArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.TOP(id));
+    },
+
+    // 取消置顶文章
+    cancelTopArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.CANCEL_TOP(id));
+    },
+
+    // 推荐文章
+    recommendArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.RECOMMEND(id));
+    },
+
+    // 取消推荐文章
+    cancelRecommendArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.CANCEL_RECOMMEND(id));
+    },
+
+    // 更新文章
+    updateArticle: async (id: number, article: UpdatedAdminArticleFields): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.UPDATE(id), article);
     }
   }
 };

@@ -48,6 +48,12 @@ export const AllowTopEnum = {
     NOT_TOP: 'NOT_TOP'
 } as const;
 
+// 是否推荐置顶
+export const RecommendedEnum = {
+    RECOMMENDED: 'RECOMMENDED',
+    NOT_RECOMMENDED: 'NOT_RECOMMENDED'
+} as const;
+
 // 导出类型
 export type ArticleStatusEnum = typeof ArticleStatusEnum[keyof typeof ArticleStatusEnum];
 export type ArticleReviewStatusEnum = typeof ArticleReviewStatusEnum[keyof typeof ArticleReviewStatusEnum];
@@ -56,6 +62,7 @@ export type ArticleVisibleEnum = typeof ArticleVisibleEnum[keyof typeof ArticleV
 export type ArticleCollectionStatusEnum = typeof ArticleCollectionStatusEnum[keyof typeof ArticleCollectionStatusEnum];
 export type AllowStatusEnum = typeof AllowStatusEnum[keyof typeof AllowStatusEnum];
 export type AllowTopEnum = typeof AllowTopEnum[keyof typeof AllowTopEnum];
+export type RecommendedEnum = typeof RecommendedEnum[keyof typeof RecommendedEnum];
 
 // 枚举映射（用于UI显示）
 export const ArticleStatusMap = {
@@ -92,6 +99,11 @@ export const AllowStatusMap = {
 export const AllowTopMap = {
     [AllowTopEnum.TOP]: '置顶',
     [AllowTopEnum.NOT_TOP]: '未置顶'
+};
+
+export const RecommendedMap = {
+    [RecommendedEnum.RECOMMENDED]: '已推荐',
+    [RecommendedEnum.NOT_RECOMMENDED]: '未推荐'
 };
 
 export const ArticleReviewStatusMap = {

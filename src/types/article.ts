@@ -6,7 +6,9 @@ import {
     ArticleVisibleEnum,
     AllowStatusEnum,
     GenderEnum,
-    ArticleCollectionStatusEnum, type AllowTopEnum
+    ArticleCollectionStatusEnum,
+    AllowTopEnum,
+    RecommendedEnum
 } from './enums';
 
 // 文章类型定义
@@ -168,7 +170,8 @@ export interface AdminArticleList {
     readCount: number;
     likeCount: number;
     commentCount: number;
-    top: string;
+    top: AllowTopEnum;
+    recommended: RecommendedEnum;
     reviewStatus: ArticleReviewStatusEnum;
     createTime: string;
     updateTime: string;
@@ -187,6 +190,7 @@ export interface AdminArticleDetail {
     allowComment: AllowStatusEnum;
     allowForward: AllowStatusEnum;
     top: AllowTopEnum;
+    recommended: RecommendedEnum;
     visible: ArticleVisibleEnum;
     original: ArticleOriginalEnum;
     originalUrl: string;
@@ -209,5 +213,28 @@ export interface AdminArticleDetail {
     categoryName: string;
     // 标签
     tags: FrontTag[]
+}
+
+// 后台更新文章字段类型
+export interface UpdatedAdminArticleFields {
+    title?: string;
+    nickname?: string;
+    categoryId?: number;
+    tags?: FrontTag[];
+    articleStatus?: ArticleStatusEnum;
+    reviewStatus?: ArticleReviewStatusEnum;
+    visible?: ArticleVisibleEnum;
+    allowComment?: AllowStatusEnum;
+    allowForward?: AllowStatusEnum;
+    original?: ArticleOriginalEnum;
+    originalUrl?: string;
+    summary?: string;
+    coverImage?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+    metaKeywords?: string;
+    top?: AllowTopEnum;
+    recommended?: RecommendedEnum;
+    content?: string;
 }
 
