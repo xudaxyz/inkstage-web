@@ -6,6 +6,7 @@ import {
     type CommentUpdateParams
 } from '../types/comment';
 import { message } from 'antd';
+import { CommentTopStatus } from '../types/enums';
 
 interface CommentState {
     // 状态
@@ -83,7 +84,25 @@ const useCommentStore = create<CommentState>((set, get) => {
                 });
 
                 if (response.code === 200 && response.data) {
-                    const formattedComments = response.data.record || [];
+                    let formattedComments = response.data.record || [];
+
+                    // 处理评论排序，确保置顶评论始终显示在最上面
+                    if (formattedComments.length > 0) {
+                        // 分离置顶评论和普通评论
+                        const topComments = formattedComments.filter(comment => comment.top === CommentTopStatus.TOP);
+                        const normalComments = formattedComments.filter(comment => comment.top === CommentTopStatus.NOT_TOP);
+
+                        // 对普通评论按照用户选择的排序方式进行排序
+                        if (sortBy === 'hot') {
+                            normalComments.sort((a, b) => b.likeCount - a.likeCount);
+                        } else if (sortBy === 'new') {
+                            normalComments.sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime());
+                        }
+
+                        // 重新组合评论，置顶评论放在最前面
+                        formattedComments = [...topComments, ...normalComments];
+                    }
+
                     get().setComments(formattedComments);
                     get().setPage(page);
                     get().setCommentCount(response.data.total || 0);
