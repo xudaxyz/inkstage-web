@@ -183,6 +183,22 @@ export const API_ENDPOINTS = {
       UPDATE: (id: number): string => `/admin/category/${id}`, // 更新分类
       DELETE: (id: number): string => `/admin/category/${id}`, // 删除分类
       UPDATE_STATUS: (id: number): string => `/admin/category/${id}/status` // 更新分类状态
+    },
+
+    // 通知模板管理
+    NOTIFICATION_TEMPLATE: {
+      CREATE: '/admin/notification-templates/create', // 创建通知模板
+      UPDATE: (id: number): string => `/admin/notification-templates/update/${id}`, // 更新通知模板
+      DELETE: (id: number): string => `/admin/notification-templates/delete/${id}`, // 删除通知模板
+      DETAIL: (id: number): string => `/admin/notification-templates/detail/${id}`, // 获取模板详情
+      DETAIL_BY_CODE: (code: string): string => `/admin/notification-templates/detail/code/${code}`, // 根据编码获取模板
+      LIST: '/admin/notification-templates/list', // 分页查询模板列表
+      ALL: '/admin/notification-templates/all', // 获取所有模板
+      ENABLE: (id: number): string => `/admin/notification-templates/enable/${id}`, // 启用模板
+      DISABLE: (id: number): string => `/admin/notification-templates/disable/${id}`, // 禁用模板
+      CHECK_CODE: '/admin/notification-templates/check-code', // 检查编码是否存在
+      PREVIEW: (code: string): string => `/admin/notification-templates/preview/${code}`, // 预览模板渲染效果
+      SEND: '/admin/notification-templates/send' // 手动发送通知
     }
   },
 
@@ -254,5 +270,3 @@ export type ApiEndpoints = typeof API_ENDPOINTS;
 export type FrontEndpoints = typeof API_ENDPOINTS.FRONT;
 export type AdminEndpoints = typeof API_ENDPOINTS.ADMIN;
 export type CommonEndpoints = typeof API_ENDPOINTS.COMMON;
-
-

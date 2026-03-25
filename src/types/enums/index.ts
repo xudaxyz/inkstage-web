@@ -6,9 +6,11 @@ export * from './GenderEnum';
 export * from './ArticleEnum';
 export * from './DefaultStatusEnum';
 export * from './NotificationEnum';
+export * from './NotificationChannelEnum';
 export * from './AuthTypeEnum';
 export * from './AuthOperationTypeEnum';
 export * from './CommentEnum';
+export * from './PriorityEnum';
 
 // 通用枚举工具类型
 export type EnumLike = Record<string, string | number>;
