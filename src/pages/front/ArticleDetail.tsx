@@ -28,6 +28,7 @@ import articleService from '../../services/articleService';
 import readingHistoryService from '../../services/readingHistoryService';
 import type { FrontTag } from '../../types/tag';
 
+
 const ArticleDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const ArticleDetail: React.FC = () => {
   // 获取当前用户信息
   const { user, isLoggedIn } = useUserStore();
 
+
   // 获取文章状态
   const {
     article,
@@ -54,8 +56,6 @@ const ArticleDetail: React.FC = () => {
     fetchArticleDetail,
     fetchRelatedArticles,
     incrementReadCount,
-    likeArticle,
-    unLikeArticle,
     updateCommentCount,
     reset
   } = useArticleStore();
@@ -67,11 +67,17 @@ const ArticleDetail: React.FC = () => {
     selectedFolderId,
     setSelectedFolderId,
     fetchFolders,
-    collectArticle,
-    unCollectArticle: removeCollection,
     moveCollection,
     createFolder
   } = useCollection();
+
+  // 获取文章操作方法
+  const {
+    likeArticle,
+    unLikeArticle,
+    collectArticle,
+    unCollectArticle
+  } = useArticleStore();
 
   // 生成目录
   const toc = React.useMemo(() => {
@@ -196,12 +202,18 @@ const ArticleDetail: React.FC = () => {
       return;
     }
 
+    const articleId = Number(id);
+    if (isNaN(articleId)) {
+      message.error('文章ID无效');
+      return;
+    }
+
     if (article.isLiked) {
       // 取消点赞
-      await unLikeArticle(Number(id));
+      await unLikeArticle(articleId);
     } else {
       // 点赞
-      await likeArticle(Number(id));
+      await likeArticle(articleId);
     }
   };
 
@@ -221,37 +233,33 @@ const ArticleDetail: React.FC = () => {
 
     if (article.isCollected) {
       // 取消收藏
-      const success = await removeCollection(articleId);
-      if (success) {
-        notification.success({
-          title: '取消收藏成功',
-          duration: 2,
-          placement: 'top'
-        });
-      }
+      await unCollectArticle(articleId);
+      notification.success({
+        title: '取消收藏成功',
+        duration: 2,
+        placement: 'top'
+      });
     } else {
       // 默认收藏到默认文件夹
-      const success = await collectArticle(articleId, 0);
-      if (success) {
-        // 显示收藏成功提示，并提供选择收藏夹的选项
-        notification.success({
-          title: '收藏成功',
-          description: (
-            <div>
-              <p>文章已成功收藏到默认收藏夹</p>
-              <Button
-                type="link"
-                onClick={() => openFolderModal(articleId)}
-                style={{ marginLeft: 0, padding: 0 }}
-              >
+      await collectArticle(articleId);
+      // 显示收藏成功提示，并提供选择收藏夹的选项
+      notification.success({
+        title: '收藏成功',
+        description: (
+          <div>
+            <p>文章已成功收藏到默认收藏夹</p>
+            <Button
+              type="link"
+              onClick={() => openFolderModal(articleId)}
+              style={{ marginLeft: 0, padding: 0 }}
+            >
                                 选择其他收藏夹
-              </Button>
-            </div>
-          ),
-          duration: 3,
-          placement: 'top'
-        });
-      }
+            </Button>
+          </div>
+        ),
+        duration: 3,
+        placement: 'top'
+      });
     }
   };
 

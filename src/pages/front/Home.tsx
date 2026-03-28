@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Spin, Alert } from 'antd';
 import { useSearchParams } from 'react-router-dom';
-import useSWR from 'swr';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import Banner from '../../components/front/Banner';
@@ -21,39 +20,68 @@ import tagService from '../../services/tagService';
 import searchService from '../../services/searchService';
 import { BANNER, LATEST } from '../../constants/home';
 import type { ApiPageResponse } from '../../types/common';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 // 无限滚动每页条数
 const INFINITE_SCROLL_PAGE_SIZE = 15;
-// 轮播图fetcher
-const bannerFetcher = async (): Promise<BannerArticle[]> => {
-    const response = await articleService.getBannerArticles(BANNER.ARTICLES_COUNT);
-    if (response.code !== 200) {
-        throw new Error(response.message || '获取轮播图文章失败');
-    }
-    return response.data;
+// 轮播图查询
+const useBannerArticles = (): UseQueryResult<BannerArticle[], Error> => {
+    return useQuery({
+        queryKey: ['banner'],
+        queryFn: async (): Promise<BannerArticle[]> => {
+            const response = await articleService.getBannerArticles(BANNER.ARTICLES_COUNT);
+            if (response.code !== 200) {
+                throw new Error(response.message || '获取轮播图文章失败');
+            }
+            return response.data;
+        },
+        staleTime: 60000, // 1分钟
+        refetchOnWindowFocus: false
+    });
 };
-// 最新文章fetcher
-const latestFetcher = async (): Promise<LatestArticle[]> => {
-    const response = await articleService.getLatestArticles(LATEST.ARTICLES_COUNT);
-    if (response.code !== 200) {
-        throw new Error(response.message || '获取最新文章失败');
-    }
-    return response.data;
+// 最新文章查询
+const useLatestArticles = (): UseQueryResult<LatestArticle[], Error> => {
+    return useQuery({
+        queryKey: ['latest'],
+        queryFn: async (): Promise<LatestArticle[]> => {
+            const response = await articleService.getLatestArticles(LATEST.ARTICLES_COUNT);
+            if (response.code !== 200) {
+                throw new Error(response.message || '获取最新文章失败');
+            }
+            return response.data;
+        },
+        staleTime: 60000, // 1分钟
+        refetchOnWindowFocus: false
+    });
 };
-// 分类fetcher
-const categoriesFetcher = async (): Promise<FrontendCategory[]> => {
-    const response = await categoryService.getActiveCategories();
-    if (response.code !== 200) {
-        throw new Error(response.message || '获取分类列表失败');
-    }
-    return response.data;
+// 分类查询
+const useCategories = (): UseQueryResult<FrontendCategory[], Error> => {
+    return useQuery({
+        queryKey: ['categories'],
+        queryFn: async (): Promise<FrontendCategory[]> => {
+            const response = await categoryService.getActiveCategories();
+            if (response.code !== 200) {
+                throw new Error(response.message || '获取分类列表失败');
+            }
+            return response.data;
+        },
+        staleTime: 300000, // 5分钟
+        refetchOnWindowFocus: false
+    });
 };
-// 标签fetcher
-const tagsFetcher = async (): Promise<FrontTag[]> => {
-    const response = await tagService.getActiveTags();
-    if (response.code !== 200) {
-        throw new Error(response.message || '获取标签列表失败');
-    }
-    return response.data;
+// 标签查询
+const useTags = (): UseQueryResult<FrontTag[], Error> => {
+    return useQuery({
+        queryKey: ['tags'],
+        queryFn: async (): Promise<FrontTag[]> => {
+            const response = await tagService.getActiveTags();
+            if (response.code !== 200) {
+                throw new Error(response.message || '获取标签列表失败');
+            }
+            return response.data;
+        },
+        staleTime: 300000, // 5分钟
+        refetchOnWindowFocus: false
+    });
 };
 const Home: React.FC = () => {
     // 状态管理
@@ -61,27 +89,11 @@ const Home: React.FC = () => {
     // 搜索参数
     const [searchParams, setSearchParams] = useSearchParams();
     const keyword = searchParams.get('keyword') || '';
-    // SWR 数据获取（非文章列表）
-    const { data: bannerArticles, error: bannerError, isLoading: bannerLoading } = useSWR(
-        'banner',
-        bannerFetcher,
-        { revalidateOnFocus: false, dedupingInterval: 60000 }
-    );
-    const { data: latestArticles, error: latestError, isLoading: latestLoading } = useSWR(
-        'latest',
-        latestFetcher,
-        { revalidateOnFocus: false, dedupingInterval: 60000 }
-    );
-    const { data: frontendCategory, error: categoriesError, isLoading: categoriesLoading } = useSWR(
-        'categories',
-        categoriesFetcher,
-        { revalidateOnFocus: false, dedupingInterval: 300000 }
-    );
-    const { data: frontTag, error: tagsError, isLoading: tagsLoading } = useSWR(
-        'tags',
-        tagsFetcher,
-        { revalidateOnFocus: false, dedupingInterval: 300000 }
-    );
+    // React Query 数据获取
+    const { data: bannerArticles, error: bannerError, isLoading: bannerLoading } = useBannerArticles();
+    const { data: latestArticles, error: latestError, isLoading: latestLoading } = useLatestArticles();
+    const { data: frontendCategory, error: categoriesError, isLoading: categoriesLoading } = useCategories();
+    const { data: frontTag, error: tagsError, isLoading: tagsLoading } = useTags();
     // 文章列表无限滚动fetcher
     const articlesFetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<IndexArticleList>> => {
         let response;
