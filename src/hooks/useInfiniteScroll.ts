@@ -133,8 +133,9 @@ export function useInfiniteScroll<T> (
         refresh,
         pageSize: pageSize,
         setPageSize,
-        total
-    }), [data, isLoading, isLoadingMore, isError, error, hasMore, ref, refresh, pageSize, setPageSize, total]);
+        total,
+        setData
+    }), [data, isLoading, isLoadingMore, isError, error, hasMore, ref, refresh, pageSize, setPageSize, total, setData]);
 }
 
 export default useInfiniteScroll;

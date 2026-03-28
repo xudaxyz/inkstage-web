@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Input, Switch, Badge } from 'antd';
-import { BellOutlined, EditOutlined, MenuOutlined, CloseOutlined, SearchOutlined, SunOutlined, MoonOutlined, UserOutlined, FileTextOutlined, LogoutOutlined } from '@ant-design/icons';
+import { BellTwoTone, EditOutlined, MenuOutlined, CloseOutlined, SearchOutlined, SunOutlined, MoonOutlined, UserOutlined, FileTextOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useIsLoggedIn, useUser, useUserStore } from '../../store';
 import notificationService from '../../services/notificationService';
+import websocketService from '../../services/websocketService';
 
 const Header: React.FC = () => {
   // 从localStorage中读取初始主题
@@ -120,6 +121,25 @@ const user = useUser();
     }
   }, [isLoggedIn, fetchUnreadCount]);
 
+  // 监听WebSocket未读数量更新
+  useEffect((): (() => void) => {
+    if (!isLoggedIn) return (): void => {};
+
+    const handleUnreadCount = (data: unknown): void => {
+      if (typeof data === 'number') {
+        setUnreadCount(data);
+      }
+    };
+
+    // 注册事件监听器
+    websocketService.on('unreadCount', handleUnreadCount);
+
+    // 清理事件监听器
+    return (): void => {
+      websocketService.off('unreadCount', handleUnreadCount);
+    };
+  }, [isLoggedIn]);
+
   return (
     <header
       className="h-18 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 flex items-center px-4 sm:px-6 lg:px-[5%] sticky top-0 z-10 shadow-sm">
@@ -204,10 +224,10 @@ const user = useUser();
         <Link to="/profile/notifications" className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary-600 transition-colors duration-200">
           {unreadCount > 0 ? (
             <Badge count={unreadCount} size="small">
-              <BellOutlined />
+              <BellTwoTone style={{ fontSize: '18px' }} />
             </Badge>
           ) : (
-            <BellOutlined />
+            <BellTwoTone style={{ fontSize: '18px' }} />
           )}
         </Link>
 

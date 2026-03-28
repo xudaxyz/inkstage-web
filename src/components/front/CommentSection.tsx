@@ -69,7 +69,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         hasMore,
         loadMoreRef,
         refresh: refreshCommentsList,
-        total
+        total,
+        setData: setComments
     } = useInfiniteScroll<FrontArticleCommentList>(commentsFetcher, {
         pageSize: 10,
         threshold: 0.1
@@ -157,7 +158,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                         total: total,
                         pageSize: 0,
                         setPageSize: async () => {
-                        }
+                        },
+                        setData: setComments
                     }}
                     renderItem={renderCommentItem}
                     loadingContent={

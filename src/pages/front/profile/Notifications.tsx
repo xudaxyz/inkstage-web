@@ -13,10 +13,10 @@ import type { ApiPageResponse } from '../../../types/common';
 
 const Notifications: React.FC = () => {
     const navigate = useNavigate();
-    const [selectedType, setSelectedType] = useState<string>('all');
+    const [selectedType, setSelectedType] = useState<NotificationType>(NotificationType.ALL);
     const [unreadCount, setUnreadCount] = useState<number>(0);
     const notificationTypes = [
-        { value: 'all', label: '全部类型' },
+        { value: 'ALL', label: NotificationTypeMap[NotificationType.ALL] },
         { value: 'SYSTEM', label: NotificationTypeMap[NotificationType.SYSTEM] },
         { value: 'ARTICLE_PUBLISH', label: NotificationTypeMap[NotificationType.ARTICLE_PUBLISH] },
         { value: 'ARTICLE_LIKE', label: NotificationTypeMap[NotificationType.ARTICLE_LIKE] },
@@ -33,6 +33,7 @@ const Notifications: React.FC = () => {
     const fetchUnreadCount = useCallback(async () => {
         try {
             const response = await notificationService.getUnreadCount();
+            console.log('getUnreadCount', response);
             if (response.code === 200) {
                 setUnreadCount(response.data);
             }
@@ -42,8 +43,8 @@ const Notifications: React.FC = () => {
     }, []);
     // 通知列表无限滚动fetcher
     const notificationsFetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<Notification>> => {
-        const type = selectedType === 'all' ? undefined : NotificationType[selectedType as keyof typeof NotificationType];
-        const response = await notificationService.getNotificationList(type, pageNum, pageSize);
+        const notificationType = selectedType === NotificationType.ALL ? undefined : NotificationType[selectedType as keyof typeof NotificationType];
+        const response = await notificationService.getNotificationList(notificationType, pageNum, pageSize);
         if (response.code !== 200) {
             throw new Error(response.message || '获取通知列表失败');
         }
@@ -91,64 +92,98 @@ const Notifications: React.FC = () => {
         error,
         hasMore,
         loadMoreRef,
-        refresh: refreshNotifications
+        refresh: refreshNotifications,
+        setData: setNotifications
     } = useInfiniteScroll<Notification>(notificationsFetcher, {
         pageSize: 10,
         threshold: 0.1
     });
-    // 标记通知为已读
+    // 标记通知为已读 - 乐观更新+回滚
     const markAsRead = async (id: number): Promise<void> => {
+        // 保存原始状态用于回滚
+        const originalNotifications = [...notifications];
+        const originalUnreadCount = unreadCount;
+
+        // 乐观更新：立即更新本地状态
+        setNotifications(prev =>
+            prev.map(item =>
+                item.id === id
+                    ? { ...item, readStatus: ReadStatus.READ }
+                    : item
+            )
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+
         try {
             const response = await notificationService.markAsRead(id);
-            if (response.code === 200 && response.data) {
-                // 乐观更新
-                // 这里可以通过refreshNotifications()来刷新数据
-                message.success('已标记为已读');
-                // 更新未读数量
-                await fetchUnreadCount();
-            } else {
-                message.error(response.message || '标记已读失败');
+            if (response.code !== 200 || !response.data) {
+                new Error(response.message || '标记已读失败');
             }
+            message.success(response.message || '已标记为已读');
         } catch (err) {
-            message.error('网络错误，请稍后重试');
+            // 回滚到原始状态
+            setNotifications(originalNotifications);
+            setUnreadCount(originalUnreadCount);
+            message.error(err instanceof Error ? err.message : '网络错误，请稍后重试');
             console.error('标记已读失败:', err);
         }
     };
-    // 标记所有通知为已读
+    // 标记所有通知为已读 - 乐观更新+回滚
     const markAllAsRead = async (): Promise<void> => {
+        // 保存原始状态用于回滚
+        const originalNotifications = [...notifications];
+        const originalUnreadCount = unreadCount;
+
+        // 乐观更新：立即更新本地状态
+        setNotifications(prev =>
+            prev.map(item => ({ ...item, readStatus: ReadStatus.READ }))
+        );
+        setUnreadCount(0);
+
         try {
             const response = await notificationService.markAllAsRead();
-            if (response.code === 200 && response.data) {
-                message.success('已全部标记为已读');
-                // 更新未读数量
-                setUnreadCount(0);
-            } else {
-                message.error(response.message || '标记全部已读失败');
+            if (response.code !== 200 || !response.data) {
+                new Error(response.message || '标记全部已读失败');
             }
+            message.success('已全部标记为已读');
         } catch (err) {
-            message.error('网络错误，请稍后重试');
+            // 回滚到原始状态
+            setNotifications(originalNotifications);
+            setUnreadCount(originalUnreadCount);
+            message.error(err instanceof Error ? err.message : '网络错误，请稍后重试');
             console.error('标记全部已读失败:', err);
         }
     };
-    // 删除通知
+    // 删除通知 - 乐观更新+回滚
     const deleteNotification = async (id: number): Promise<void> => {
+        // 保存原始状态用于回滚
+        const originalNotifications = [...notifications];
+        const originalUnreadCount = unreadCount;
+        const deletedNotification = notifications.find(n => n.id === id);
+
+        // 乐观更新：立即更新本地状态
+        setNotifications(prev => prev.filter(item => item.id !== id));
+        if (deletedNotification?.readStatus === ReadStatus.UNREAD) {
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+
         try {
             const response = await notificationService.deleteNotification(id);
-            if (response.code === 200 && response.data) {
-                message.success('通知已删除');
-                // 更新未读数量
-                await fetchUnreadCount();
-            } else {
-                message.error(response.message || '删除通知失败');
+            if (response.code !== 200 || !response.data) {
+                new Error(response.message || '删除通知失败');
             }
+            message.success('通知已删除');
         } catch (err) {
-            message.error('网络错误，请稍后重试');
+            // 回滚到原始状态
+            setNotifications(originalNotifications);
+            setUnreadCount(originalUnreadCount);
+            message.error(err instanceof Error ? err.message : '网络错误，请稍后重试');
             console.error('删除通知失败:', err);
         }
     };
     // 处理通知点击
     const handleNotificationClick = (notification: Notification): void => {
-        if (!notification.readStatus) {
+        if (notification.readStatus === ReadStatus.UNREAD) {
             (async (): Promise<void> => {
                 await markAsRead(notification.id);
             })();
@@ -164,13 +199,11 @@ const Notifications: React.FC = () => {
     // 初始加载未读数量
     useEffect(() => {
         // 监听WebSocket消息
-        const handleNotification = (data: unknown): void => {
-            console.log('收到新通知:', data);
+        const handleNotification = (): void => {
             // 重新获取通知列表
             refreshNotifications();
         };
         const handleUnreadCount = (data: unknown): void => {
-            console.log('未读通知数量更新:', data);
             if (typeof data === 'number') {
                 setUnreadCount(data);
             }
@@ -193,8 +226,8 @@ const Notifications: React.FC = () => {
                 body: {
                     padding: '12px 20px',
                     borderBottom: '1px solid #e8e8e8',
-                    borderRadius: 0,
-                    backgroundColor: !notification.readStatus ? 'rgba(239, 246, 255, 0.6)' : 'white',
+                    borderRadius: '16px',
+                    backgroundColor: notification.readStatus === ReadStatus.UNREAD ? '#e5e5e5' : 'white',
                     transition: 'background-color 0.3s ease'
                 }
             }}
@@ -205,6 +238,9 @@ const Notifications: React.FC = () => {
                 <div className="flex-1 min-w-0">
                     {/* 第一行：标题和时间 */}
                     <div className="flex items-center mb-2">
+                        {notification.readStatus === ReadStatus.UNREAD && (
+                            <div className="w-2 h-2 rounded-full bg-blue-400 mr-2 mt-1"></div>
+                        )}
                         <h3 className="text-lg font-semibold text-secondary-800 hover:text-primary-600 transition-colors duration-200 cursor-pointer"
                             onClick={() => handleNotificationClick(notification)}>
                             {notification.title}
@@ -221,7 +257,7 @@ const Notifications: React.FC = () => {
 
                     {/* 操作按钮 */}
                     <div className="flex items-center justify-end space-x-2">
-                        {!notification.readStatus && (
+                        {notification.readStatus === ReadStatus.UNREAD && (
                             <Button
                                 type="link"
                                 icon={<CheckOutlined/>}
@@ -252,8 +288,8 @@ const Notifications: React.FC = () => {
                     <h1 className="text-2xl font-bold text-secondary-800">通知中心</h1>
                     <div>({notifications.length})</div>
                     {unreadCount > 0 && (
-                        <Badge count={unreadCount} className="ml-2">
-                            <BellOutlined style={{ fontSize: 24, color: '#1677ff' }}/>
+                        <Badge size={'small'} count={unreadCount} >
+                            <BellOutlined style={{ fontSize: 16, color: '#1677ff', marginLeft: '10px' }} />
                         </Badge>
                     )}
                 </div>
@@ -264,15 +300,15 @@ const Notifications: React.FC = () => {
                         value={selectedType}
                         onChange={setSelectedType}
                         options={notificationTypes}
-                        style={{ width: 140 }}
-                        size="large"
+                        style={{ width: 150 }}
+                        size="middle"
                         variant="outlined"
                         prefix={<FilterOutlined className="text-gray-300"/>}
                     />
                     <Button
                         type="primary"
                         variant="text"
-                        size="large"
+                        size="middle"
                         onClick={markAllAsRead}
                         disabled={unreadCount === 0}
                     >
@@ -295,7 +331,8 @@ const Notifications: React.FC = () => {
                     total: 0,
                     pageSize: 0,
                     setPageSize: async () => {
-                    }
+                    },
+                    setData: setNotifications
                 }}
                 renderItem={renderNotificationItem}
                 loadingContent={

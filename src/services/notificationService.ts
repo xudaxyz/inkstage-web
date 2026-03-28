@@ -42,9 +42,9 @@ const validateNotificationSetting = (setting: NotificationSetting): void => {
 // 通知服务
 const notificationService = {
   // 获取通知列表（支持分页）
-  getNotificationList: async (type: NotificationType | undefined, pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<NotificationListResponse>> => {
+  getNotificationList: async (notificationType: NotificationType | undefined, pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<NotificationListResponse>> => {
     validatePageParams(pageNum, pageSize);
-    const params = type ? { type, pageNum, pageSize } : { pageNum, pageSize };
+    const params = notificationType ? { notificationType, pageNum, pageSize } : { pageNum, pageSize };
     return await apiClient.get(API_ENDPOINTS.FRONT.NOTIFICATION.LIST, { params });
   },
 
@@ -76,9 +76,9 @@ const notificationService = {
   },
 
   // 分页获取通知列表
-  getNotificationListWithPage: async (type?: NotificationType, pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<NotificationListResponse>> => {
+  getNotificationListWithPage: async (notificationType?: NotificationType, pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<NotificationListResponse>> => {
     validatePageParams(pageNum, pageSize);
-    const params = type ? { type, pageNum, pageSize } : { pageNum, pageSize };
+    const params = notificationType ? { notificationType, pageNum, pageSize } : { pageNum, pageSize };
     return await apiClient.get(API_ENDPOINTS.FRONT.NOTIFICATION.LIST_PAGE, { params });
   },
 

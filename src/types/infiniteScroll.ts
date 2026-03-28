@@ -44,6 +44,8 @@ export interface InfiniteScrollResult<T> {
   pageSize: number;
   /** 设置页数 */
   setPageSize: (pageSize: number | ((pageSize: number) => number)) => Promise<void>;
+  /** 直接设置数据（用于乐观更新） */
+  setData: React.Dispatch<React.SetStateAction<T[]>>;
 }
 
 /**

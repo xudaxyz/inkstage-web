@@ -139,7 +139,8 @@ const Home: React.FC = () => {
         error: articlesError,
         hasMore,
         loadMoreRef,
-        refresh: refreshArticles
+        refresh: refreshArticles,
+        setData: setArticles
     } = useInfiniteScroll<IndexArticleList>(articlesFetcher, {
         pageSize: INFINITE_SCROLL_PAGE_SIZE,
         threshold: 0.1
@@ -252,7 +253,8 @@ const Home: React.FC = () => {
                                     total: 0,
                                     pageSize: 0,
                                     setPageSize: async () => {
-                                    }
+                                    },
+                                    setData: setArticles
                                 }}
                                 renderItem={renderArticleItem}
                                 loadingContent={articlesLoadingContent}
