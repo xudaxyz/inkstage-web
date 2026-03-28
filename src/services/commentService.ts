@@ -80,6 +80,28 @@ export const dislikeComment = async (id: number): Promise<ApiResponse<boolean>> 
     validateIdParam(id);
     return await apiClient.post(API_ENDPOINTS.FRONT.COMMENT.DISLIKE(id));
 };
+
+// 获取子评论列表
+export const getReplies = async (parentId: number, pageNum: number = 1, pageSize: number = 10, sortBy: 'hot' | 'new' = 'hot'): Promise<ApiResponse<FrontArticleCommentResponse>> => {
+    validateIdParam(parentId);
+    if (pageNum <= 0) {
+        throw new Error('页码必须是正整数');
+    }
+    if (pageSize <= 0) {
+        throw new Error('每页数量必须是正整数');
+    }
+    if (!['hot', 'new'].includes(sortBy)) {
+        throw new Error('排序方式必须是hot或new');
+    }
+    return await apiClient.get(API_ENDPOINTS.FRONT.COMMENT.REPLIES, {
+        params: {
+            parentId,
+            pageNum,
+            pageSize,
+            sortBy
+        }
+    });
+};
 const commentService = {
     getComments,
     createComment,
@@ -87,6 +109,7 @@ const commentService = {
     deleteComment,
     likeComment,
     dislikeComment,
+    getReplies,
     // 管理员相关方法
     admin: {
         // 分页获取评论列表

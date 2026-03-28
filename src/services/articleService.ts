@@ -40,8 +40,8 @@ const validateArticleParams = (article: Partial<Article>): boolean => {
   return true;
 };
 
-const validatePageParams = (params: { page?: number; pageSize?: number }): boolean => {
-  if (params.page &&  params.page < 1) {
+const validatePageParams = (params: { pageNum?: number; pageSize?: number }): boolean => {
+  if (params.pageNum &&  params.pageNum < 1) {
     throw new Error('页码必须是大于0的数字');
   }
   if (params.pageSize && (params.pageSize < 1 || params.pageSize > 100)) {
@@ -112,7 +112,7 @@ const articleService = {
 
   // 获取文章列表
   getArticles: async (query: {
-        page?: number;
+        pageNum?: number;
         pageSize?: number;
         categoryId?: number;
         keyword?: string;
@@ -121,9 +121,9 @@ const articleService = {
     } = {}): Promise<ApiResponse<IndexArticleListResponse>> => {
     validatePageParams(query);
     const queryDTO = {
-      page: query.page || 1,
+      pageNum: query.pageNum || 1,
       pageSize: query.pageSize || 10,
-      offset: ((query.page || 1) - 1) * (query.pageSize || 10),
+      offset: ((query.pageNum || 1) - 1) * (query.pageSize || 10),
       categoryId: query.categoryId,
       keyword: query.keyword,
       sortBy: query.sortBy || 'publishTime',
@@ -155,10 +155,10 @@ const articleService = {
   },
 
   // 获取用户文章列表
-  getUserArticles: async (userId: number, page: number = 1, size: number = 10): Promise<ApiResponse<IndexArticleListResponse>> => {
+  getUserArticles: async (userId: number, pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<IndexArticleListResponse>> => {
     validateIdParam(userId);
-    validatePageParams({ page, pageSize: size });
-    return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.USER_ARTICLES(userId), { params: { page, size } });
+    validatePageParams({ pageNum: pageNum, pageSize: pageSize });
+    return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.USER_ARTICLES(userId), { params: { pageNum, pageSize } });
   },
 
   // 获取作者相关文章
@@ -226,8 +226,8 @@ const articleService = {
   getMyArticles: async (params: {
         articleStatus: ArticleStatusEnum;
         keyword?: string;
-        page?: number;
-        size?: number;
+        pageNum?: number;
+        pageSize?: number;
     }): Promise<ApiResponse<IndexArticleListResponse<MyArticleList>>> => {
     if (!params || typeof params !== 'object') {
       throw new Error('参数必须是对象');
@@ -235,7 +235,7 @@ const articleService = {
     if (!params.articleStatus) {
       throw new Error('文章状态不能为空');
     }
-    validatePageParams({ page: params.page, pageSize: params.size });
+    validatePageParams({ pageNum: params.pageNum, pageSize: params.pageSize });
     return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.MY_ARTICLES, { params });
   },
 
@@ -243,12 +243,12 @@ const articleService = {
   getMyCollections: async (params: {
         folderId?: number;
         keyword?: string;
-        page?: number;
-        size?: number;
+        pageNum?: number;
+        pageSize?: number;
         sortBy?: string;
         sortOrder?: string;
     }): Promise<ApiResponse<IndexArticleListResponse<MyArticleCollectionList>>> => {
-    validatePageParams({ page: params.page, pageSize: params.size });
+    validatePageParams({ pageNum: params.pageNum, pageSize: params.pageSize });
     if (params.folderId) {
       validateIdParam(params.folderId);
     }

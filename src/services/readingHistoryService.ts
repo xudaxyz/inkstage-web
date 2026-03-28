@@ -13,11 +13,11 @@ const validateIdParam = (id: number): void => {
   }
 };
 
-const validatePageParams = (page: number, size: number): void => {
-  if (page <= 0) {
+const validatePageParams = (pageNum: number, pageSize: number): void => {
+  if (pageNum <= 0) {
     throw new Error('页码必须是正整数');
   }
-  if (size <= 0) {
+  if (pageSize <= 0) {
     throw new Error('每页数量必须是正整数');
   }
 };
@@ -51,9 +51,9 @@ const readingHistoryService = {
   },
 
   // 获取阅读历史列表
-  getReadingHistoryList: async (page: number = 1, size: number = 10): Promise<ApiResponse<ReadingHistoryResponse>> => {
-    validatePageParams(page, size);
-    return await apiClient.get(API_ENDPOINTS.FRONT.READING_HISTORY.LIST, { params: { page, size } });
+  getReadingHistoryList: async (pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<ReadingHistoryResponse>> => {
+    validatePageParams(pageNum, pageSize);
+    return await apiClient.get(API_ENDPOINTS.FRONT.READING_HISTORY.LIST, { params: { pageNum, pageSize } });
   },
 
   // 删除单条阅读历史

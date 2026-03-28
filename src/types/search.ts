@@ -4,8 +4,8 @@ import type { IndexArticleList } from './article';
 // 搜索文章的请求参数接口
 export interface SearchArticlesParams {
     keyword: string;
-    page?: number;
-    size?: number;
+    pageNum?: number;
+    pageSize?: number;
     sortBy?: 'relevance' | 'publishTime' | 'readCount';
 }
 

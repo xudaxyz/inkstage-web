@@ -7,6 +7,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
 import { useUserStore } from '../../store';
+import type { AuthTypeEnum } from '../../types/enums';
 
 
 // 注册表单数据类型
@@ -96,10 +97,10 @@ const Register: React.FC = () => {
         const isEmail = /^[^@]+@[^@]+\.[^@]+$/.test(formData.account);
         authType = isEmail ? 'EMAIL' : 'PHONE';
       }
-      
+
       const response = await register({
         account: formData.account,
-        authType: authType as any,
+        authType: authType as AuthTypeEnum,
         password: formData.password || '',
         confirmPassword: formData.confirmPassword || '',
         code: formData.code || '',

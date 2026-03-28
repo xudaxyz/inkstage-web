@@ -74,7 +74,8 @@ export const API_ENDPOINTS = {
       UPDATE: '/front/comment/update', // 更新评论
       DELETE: (id: number): string => `/front/comment/delete/${id}`, // 删除评论
       LIKE: (id: number): string => `/front/comment/like/${id}`, // 点赞评论
-      DISLIKE: (id: number): string => `/front/comment/dislike/${id}` // 点踩评论
+      DISLIKE: (id: number): string => `/front/comment/dislike/${id}`, // 点踩评论
+      REPLIES: '/front/comment/replies' // 获取子评论列表
     },
 
     // 阅读历史相关

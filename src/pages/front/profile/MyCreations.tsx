@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { Button, Card, Empty, Input, message, Modal, Pagination, Popover, Space, Tag, Spin } from 'antd';
+import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { Button, Card, Input, message, Modal, Popover, Space, Tag } from 'antd';
+import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import {
   DeleteOutlined,
   LikeOutlined,
@@ -25,6 +27,7 @@ import {
   ArticleReviewStatusMap
 } from '../../../types/enums';
 import { formatDateTimeShort } from '../../../utils';
+import type { ApiPageResponse } from '../../../types/common.ts';
 
 // 文章类型定义
 interface Article {
@@ -48,14 +51,64 @@ const MyCreations: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
   const [currentStatus, setCurrentStatus] = useState<ArticleStatusEnum>(ArticleStatusEnum.ALL);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(3);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteArticleId, setDeleteArticleId] = useState<number>();
-  const [articles, setArticles] = useState<Article[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const statusRef = useRef(currentStatus);
+  const searchRef = useRef(debouncedSearchText);
+
+  // 无限滚动配置
+  const pageSize = 10;
+
+  // 文章列表获取函数
+  const fetcher = useCallback(async (pageNum: number, pageSize: number) : Promise<ApiPageResponse<Article>> => {
+    const response = await articleService.getMyArticles({
+      articleStatus: statusRef.current,
+      keyword: searchRef.current,
+      pageNum: pageNum,
+      pageSize: pageSize
+    });
+
+    if (response.code === 200 && response.data) {
+      // 转换后端数据格式
+      const formattedArticles: Article[] = response.data.record.map((item: MyArticleList) => ({
+        id: item.id,
+        title: item.title,
+        summary: item.summary,
+        publishTime: item.publishTime,
+        original: item.original as ArticleOriginalEnum || ArticleOriginalEnum.OTHER,
+        visible: item.visible as ArticleVisibleEnum || ArticleVisibleEnum.PUBLIC,
+        articleStatus: item.articleStatus as ArticleStatusEnum,
+        reviewStatus: item.reviewStatus as ArticleReviewStatusEnum,
+        readCount: item.readCount || 0,
+        likeCount: item.likeCount || 0,
+        commentCount: item.commentCount || 0
+      }));
+
+      setTotal(response.data.total);
+
+      return {
+        record: formattedArticles,
+        total: response.data.total,
+        pageNum: pageNum,
+        pageSize: pageSize,
+        pages: Math.ceil(response.data.total / pageSize),
+        isFirstPage: pageNum === 1,
+        isLastPage: pageNum * pageSize >= response.data.total,
+        prePage: pageNum > 1 ? pageNum - 1 : 1,
+        nextPage: pageNum * pageSize < response.data.total ? pageNum + 1 : pageNum
+      };
+    } else {
+      throw new Error(response.message || '获取文章列表失败');
+    }
+  }, []);
+
+  // 使用无限滚动hook
+  const infiniteScroll = useInfiniteScroll<Article>(fetcher, {
+    pageSize
+  });
+
+  const { refresh } = infiniteScroll;
 
   // 搜索防抖
   useEffect(() => {
@@ -71,49 +124,12 @@ const MyCreations: React.FC = () => {
     totalArticles: total
   }), [total]);
 
-  // 获取文章列表
-  const fetchArticles = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await articleService.getMyArticles({
-        articleStatus: currentStatus,
-        keyword: debouncedSearchText,
-        page: currentPage,
-        size: pageSize
-      });
-      if (response.code === 200 && response.data) {
-        // 转换后端数据格式
-        const formattedArticles: Article[] = response.data.record.map((item: MyArticleList) => ({
-          id: item.id,
-          title: item.title,
-          summary: item.summary,
-          publishTime: item.publishTime,
-          original: item.original as ArticleOriginalEnum || ArticleOriginalEnum.OTHER,
-          visible: item.visible as ArticleVisibleEnum || ArticleVisibleEnum.PUBLIC,
-          articleStatus: item.articleStatus as ArticleStatusEnum,
-          reviewStatus: item.reviewStatus as ArticleReviewStatusEnum,
-          readCount: item.readCount || 0,
-          likeCount: item.likeCount || 0,
-          commentCount: item.commentCount || 0
-        }));
-        setArticles(formattedArticles);
-        setTotal(response.data.total);
-      } else {
-        setError(response.message || '获取文章列表失败');
-      }
-    } catch (err) {
-      setError('网络错误，请稍后重试');
-      console.error('获取文章列表失败:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentStatus, debouncedSearchText, currentPage, pageSize]);
-
-  // 当状态、搜索词或分页参数变化时重新获取数据
+  // 当状态或搜索词变化时更新ref并刷新数据
   useEffect(() => {
-    void fetchArticles();
-  }, [fetchArticles]);
+    statusRef.current = currentStatus;
+    searchRef.current = debouncedSearchText;
+    refresh();
+  }, [currentStatus, debouncedSearchText, refresh]);
 
   // 分享文章
   const handleShare = (articleId: number) : void => {
@@ -149,24 +165,20 @@ const MyCreations: React.FC = () => {
     if (!deleteArticleId) return;
 
     try {
-      setLoading(true);
       await articleService.deleteArticle(Number(deleteArticleId));
       message.success('文章已删除');
       setDeleteModalVisible(false);
       // 重新加载文章列表
-      await fetchArticles();
+      refresh();
     } catch (error) {
       message.error('删除失败，请重试');
       console.error('删除文章失败:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // 状态变化时重置页码
+  // 状态变化时刷新数据
   const handleStatusChange = (articleStatus: ArticleStatusEnum) : void => {
     setCurrentStatus(articleStatus);
-    setCurrentPage(1);
   };
 
   // 获取状态文本
@@ -249,148 +261,126 @@ const MyCreations: React.FC = () => {
       </div>
 
       {/* 文章列表 */}
-      {loading ? (
-        <div className="py-12 flex justify-center">
-          <Spin size="large" tip="加载中..."/>
-        </div>
-      ) : error ? (
-        <div className="py-12 flex justify-center">
-          <div className="text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <Button type="primary" onClick={fetchArticles}>重试</Button>
-          </div>
-        </div>
-      ) : articles.length > 0 ? (
-        <div className="space-y-4">
-          {articles.map((article) => (
-            <Card key={article.id} variant="borderless"
-              styles={{
-                body: {
-                  padding: '24px 12px',
-                  borderBottom: '1px solid #e8e8e8',
-                  borderRadius: 0
-                }
-              }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-start">
-                  <a
-                    href={ROUTES.ARTICLE_DETAIL(article.id)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-2xl font-semibold no-underline"
-                    style={{
-                      color: 'black',
-                      textDecoration: 'none',
-                      fontFamily: 'sans-serif',
-                      letterSpacing: '-0.02em'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.color = '#0284c7'}
-                    onMouseOut={(e) => e.currentTarget.style.color = 'black'}
-                  >
-                    {article.title}
-                  </a>
-                  <div className="ml-1">
-                    <Tag variant="outlined"
-                      color={article.visible === ArticleVisibleEnum.PUBLIC ? 'green' : 'default'}>
-                      {ArticleVisibleMap[article.visible]}
-                    </Tag>
-                  </div>
+      <InfiniteScrollContainer
+        infiniteScroll={infiniteScroll}
+        renderItem={(article) => (
+          <Card key={article.id} variant="borderless"
+            styles={{
+              body: {
+                padding: '24px 12px',
+                borderBottom: '1px solid #e8e8e8',
+                borderRadius: 0
+              }
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-start">
+                <a
+                  href={ROUTES.ARTICLE_DETAIL(article.id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-2xl font-semibold no-underline"
+                  style={{
+                    color: 'black',
+                    textDecoration: 'none',
+                    fontFamily: 'sans-serif',
+                    letterSpacing: '-0.02em'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.color = '#0284c7'}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'black'}
+                >
+                  {article.title}
+                </a>
+                <div className="ml-1">
+                  <Tag variant="outlined"
+                    color={article.visible === ArticleVisibleEnum.PUBLIC ? 'green' : 'default'}>
+                    {ArticleVisibleMap[article.visible]}
+                  </Tag>
                 </div>
-                <div className="flex items-center gap-2">
+              </div>
+              <div className="flex items-center gap-2">
+                <Tag variant="filled"
+                  color={article.articleStatus === ArticleStatusEnum.PUBLISHED ? 'default' : 'warning'}>
+                  {ArticleStatusMap[article.articleStatus]}
+                </Tag>
+                {article.reviewStatus && (
                   <Tag variant="filled"
-                    color={article.articleStatus === ArticleStatusEnum.PUBLISHED ? 'default' : 'warning'}>
-                    {ArticleStatusMap[article.articleStatus]}
+                    color={article.reviewStatus === ArticleReviewStatusEnum.APPROVED ? 'green' :
+                      article.reviewStatus === ArticleReviewStatusEnum.REJECTED ? 'red' : 'blue'}>
+                    {ArticleReviewStatusMap[article.reviewStatus]}
                   </Tag>
-                  {article.reviewStatus && (
-                    <Tag variant="filled"
-                      color={article.reviewStatus === ArticleReviewStatusEnum.APPROVED ? 'green' :
-                        article.reviewStatus === ArticleReviewStatusEnum.REJECTED ? 'red' : 'blue'}>
-                      {ArticleReviewStatusMap[article.reviewStatus]}
-                    </Tag>
-                  )}
-                </div>
+                )}
+              </div>
+            </div>
+
+            <div className="text-gray-600 mb-4 line-clamp-2">
+              {article.summary}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between ">
+              <div className="flex items-center gap-5 text-sm text-gray-500">
+                <Tag variant="solid"
+                  color={article.original === ArticleOriginalEnum.ORIGINAL ? 'gold' : 'green'}>
+                  {ArticleOriginalMap[article.original] || ArticleOriginalEnum.OTHER}
+                </Tag>
+                <span>{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</span>
+                <Space size={4}>
+                  <EyeOutlined/> {article.readCount}
+                </Space>
+                <Space size={4}>
+                  <LikeOutlined/> {article.likeCount}
+                </Space>
+                <Space size={4}>
+                  <MessageOutlined/> {article.commentCount}
+                </Space>
               </div>
 
-              <div className="text-gray-600 mb-4 line-clamp-2">
-                {article.summary}
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between ">
-                <div className="flex items-center gap-5 text-sm text-gray-500">
-                  <Tag variant="solid"
-                    color={article.original === ArticleOriginalEnum.ORIGINAL ? 'gold' : 'green'}>
-                    {ArticleOriginalMap[article.original] || ArticleOriginalEnum.OTHER}
-                  </Tag>
-                  <span>{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</span>
-                  <Space size={4}>
-                    <EyeOutlined/> {article.readCount}
-                  </Space>
-                  <Space size={4}>
-                    <LikeOutlined/> {article.likeCount}
-                  </Space>
-                  <Space size={4}>
-                    <MessageOutlined/> {article.commentCount}
-                  </Space>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Popover
-                    placement="bottom"
-                    content={
-                      <Space orientation="vertical">
-                        <Button
-                          icon={<EditOutlined/>}
-                          size="small"
-                          type="text"
-                          onClick={() => handleEdit(article.id)}
-                        >
+              <div className="flex items-center space-x-2">
+                <Popover
+                  placement="bottom"
+                  content={
+                    <Space orientation="vertical">
+                      <Button
+                        icon={<EditOutlined/>}
+                        size="small"
+                        type="text"
+                        onClick={() => handleEdit(article.id)}
+                      >
                                                     编辑
-                        </Button>
-                        <Button
-                          icon={<ShareAltOutlined/>}
-                          size="small"
-                          type="text"
-                          onClick={() => handleShare(article.id)}
-                        >
+                      </Button>
+                      <Button
+                        icon={<ShareAltOutlined/>}
+                        size="small"
+                        type="text"
+                        onClick={() => handleShare(article.id)}
+                      >
                                                     分享
-                        </Button>
-                        <Button
-                          icon={<DeleteOutlined/>}
-                          size="small"
-                          type="text"
-                          danger
-                          onClick={() => showDeleteConfirm(article.id)}
-                        >
+                      </Button>
+                      <Button
+                        icon={<DeleteOutlined/>}
+                        size="small"
+                        type="text"
+                        danger
+                        onClick={() => showDeleteConfirm(article.id)}
+                      >
                                                     删除
-                        </Button>
-                      </Space>
-                    }
-                    trigger="click"
-                  >
-                    <Button icon={<MoreOutlined/>} size="small" type="text"/>
-                  </Popover>
-                </div>
+                      </Button>
+                    </Space>
+                  }
+                  trigger="click"
+                >
+                  <Button icon={<MoreOutlined/>} size="small" type="text"/>
+                </Popover>
               </div>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无文章"/>
-      )}
-
-      {/* 分页 */}
-      <div className="mt-6 flex justify-center">
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={total}
-          onChange={(page) => setCurrentPage(page)}
-          onShowSizeChange={(_, size) => setPageSize(size)}
-          showSizeChanger
-          showTotal={(total) => `共 ${total} 篇文章`}
-        />
-      </div>
+            </div>
+          </Card>
+        )}
+        emptyContent={
+          <div className="py-12 text-center">
+            <p>暂无文章</p>
+          </div>
+        }
+      />
 
       {/* 删除确认对话框 */}
       <Modal

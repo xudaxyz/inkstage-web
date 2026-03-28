@@ -137,7 +137,7 @@ const user = useUser();
         <nav className="hidden md:flex items-center gap-10 whitespace-nowrap">
           <div className="relative">
             <Link to="/"
-              className={`font-medium transition-colors duration-200 ${activeNavItem === 'recommend' ? 'text-primary-600' : 'text-gray-700 dark:text-gray-200 hover:text-primary-600'}`}>
+              className={`font-medium transition-colors duration-200 ${activeNavItem === 'recommend' ? 'text-primary-600 font-semibold' : 'text-gray-700 font-medium dark:text-gray-200 hover:text-primary-600'}`}>
                             推荐
             </Link>
             {activeNavItem === 'recommend' && (
@@ -146,7 +146,7 @@ const user = useUser();
           </div>
           <div className="relative">
             <Link to="/rankings"
-              className={`font-medium transition-colors duration-200 ${activeNavItem === 'rankings' ? 'text-primary-600' : 'text-gray-700 dark:text-gray-200 hover:text-primary-600'}`}>
+              className={`font-medium transition-colors duration-200 ${activeNavItem === 'rankings' ? 'text-primary-600 font-semibold' : 'text-gray-700 font-medium dark:text-gray-200 hover:text-primary-600'}`}>
                             热门
             </Link>
             {activeNavItem === 'rankings' && (

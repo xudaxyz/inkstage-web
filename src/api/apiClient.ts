@@ -7,6 +7,7 @@ import { userStore } from '../store/userStore';
 import { adminStore } from '../store/adminStore';
 import TokenService from '../services/tokenService';
 import { SECURE_STORAGE_KEYS, PUBLIC_ENDPOINTS } from '../constants/security';
+import type { UserInfo } from '../types/auth';
 
 // 创建axios实例
 const apiClient: AxiosInstance = axios.create({
@@ -90,31 +91,21 @@ const isPublicEndpoint = (url: string): boolean => {
 // 响应拦截器
 apiClient.interceptors.response.use(
   (response) => {
-    console.log('API请求成功:url:', response.config.url);
     return response.data;
   },
   async (error) => {
-    console.log('API请求错误:', { error, url: error.config?.url, status: error.response?.status });
     const originalRequest = error.config;
 
     // 处理401错误
     if (error.response?.status === 401) {
-      console.log('收到401错误，开始处理');
       // 根据当前路径判断是前台还是后台
       const isAdminPath = isAdminPage(window.location.pathname);
       const tokenKey = isAdminPath ? SECURE_STORAGE_KEYS.ADMIN_ACCESS_TOKEN : SECURE_STORAGE_KEYS.ACCESS_TOKEN;
       const refreshTokenKey = isAdminPath ? SECURE_STORAGE_KEYS.ADMIN_REFRESH_TOKEN : SECURE_STORAGE_KEYS.REFRESH_TOKEN;
       const refreshTokenEndpoint = isAdminPath ? API_ENDPOINTS.ADMIN.AUTH.REFRESH_TOKEN : API_ENDPOINTS.COMMON.AUTH.TOKEN;
 
-      console.log('当前路径:', window.location.pathname, 'isAdminPath:', isAdminPath);
-      console.log('localStorage中的令牌:', {
-        [tokenKey]: TokenService.getToken(tokenKey),
-        [refreshTokenKey]: TokenService.getToken(refreshTokenKey)
-      });
-
       // 检查是否是刷新令牌请求本身失败
       if (originalRequest.url === refreshTokenEndpoint) {
-        console.log('刷新令牌请求本身失败，清理本地存储');
         // 刷新令牌请求失败，清理用户状态
         if (isAdminPath) {
           adminStore.getState().logout();
@@ -127,7 +118,6 @@ apiClient.interceptors.response.use(
         const currentPath = window.location.pathname;
         const isCurrentPagePublic = isPublicPage(currentPath);
 
-        console.log('检查当前页面是否公开:', { currentPath, isCurrentPagePublic });
 
         if (!isCurrentPagePublic) {
           // 非公开页面，跳转到登录页面
@@ -149,36 +139,30 @@ apiClient.interceptors.response.use(
       const apiUrl = originalRequest.url;
       const isPublicApi = isPublicEndpoint(apiUrl);
 
-      console.log('检查请求API是否公开:', { apiUrl, isPublicApi });
 
       // 如果是公开API，直接返回错误，不进行令牌刷新
       if (isPublicApi) {
-        console.log('公开API，直接返回错误');
         errorHandler.handleAuthError('登录状态无效，但您仍可以浏览公开内容');
         return Promise.reject(new Error('用户未登录'));
       }
 
       // 检查是否已经在处理刷新令牌
       if (!isRefreshing) {
-        console.log('开始处理刷新令牌');
         isRefreshing = true;
 
         const refreshToken = TokenService.getToken(refreshTokenKey);
-        console.log('获取到的refreshToken:', refreshToken);
         if (refreshToken) {
           try {
-            console.log('发送刷新令牌请求');
             const response = await apiClient.post(refreshTokenEndpoint, null, { params: { refreshToken } }) as {
                             code: number;
                             message: string;
                             data: {
                                 access_token: string;
                                 refresh_token: string;
-                                userInfo: any;
+                                userInfo: UserInfo;
                             };
                         };
 
-            console.log('刷新令牌成功，响应:', response);
             if (response.code === 200) {
                 TokenService.setToken(tokenKey, response.data.access_token);
                 TokenService.setToken(refreshTokenKey, response.data.refresh_token);
@@ -191,10 +175,9 @@ apiClient.interceptors.response.use(
                 isRefreshing = false;
                 return apiClient(originalRequest);
             } else {
-                throw new Error(response.message || '刷新令牌失败');
+                new Error(response.message || '刷新令牌失败');
             }
           } catch (refreshError: unknown) {
-            console.log('刷新令牌失败:', refreshError);
             // 刷新令牌失败，清理用户状态
             if (isAdminPath) {
               adminStore.getState().logout();
@@ -218,7 +201,6 @@ apiClient.interceptors.response.use(
             return Promise.reject(new Error('用户未登录'));
           }
         } else {
-          console.log('没有刷新令牌，清理本地存储');
           // 没有刷新令牌，清理用户状态
           if (isAdminPath) {
             adminStore.getState().logout();
@@ -236,7 +218,6 @@ apiClient.interceptors.response.use(
           return Promise.reject(new Error('用户未登录'));
         }
       } else {
-        console.log('已经在处理刷新令牌，将请求加入队列');
         // 已经在处理刷新令牌，将当前请求加入队列
         return new Promise((resolve) => {
           refreshSubscribers.push((token: string) => {

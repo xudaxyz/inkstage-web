@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Button, Card, Input, Empty, Space, Popover, Tag, Divider, Spin, message, Pagination } from 'antd';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Button, Card, Input, Empty, Space, Popover, Tag, Divider, Spin, message, Alert } from 'antd';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import {
   DeleteOutlined,
   EyeOutlined,
@@ -14,36 +15,46 @@ import { formatDateOnly, formatTimeShort } from '../../../utils';
 
 const ReadingHistories: React.FC = () => {
   // 状态管理
-  const [histories, setHistories] = useState<ReadingHistory[]>([]);
   const [searchText, setSearchText] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(3);
-  const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
 
-  // 获取阅读历史列表
-  const fetchReadingHistory = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await readingHistoryService.getReadingHistoryList(currentPage, pageSize);
-      if (response.code === 200 && response.data) {
-        setHistories(response.data.record);
-        setTotal(response.data.total);
-      } else {
-        message.error(response.message || '获取阅读历史失败');
-      }
-    } catch (error) {
-      console.error('获取阅读历史失败:', error);
-      message.error('网络错误，请稍后重试');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, pageSize]);
+  // 无限滚动配置
+  const pageSize = 10;
 
-  // 初始加载和分页变化时获取数据
-  useEffect(() => {
-    void fetchReadingHistory();
-  }, [fetchReadingHistory]);
+  // 阅读历史列表获取函数
+  const fetcher = useCallback(async (pageNum: number, pageSize: number) => {
+    const response = await readingHistoryService.getReadingHistoryList(pageNum, pageSize);
+    if (response.code === 200 && response.data) {
+      setTotal(response.data.total);
+      return {
+        record: response.data.record,
+        total: response.data.total,
+        pageNum: pageNum,
+        pageSize: pageSize,
+        pages: Math.ceil(response.data.total / pageSize),
+        isFirstPage: pageNum === 1,
+        isLastPage: pageNum * pageSize >= response.data.total,
+        prePage: pageNum > 1 ? pageNum - 1 : 1,
+        nextPage: pageNum * pageSize < response.data.total ? pageNum + 1 : pageNum
+      };
+    } else {
+      throw new Error(response.message || '获取阅读历史失败');
+    }
+  }, []);
+
+  // 使用无限滚动hook
+  const {
+    data: histories,
+    isLoading: loading,
+    isError: error,
+    loadMoreRef: loadMore,
+    hasMore,
+    refresh
+  } = useInfiniteScroll<ReadingHistory>(fetcher, {
+    pageSize
+  });
+
+
 
   // 按日期分组
   const groupedHistories = useMemo(() => {
@@ -62,35 +73,13 @@ const ReadingHistories: React.FC = () => {
     }, {});
   }, [histories, searchText]);
 
-  // 分页处理
-  const paginatedGroups = useMemo(() => {
-    const allItems = Object.entries(groupedHistories).flatMap(([date, items]) =>
-      items.map(item => ({ ...item, date }))
-    );
-
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedItems = allItems.slice(startIndex, endIndex);
-
-    // 重新分组
-    return paginatedItems.reduce((groups: Record<string, ReadingHistory[]>, item) => {
-      const date = item.date;
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(item);
-      return groups;
-    }, {});
-  }, [groupedHistories, currentPage, pageSize]);
-
   // 清空所有历史
   const handleClearAll = async () : Promise<void> => {
     try {
       const response = await readingHistoryService.clearReadingHistory();
       if (response.code === 200) {
         message.success('已清空所有阅读历史');
-        setHistories([]);
-        setTotal(0);
+        refresh();
       } else {
         message.error(response.message || '清空阅读历史失败');
       }
@@ -107,7 +96,7 @@ const ReadingHistories: React.FC = () => {
       if (response.code === 200) {
         message.success('已删除阅读历史');
         // 重新加载数据
-        await fetchReadingHistory();
+        refresh();
       } else {
         message.error(response.message || '删除阅读历史失败');
       }
@@ -160,9 +149,23 @@ const ReadingHistories: React.FC = () => {
         <div className="py-12 flex justify-center">
           <Spin size="large" tip="加载中..." />
         </div>
-      ) : total > 0 ? (
+      ) : error ? (
+        <div className="py-12">
+          <Alert
+            title="加载失败"
+            description={'请稍后重试'}
+            type="error"
+            showIcon
+            action={
+              <Button size="small" type="primary" onClick={refresh}>
+                重试
+              </Button>
+            }
+          />
+        </div>
+      ) : histories.length > 0 ? (
         <div className="space-y-6">
-          {Object.entries(paginatedGroups).map(([date, items]) => (
+          {Object.entries(groupedHistories).map(([date, items]) => (
             <div key={date} className="mb-6">
               {/* 日期标题 */}
               <h2 className="text-lg font-semibold text-secondary-700 mb-4 flex items-center">
@@ -300,18 +303,18 @@ const ReadingHistories: React.FC = () => {
             </div>
           ))}
 
-          {/* 分页 */}
-          <div className="mt-6 flex justify-center">
-            <Pagination
-              current={currentPage}
-              pageSize={pageSize}
-              total={total}
-              onChange={(page) => setCurrentPage(page)}
-              onShowSizeChange={(_, size) => setPageSize(size)}
-              showSizeChanger
-              showTotal={(total) => `共 ${total} 条阅读历史`}
-            />
-          </div>
+          {/* 加载更多 */}
+          {hasMore && (
+            <div className="py-6 flex justify-center" ref={loadMore}>
+              <Spin size="small" tip="加载更多..." />
+            </div>
+          )}
+
+          {!hasMore && histories.length > 0 && (
+            <div className="py-4 text-center text-gray-400 text-sm">
+              没有更多数据了
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm">

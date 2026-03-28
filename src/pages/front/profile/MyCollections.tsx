@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Input, message, Tag, Empty, Card, Space, Popover, Divider, Pagination, Spin, Modal, Form, notification } from 'antd';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Button, Input, message, Tag, Card, Space, Popover, Divider, Spin, Modal, Form, notification } from 'antd';
+import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import {
   DeleteOutlined,
   EyeOutlined,
@@ -20,6 +22,7 @@ import {
 import { ROUTES } from '../../../constants/routes';
 import articleService from '../../../services/articleService';
 import { type MyArticleCollectionList } from '../../../types/article';
+import { type ApiPageResponse } from '../../../types/common';
 import { DefaultStatusEnum, ArticleOriginalMap } from '../../../types/enums';
 import { formatDateTimeShort } from '../../../utils';
 
@@ -42,14 +45,9 @@ const MyCollections: React.FC = () => {
   const [sortType, setSortType] = useState<SortType>('recent');
   const [searchText, setSearchText] = useState('');
   const [showFolderList, setShowFolderList] = useState(false);
-  const [collections, setCollections] = useState<MyArticleCollectionList[]>([]);
-  const [total, setTotal] = useState(0);
+
   const [totalCollectionCount, setTotalCollectionCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [loading, setLoading] = useState(false);
   const [loadingFolders, setLoadingFolders] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [createFolderLoading, setCreateFolderLoading] = useState(false);
   const [form] = Form.useForm();
@@ -62,8 +60,80 @@ const MyCollections: React.FC = () => {
   const [newFolderNameForMove, setNewFolderNameForMove] = useState('');
   const [newFolderDescriptionForMove, setNewFolderDescriptionForMove] = useState('');
 
+  // 无限滚动相关引用
+  const selectedFolderRef = useRef(selectedFolder);
+  const sortTypeRef = useRef(sortType);
+  const searchTextRef = useRef(searchText);
+  const defaultFolderIdRef = useRef(defaultFolderId);
+
+  // 无限滚动配置
+  const pageSize = 10;
+
+  // 收藏文章列表获取函数
+  const fetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<MyArticleCollectionList>> => {
+    const folderId = selectedFolderRef.current === 'all' ? undefined :
+                    selectedFolderRef.current === 'default' ? defaultFolderIdRef.current :
+                    Number(selectedFolderRef.current);
+
+    const response = await articleService.getMyCollections({
+      folderId: folderId,
+      pageNum: pageNum,
+      pageSize: pageSize,
+      sortBy: sortTypeRef.current === 'recent' ? 'collectTime' :
+              sortTypeRef.current === 'mostLiked' ? 'likeCount' : 'readCount',
+      sortOrder: 'desc',
+      keyword: searchTextRef.current
+    });
+
+    if (response.code === 200 && response.data) {
+      // 转换数据格式以匹配前端接口
+      const formattedCollections = response.data.record.map(result => ({
+        collectionId: result.collectionId,
+        articleId: result.articleId,
+        title: result.title,
+        summary: result.summary,
+        coverImage: result.coverImage,
+        userId: result.userId,
+        nickname: result.nickname,
+        avatar: result.avatar,
+        categoryName: result.categoryName,
+        articleStatus: result.articleStatus,
+        originalStatus: result.originalStatus,
+        collectTime: result.collectTime,
+        publishTime: result.publishTime,
+        readCount: result.readCount,
+        likeCount: result.likeCount,
+        commentCount: result.commentCount,
+        collectionStatus: result.collectionStatus,
+        folderId: result.folderId,
+        folderName: result.folderName
+      }));
+
+      return {
+        record: formattedCollections,
+        total: response.data.total,
+        pageNum: pageNum,
+        pageSize: pageSize,
+        pages: Math.ceil(response.data.total / pageSize),
+        isFirstPage: pageNum === 1,
+        isLastPage: pageNum * pageSize >= response.data.total,
+        prePage: pageNum > 1 ? pageNum - 1 : 1,
+        nextPage: pageNum * pageSize < response.data.total ? pageNum + 1 : pageNum
+      };
+    } else {
+      throw new Error(response.message || '获取收藏文章失败');
+    }
+  }, []);
+
+  // 使用无限滚动hook
+  const infiniteScroll = useInfiniteScroll<MyArticleCollectionList>(fetcher, {
+    pageSize
+  });
+
+  const { refresh } = infiniteScroll;
+
   // 获取收藏文件夹列表
-  const fetchFolders = useCallback(async () => {
+  const fetchFolders = useCallback(async (): Promise<void> => {
     setLoadingFolders(true);
     try {
       const response = await articleService.getCollectionFolders();
@@ -95,7 +165,7 @@ const MyCollections: React.FC = () => {
   }, []);
 
   // 获取总收藏数
-  const fetchTotalCollectionCount = useCallback(async () => {
+  const fetchTotalCollectionCount = useCallback(async (): Promise<void> => {
     try {
       const response = await articleService.getTotalCollectionCount();
       if (response.code === 200 && response.data) {
@@ -106,74 +176,27 @@ const MyCollections: React.FC = () => {
     }
   }, []);
 
-  // 获取收藏文章列表
-  const fetchCollections = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      console.log('selectedFolder:', selectedFolder);
-      console.log('defaultFolderId:', defaultFolderId);
-      const folderId = selectedFolder === 'all' ? undefined : selectedFolder === 'default' ? defaultFolderId : Number(selectedFolder);
-      console.log('folderId:', folderId);
-      const response = await articleService.getMyCollections({
-        folderId: folderId,
-        page: currentPage,
-        size: pageSize,
-        sortBy: sortType === 'recent' ? 'collectTime' : sortType === 'mostLiked' ? 'likeCount' : 'readCount',
-        sortOrder: 'desc',
-        keyword: searchText
-      });
 
-      if (response.code === 200 && response.data) {
-        // 转换数据格式以匹配前端接口
-        console.log(response.data);
-        const formattedCollections = response.data.record.map(result => ({
-          collectionId: result.collectionId,
-          articleId: result.articleId,
-          title: result.title,
-          summary: result.summary,
-          coverImage: result.coverImage,
-          userId: result.userId,
-          nickname: result.nickname,
-          avatar: result.avatar,
-          categoryName: result.categoryName,
-          articleStatus: result.articleStatus,
-          originalStatus: result.originalStatus,
-          collectTime: result.collectTime,
-          publishTime: result.publishTime,
-          readCount: result.readCount,
-          likeCount: result.likeCount,
-          commentCount: result.commentCount,
-          collectionStatus: result.collectionStatus,
-          folderId: result.folderId,
-          folderName: result.folderName
-        }));
-        setCollections(formattedCollections);
-        setTotal(response.data.total);
-      } else {
-        setError(response.message || '获取收藏文章失败');
-      }
-    } catch (err) {
-      setError('网络错误，请稍后重试');
-      console.error('获取收藏文章失败:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedFolder, sortType, searchText, currentPage, pageSize, defaultFolderId]);
 
-  // 初始加载和参数变化时重新获取数据
+  // 初始加载
   useEffect(() => {
     // 获取文件夹列表和总收藏数
     void fetchFolders();
     void fetchTotalCollectionCount();
-    // 获取收藏文章列表
-    void fetchCollections();
-  }, [fetchCollections, fetchFolders, fetchTotalCollectionCount]);
+  }, [fetchFolders, fetchTotalCollectionCount]);
+
+  // 当参数变化时更新ref并刷新数据
+  useEffect(() => {
+    selectedFolderRef.current = selectedFolder;
+    sortTypeRef.current = sortType;
+    searchTextRef.current = searchText;
+    defaultFolderIdRef.current = defaultFolderId;
+    refresh();
+  }, [selectedFolder, sortType, searchText, defaultFolderId, refresh]);
 
   // 取消单个收藏
   const handleSingleDelete = async (articleId: string) : Promise<void> => {
     try {
-      setLoading(true);
       const result = await articleService.unCollectArticle(Number(articleId));
       if (result.code !== 200) {
         message.error(result.message || '取消收藏失败');
@@ -181,15 +204,13 @@ const MyCollections: React.FC = () => {
       }
       message.success(result.message || '已取消收藏');
       // 重新加载数据
-      await fetchCollections();
+      refresh();
       // 重新获取文件夹列表和总收藏数
       await fetchFolders();
       await fetchTotalCollectionCount();
     } catch (error) {
       message.error('取消收藏失败，请重试');
       console.error('取消收藏失败:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -277,7 +298,7 @@ const MyCollections: React.FC = () => {
         });
         setMoveModalVisible(false);
         // 重新加载数据
-        await fetchCollections();
+        refresh();
         await fetchFolders();
       } else {
         message.error(response.message || '移动失败');
@@ -323,7 +344,7 @@ const MyCollections: React.FC = () => {
           setMoveModalVisible(false);
           // 重新加载数据
           await fetchFolders();
-          await fetchCollections();
+          refresh();
         } else {
           message.error(moveResponse.message || '移动失败');
         }
@@ -475,183 +496,153 @@ const MyCollections: React.FC = () => {
           </div>
 
           {/* 文章列表 */}
-          {loading ? (
-            <div className="py-12 flex justify-center">
-              <Spin size="large" tip="加载中..."/>
-            </div>
-          ) : error ? (
-            <div className="py-12 flex justify-center">
-              <div className="text-center">
-                <p className="text-red-500 mb-4">{error}</p>
-                <Button type="primary" onClick={fetchCollections}>重试</Button>
-              </div>
-            </div>
-          ) : collections.length > 0 ? (
-            <>
-              <div className="space-y-5">
-                {collections.map((collection) => (
-                  <Card
-                    key={collection.collectionId}
-                    variant="borderless"
-                    styles={{
-                      body: {
-                        padding: '20px 12px',
-                        borderBottom: '1px solid #e8e8e8',
-                        borderRadius: 0
-                      }
-                    }}
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* 文章内容 */}
-                      <div className="flex-1">
-                        {/* 第一行：文章标题 */}
-                        <div className="flex items-center mb-2">
-                          <h3 className="text-xl font-semibold text-secondary-800 hover:text-primary-600 transition-colors duration-200 flex-1">
-                            <a
-                              href={ROUTES.ARTICLE_DETAIL(collection.articleId)}
-                              className="hover:underline"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {collection.title}
-                            </a>
-                          </h3>
+          <InfiniteScrollContainer
+            infiniteScroll={infiniteScroll}
+            renderItem={(collection) => (
+              <Card
+                key={collection.collectionId}
+                variant="borderless"
+                styles={{
+                  body: {
+                    padding: '20px 12px',
+                    borderBottom: '1px solid #e8e8e8',
+                    borderRadius: 0
+                  }
+                }}
+              >
+                <div className="flex items-start gap-4">
+                  {/* 文章内容 */}
+                  <div className="flex-1">
+                    {/* 第一行：文章标题 */}
+                    <div className="flex items-center mb-2">
+                      <h3 className="text-xl font-semibold text-secondary-800 hover:text-primary-600 transition-colors duration-200 flex-1">
+                        <a
+                          href={ROUTES.ARTICLE_DETAIL(collection.articleId)}
+                          className="hover:underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {collection.title}
+                        </a>
+                      </h3>
+                    </div>
+
+                    {/* 第二行：简介 */}
+                    <div className="text-sm text-secondary-500 mb-4 line-clamp-2">
+                      {collection.summary}
+                    </div>
+
+                    {/* 第三行：收藏时间、作者信息、统计数据 */}
+                    <div className="flex flex-wrap items-center justify-between">
+                      <div
+                        className="flex items-center gap-3 justify-between text-sm text-secondary-500">
+                        {/*原创*/}
+                        <div className="flex items-center">
+                          <Tag variant="solid"
+                            color={'gold'}>
+                            {ArticleOriginalMap[collection.originalStatus]}
+                          </Tag>
+                          <Divider orientation="vertical" className={'bg-gray-300'}
+                            style={{ height: '16px' }}/>
+                          {/*分类*/}
+                          <span>{collection.categoryName || '无'}</span>
+                          <Divider orientation="vertical" className={'bg-gray-300'}
+                            style={{ height: '16px' }}/>
+
                         </div>
 
-                        {/* 第二行：简介 */}
-                        <div className="text-sm text-secondary-500 mb-4 line-clamp-2">
-                          {collection.summary}
-                        </div>
-
-                        {/* 第三行：收藏时间、作者信息、统计数据 */}
-                        <div className="flex flex-wrap items-center justify-between">
-                          <div
-                            className="flex items-center gap-3 justify-between text-sm text-secondary-500">
-                            {/*原创*/}
-                            <div className="flex items-center">
-                              <Tag variant="solid"
-                                color={'gold'}>
-                                {ArticleOriginalMap[collection.originalStatus]}
-                              </Tag>
-                              <Divider orientation="vertical" className={'bg-gray-300'}
-                                style={{ height: '16px' }}/>
-                              {/*分类*/}
-                              <span>{collection.categoryName || '无'}</span>
-                              <Divider orientation="vertical" className={'bg-gray-300'}
-                                style={{ height: '16px' }}/>
-
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center">
-                                <img
-                                  src={collection.avatar}
-                                  alt={collection.nickname}
-                                  className="w-7 h-7 rounded-full object-cover mr-2"
-                                />
-                                <span>{collection.nickname}</span>
-                              </div>
-                              <Space size={4}>
-                                <EyeOutlined/> {collection.readCount}
-                              </Space>
-                              <Space size={4}>
-                                <LikeOutlined/> {collection.likeCount}
-                              </Space>
-                              <Space size={4}>
-                                <MessageOutlined/> {collection.commentCount}
-                              </Space>
-                              <div className="flex items-center pl-2">
-                                <span>收藏于: {collection.collectTime ? formatDateTimeShort(collection.collectTime) : ''}</span>
-                              </div>
-                            </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center">
+                            <img
+                              src={collection.avatar}
+                              alt={collection.nickname}
+                              className="w-7 h-7 rounded-full object-cover mr-2"
+                            />
+                            <span>{collection.nickname}</span>
                           </div>
-
-                          {/* 更多操作 */}
-                          <div className="flex items-center space-x-2">
-                            <Popover
-                              placement="bottom"
-                              content={
-                                <Space orientation="vertical">
-                                  <Button
-                                    icon={<ShareAltOutlined/>}
-                                    size="small"
-                                    type="text"
-                                    onClick={handleShare}
-                                  >
-                                                                        转发
-                                  </Button>
-                                  <Button
-                                    icon={<FlagOutlined/>}
-                                    size="small"
-                                    type="text"
-                                    onClick={handleReport}
-                                  >
-                                                                        举报
-                                  </Button>
-                                  <Button
-                                    icon={<FolderOpenOutlined />}
-                                    size="small"
-                                    type="text"
-                                    onClick={() => handleOpenMoveModal(collection.articleId)}
-                                  >
-                                                                        移动
-                                  </Button>
-                                  <Button
-                                    icon={<DeleteOutlined/>}
-                                    size="small"
-                                    type="text"
-                                    danger
-                                    onClick={() => handleSingleDelete(collection.articleId.toString())}
-                                  >
-                                                                        取消收藏
-                                  </Button>
-                                </Space>
-                              }
-                              trigger="click"
-                            >
-                              <Button icon={<MoreOutlined/>} size="small" type="text"/>
-                            </Popover>
+                          <Space size={4}>
+                            <EyeOutlined/> {collection.readCount}
+                          </Space>
+                          <Space size={4}>
+                            <LikeOutlined/> {collection.likeCount}
+                          </Space>
+                          <Space size={4}>
+                            <MessageOutlined/> {collection.commentCount}
+                          </Space>
+                          <div className="flex items-center pl-2">
+                            <span>收藏于: {collection.collectTime ? formatDateTimeShort(collection.collectTime) : ''}</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* 文章封面图 */}
-                      {collection.coverImage && (
-                        <div className="shrink-0">
-                          <img
-                            src={collection.coverImage}
-                            alt={collection.title}
-                            className="w-48 h-28 object-cover rounded-lg"
-                          />
-                        </div>
-                      )}
+                      {/* 更多操作 */}
+                      <div className="flex items-center space-x-2">
+                        <Popover
+                          placement="bottom"
+                          content={
+                            <Space orientation="vertical">
+                              <Button
+                                icon={<ShareAltOutlined/>}
+                                size="small"
+                                type="text"
+                                onClick={handleShare}
+                              >
+                                                                        转发
+                              </Button>
+                              <Button
+                                icon={<FlagOutlined/>}
+                                size="small"
+                                type="text"
+                                onClick={handleReport}
+                              >
+                                                                        举报
+                              </Button>
+                              <Button
+                                icon={<FolderOpenOutlined />}
+                                size="small"
+                                type="text"
+                                onClick={() => handleOpenMoveModal(collection.articleId)}
+                              >
+                                                                        移动
+                              </Button>
+                              <Button
+                                icon={<DeleteOutlined/>}
+                                size="small"
+                                type="text"
+                                danger
+                                onClick={() => handleSingleDelete(collection.articleId.toString())}
+                              >
+                                                                        取消收藏
+                              </Button>
+                            </Space>
+                          }
+                          trigger="click"
+                        >
+                          <Button icon={<MoreOutlined/>} size="small" type="text"/>
+                        </Popover>
+                      </div>
                     </div>
-                  </Card>
-                ))}
-              </div>
+                  </div>
 
-              {/* 分页 */}
-              <div className="mt-6 flex justify-center">
-                <Pagination
-                  current={currentPage}
-                  pageSize={pageSize}
-                  total={total}
-                  onChange={(page) => setCurrentPage(page)}
-                  onShowSizeChange={(_, size) => setPageSize(size)}
-                  showSizeChanger
-                  showTotal={(total) => `共 ${total} 篇文章`}
-                />
+                  {/* 文章封面图 */}
+                  {collection.coverImage && (
+                    <div className="shrink-0">
+                      <img
+                        src={collection.coverImage}
+                        alt={collection.title}
+                        className="w-48 h-28 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+            emptyContent={
+              <div className="py-12 text-center">
+                <p>暂无收藏的文章</p>
               </div>
-            </>
-          ) : (
-            <div
-              className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm">
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="暂无收藏的文章"
-                className="py-8"
-              />
-            </div>
-          )}
+            }
+          />
         </div>
       </div>
 

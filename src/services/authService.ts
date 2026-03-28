@@ -207,10 +207,8 @@ const authService = {
      * 刷新令牌
      */
     refreshToken: async (refreshToken: string ): Promise<ApiResponse<TokenResponse>> => {
-        console.log('开始刷新令牌，参数:', refreshToken);
         validateRefreshTokenParams(refreshToken);
-        console.log('发送刷新令牌请求，URL:', '/front/auth/refresh-token');
-        return await apiClient.post('/front/auth/refresh-token', null, { params: { refreshToken } });
+        return await apiClient.post(API_ENDPOINTS.FRONT.AUTH.REFRESH_TOKEN, null, { params: { refreshToken } });
     },
 
   /**

@@ -6,7 +6,7 @@ import {
     type CommentUpdateParams
 } from '../types/comment';
 import { message } from 'antd';
-import { CommentTopStatus } from '../types/enums';
+import { sortComments, updateCommentStatus } from '../utils/commentUtils';
 
 interface CommentState {
     // 状态
@@ -14,7 +14,7 @@ interface CommentState {
     commentCount: number;
     sortBy: 'hot' | 'new';
     loading: boolean;
-    page: number;
+    pageNum: number;
     isSubmitting: boolean;
 
     // 操作
@@ -22,11 +22,11 @@ interface CommentState {
     setCommentCount: (count: number) => void;
     setSortBy: (sortBy: 'hot' | 'new') => void;
     setLoading: (loading: boolean) => void;
-    setPage: (page: number) => void;
+    setPageNum: (pageNum: number) => void;
     setIsSubmitting: (isSubmitting: boolean) => void;
 
     // 方法
-    fetchComments: (articleId: number, page: number) => Promise<void>;
+    fetchComments: (articleId: number, pageNum: number) => Promise<void>;
     createComment: (params: CommentCreateParams) => Promise<boolean>;
     updateComment: (params: CommentUpdateParams) => Promise<boolean>;
     deleteComment: (commentId: number) => Promise<boolean>;
@@ -36,21 +36,6 @@ interface CommentState {
 }
 
 const useCommentStore = create<CommentState>((set, get) => {
-    // 递归更新评论状态
-    const updateCommentStatus = (comments: FrontArticleCommentList[], commentId: number, updateFn: (comment: FrontArticleCommentList) => FrontArticleCommentList): FrontArticleCommentList[] => {
-        return comments.map(comment => {
-            if (comment.id === commentId) {
-                return updateFn(comment);
-            }
-            if (comment.replies && comment.replies.length > 0) {
-                return {
-                    ...comment,
-                    replies: updateCommentStatus(comment.replies, commentId, updateFn)
-                };
-            }
-            return comment;
-        });
-    };
 
     return {
         // 初始状态
@@ -58,7 +43,7 @@ const useCommentStore = create<CommentState>((set, get) => {
         commentCount: 0,
         sortBy: 'hot',
         loading: false,
-        page: 1,
+        pageNum: 1,
         isSubmitting: false,
 
         // 状态设置函数
@@ -66,11 +51,10 @@ const useCommentStore = create<CommentState>((set, get) => {
         setCommentCount: (commentCount: number): void => set({ commentCount }),
         setSortBy: (sortBy: 'hot' | 'new'): void => set({ sortBy }),
         setLoading: (loading: boolean): void => set({ loading }),
-        setPage: (page: number): void => set({ page }),
+        setPageNum: (pageNum: number): void => set({ pageNum }),
         setIsSubmitting: (isSubmitting: boolean): void => set({ isSubmitting }),
 
-        // 方法
-        fetchComments: async (articleId: number, page: number): Promise<void> => {
+        fetchComments: async (articleId: number, pageNum: number): Promise<void> => {
             const sortBy = get().sortBy;
 
             try {
@@ -78,34 +62,18 @@ const useCommentStore = create<CommentState>((set, get) => {
 
                 const response = await commentService.getComments({
                     articleId,
-                    pageNum: page,
+                    pageNum: pageNum,
                     pageSize: 10,
                     sortBy
                 });
-
+                console.log('getComments response', response);
                 if (response.code === 200 && response.data) {
-                    let formattedComments = response.data.record || [];
-
-                    // 处理评论排序，确保置顶评论始终显示在最上面
-                    if (formattedComments.length > 0) {
-                        // 分离置顶评论和普通评论
-                        const topComments = formattedComments.filter(comment => comment.top === CommentTopStatus.TOP);
-                        const normalComments = formattedComments.filter(comment => comment.top === CommentTopStatus.NOT_TOP);
-
-                        // 对普通评论按照用户选择的排序方式进行排序
-                        if (sortBy === 'hot') {
-                            normalComments.sort((a, b) => b.likeCount - a.likeCount);
-                        } else if (sortBy === 'new') {
-                            normalComments.sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime());
-                        }
-
-                        // 重新组合评论，置顶评论放在最前面
-                        formattedComments = [...topComments, ...normalComments];
-                    }
+                    const comments = response.data.record || [];
+                    const formattedComments = sortComments(comments, sortBy);
 
                     get().setComments(formattedComments);
-                    get().setPage(page);
-                    get().setCommentCount(response.data.total || 0);
+                    get().setPageNum(pageNum);
+                    get().setCommentCount(response.data.total);
                 }
             } catch (error) {
                 console.error('获取评论失败:', error);
@@ -201,7 +169,7 @@ export const useComments = () : FrontArticleCommentList[] => useCommentStore((st
 export const useCommentCount = () : number => useCommentStore((state) => state.commentCount);
 export const useSortBy = () : string | undefined => useCommentStore((state) => state.sortBy);
 export const useCommentLoading = () : boolean => useCommentStore((state) => state.loading);
-export const useCommentPage = () : number => useCommentStore((state) => state.page);
+export const useCommentPage = () : number => useCommentStore((state) => state.pageNum);
 export const useIsSubmitting = () : boolean => useCommentStore((state) => state.isSubmitting);
 
 export default useCommentStore;
