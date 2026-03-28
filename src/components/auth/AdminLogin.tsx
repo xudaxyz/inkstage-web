@@ -8,6 +8,8 @@ import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
 import { useAdminStore } from '../../store/adminStore';
 import { AuthTypeEnum, UserRoleEnum } from '../../types/enums';
+import { getRandomCaptchaImage } from '../../utils';
+
 
 // 登录表单数据类型
 interface AdminLoginFormData {
@@ -184,7 +186,7 @@ const AdminLogin: React.FC = () => {
             setFormData(null);
           }}
           onSuccess={handleCaptchaSuccess}
-          imgUrl="https://picsum.photos/320/200"
+          imgUrl={getRandomCaptchaImage()}
           captchaProps={{
             gapShape: 'trapezoid',
             gapTolerance: 6,

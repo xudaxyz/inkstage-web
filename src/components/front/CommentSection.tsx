@@ -8,7 +8,7 @@ import InfiniteScrollContainer from '../common/InfiniteScrollContainer';
 import { useInfiniteScroll } from '../../hooks';
 import type { FrontArticleCommentList } from '../../types/comment';
 import type { ApiPageResponse } from '../../types/common';
-import { sortComments } from '../../utils/commentUtils';
+import { sortComments } from '../../utils';
 
 // 评论组件属性接口
 interface CommentSectionProps {

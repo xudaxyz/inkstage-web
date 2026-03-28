@@ -8,6 +8,7 @@ import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
 import { useUserStore } from '../../store';
 import type { AuthTypeEnum } from '../../types/enums';
+import { getRandomCaptchaImage } from '../../utils';
 
 
 // 注册表单数据类型
@@ -422,7 +423,7 @@ const Register: React.FC = () => {
             setFormData(null);
           }}
           onSuccess={handleCaptchaSuccess}
-          imgUrl="https://picsum.photos/320/200"
+          imgUrl={getRandomCaptchaImage()}
           captchaProps={{
             gapShape: 'trapezoid', // 梯形缺口
             gapTolerance: 6, // 更严格的对齐精度

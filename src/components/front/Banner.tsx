@@ -8,26 +8,7 @@ interface BannerProps {
 }
 
 const Banner: React.FC<BannerProps> = ({
-  articles = [
-    {
-      id: 1,
-      title: 'React 19 新特性详解：并发渲染与服务器组件',
-      summary: '深入探索 React 19 带来的革命性变化，提升应用性能和开发体验',
-      coverImage: 'https://picsum.photos/id/1/1200/400'
-    },
-    {
-      id: 2,
-      title: 'TypeScript 5.9 实用技巧：提升代码质量与开发效率',
-      summary: '掌握 TypeScript 5.9 的高级特性，写出更安全、更可维护的代码',
-      coverImage: 'https://picsum.photos/id/20/1200/400'
-    },
-    {
-      id: 3,
-      title: 'Next.js 15 性能优化指南',
-      summary: '从代码优化到部署策略，全面提升 Next.js 应用的性能',
-      coverImage: 'https://picsum.photos/id/30/1200/400'
-    }
-  ]
+  articles = []
 }) => {
   // 创建Carousel ref
   const carouselRef = useRef<CarouselRef>(null);

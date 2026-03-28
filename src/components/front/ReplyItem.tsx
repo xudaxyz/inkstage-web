@@ -4,7 +4,7 @@ import { LikeOutlined, DislikeOutlined, MessageOutlined, FlagOutlined, EllipsisO
 import type { FrontArticleCommentList } from '../../types/comment';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
-import { formatDateTimeShort } from '../../utils';
+import { getRelativeTime } from '../../utils';
 
 interface ReplyItemProps {
   reply: FrontArticleCommentList;
@@ -47,7 +47,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
             {reply.content}
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-500 relative">
-            <span>{reply.createTime ? formatDateTimeShort(reply.createTime) : ''}</span>
+            <span>{reply.createTime ? getRelativeTime(reply.createTime) : ''}</span>
             <button
               className={`flex items-center min-w-8 gap-1 ${reply.isLiked ? 'text-red-500' : 'text-gray-500'}`}
               onClick={() => toggleLike(reply.id)}

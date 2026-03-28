@@ -11,3 +11,13 @@ export * from './validation.ts';
 
 // 格式化工具
 export * from './format';
+
+// 验证码工具
+export * from './captchaUtils';
+
+// 评论工具
+export * from './commentUtils';
+
+// 错误处理工具
+export * from './errorHandler';
+

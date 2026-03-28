@@ -256,19 +256,22 @@ const SlideCaptcha: React.FC<SlideCaptchaProps> = memo(({
     top: `${puzzleTop}px`,
     width: `${gapSize}px`,
     height: `${gapSize}px`,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     clipPath: getGapClipPath(gapShape, gapSize),
-    zIndex: 2
+    zIndex: 2,
+    border: '2px solid #ffffff',
+    boxSizing: 'border-box'
   };
 
   // 滑块轨道样式
   const sliderTrackStyle: CSSProperties = {
     width: '100%',
     height: `${sliderHeight}px`,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f0f0',
     borderRadius: `${sliderHeight / 2}px`,
     position: 'relative',
-    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)'
+    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.15)',
+    border: '1px solid #e0e0e0'
   };
 
   // 拼图块样式（核心：显示和缺口对应的图片内容）
@@ -283,10 +286,10 @@ const SlideCaptcha: React.FC<SlideCaptchaProps> = memo(({
     // 背景定位：让拼图块显示缺口位置的图片内容
     backgroundPosition: `-${gapPosition}px -${puzzleTop}px`,
     clipPath: getGapClipPath(gapShape, gapSize),
-    boxShadow: '0 0 0 2px #3b82f6, 0 2px 6px rgba(0,0,0,0.3)',
+    boxShadow: '0 0 0 3px #3b82f6, 0 4px 12px rgba(0,0,0,0.4)',
     zIndex: 4,
     transition: isDragging ? 'none' : 'left 0.2s ease',
-    border: '2px solid #ffffff', // 白色边框，和图片形成强烈对比
+    border: '3px solid #ffffff', // 更粗的白色边框，增强对比
     boxSizing: 'border-box' // 边框不占用额外宽度，避免拼图块变形
   };
 
@@ -294,18 +297,19 @@ const SlideCaptcha: React.FC<SlideCaptchaProps> = memo(({
   const sliderHandleStyle: CSSProperties = {
     position: 'absolute',
     left: `${sliderPosition}px`,
-    top: 0,
-    width: `${gapSize}px`,
-    height: '100%',
+    top: -5,
+    width: `${gapSize + 10}px`,
+    height: `${sliderHeight + 10}px`,
     backgroundColor: status === 'success' ? '#10b981' : status === 'fail' ? '#ef4444' : '#3b82f6',
-    borderRadius: `${sliderHeight / 2}px`,
+    borderRadius: `${(sliderHeight + 10) / 2}px`,
     cursor: disabled ? 'not-allowed' : 'pointer',
     transition: isDragging ? 'none' : 'left 0.2s ease',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-    zIndex: 3
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    zIndex: 3,
+    border: '2px solid #ffffff'
   };
 
   // 进度条样式

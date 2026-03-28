@@ -6,8 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks';
 import { AuthTypeEnum } from '../../types/enums';
+import { getRandomCaptchaImage } from '../../utils';
 
 // 登录表单数据类型
 interface LoginFormData {
@@ -239,7 +240,7 @@ const Login: React.FC = () => {
             setFormData(null);
           }}
           onSuccess={handleCaptchaSuccess}
-          imgUrl="https://picsum.photos/320/200"
+          imgUrl={getRandomCaptchaImage()}
           captchaProps={{
             gapShape: 'trapezoid', // 梯形缺口
             gapTolerance: 6, // 更严格的对齐精度
