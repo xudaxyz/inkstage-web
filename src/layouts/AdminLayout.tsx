@@ -7,7 +7,6 @@ import {
     BellOutlined,
     DashboardOutlined,
     FileTextOutlined,
-    LockOutlined,
     LogoutOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
@@ -45,7 +44,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       '/admin/tags': 'tags',
       '/admin/comments': 'comments',
       '/admin/notifications': 'notifications',
-      '/admin/permissions': 'permissions',
       '/admin/analytics': 'analytics',
       '/admin/settings': 'settings'
     };
@@ -88,11 +86,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       key: 'notifications',
       icon: <BellOutlined />,
       label: <Link to="/admin/notifications">通知管理</Link>
-    },
-    {
-      key: 'permissions',
-      icon: <LockOutlined />,
-      label: <Link to="/admin/permissions">权限管理</Link>
     },
     {
       key: 'analytics',

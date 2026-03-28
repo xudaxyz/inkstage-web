@@ -7,8 +7,7 @@ import type {
   UserInfo
 } from '../types/auth';
 import type { ApiResponse } from '../types/common';
-import { AuthOperationTypeEnum } from '../types/enums/AuthOperationTypeEnum.ts';
-import { AuthTypeEnum } from '../types/enums/AuthTypeEnum.ts';
+import { AuthOperationTypeEnum, AuthTypeEnum } from '../types/enums';
 
 // 参数验证函数
 const validateAccount = (account: string, authType?: 'password' | 'code'): boolean => {
@@ -76,8 +75,8 @@ const validateRegisterParams = (params: RegisterParams): boolean => {
     throw new Error('参数必须是对象');
   }
   validateAccount(params.account);
-  if (!params.authType || !['password', 'code'].includes(params.authType)) {
-    throw new Error('认证类型必须是password或code');
+  if (!params.authType) {
+    throw new Error('认证类型不能为空');
   }
   if (params.authType === AuthTypeEnum.USERNAME) {
     if (!params.password) {

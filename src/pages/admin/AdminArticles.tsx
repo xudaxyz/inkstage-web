@@ -318,10 +318,10 @@ const AdminArticles: React.FC = () => {
             const targetStatus = currentStatus === ArticleStatusEnum.OFFLINE ? ArticleStatusEnum.PUBLISHED : ArticleStatusEnum.OFFLINE;
             const response = await articleService.admin.updateArticleStatus(id, targetStatus);
             if (response.code === 200 && response.data) {
-                message.success(response.message || currentStatus === ArticleStatusEnum.OFFLINE ? '文章上架成功' : '文章下架成功');
+                message.success(response.message || (currentStatus === ArticleStatusEnum.OFFLINE ? '文章下架成功' : '文章上架成功'));
                 await fetchArticles();
             } else {
-                message.error(response.message || currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败' : '下架文章失败');
+                message.error(response.message || (currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败' : '下架文章失败'));
             }
         } catch (error) {
             console.error(currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败:' : '下架文章失败:', error);

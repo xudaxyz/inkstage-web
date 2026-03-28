@@ -36,7 +36,6 @@ const AdminCategories = lazy(() => import('../pages/admin/AdminCategories'));
 const AdminTags = lazy(() => import('../pages/admin/AdminTags'));
 const AdminComments = lazy(() => import('../pages/admin/AdminComments'));
 const AdminNotifications = lazy(() => import('../pages/admin/AdminNotifications'));
-const AdminPermissions = lazy(() => import('../pages/admin/AdminPermissions'));
 const AdminAnalytics = lazy(() => import('../pages/admin/AdminAnalytics'));
 const AdminSettings = lazy(() => import('../pages/admin/AdminSettings'));
 
@@ -81,7 +80,6 @@ const AppRoutes = (): React.ReactNode => {
         <Route path="/admin/tags" element={<AdminRoute><AdminLayout><AdminTags /></AdminLayout></AdminRoute>} />
         <Route path="/admin/comments" element={<AdminRoute><AdminLayout><AdminComments /></AdminLayout></AdminRoute>} />
         <Route path="/admin/notifications" element={<AdminRoute><AdminLayout><AdminNotifications /></AdminLayout></AdminRoute>} />
-        <Route path="/admin/permissions" element={<AdminRoute><AdminLayout><AdminPermissions /></AdminLayout></AdminRoute>} />
         <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AdminAnalytics /></AdminLayout></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><AdminLayout><AdminSettings /></AdminLayout></AdminRoute>} />
       </Routes>

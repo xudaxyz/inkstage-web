@@ -34,7 +34,6 @@ export const ROUTES = {
   ADMIN_TAGS: '/admin/tags',
   ADMIN_COMMENTS: '/admin/comments',
   ADMIN_NOTIFICATIONS: '/admin/notifications',
-  ADMIN_PERMISSIONS: '/admin/permissions',
   ADMIN_ANALYTICS: '/admin/analytics',
   ADMIN_SETTINGS: '/admin/settings'
 };

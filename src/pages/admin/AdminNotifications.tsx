@@ -106,13 +106,10 @@ const AdminNotifications: React.FC = () => {
             setVariables(newVariables);
         };
         useEffect(() => {
-            // 只有当variables确实发生变化且不为空时才调用onChange
-            if (variables.length > 0) {
-                const variablesString = JSON.stringify(variables);
-                // 避免与当前value相同导致的死循环
-                if (variablesString !== value) {
-                    onChange(variablesString);
-                }
+            // 无论variables是否为空，都调用onChange以确保表单值同步
+            const variablesString = JSON.stringify(variables);
+            if (variablesString !== value) {
+                onChange(variablesString);
             }
         }, [variables, onChange, value]);
         return (
@@ -214,6 +211,9 @@ const AdminNotifications: React.FC = () => {
     const handleEditTemplate = (template: AdminNotificationTemplate): void => {
         setIsEditing(true);
         setCurrentTemplate(template);
+        // 先重置表单，确保不会有上一个模板的残留值
+        form.resetFields();
+        // 然后设置当前模板的值
         form.setFieldsValue({
             code: template.code,
             name: template.name,
@@ -222,7 +222,7 @@ const AdminNotifications: React.FC = () => {
             type: template.type,
             channel: template.channel,
             actionUrlTemplate: template.actionUrlTemplate,
-            variables: template.variables,
+            variables: template.variables || '[]',
             description: template.description,
             priority: template.priority,
             status: template.status
@@ -321,11 +321,12 @@ const AdminNotifications: React.FC = () => {
         }
     };
     // 预览模板
-    const handlePreviewTemplate = async (): Promise<void> => {
+    const handlePreviewTemplate = async (isSendForm: boolean = false): Promise<void> => {
         try {
             setLoading(true);
-            await previewForm.validateFields();
-            const values = previewForm.getFieldsValue();
+            const formToUse = isSendForm ? sendForm : previewForm;
+            await formToUse.validateFields();
+            const values = formToUse.getFieldsValue();
             let variables: Record<string, object> = {};
             try {
                 variables = JSON.parse(values.variables);
@@ -658,8 +659,8 @@ const AdminNotifications: React.FC = () => {
 
                 {/* 手动发送通知 */}
                 <TabPane tab="手动发送通知" key="send">
-                    <Card className="mb-6 border border-gray-100 shadow-sm">
-                        <div className="max-w-3xl mx-auto">
+                    <Card className="mb-4 border border-gray-100 shadow-sm">
+                        <div className="p-4">
                             <Alert
                                 title="发送通知须知"
                                 description="请选择合适的模板并填写正确的变量值，确保通知能够正确发送给目标用户。"
@@ -675,133 +676,144 @@ const AdminNotifications: React.FC = () => {
                                     userType: 'all',
                                     variables: '[]'
                                 }}
-                                className="space-y-4"
                             >
-                                {/* 模板信息区域 */}
-                                <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-                                    <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2">
-                                        模板信息
-                                    </h4>
-                                    <Form.Item
-                                        name="templateCode"
-                                        label={<span className="font-medium">模板编码</span>}
-                                        rules={[{ required: true, message: '请输入模板编码' }]}
-                                    >
-                                        <Input placeholder="请输入模板编码" size="large"/>
-                                    </Form.Item>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                    {/* 模板信息区域 */}
+                                    <div className="bg-gray-50 rounded-lg p-5 space-y-4 shadow-sm border border-gray-100">
+                                        <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-3">
+                                            模板信息
+                                        </h4>
+                                        <Form.Item
+                                            name="templateCode"
+                                            label={<span className="font-medium">模板编码</span>}
+                                            rules={[{ required: true, message: '请输入模板编码' }]}
+                                        >
+                                            <Input placeholder="请输入模板编码" size="large"/>
+                                        </Form.Item>
 
-                                    <Form.Item
-                                        name="variables"
-                                        label={<span className="font-medium">变量（JSON格式）</span>}
-                                        rules={[{ required: true, message: '请输入变量' }]}
-                                    >
-                                        <Input.TextArea
-                                            rows={5}
-                                            placeholder='例如: [{"name": "nickname", "value": "张三"}, {"name": "articleTitle", "value": "React最佳实践"}]'
-                                            className="font-mono text-sm"
-                                        />
-                                    </Form.Item>
+                                        <Form.Item
+                                            name="variables"
+                                        >
+                                            <Form.Item
+                                                noStyle
+                                                shouldUpdate
+                                            >
+                                                {({ getFieldValue }) => (
+                                                    <VariableEditor
+                                                        value={getFieldValue('variables') || '[]'}
+                                                        onChange={(value) => {
+                                                            sendForm.setFieldsValue({ variables: value });
+                                                        }}
+                                                    />
+                                                )}
+                                            </Form.Item>
+                                        </Form.Item>
+                                    </div>
+
+                                    {/* 接收用户区域 */}
+                                    <div className="bg-gray-50 rounded-lg p-5 space-y-4 shadow-sm border border-gray-100">
+                                        <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-3">
+                                            接收用户
+                                        </h4>
+                                        <Form.Item
+                                            name="userType"
+                                            label={<span className="font-medium">接收用户类型</span>}
+                                            rules={[{ required: true, message: '请选择接收用户类型' }]}
+                                        >
+                                            <Select placeholder="请选择接收用户类型" size="large">
+                                                <Select.Option value="all">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                                        所有用户
+                                                    </div>
+                                                </Select.Option>
+                                                <Select.Option value="specific">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                                        指定用户
+                                                    </div>
+                                                </Select.Option>
+                                                <Select.Option value="role">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                                                        指定角色
+                                                    </div>
+                                                </Select.Option>
+                                            </Select>
+                                        </Form.Item>
+
+                                        <Form.Item
+                                            noStyle
+                                            shouldUpdate={(prevValues, currentValues) => prevValues.userType !== currentValues.userType}
+                                        >
+                                            {({ getFieldValue }) => {
+                                                const userType = getFieldValue('userType');
+                                                return (
+                                                    <>
+                                                        {userType === 'specific' && (
+                                                            <Form.Item
+                                                                name="userIds"
+                                                                label={<span className="font-medium">用户ID</span>}
+                                                                rules={[{
+                                                                    required: true,
+                                                                    message: '请输入用户ID，多个ID用逗号分隔'
+                                                                }]}
+                                                            >
+                                                                <Input
+                                                                    placeholder="请输入用户ID，多个ID用逗号分隔"
+                                                                    size="large"
+                                                                />
+                                                            </Form.Item>
+                                                        )}
+                                                        {userType === 'role' && (
+                                                            <Form.Item
+                                                                name="roleCode"
+                                                                label={<span className="font-medium">角色编码</span>}
+                                                                rules={[{ required: true, message: '请输入角色编码' }]}
+                                                            >
+                                                                <Input
+                                                                    placeholder="请输入角色编码"
+                                                                    size="large"
+                                                                />
+                                                            </Form.Item>
+                                                        )}
+                                                    </>
+                                                );
+                                            }}
+                                        </Form.Item>
+
+                                        <Form.Item
+                                            name="relatedId"
+                                            label={<span className="font-medium">关联ID</span>}
+                                        >
+                                            <Input placeholder="请输入关联ID（可选）" size="large"/>
+                                        </Form.Item>
+                                    </div>
                                 </div>
 
-                                {/* 接收用户区域 */}
-                                <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-                                    <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2">
-                                        接收用户
-                                    </h4>
-                                    <Form.Item
-                                        name="userType"
-                                        label={<span className="font-medium">接收用户类型</span>}
-                                        rules={[{ required: true, message: '请选择接收用户类型' }]}
+                                <div className="flex justify-between items-center">
+                                    <Button
+                                        variant="filled"
+                                        color="cyan"
+                                        icon={<EyeOutlined/>}
+                                        onClick={() => handlePreviewTemplate(true)}
+                                        loading={loading}
+                                        size="large"
+                                        className="h-12 text-base px-8"
                                     >
-                                        <Select placeholder="请选择接收用户类型" size="large">
-                                            <Select.Option value="all">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                                    所有用户
-                                                </div>
-                                            </Select.Option>
-                                            <Select.Option value="specific">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                                    指定用户
-                                                </div>
-                                            </Select.Option>
-                                            <Select.Option value="role">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                                                    指定角色
-                                                </div>
-                                            </Select.Option>
-                                        </Select>
-                                    </Form.Item>
-
-                                    <Form.Item
-                                        noStyle
-                                        shouldUpdate={(prevValues, currentValues) => prevValues.userType !== currentValues.userType}
-                                    >
-                                        {({ getFieldValue }) => {
-                                            const userType = getFieldValue('userType');
-                                            return (
-                                                <>
-                                                    {userType === 'specific' && (
-                                                        <Form.Item
-                                                            name="userIds"
-                                                            label={<span className="font-medium">用户ID</span>}
-                                                            rules={[{
-                                                                required: true,
-                                                                message: '请输入用户ID，多个ID用逗号分隔'
-                                                            }]}
-                                                        >
-                                                            <Input
-                                                                placeholder="请输入用户ID，多个ID用逗号分隔"
-                                                                size="large"
-                                                            />
-                                                        </Form.Item>
-                                                    )}
-                                                    {userType === 'role' && (
-                                                        <Form.Item
-                                                            name="roleCode"
-                                                            label={<span className="font-medium">角色编码</span>}
-                                                            rules={[{ required: true, message: '请输入角色编码' }]}
-                                                        >
-                                                            <Input
-                                                                placeholder="请输入角色编码"
-                                                                size="large"
-                                                            />
-                                                        </Form.Item>
-                                                    )}
-                                                </>
-                                            );
-                                        }}
-                                    </Form.Item>
-                                </div>
-
-                                {/* 其他选项 */}
-                                <div className="bg-gray-50 rounded-lg p-4">
-                                    <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-4">
-                                        其他选项
-                                    </h4>
-                                    <Form.Item
-                                        name="relatedId"
-                                        label={<span className="font-medium">关联ID</span>}
-                                    >
-                                        <Input placeholder="请输入关联ID（可选）" size="large"/>
-                                    </Form.Item>
-                                </div>
-
-                                <Form.Item className="pt-4">
+                                        预览模板
+                                    </Button>
                                     <Button
                                         type="primary"
                                         icon={<SendOutlined/>}
                                         onClick={handleSendNotification}
                                         loading={loading}
                                         size="large"
-                                        block
-                                        className="h-12 text-base"
+                                        className="h-12 text-base px-8"
                                     >
                                         发送通知
                                     </Button>
-                                </Form.Item>
+                                </div>
                             </Form>
                         </div>
                     </Card>
@@ -839,7 +851,7 @@ const AdminNotifications: React.FC = () => {
                                     <Button
                                         type="primary"
                                         icon={<EyeOutlined/>}
-                                        onClick={handlePreviewTemplate}
+                                        onClick={() => handlePreviewTemplate(true)}
                                         loading={loading}
                                     >
                                         预览模板
