@@ -17,10 +17,7 @@ import type { HotUser } from '../../types/user';
 import { formatDateTimeShort } from '../../utils';
 
 const { Text } = Typography;
-
 // 类型定义
-
-
 const Rankings: React.FC = () => {
     // 状态管理
     const [timeRange, setTimeRange] = useState<string>('week');
@@ -29,10 +26,8 @@ const Rankings: React.FC = () => {
     const [latestArticles, setLatestArticles] = useState<HotArticle[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-
     // 路由导航
     const navigate = useNavigate();
-
     // 从后端加载数据
     useEffect(() => {
         const loadData = async (): Promise<void> => {
@@ -56,15 +51,12 @@ const Rankings: React.FC = () => {
                 setLoading(false);
             }
         };
-
         void loadData();
     }, [timeRange]);
-
     // 处理时间范围变化
     const handleTimeRangeChange = (value: string): void => {
         setTimeRange(value);
     };
-
     return (
         <div className="flex min-h-screen flex-col bg-gray-50 font-sans">
             {/* 顶部导航栏 */}
@@ -147,8 +139,8 @@ const Rankings: React.FC = () => {
                                                             <span
                                                                 className="hover:text-blue-600 transition-colors duration-200 cursor-pointer"
                                                                 onClick={() => navigate(`/user/${article.userId}`)}>
-                                {article.nickname}
-                              </span>
+                                                                {article.nickname || '未知用户'}
+                                                            </span>
                                                             <Tag color="blue" className="whitespace-nowrap">
                                                                 {article.categoryName}
                                                             </Tag>
@@ -314,5 +306,4 @@ const Rankings: React.FC = () => {
         </div>
     );
 };
-
 export default Rankings;

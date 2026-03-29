@@ -4,7 +4,7 @@ import type { ApiPageResponse } from './common';
 // 通知类型定义
 export interface Notification {
   id: number;
-  type: NotificationType;
+  notificationType: NotificationType;
   title: string;
   content: string;
   relatedId: number;

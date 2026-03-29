@@ -95,7 +95,7 @@ const articleService = {
   // 删除文章
   deleteArticle: async (id: number): Promise<ApiResponse<void>> => {
     validateIdParam(id);
-    return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.DELETE(id));
+    return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.DELETE(id));
   },
 
   // 上传图片

@@ -60,7 +60,7 @@ const Notifications: React.FC = () => {
             const formattedNotifications = record.map(
                 (item: {
                     id: number;
-                    type: NotificationType;
+                    notificationType: NotificationType;
                     title: string;
                     content: string;
                     createTime: string;
@@ -69,7 +69,7 @@ const Notifications: React.FC = () => {
                     actionUrl: string;
                 }) => ({
                     id: item.id,
-                    type: item.type,
+                    notificationType: item.notificationType,
                     title: item.title,
                     content: item.content,
                     createTime: item.createTime,
