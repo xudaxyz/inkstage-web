@@ -58,22 +58,16 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }): React.R
     // 初始化认证状态
     const initializeAuth = async () : Promise<void> => {
       try {
-        console.log('开始初始化管理员认证状态');
         // 初始化登录状态
         await initAuth();
 
         // 尝试获取个人资料（使用store中的isAdminLoggedIn状态）
         const currentState = useAdminStore.getState();
-        console.log('初始化后 isAdminLoggedIn 状态:', currentState.isAdminLoggedIn);
-        console.log('初始化后 adminUser 状态:', currentState.adminUser);
         if (currentState.isAdminLoggedIn) {
           try {
             await getProfile();
-            const updatedState = useAdminStore.getState();
-            console.log('获取个人资料后 adminUser 状态:', updatedState.adminUser);
           } catch (profileError) {
             console.error('获取个人资料失败:', profileError);
-            // 个人资料获取失败不影响登录状态
           }
         }
 
@@ -129,11 +123,8 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }): React.R
   // 权限验证
   const userRole = adminUser.role || UserRoleEnum.ADMIN;
   if (userRole !== UserRoleEnum.ADMIN && userRole !== UserRoleEnum.SUPER_ADMIN) {
-    console.error('用户没有管理员权限，当前角色:', userRole);
     return <Navigate to="/" replace />;
   }
-  console.log('用户权限验证通过，角色:', userRole);
-
   // 验证通过，渲染子组件
   return children;
 };

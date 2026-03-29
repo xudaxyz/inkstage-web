@@ -70,7 +70,6 @@ const validateLoginParams = (params: LoginParams): boolean => {
 };
 
 const validateRegisterParams = (params: RegisterParams): boolean => {
-    console.log('params', params);
   if (!params || typeof params !== 'object') {
     throw new Error('参数必须是对象');
   }

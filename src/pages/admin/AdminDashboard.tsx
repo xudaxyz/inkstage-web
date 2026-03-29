@@ -183,8 +183,6 @@ const AdminDashboard: React.FC = () => {
 
   // 模拟数据加载
   useEffect(() => {
-    // 这里可以添加实际的API调用
-    console.log('加载仪表盘数据');
   }, []);
 
 

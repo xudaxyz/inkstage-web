@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Input, Switch, Badge } from 'antd';
 import { BellTwoTone, EditOutlined, MenuOutlined, CloseOutlined, SearchOutlined, SunOutlined, MoonOutlined, UserOutlined, FileTextOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useIsLoggedIn, useUser, useUserStore } from '../../store';
-import notificationService from '../../services/notificationService';
+import { useIsLoggedIn, useUser, useUserStore, useUnreadCount, useSetUnreadCount, useFetchUnreadCount } from '../../store';
 import websocketService from '../../services/websocketService';
 
 const Header: React.FC = () => {
@@ -17,14 +16,18 @@ const Header: React.FC = () => {
     return false;
   };
 
-  const [isDarkMode, setIsDarkMode] = useState(getInitialTheme);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [isDarkMode, setIsDarkMode] = React.useState(getInitialTheme);
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // 从store获取未读通知数量和相关操作
+  const unreadCount = useUnreadCount();
+  const setUnreadCount = useSetUnreadCount();
+  const fetchUnreadCount = useFetchUnreadCount();
 
   // 根据路由路径计算活跃导航项
   const activeNavItem = React.useMemo((): string => {
@@ -74,17 +77,7 @@ const user = useUser();
     closeDropdown();
   };
 
-  // 获取未读通知数量
-  const fetchUnreadCount = useCallback(async (): Promise<void> => {
-    try {
-      const response = await notificationService.getUnreadCount();
-      if (response.code === 200) {
-        setUnreadCount(response.data);
-      }
-    } catch (err) {
-      console.error('获取未读通知数量失败:', err);
-    }
-  }, []);
+
 
   // 切换移动端菜单
   const toggleMobileMenu = (): void => {
@@ -138,7 +131,7 @@ const user = useUser();
     return (): void => {
       websocketService.off('unreadCount', handleUnreadCount);
     };
-  }, [isLoggedIn]);
+  }, [isLoggedIn, setUnreadCount]);
 
   return (
     <header
@@ -221,7 +214,7 @@ const user = useUser();
         </div>
 
         {/* 通知图标 */}
-        <Link to="/profile/notifications" className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary-600 transition-colors duration-200">
+          {isLoggedIn && (<Link to="/profile/notifications" className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary-600 transition-colors duration-200">
           {unreadCount > 0 ? (
             <Badge count={unreadCount} size="small">
               <BellTwoTone style={{ fontSize: '18px' }} />
@@ -229,7 +222,7 @@ const user = useUser();
           ) : (
             <BellTwoTone style={{ fontSize: '18px' }} />
           )}
-        </Link>
+        </Link> )}
 
         {/* 移动端菜单按钮 */}
         <button

@@ -42,7 +42,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         if (response.code !== 200) {
             throw new Error(response.message || '评论加载失败');
         }
-        console.log('getComments response', response);
         // 处理评论排序，确保置顶评论始终显示在最上面
         const comments = response.data === null ? [] : response.data.record;
         const formattedComments = sortComments(comments, sortBy);

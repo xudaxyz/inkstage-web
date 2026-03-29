@@ -15,19 +15,13 @@ export const TokenService = {
             if (window.localStorage) {
                 // 这里可以实现更安全的存储方式，如加密存储
                 localStorage.setItem(key, value);
-                console.log('存储令牌到localStorage成功:', key);
                 return true;
             }
         } catch (error) {
             console.error('存储令牌到localStorage失败:', error);
-            try {
-                if (window.sessionStorage) {
-                    sessionStorage.setItem(key, value);
-                    console.log('存储令牌到sessionStorage成功:', key);
-                    return true;
-                }
-            } catch (sessionError) {
-                console.error('存储到 sessionStorage 也失败:', sessionError);
+            if (window.sessionStorage) {
+                sessionStorage.setItem(key, value);
+                return true;
             }
         }
         return false;
@@ -38,28 +32,19 @@ export const TokenService = {
      * @returns 令牌值或null
      */
     getToken (key: string): string | null {
-        try {
-            if (window.localStorage) {
-                // 这里可以实现更安全的获取方式，如解密
-                const token = localStorage.getItem(key);
-                if (token) {
-                    return token;
-                }
+        if (window.localStorage) {
+            // 这里可以实现更安全的获取方式，如解密
+            const token = localStorage.getItem(key);
+            if (token) {
+                return token;
             }
-        } catch (error) {
-            console.error('从localStorage获取令牌失败:', error);
         }
         // 尝试从sessionStorage获取
-        try {
-            if (window.sessionStorage) {
-                const token = sessionStorage.getItem(key);
-                if (token) {
-                    console.log('从sessionStorage获取令牌成功:', key);
-                    return token;
-                }
+        if (window.sessionStorage) {
+            const token = sessionStorage.getItem(key);
+            if (token) {
+                return token;
             }
-        } catch (sessionError) {
-            console.error('从sessionStorage获取令牌失败:', sessionError);
         }
         return null;
     },
@@ -68,12 +53,8 @@ export const TokenService = {
      * @param key 存储键
      */
     removeToken (key: string): void {
-        try {
-            if (window.localStorage) {
-                localStorage.removeItem(key);
-            }
-        } catch (error) {
-            console.error('移除令牌失败:', error);
+        if (window.localStorage) {
+            localStorage.removeItem(key);
         }
     },
     /**

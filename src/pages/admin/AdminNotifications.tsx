@@ -159,7 +159,6 @@ const AdminNotifications: React.FC = () => {
         try {
             setLoading(true);
             const response = await notificationTemplateService.getTemplatePage();
-            console.log('getTemplatePage', response);
             if (response.code === 200) {
                 setTemplates(response.data?.record || []);
                 setFilteredTemplates(response.data?.record || []);
@@ -301,10 +300,7 @@ const AdminNotifications: React.FC = () => {
                     message.error('模板编码已存在');
                     return;
                 }
-                console.log('checkResponse', checkResponse);
-                console.log('createDTO', createDTO);
                 const response = await notificationTemplateService.createTemplate(createDTO);
-                console.log('createTemplate response', response);
                 if (response.code === 200) {
                     message.success('模板创建成功');
                     await fetchTemplates();

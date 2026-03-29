@@ -103,7 +103,6 @@ const AdminUsers: React.FC = () => {
                 endDate: endDate?.toISOString()
             });
 
-            console.log('admin users :', response);
 
             if (response.code === 200 && response.data) {
                 const userList = response.data.record.map((user: AdminUser) => ({
@@ -201,7 +200,6 @@ const AdminUsers: React.FC = () => {
         setLoading(true);
         try {
             const response = await userService.admin.getUserById(user.id);
-            console.log('user detail:', response);
             if (response.code === 200) {
                 setCurrentUser(response.data);
                 setActiveTab('account');

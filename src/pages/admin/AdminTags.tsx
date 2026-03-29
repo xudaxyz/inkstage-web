@@ -52,7 +52,6 @@ const AdminTags: React.FC = () => {
     setLoading(true);
     try {
       const response = await tagService.admin.getTagsByPage(keyword, pageNum, pageSize);
-      console.log('tag:', response);
       if (response.code === 200 && response.data) {
         const formattedTags = response.data.record.map((tag: AdminTag) => ({
           ...tag,

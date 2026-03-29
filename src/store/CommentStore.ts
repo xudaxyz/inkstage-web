@@ -66,7 +66,6 @@ const useCommentStore = create<CommentState>((set, get) => {
                     pageSize: 10,
                     sortBy
                 });
-                console.log('getComments response', response);
                 if (response.code === 200 && response.data) {
                     const comments = response.data.record || [];
                     const formattedComments = sortComments(comments, sortBy);

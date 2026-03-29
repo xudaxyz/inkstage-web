@@ -9,14 +9,19 @@ import { useEffect } from 'react';
 import { useUserStore } from './store';
 // 导入管理员状态管理
 import { useAdminStore } from './store/adminStore';
+// 导入认证错误状态管理
+import { useAuthErrorStore } from './store/authErrorStore';
 // 导入全局通知组件
 import Notification from './components/common/Notification';
+// 导入认证错误处理组件
+import AuthErrorHandler from './components/common/AuthErrorHandler';
 
 import type { ReactNode } from 'react';
 
 function App (): ReactNode {
   const { initAuth: initUserAuth } = useUserStore();
   const { initAuth: initAdminAuth } = useAdminStore();
+  const { error, hideError } = useAuthErrorStore();
 
   useEffect(() => {
     // 初始化登录状态
@@ -25,7 +30,6 @@ function App (): ReactNode {
       initAdminAuth()
     ])
       .then(() => {
-        console.log('登录状态初始化完成');
       })
       .catch((error) => {
         console.error('登录状态初始化失败:', error);
@@ -34,7 +38,6 @@ function App (): ReactNode {
     // 连接WebSocket
     websocketService.connect()
       .then(() => {
-        console.log('WebSocket连接成功');
       })
       .catch((error) => {
         console.error('WebSocket连接失败:', error);
@@ -49,6 +52,14 @@ function App (): ReactNode {
   return (
     <Router>
       <Notification />
+      {error && (
+        <AuthErrorHandler
+          message={error.message}
+          onClose={hideError}
+          showActions={error.showActions}
+          redirectToLogin={error.redirectToLogin}
+        />
+      )}
       <AppRoutes />
     </Router>
   );

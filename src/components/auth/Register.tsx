@@ -173,7 +173,6 @@ const Register: React.FC = () => {
         type,
         purpose: 'register'
       });
-      console.log(response);
       if (response.code === 200) {
         message.success(response.message || '验证码已发送，有效期5分钟');
       }
@@ -384,7 +383,6 @@ const Register: React.FC = () => {
               e.preventDefault();
               // 切换注册类型
               const newRegisterType = registerType === 'password' ? 'code' : 'password';
-              console.log('newRegisterType', newRegisterType );
               setRegisterType(newRegisterType);
               // 重置相关字段
               if (newRegisterType === 'code') {
