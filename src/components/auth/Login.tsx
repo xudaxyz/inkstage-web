@@ -215,7 +215,7 @@ const Login: React.FC = () => {
               form.resetFields(['password', 'code']);
             }}
           >
-            {loginType === AuthTypeEnum.USERNAME ? '密码登录' : '验证码登录'}
+            {loginType === AuthTypeEnum.USERNAME ? '验证码登录' : '密码登录'}
           </a>
         </div>
 
