@@ -15,7 +15,9 @@ import {
     ExclamationCircleOutlined,
     DownOutlined,
     EditOutlined,
-    DeleteOutlined
+    DeleteOutlined,
+    PlusOutlined,
+    CheckOutlined
 } from '@ant-design/icons';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
@@ -26,6 +28,7 @@ import { useUserStore, useArticleStore } from '../../store';
 import useCollection from '../../hooks/useCollection';
 import articleService from '../../services/articleService';
 import readingHistoryService from '../../services/readingHistoryService';
+import { followUser, unfollowUser, checkFollowStatus } from '../../services/userService';
 import type { FrontTag } from '../../types/tag';
 
 const ArticleDetail: React.FC = () => {
@@ -37,6 +40,9 @@ const ArticleDetail: React.FC = () => {
     // 阅读历史相关状态
     const readingStartTimeRef = useRef<number>(0);
     const [scrollPosition, setScrollPosition] = useState<number>(0);
+    // 关注状态
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followLoading, setFollowLoading] = useState(false);
     // 获取当前用户信息
     const { user, isLoggedIn } = useUserStore();
     // 获取文章状态
@@ -158,6 +164,75 @@ const ArticleDetail: React.FC = () => {
         window.addEventListener('beforeunload', handleBeforeUnload);
         return (): void => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [id, isLoggedIn, saveReadingHistory]);
+
+    // 检查关注状态
+    useEffect(() => {
+        const checkFollow = async (): Promise<void> => {
+            if (!isLoggedIn || !article || !article.userId) {
+                setIsFollowing(false);
+                return;
+            }
+            // 不能关注自己
+            if (user?.id && Number(user.id) === article.userId) {
+                setIsFollowing(false);
+                return;
+            }
+            try {
+                const response = await checkFollowStatus(article.userId);
+                if (response.code === 200) {
+                    setIsFollowing(response.data);
+                }
+            } catch (error) {
+                console.error('检查关注状态失败:', error);
+            }
+        };
+        void checkFollow();
+    }, [isLoggedIn, article, user?.id]);
+
+    // 处理关注/取消关注
+    const handleFollow = async (): Promise<void> => {
+        if (!isLoggedIn) {
+            message.info('请先登录');
+            return;
+        }
+        if (!article || !article.userId) {
+            message.error('作者信息不存在');
+            return;
+        }
+        // 不能关注自己
+        if (user?.id && Number(user.id) === article.userId) {
+            message.info('不能关注自己');
+            return;
+        }
+        setFollowLoading(true);
+        try {
+            if (isFollowing) {
+                // 取消关注
+                const response = await unfollowUser(article.userId);
+                if (response.code === 200) {
+                    setIsFollowing(false);
+                    message.success('已取消关注');
+                } else {
+                    message.error(response.message || '取消关注失败');
+                }
+            } else {
+                // 关注
+                const response = await followUser(article.userId);
+                if (response.code === 200) {
+                    setIsFollowing(true);
+                    message.success('关注成功');
+                } else {
+                    message.error(response.message || '关注失败');
+                }
+            }
+        } catch (error) {
+            console.error('关注操作失败:', error);
+            message.error('操作失败，请重试');
+        } finally {
+            setFollowLoading(false);
+        }
+    };
+
     const scrollToHeading = (id: string): void => {
         const element = document.getElementById(id);
         if (element) {
@@ -625,11 +700,20 @@ const ArticleDetail: React.FC = () => {
                                         </p>
                                     </div>
                                     <Divider className="my-6"/>
-                                    <Button
-                                        type="primary"
-                                        className="w-[60%] py-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors rounded-lg shadow-sm hover:shadow-md">
-                                        关注作者
-                                    </Button>
+                                    {isLoggedIn && user?.id && article?.userId && (
+                                        <Button
+                                            type={isFollowing ? 'default' : 'primary'}
+                                            loading={followLoading}
+                                            onClick={handleFollow}
+                                            icon={isFollowing ? <CheckOutlined/> : <PlusOutlined/>}
+                                            className={`w-[60%] py-2 rounded-lg shadow-sm hover:shadow-md transition-colors ${
+                                                isFollowing
+                                                    ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-300'
+                                                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                                            }`}>
+                                            {isFollowing ? '已关注' : '关注作者'}
+                                        </Button>
+                                    )}
                                 </div>
                             </Card>
 
