@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios';
-import axios, { AxiosHeaders } from 'axios';
+import axios from 'axios';
 import errorHandler from '../utils/errorHandler.ts';
 import { API_ENDPOINTS } from './apiEndpoints';
 import { isAdminPage, isPublicPage, ROUTES } from '../constants/navigation';
@@ -13,7 +13,10 @@ import { getAuthErrorMessage } from '../types/enums/AuthErrorEnum';
 // 创建axios实例
 const apiClient: AxiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-    timeout: 10000
+    timeout: 10000,
+    headers: {
+        'Content-Type': 'application/json'
+    }
 });
 // 防重入标志
 let isRefreshing = false;
@@ -23,21 +26,14 @@ let refreshSubscribers: ((token: string) => void)[] = [];
 apiClient.interceptors.request.use(
     (config) => {
         // 对于刷新令牌端点，不添加访问令牌，因为这是用于刷新令牌的公开端点
-        const isRefreshTokenEndpoint = (config.url || '').includes('/auth/refresh-token');
-        if (!isRefreshTokenEndpoint) {
-            // 直接获取前台用户令牌，因为上传接口是前台接口
-            const token = TokenService.getToken(SECURE_STORAGE_KEYS.ACCESS_TOKEN);
+        if (config.url !== API_ENDPOINTS.COMMON.AUTH.TOKEN) {
+            // 根据当前路径选择使用前台还是后台令牌
+            const isAdminPath = window.location.pathname.startsWith('/admin');
+            const token = isAdminPath
+                ? TokenService.getToken(SECURE_STORAGE_KEYS.ADMIN_ACCESS_TOKEN)
+                : TokenService.getToken(SECURE_STORAGE_KEYS.ACCESS_TOKEN);
             if (token) {
-                // 添加认证头
-                if (config.headers) {
-                    // 使用Axios的方式设置Authorization头
-                    config.headers.Authorization = `Bearer ${token}`;
-                } else {
-                    // 使用AxiosHeaders类创建headers对象
-                    const headers = new AxiosHeaders();
-                    headers.set('Authorization', `Bearer ${token}`);
-                    config.headers = headers;
-                }
+                config.headers.Authorization = `Bearer ${token}`;
             }
         }
         return config;

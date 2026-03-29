@@ -239,7 +239,11 @@ const authService = {
       formData.append('expiry', expiry.toString());
     }
 
-    return await apiClient.post(API_ENDPOINTS.COMMON.UPLOAD.AVATAR, formData);
+    return await apiClient.post(API_ENDPOINTS.COMMON.UPLOAD.AVATAR, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
   },
 
   /**
@@ -253,7 +257,11 @@ const authService = {
       formData.append('expiry', expiry.toString());
     }
 
-    return await apiClient.post(API_ENDPOINTS.COMMON.UPLOAD.COVER, formData);
+    return await apiClient.post(API_ENDPOINTS.COMMON.UPLOAD.COVER, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
   }
 };
 
