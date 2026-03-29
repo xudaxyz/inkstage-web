@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button, Empty, message, Select, Spin, Badge } from 'antd';
-import { CheckOutlined, DeleteOutlined, FilterOutlined, BellOutlined } from '@ant-design/icons';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Badge, Button, Card, Empty, message, Select, Spin } from 'antd';
+import { BellOutlined, CheckOutlined, DeleteOutlined, FilterOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import notificationService from '../../../services/notificationService';
 import { type Notification } from '../../../types/notification';
@@ -11,12 +11,12 @@ import InfiniteScrollContainer from '../../../components/common/InfiniteScrollCo
 import { useInfiniteScroll } from '../../../hooks';
 import type { ApiPageResponse } from '../../../types/common';
 import {
-    useUnreadCount,
-    useMarkAsRead,
-    useMarkAllAsRead,
     useDeleteNotification,
+    useMarkAllAsRead,
+    useMarkAsRead,
     useSetNotifications,
-    useSetUnreadCount
+    useSetUnreadCount,
+    useUnreadCount
 } from '../../../store';
 
 const Notifications: React.FC = () => {
@@ -29,16 +29,7 @@ const Notifications: React.FC = () => {
     const deleteNotificationStore = useDeleteNotification();
     const setNotificationsStore = useSetNotifications();
     const setUnreadCount = useSetUnreadCount();
-    // 创建兼容的setData函数
-    const setData = (value: Notification[] | ((prev: Notification[]) => Notification[])): void => {
-        if (typeof value === 'function') {
-            // 由于store中的setNotifications不支持函数形式，需要先获取当前状态
-            const updatedNotifications = value(notifications);
-            setNotificationsStore(updatedNotifications);
-        } else {
-            setNotificationsStore(value);
-        }
-    };
+
     const notificationTypes = [
         { value: 'ALL', label: NotificationTypeMap[NotificationType.ALL] },
         { value: 'SYSTEM', label: NotificationTypeMap[NotificationType.SYSTEM] },
@@ -65,7 +56,7 @@ const Notifications: React.FC = () => {
                 throw new Error(response.message || '获取通知列表失败');
             }
             // 转换后端数据格式
-            const record = response.data === null ? [] : response.data.record ;
+            const record = response.data === null ? [] : response.data.record;
             const formattedNotifications = record.map(
                 (item: {
                     id: number;
@@ -110,43 +101,67 @@ const Notifications: React.FC = () => {
         error,
         hasMore,
         loadMoreRef,
-        refresh: refreshNotifications
+        refresh: refreshNotifications,
+        setData: setInfiniteScrollData
     } = useInfiniteScroll<Notification>(notificationsFetcher, {
         pageSize: 10,
         threshold: 0.1
     });
+    // 创建兼容的setData函数
+    const setData = useCallback((value: Notification[] | ((prev: Notification[]) => Notification[])): void => {
+        let updatedNotifications: Notification[];
+        if (typeof value === 'function') {
+            // 由于store中的setNotifications不支持函数形式，需要先获取当前状态
+            updatedNotifications = value(notifications);
+        } else {
+            updatedNotifications = value;
+        }
+        // 同时更新store和infinite scroll的数据
+        setNotificationsStore(updatedNotifications);
+        setInfiniteScrollData(updatedNotifications);
+    }, [notifications, setNotificationsStore, setInfiniteScrollData]);
     // 标记通知为已读 - 包装store方法并添加消息提示
     const markAsRead = useCallback(
         async (id: number): Promise<void> => {
             const success = await markAsReadStore(id);
             if (success) {
+                // 同时更新 infinite scroll 的数据
+                const updatedNotifications = notifications.map(item =>
+                    item.id === id ? { ...item, readStatus: ReadStatus.READ } : item);
+                setData(updatedNotifications);
                 message.success('已标记为已读');
             } else {
                 message.error('标记已读失败，请稍后重试');
             }
         },
-        [markAsReadStore]
+        [markAsReadStore, notifications, setData]
     );
     // 标记所有通知为已读 - 包装store方法并添加消息提示
     const markAllAsRead = useCallback(async (): Promise<void> => {
         const success = await markAllAsReadStore();
         if (success) {
+            // 同时更新 infinite scroll 的数据
+            const updatedNotifications = notifications.map(item => ({ ...item, readStatus: ReadStatus.READ }));
+            setData(updatedNotifications);
             message.success('已全部标记为已读');
         } else {
             message.error('标记全部已读失败，请稍后重试');
         }
-    }, [markAllAsReadStore]);
+    }, [markAllAsReadStore, notifications, setData]);
     // 删除通知 - 包装store方法并添加消息提示
     const deleteNotification = useCallback(
         async (id: number): Promise<void> => {
             const success = await deleteNotificationStore(id);
             if (success) {
+                // 同时更新 infinite scroll 的数据
+                const updatedNotifications = notifications.filter(item => item.id !== id);
+                setData(updatedNotifications);
                 message.success('通知已删除');
             } else {
                 message.error('删除通知失败，请稍后重试');
             }
         },
-        [deleteNotificationStore]
+        [deleteNotificationStore, notifications, setData]
     );
     // 处理通知点击
     const handleNotificationClick = (notification: Notification): void => {
