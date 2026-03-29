@@ -6,7 +6,7 @@ import {
     type CommentUpdateParams
 } from '../types/comment';
 import { message } from 'antd';
-import { sortComments, updateCommentStatus } from '../utils/commentUtils';
+import { sortComments, updateCommentStatus } from '../utils';
 
 interface CommentState {
     // 状态
