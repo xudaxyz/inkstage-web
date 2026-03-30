@@ -11,7 +11,10 @@ import {
     MoonOutlined,
     UserOutlined,
     FileTextOutlined,
-    LogoutOutlined
+    LogoutOutlined,
+    StarOutlined,
+    ClockCircleOutlined,
+    SettingOutlined
 } from '@ant-design/icons';
 import {
     useIsLoggedIn,
@@ -271,6 +274,36 @@ const Header: React.FC = () => {
                                 >
                                     <FileTextOutlined className="text-gray-400 dark:text-gray-200"/>
                                     <span className="text-gray-700 dark:text-gray-200">我的创作</span>
+                                </Link>
+
+                                {/* 我的收藏 */}
+                                <Link
+                                    to="/profile/collections"
+                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
+                                    onClick={closeDropdown}
+                                >
+                                    <StarOutlined className="text-gray-400 dark:text-gray-200"/>
+                                    <span className="text-gray-700 dark:text-gray-200">我的收藏</span>
+                                </Link>
+
+                                {/* 阅读历史 */}
+                                <Link
+                                    to="/profile/histories"
+                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
+                                    onClick={closeDropdown}
+                                >
+                                    <ClockCircleOutlined className="text-gray-400 dark:text-gray-200"/>
+                                    <span className="text-gray-700 dark:text-gray-200">阅读历史</span>
+                                </Link>
+
+                                {/* 账号设置 */}
+                                <Link
+                                    to="/profile/settings"
+                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
+                                    onClick={closeDropdown}
+                                >
+                                    <SettingOutlined className="text-gray-400 dark:text-gray-200"/>
+                                    <span className="text-gray-700 dark:text-gray-200">账号设置</span>
                                 </Link>
 
                                 {/* 分割线 */}
