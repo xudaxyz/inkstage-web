@@ -8,13 +8,21 @@ export interface AppState {
   setLoading: (loading: boolean) => void;
 }
 
+// 从 localStorage 读取初始主题
+const getInitialTheme = (): 'light' | 'dark' => {
+  const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
+  return savedTheme || 'light';
+};
+
 // 创建应用状态 Store
 export const useAppStore = create<AppState>((set) => ({
-  theme: 'light',
+  theme: getInitialTheme(),
   isLoading: false,
-  toggleTheme: (): void => set((state) => ({
-    theme: state.theme === 'light' ? 'dark' : 'light'
-  })),
+  toggleTheme: (): void => set((state) => {
+    const newTheme = state.theme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme', newTheme);
+    return { theme: newTheme };
+  }),
   setLoading: (loading: boolean): void => set({ isLoading: loading })
 }));
 

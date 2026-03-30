@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "./assets/css/local-fonts.css";
 
+/* 配置深色模式 - Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* 全局字体设置 */
 :root {
     --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;

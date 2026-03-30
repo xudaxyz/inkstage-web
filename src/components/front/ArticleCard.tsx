@@ -26,7 +26,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   const { title, summary, coverImage, nickname, avatar, likeCount, readCount, commentCount, publishTime } = article;
 
   return (
-    <div className="border-b border-gray-200 pt-2 pb-4 mb-4 hover:bg-gray-50 transition-colors duration-200 w-full">
+    <div className="border-b border-gray-200 dark:border-gray-800 pt-2 pb-4 mb-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full">
       <div className="flex flex-col md:flex-row gap-6 w-full items-start">
         {/* 左侧内容 */}
         <div className="flex-1 md:pr-4 flex flex-col min-w-10">
@@ -35,28 +35,28 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             <a href={`/article/${article.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-800 hover:text-blue-600 transition-colors cursor-pointer">
+              className="text-gray-800 dark:text-gray-200 hover:text-blue-600 transition-colors cursor-pointer">
               {title}
             </a>
           </h3>
 
           {/* 文章简介 */}
-          <p className="text-gray-500 mb-4 text-base leading-relaxed line-clamp-2">
+          <p className="text-gray-500 dark:text-gray-400 mb-4 text-base leading-relaxed line-clamp-2">
             {summary || '暂无简介'}
           </p>
 
           {/* 用户信息和互动数据 */}
-          <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap mt-auto">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 flex-wrap mt-auto">
             {/* 用户信息 */}
             <div className="flex items-center gap-2">
               <Avatar src={avatar} alt={nickname} className="w-6 h-6"/>
               {article.userId ? (
                 <a href={`/user/${article.userId}`}
-                  className="font-medium text-gray-700 hover:text-blue-600 transition-colors">
+                  className="font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors">
                   {nickname}
                 </a>
               ) : (
-                <span className="font-medium text-gray-700">{nickname}</span>
+                <span className="font-medium text-gray-700 dark:text-gray-300">{nickname}</span>
               )}
             </div>
 

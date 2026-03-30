@@ -3,20 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Input, Switch, Badge } from 'antd';
 import { BellTwoTone, EditOutlined, MenuOutlined, CloseOutlined, SearchOutlined, SunOutlined, MoonOutlined, UserOutlined, FileTextOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useIsLoggedIn, useUser, useUserStore, useUnreadCount, useSetUnreadCount, useFetchUnreadCount } from '../../store';
+import { useAppStore, useTheme } from '../../store';
 import websocketService from '../../services/websocketService';
 
 const Header: React.FC = () => {
-  // 从localStorage中读取初始主题
-  const getInitialTheme = (): boolean => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      return true;
-    }
-    return false;
-  };
-
-  const [isDarkMode, setIsDarkMode] = React.useState(getInitialTheme);
+  const theme = useTheme();
+  const { toggleTheme } = useAppStore();
+  const isDarkMode = theme === 'dark';
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -48,17 +41,8 @@ const user = useUser();
   const { logout } = useUserStore();
 
   // 切换主题模式
-  const toggleTheme = (): void => {
-    const newTheme = !isDarkMode;
-    setIsDarkMode(newTheme);
-    // 保存主题到localStorage
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-    // 更新文档根元素的类名
-    if (newTheme) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+  const handleThemeToggle = (): void => {
+    toggleTheme();
   };
 
   // 切换下拉菜单
@@ -150,7 +134,7 @@ const user = useUser();
         <nav className="hidden md:flex items-center gap-10 whitespace-nowrap">
           <div className="relative">
             <Link to="/"
-              className={`font-medium transition-colors duration-200 ${activeNavItem === 'recommend' ? 'text-primary-600 font-semibold' : 'text-gray-700 font-medium dark:text-gray-200 hover:text-primary-600'}`}>
+              className={`font-medium transition-colors duration-200 ${activeNavItem === 'recommend' ? 'text-primary-600 font-semibold dark:text-gray-200' : 'text-gray-700 font-medium dark:text-gray-200 hover:text-primary-600'}`}>
                             推荐
             </Link>
             {activeNavItem === 'recommend' && (
@@ -159,7 +143,7 @@ const user = useUser();
           </div>
           <div className="relative">
             <Link to="/rankings"
-              className={`font-medium transition-colors duration-200 ${activeNavItem === 'rankings' ? 'text-primary-600 font-semibold' : 'text-gray-700 font-medium dark:text-gray-200 hover:text-primary-600'}`}>
+              className={`font-medium transition-colors duration-200 ${activeNavItem === 'rankings' ? 'text-primary-600 font-semibold dark:text-gray-200' : 'text-gray-700 font-medium dark:text-gray-200 hover:text-primary-600'}`}>
                             热门
             </Link>
             {activeNavItem === 'rankings' && (
@@ -208,7 +192,7 @@ const user = useUser();
           {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
           <Switch
             checked={isDarkMode}
-            onChange={toggleTheme}
+            onChange={handleThemeToggle}
             size="small"
           />
         </div>

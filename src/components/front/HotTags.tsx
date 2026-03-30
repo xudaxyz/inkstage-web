@@ -25,15 +25,15 @@ const HotTags: React.FC<HotTagsProps> = ({
   return (
     <Card
       title="热门标签"
-      className="border-none shadow-sm"
+      className="border-none shadow-sm bg-white dark:bg-gray-800"
     >
       <div className="flex flex-wrap gap-4">
         {tags.map((tag, index) => (
           <Tag
             key={index}
-            className="cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-sm"
+            className="cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
           >
-            <a href={`/tag/${tag.name}`} className="text-sm font-medium">
+            <a href={`/tag/${tag.name}`} className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-500">
               {tag.name}
             </a>
           </Tag>
