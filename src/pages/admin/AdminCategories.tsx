@@ -1,16 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Table, Input, Button, Space, Tag, Modal, Form, Switch, message, Typography, Spin, type PaginationProps } from 'antd';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  SearchOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  EditOutlined,
-  PlusOutlined,
+  Button,
+  Card,
+  Form,
+  Input,
+  message,
+  Modal,
+  type PaginationProps,
+  Space,
+  Spin,
+  Switch,
+  Table,
+  Tag,
+  Typography
+} from 'antd';
+import {
   AppstoreOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  SearchOutlined
 } from '@ant-design/icons';
 import categoryService from '../../services/categoryService';
-import  { type AdminCategory } from '../../types/category';
+import { type AdminCategory } from '../../types/category';
 import { StatusEnum, StatusEnumLabel } from '../../types/enums';
 import { formatDateTime, formatDateTimeShort } from '../../utils';
 
@@ -34,37 +48,40 @@ const AdminCategories: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   // 加载分类数据
-  const loadCategories = async (pageNum: number = 1, pageSize: number = 10, keyword: string = '') : Promise<void> => {
-    setLoading(true);
-    try {
-      const response = await categoryService.adminGetCategoriesByPage(keyword, pageNum, pageSize);
-      if (response.code === 200 && response.data) {
-        const formattedCategories = response.data.record.map((category: AdminCategory) => ({
-          ...category,
-          key: category.id.toString()
-        }));
-        setCategories(formattedCategories);
-        setFilteredCategories(formattedCategories);
-        setPagination({
-          pageNum: response.data.pageNum,
-          pageSize: response.data.pageSize,
-          total: response.data.total
-        });
-      } else {
-        message.error('获取分类列表失败');
+  const loadCategories = useCallback(
+    async (pageNum: number = 1, pageSize: number = 10, keyword: string = ''): Promise<void> => {
+      setLoading(true);
+      try {
+        const response = await categoryService.adminGetCategoriesByPage(keyword, pageNum, pageSize);
+        if (response.code === 200 && response.data) {
+          const formattedCategories = response.data.record.map((category: AdminCategory) => ({
+            ...category,
+            key: category.id.toString()
+          }));
+          setCategories(formattedCategories);
+          setFilteredCategories(formattedCategories);
+          setPagination({
+            pageNum: response.data.pageNum,
+            pageSize: response.data.pageSize,
+            total: response.data.total
+          });
+        } else {
+          message.error('获取分类列表失败');
+        }
+      } catch (error) {
+        console.error('加载分类失败:', error);
+        message.error('加载分类失败');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('加载分类失败:', error);
-      message.error('加载分类失败');
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    []
+  );
 
   // 组件挂载时加载数据
   useEffect((): void => {
     void loadCategories();
-  }, []);
+  }, [loadCategories]);
 
   // 处理分页变化
   const handleTableChange = async (pagination: PaginationProps): Promise<void> => {
@@ -101,9 +118,13 @@ const AdminCategories: React.FC = () => {
   // 删除分类
   const handleDeleteCategory = async (id: number): Promise<void> => {
     try {
-      await categoryService.adminDeleteCategory(id);
-      message.success('分类删除成功');
-      await loadCategories(pagination.pageNum, pagination.pageSize);
+      const response = await categoryService.adminDeleteCategory(id);
+      if (response.code === 200) {
+        message.success(response.message || '分类删除成功');
+        await loadCategories(pagination.pageNum, pagination.pageSize);
+      } else {
+        message.error(response.message || '分类删除失败');
+      }
     } catch (error) {
       console.error('删除分类失败:', error);
       message.error('删除分类失败');
@@ -114,56 +135,76 @@ const AdminCategories: React.FC = () => {
   const handleToggleStatus = async (id: number, status: StatusEnum): Promise<void> => {
     try {
       // 先更新本地状态，提供即时反馈
-      const updatedCategories = categories.map(category =>
-        category.id === id ? { ...category, status: status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED } : category
+      const updatedCategories = categories.map((category) =>
+        category.id === id
+          ? {
+              ...category,
+              status: status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED
+            }
+          : category
       );
       setCategories(updatedCategories);
       setFilteredCategories(updatedCategories);
 
       // 然后调用 API 更新后端数据
-      await categoryService.adminUpdateCategoryStatus(id, status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED);
-      message.success(`分类已${status === StatusEnum.ENABLED ? '禁用' : '启用'}`);
-
+      const response = await categoryService.adminUpdateCategoryStatus(
+        id,
+        status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED
+      );
+      if (response.code === 200) {
+        message.success(response.message || `分类已${status === StatusEnum.ENABLED ? '禁用' : '启用'}`);
+      }
     } catch (error) {
       console.error('更新分类状态失败:', error);
       message.error('更新分类状态失败');
-      // 失败时重新加载数据
+    } finally {
       await loadCategories(pagination.pageNum, pagination.pageSize);
     }
   };
 
   // 保存分类
   const handleSaveCategory = async (): Promise<void> => {
-    form.validateFields().then(async (values) => {
-      try {
-        if (isEditing && currentCategory) {
-          // 编辑现有分类
-          await categoryService.adminUpdateCategory(currentCategory.id, {
-            name: values.name,
-            slug: values.slug,
-            description: values.description,
-            status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
-          });
-          message.success('分类更新成功');
-        } else {
-          // 添加新分类
-          await categoryService.adminAddCategory({
-            name: values.name,
-            slug: values.slug,
-            description: values.description,
-            status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
-          });
-          message.success('分类添加成功');
+    form
+      .validateFields()
+      .then(async (values) => {
+        try {
+          if (isEditing && currentCategory) {
+            // 编辑现有分类
+            const response = await categoryService.adminUpdateCategory(currentCategory.id, {
+              name: values.name,
+              slug: values.slug,
+              description: values.description,
+              status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
+            });
+            if (response.code === 200) {
+              message.success(response.message || '分类更新成功');
+            } else {
+              message.error(response.message || '分类更新失败');
+            }
+          } else {
+            // 添加新分类
+            const response = await categoryService.adminAddCategory({
+              name: values.name,
+              slug: values.slug,
+              description: values.description,
+              status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
+            });
+            if (response.code === 200) {
+              message.success(response.message || '分类添加成功');
+            } else {
+              message.error(response.message || '分类添加失败');
+            }
+          }
+          setIsModalVisible(false);
+          await loadCategories(pagination.pageNum, pagination.pageSize);
+        } catch (error) {
+          console.error('保存分类失败:', error);
+          message.error('保存分类失败');
         }
-        setIsModalVisible(false);
-        await loadCategories(pagination.pageNum, pagination.pageSize);
-      } catch (error) {
-        console.error('保存分类失败:', error);
-        message.error('保存分类失败');
-      }
-    }).catch(error => {
-      console.error('验证失败:', error);
-    });
+      })
+      .catch((error) => {
+        console.error('验证失败:', error);
+      });
   };
 
   // 表格列配置
@@ -172,7 +213,8 @@ const AdminCategories: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-      render: (_: unknown, __: unknown, index: number): number => (pagination.pageNum - 1) * pagination.pageSize + index + 1
+      render: (_: unknown, __: unknown, index: number): number =>
+        (pagination.pageNum - 1) * pagination.pageSize + index + 1
     },
     {
       title: '分类名称',
@@ -205,10 +247,7 @@ const AdminCategories: React.FC = () => {
       key: 'status',
       width: 100,
       render: (status: StatusEnum, record: AdminCategory): React.ReactNode => (
-        <Switch
-          checked={status === StatusEnum.ENABLED}
-          onChange={() => handleToggleStatus(record.id, status)}
-        />
+        <Switch checked={status === StatusEnum.ENABLED} onChange={() => handleToggleStatus(record.id, status)} />
       )
     },
     {
@@ -227,29 +266,29 @@ const AdminCategories: React.FC = () => {
           <Button
             variant={'text'}
             color={'green'}
-            icon={<EyeOutlined/>}
+            icon={<EyeOutlined />}
             onClick={() => handleViewCategory(record)}
             className="text-blue-500"
           >
-                        查看
+            查看
           </Button>
           <Button
             variant={'text'}
             color={'orange'}
-            icon={<EditOutlined/>}
+            icon={<EditOutlined />}
             onClick={() => handleEditCategory(record)}
             className="text-green-500"
           >
-                        编辑
+            编辑
           </Button>
           <Button
             variant={'text'}
             color={'danger'}
-            icon={<DeleteOutlined/>}
+            icon={<DeleteOutlined />}
             onClick={() => handleDeleteCategory(record.id)}
             className="text-red-500"
           >
-                        删除
+            删除
           </Button>
         </Space>
       )
@@ -268,13 +307,13 @@ const AdminCategories: React.FC = () => {
           <Search
             placeholder="搜索分类名称或别名"
             allowClear
-            enterButton={<SearchOutlined/>}
+            enterButton={<SearchOutlined />}
             onSearch={handleSearch}
             style={{ width: 300 }}
           />
           <Button
             type="primary"
-            icon={<PlusOutlined/>}
+            icon={<PlusOutlined />}
             onClick={() => {
               setIsEditing(false);
               setCurrentCategory(null);
@@ -282,7 +321,7 @@ const AdminCategories: React.FC = () => {
               setIsModalVisible(true);
             }}
           >
-                        新增分类
+            新增分类
           </Button>
         </div>
       </Card>
@@ -291,7 +330,7 @@ const AdminCategories: React.FC = () => {
       <Card variant="borderless">
         {loading ? (
           <div className="flex justify-center py-10">
-            <Spin size="large"/>
+            <Spin size="large" />
           </div>
         ) : (
           <Table
@@ -337,7 +376,7 @@ const AdminCategories: React.FC = () => {
               { min: 2, max: 50, message: '分类名称长度应在2-50个字符之间' }
             ]}
           >
-            <Input placeholder="请输入分类名称"/>
+            <Input placeholder="请输入分类名称" />
           </Form.Item>
 
           <Form.Item
@@ -348,25 +387,15 @@ const AdminCategories: React.FC = () => {
               { min: 2, max: 50, message: '别名长度应在2-50个字符之间' }
             ]}
           >
-            <Input placeholder="请输入别名，用于URL"/>
+            <Input placeholder="请输入别名，用于URL" />
           </Form.Item>
 
-          <Form.Item
-            name="description"
-            label="描述"
-            rules={[
-              { max: 200, message: '描述长度不能超过200个字符' }
-            ]}
-          >
-            <Input.TextArea rows={3} placeholder="请输入分类描述"/>
+          <Form.Item name="description" label="描述" rules={[{ max: 200, message: '描述长度不能超过200个字符' }]}>
+            <Input.TextArea rows={3} placeholder="请输入分类描述" />
           </Form.Item>
 
-          <Form.Item
-            name="status"
-            label="状态"
-            valuePropName="checked"
-          >
-            <Switch/>
+          <Form.Item name="status" label="状态" valuePropName="checked">
+            <Switch />
           </Form.Item>
         </Form>
       </Modal>
@@ -379,46 +408,46 @@ const AdminCategories: React.FC = () => {
         width={500}
         footer={[
           <Button key="close" onClick={() => setIsViewModalVisible(false)}>
-                        关闭
+            关闭
           </Button>
         ]}
       >
         {currentCategory && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <AppstoreOutlined className="text-gray-500"/>
+              <AppstoreOutlined className="text-gray-500" />
               <span className="font-medium">分类名称:</span>
               <span>{currentCategory.name}</span>
             </div>
             <div className="flex items-center gap-2">
-              <AppstoreOutlined className="text-gray-500"/>
+              <AppstoreOutlined className="text-gray-500" />
               <span className="font-medium">别名:</span>
               <span>{currentCategory.slug}</span>
             </div>
             <div className="flex items-start gap-2">
-              <AppstoreOutlined className="text-gray-500 mt-1"/>
+              <AppstoreOutlined className="text-gray-500 mt-1" />
               <span className="font-medium">描述:</span>
               <span>{currentCategory.description}</span>
             </div>
             <div className="flex items-center gap-2">
-              <AppstoreOutlined className="text-gray-500"/>
+              <AppstoreOutlined className="text-gray-500" />
               <span className="font-medium">文章数量:</span>
               <span>{currentCategory.articleCount || 0}</span>
             </div>
             <div className="flex items-center gap-2">
-              <AppstoreOutlined className="text-gray-500"/>
+              <AppstoreOutlined className="text-gray-500" />
               <span className="font-medium">状态:</span>
               <Tag color={currentCategory.status === StatusEnum.ENABLED ? 'green' : 'orange'}>
                 {StatusEnumLabel[currentCategory.status]}
               </Tag>
             </div>
             <div className="flex items-center gap-2">
-              <CalendarOutlined className="text-gray-500"/>
+              <CalendarOutlined className="text-gray-500" />
               <span className="font-medium">创建时间:</span>
               <span>{formatDateTime(currentCategory.createTime || '')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <CalendarOutlined className="text-gray-500"/>
+              <CalendarOutlined className="text-gray-500" />
               <span className="font-medium">更新时间:</span>
               <span>{formatDateTime(currentCategory.updateTime || '')}</span>
             </div>

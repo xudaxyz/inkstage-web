@@ -80,12 +80,18 @@ const originalOptions = [
     { value: ArticleOriginalEnum.ORIGINAL, label: '原创' },
     { value: ArticleOriginalEnum.REPRINT, label: '转载' }
 ];
+// 置顶状态选项
+const topOptions = [
+    { value: AllowTopEnum.TOP, label: '已置顶' },
+    { value: AllowTopEnum.NOT_TOP, label: '未置顶' }
+];
 const AdminArticles: React.FC = () => {
     const [articles, setArticles] = useState<AdminArticleList[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [selectedStatus, setSelectedStatus] = useState<ArticleStatusEnum | undefined>();
     const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
+    const [selectedTop, setSelectedTop] = useState<AllowTopEnum | undefined>();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isViewModalVisible, setIsViewModalVisible] = useState(false);
     const [currentArticle, setCurrentArticle] = useState<AdminArticleDetail | null>(null);
@@ -108,7 +114,8 @@ const AdminArticles: React.FC = () => {
                 pageSize,
                 categoryId: 0,
                 keyword: searchText,
-                articleStatus: selectedStatus
+                articleStatus: selectedStatus,
+                topStatus: selectedTop
             };
             if (selectedCategory !== undefined && selectedCategory !== 0) {
                 params.categoryId = selectedCategory;
@@ -145,7 +152,7 @@ const AdminArticles: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [searchText, selectedCategory, selectedStatus]);
+    }, [searchText, selectedStatus, selectedCategory, selectedTop]);
     // 搜索和筛选文章
     const handleSearch = (value: string): void => {
         setSearchText(value);
@@ -157,6 +164,10 @@ const AdminArticles: React.FC = () => {
     };
     const handleCategoryChange = (value: number | null): void => {
         setSelectedCategory(value === null ? undefined : value);
+        setPagination(prev => ({ ...prev, pageNum: 1 }));
+    };
+    const handleTopChange = (value: AllowTopEnum): void => {
+        setSelectedTop(value);
         setPagination(prev => ({ ...prev, pageNum: 1 }));
     };
     // 获取分类列表
@@ -198,10 +209,10 @@ const AdminArticles: React.FC = () => {
     // 组件挂载时获取文章列表和分类列表
     useEffect((): void => {
         const loadData = async (): Promise<void> => {
-            await fetchArticles();
+            await fetchArticles(pagination.pageNum, pagination.pageSize);
         };
         void loadData();
-    }, [fetchArticles]);
+    }, [fetchArticles, pagination.pageNum, pagination.pageSize]);
     // 组件挂载时获取分类列表和标签列表
     useEffect((): void => {
         const loadCategoriesAndTags = async (): Promise<void> => {
@@ -256,7 +267,7 @@ const AdminArticles: React.FC = () => {
             const response = await articleService.admin.deleteArticle(id);
             if (response.code === 200 && response.data) {
                 message.success('文章删除成功');
-                await fetchArticles();
+                await fetchArticles(pagination.pageNum, pagination.pageSize);
             } else {
                 message.error('删除文章失败');
             }
@@ -267,7 +278,7 @@ const AdminArticles: React.FC = () => {
     };
     // 保存文章后的回调
     const handleSaveSuccess = async (): Promise<void> => {
-        await fetchArticles();
+        await fetchArticles(pagination.pageNum, pagination.pageSize);
     };
     // 审核文章
     const handleReviewArticle = async (action: 'approve' | 'reject' | 'reprocess', rejectReason?: string): Promise<void> => {
@@ -290,7 +301,7 @@ const AdminArticles: React.FC = () => {
                     setCurrentArticle(detailResponse.data);
                 }
                 // 刷新文章列表
-                await fetchArticles();
+                await fetchArticles(pagination.pageNum, pagination.pageSize);
             } else {
                 message.error('审核操作失败');
             }
@@ -319,7 +330,7 @@ const AdminArticles: React.FC = () => {
             const response = await articleService.admin.updateArticleStatus(id, targetStatus);
             if (response.code === 200 && response.data) {
                 message.success(response.message || (currentStatus === ArticleStatusEnum.OFFLINE ? '文章下架成功' : '文章上架成功'));
-                await fetchArticles();
+                await fetchArticles(pagination.pageNum, pagination.pageSize);
             } else {
                 message.error(response.message || (currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败' : '下架文章失败'));
             }
@@ -336,7 +347,7 @@ const AdminArticles: React.FC = () => {
                 : await articleService.admin.topArticle(id);
             if (response.code === 200 && response.data) {
                 message.success(response.message || (currentTopStatus === AllowTopEnum.TOP ? '取消置顶成功' : '文章置顶成功'));
-                await fetchArticles();
+                await fetchArticles(pagination.pageNum, pagination.pageSize);
             } else {
                 message.error(response.message || (currentTopStatus === AllowTopEnum.TOP ? '取消置顶失败' : '置顶文章失败'));
             }
@@ -353,7 +364,7 @@ const AdminArticles: React.FC = () => {
                 : await articleService.admin.recommendArticle(id);
             if (response.code === 200 && response.data) {
                 message.success(response.message || (currentRecommendStatus === RecommendedEnum.RECOMMENDED ? '取消推荐成功' : '文章推荐成功'));
-                await fetchArticles();
+                await fetchArticles(pagination.pageNum, pagination.pageSize);
             } else {
                 message.error(response.message || (currentRecommendStatus === RecommendedEnum.RECOMMENDED ? '取消推荐失败' : '文章推荐失败'));
             }
@@ -648,6 +659,18 @@ const AdminArticles: React.FC = () => {
                         onChange={handleCategoryChange}
                     >
                         {categories.map(option => (
+                            <Option key={option.value} value={option.value}>
+                                {option.label}
+                            </Option>
+                        ))}
+                    </Select>
+                    <Select
+                        placeholder="是否置顶"
+                        allowClear
+                        style={{ width: 120 }}
+                        onChange={handleTopChange}
+                    >
+                        {topOptions.map(option => (
                             <Option key={option.value} value={option.value}>
                                 {option.label}
                             </Option>

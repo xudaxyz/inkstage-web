@@ -5,11 +5,11 @@ export const API_ENDPOINTS = {
     // 首页相关
     INDEX: {
       INDEX: '/',
-      LIST: '/index/articles',        // 获取首页文章列表
-      BANNER: '/index/banner',      // 获取轮播图文章
-      LATEST_ARTICLES: '/index/latest-articles',      // 获取最新文章列表
-      HOT_ARTICLES: '/index/hot-articles',      // 获取热门文章
-      HOT_USERS: '/index/hot-users'      // 获取热门用户
+      LIST: '/index/articles', // 获取首页文章列表
+      BANNER: '/index/banner', // 获取轮播图文章
+      LATEST_ARTICLES: '/index/latest-articles', // 获取最新文章列表
+      HOT_ARTICLES: '/index/hot-articles', // 获取热门文章
+      HOT_USERS: '/index/hot-users' // 获取热门用户
     },
 
     // 文章相关
@@ -180,10 +180,10 @@ export const API_ENDPOINTS = {
     // 分类管理
     CATEGORY: {
       LIST: '/admin/category/list', // 分页获取分类
-      CREATE: '/admin/category', // 添加分类
-      UPDATE: (id: number): string => `/admin/category/${id}`, // 更新分类
-      DELETE: (id: number): string => `/admin/category/${id}`, // 删除分类
-      UPDATE_STATUS: (id: number): string => `/admin/category/${id}/status` // 更新分类状态
+      CREATE: '/admin/category/add', // 添加分类
+      UPDATE: (id: number): string => `/admin/category/update/${id}`, // 更新分类
+      DELETE: (id: number): string => `/admin/category/delete/${id}`, // 删除分类
+      UPDATE_STATUS: (id: number): string => `/admin/category/status/${id}` // 更新分类状态
     },
 
     // 通知模板管理
@@ -213,10 +213,10 @@ export const API_ENDPOINTS = {
 
     // 文件上传相关
     UPLOAD: {
-      COVER: '/upload/user/cover-image',        // 上传用户封面图
-      AVATAR: '/upload/user/avatar',            // 上传用户头像
+      COVER: '/upload/user/cover-image', // 上传用户封面图
+      AVATAR: '/upload/user/avatar', // 上传用户头像
       ARTICLE_COVER_IMG: '/upload/article/cover-image', // 上传文章封面图
-      DELETE: '/upload/delete'                  // 删除文件
+      DELETE: '/upload/delete' // 删除文件
     }
   }
 };

@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Card,
-  Table,
-  Input,
   Button,
-  Space,
-  Tag,
-  Modal,
+  Card,
   Form,
-  Switch,
+  Input,
   message,
-  Typography,
+  Modal,
+  type PaginationProps,
+  Space,
   Spin,
-  type PaginationProps
+  Switch,
+  Table,
+  Tag,
+  Typography
 } from 'antd';
 import {
-  SearchOutlined,
+  CalendarOutlined,
   DeleteOutlined,
-  EyeOutlined,
   EditOutlined,
+  EyeOutlined,
   PlusOutlined,
-  TagOutlined,
-  CalendarOutlined
+  SearchOutlined,
+  TagOutlined
 } from '@ant-design/icons';
 import tagService from '../../services/tagService';
 import { type AdminTag } from '../../types/tag';
@@ -65,7 +65,7 @@ const AdminTags: React.FC = () => {
           total: response.data.total
         });
       } else {
-        message.error('获取标签列表失败');
+        message.error(response.message || '获取标签列表失败');
       }
     } catch (error) {
       console.error('加载标签失败:', error);
@@ -115,9 +115,13 @@ const AdminTags: React.FC = () => {
   // 删除标签
   const handleDeleteTag = async (id: number): Promise<void> => {
     try {
-      await tagService.admin.deleteTag(id);
-      message.success('标签删除成功');
-      await loadTags(pagination.current, pagination.pageSize);
+      const response = await tagService.admin.deleteTag(id);
+      if (response.code === 200) {
+        message.success(response.message || '标签删除成功');
+        await loadTags(pagination.current, pagination.pageSize);
+      } else {
+        message.error(response.message || '标签删除失败');
+      }
     } catch (error) {
       console.error('删除标签失败:', error);
       message.error('删除标签失败');
@@ -128,16 +132,27 @@ const AdminTags: React.FC = () => {
   const handleToggleStatus = async (id: number, status: StatusEnum): Promise<void> => {
     try {
       // 先更新本地状态，提供即时反馈
-      const updatedTags = tags.map(tag =>
-        tag.id === id ? { ...tag, status: status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED } : tag
+      const updatedTags = tags.map((tag) =>
+        tag.id === id
+          ? {
+              ...tag,
+              status: status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED
+            }
+          : tag
       );
       setTags(updatedTags);
       setFilteredTags(updatedTags);
 
       // 然后调用 API 更新后端数据
-      await tagService.admin.updateTagStatus(id, status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED);
-      message.success(`标签已${status === StatusEnum.ENABLED ? '禁用' : '启用'}`);
-
+      const response = await tagService.admin.updateTagStatus(
+        id,
+        status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED
+      );
+      if (response.code === 200) {
+        message.success(response.message || `标签已${status === StatusEnum.ENABLED ? '禁用' : '启用'}`);
+      } else {
+        message.error(response.message || '标签状态修改失败');
+      }
     } catch (error) {
       console.error('更新标签状态失败:', error);
       message.error('更新标签状态失败');
@@ -148,36 +163,47 @@ const AdminTags: React.FC = () => {
 
   // 保存标签
   const handleSaveTag = async (): Promise<void> => {
-    form.validateFields().then(async (values) => {
-      try {
-        if (isEditing && currentTag) {
-          // 编辑现有标签
-          await tagService.admin.updateTag(currentTag.id, {
-            name: values.name,
-            slug: values.slug,
-            description: values.description,
-            status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
-          });
-          message.success('标签更新成功');
-        } else {
-          // 添加新标签
-          await tagService.admin.addTag({
-            name: values.name,
-            slug: values.slug,
-            description: values.description,
-            status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
-          });
-          message.success('标签添加成功');
+    form
+      .validateFields()
+      .then(async (values) => {
+        try {
+          if (isEditing && currentTag) {
+            // 编辑现有标签
+            const response = await tagService.admin.updateTag(currentTag.id, {
+              name: values.name,
+              slug: values.slug,
+              description: values.description,
+              status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
+            });
+            if (response.code === 200) {
+              message.success(response.message || '标签更新成功');
+            } else {
+              message.error(response.message || '标签更新失败');
+            }
+          } else {
+            // 添加新标签
+            const response = await tagService.admin.addTag({
+              name: values.name,
+              slug: values.slug,
+              description: values.description,
+              status: values.status ? StatusEnum.ENABLED : StatusEnum.DISABLED
+            });
+            if (response.code === 200) {
+              message.success(response.message || '标签添加成功');
+            } else {
+              message.error(response.message || '标签添加失败');
+            }
+          }
+          setIsModalVisible(false);
+          await loadTags(pagination.current, pagination.pageSize);
+        } catch (error) {
+          console.error('保存标签失败:', error);
+          message.error('保存标签失败');
         }
-        setIsModalVisible(false);
-        await loadTags(pagination.current, pagination.pageSize);
-      } catch (error) {
-        console.error('保存标签失败:', error);
-        message.error('保存标签失败');
-      }
-    }).catch(error => {
-      console.error('验证失败:', error);
-    });
+      })
+      .catch((error) => {
+        console.error('验证失败:', error);
+      });
   };
 
   // 表格列配置
@@ -186,7 +212,8 @@ const AdminTags: React.FC = () => {
       title: '序号',
       key: 'index',
       width: 60,
-        render: (_: unknown, __: unknown, index: number): number => (pagination.current - 1) * pagination.pageSize + index + 1
+      render: (_: unknown, __: unknown, index: number): number =>
+        (pagination.current - 1) * pagination.pageSize + index + 1
     },
     {
       title: '标签名称',
@@ -225,10 +252,7 @@ const AdminTags: React.FC = () => {
       key: 'status',
       width: 100,
       render: (status: StatusEnum, record: AdminTag): React.ReactNode => (
-        <Switch
-          checked={status === StatusEnum.ENABLED}
-          onChange={() => handleToggleStatus(record.id, status)}
-        />
+        <Switch checked={status === StatusEnum.ENABLED} onChange={() => handleToggleStatus(record.id, status)} />
       )
     },
     {
@@ -247,29 +271,29 @@ const AdminTags: React.FC = () => {
           <Button
             variant={'text'}
             color={'green'}
-            icon={<EyeOutlined/>}
+            icon={<EyeOutlined />}
             onClick={() => handleViewTag(record)}
             className="text-blue-500"
           >
-                        查看
+            查看
           </Button>
           <Button
             variant={'text'}
             color={'orange'}
-            icon={<EditOutlined/>}
+            icon={<EditOutlined />}
             onClick={() => handleEditTag(record)}
             className="text-green-500"
           >
-                        编辑
+            编辑
           </Button>
           <Button
             variant={'text'}
             color={'danger'}
-            icon={<DeleteOutlined/>}
+            icon={<DeleteOutlined />}
             onClick={() => handleDeleteTag(record.id)}
             className="text-red-500"
           >
-                        删除
+            删除
           </Button>
         </Space>
       )
@@ -288,13 +312,13 @@ const AdminTags: React.FC = () => {
           <Search
             placeholder="搜索标签名称或别名"
             allowClear
-            enterButton={<SearchOutlined/>}
+            enterButton={<SearchOutlined />}
             onSearch={handleSearch}
             style={{ width: 300 }}
           />
           <Button
             type="primary"
-            icon={<PlusOutlined/>}
+            icon={<PlusOutlined />}
             onClick={() => {
               setIsEditing(false);
               setCurrentTag(null);
@@ -302,7 +326,7 @@ const AdminTags: React.FC = () => {
               setIsModalVisible(true);
             }}
           >
-                        新增标签
+            新增标签
           </Button>
         </div>
       </Card>
@@ -311,7 +335,7 @@ const AdminTags: React.FC = () => {
       <Card variant="borderless">
         {loading ? (
           <div className="flex justify-center py-10">
-            <Spin size="large"/>
+            <Spin size="large" />
           </div>
         ) : (
           <Table
@@ -357,7 +381,7 @@ const AdminTags: React.FC = () => {
               { min: 1, max: 30, message: '标签名称长度应在1-30个字符之间' }
             ]}
           >
-            <Input placeholder="请输入标签名称"/>
+            <Input placeholder="请输入标签名称" />
           </Form.Item>
 
           <Form.Item
@@ -368,25 +392,15 @@ const AdminTags: React.FC = () => {
               { min: 1, max: 50, message: '别名长度应在1-50个字符之间' }
             ]}
           >
-            <Input placeholder="请输入别名，用于URL"/>
+            <Input placeholder="请输入别名，用于URL" />
           </Form.Item>
 
-          <Form.Item
-            name="description"
-            label="描述"
-            rules={[
-              { max: 200, message: '描述长度不能超过200个字符' }
-            ]}
-          >
-            <Input.TextArea rows={3} placeholder="请输入标签描述"/>
+          <Form.Item name="description" label="描述" rules={[{ max: 200, message: '描述长度不能超过200个字符' }]}>
+            <Input.TextArea rows={3} placeholder="请输入标签描述" />
           </Form.Item>
 
-          <Form.Item
-            name="status"
-            label="状态"
-            valuePropName="checked"
-          >
-            <Switch/>
+          <Form.Item name="status" label="状态" valuePropName="checked">
+            <Switch />
           </Form.Item>
         </Form>
       </Modal>
@@ -399,51 +413,51 @@ const AdminTags: React.FC = () => {
         width={500}
         footer={[
           <Button key="close" onClick={() => setIsViewModalVisible(false)}>
-                        关闭
+            关闭
           </Button>
         ]}
       >
         {currentTag && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500"/>
+              <TagOutlined className="text-gray-500" />
               <span className="font-medium">标签名称:</span>
               <span>{currentTag.name}</span>
             </div>
             <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500"/>
+              <TagOutlined className="text-gray-500" />
               <span className="font-medium">别名:</span>
               <span>{currentTag.slug}</span>
             </div>
             <div className="flex items-start gap-2">
-              <TagOutlined className="text-gray-500 mt-1"/>
+              <TagOutlined className="text-gray-500 mt-1" />
               <span className="font-medium">描述:</span>
               <span>{currentTag.description}</span>
             </div>
             <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500"/>
+              <TagOutlined className="text-gray-500" />
               <span className="font-medium">文章数量:</span>
               <span>{currentTag.articleCount || 0}</span>
             </div>
             <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500"/>
+              <TagOutlined className="text-gray-500" />
               <span className="font-medium">使用次数:</span>
               <span>{currentTag.usageCount || 0}</span>
             </div>
             <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500"/>
+              <TagOutlined className="text-gray-500" />
               <span className="font-medium">状态:</span>
               <Tag color={currentTag.status === StatusEnum.ENABLED ? 'green' : 'orange'}>
                 {StatusEnumLabel[currentTag.status]}
               </Tag>
             </div>
             <div className="flex items-center gap-2">
-              <CalendarOutlined className="text-gray-500"/>
+              <CalendarOutlined className="text-gray-500" />
               <span className="font-medium">创建时间:</span>
               <span>{formatDateTime(currentTag.createTime || '')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <CalendarOutlined className="text-gray-500"/>
+              <CalendarOutlined className="text-gray-500" />
               <span className="font-medium">更新时间:</span>
               <span>{formatDateTime(currentTag.updateTime || '')}</span>
             </div>
