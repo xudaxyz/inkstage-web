@@ -15,11 +15,13 @@ import {
     useMarkAllAsRead,
     useMarkAsRead,
     useSetNotifications,
-    useSetUnreadCount,
+    useSetUnreadCount, useTheme,
     useUnreadCount
 } from '../../../store';
 
 const Notifications: React.FC = () => {
+    const theme = useTheme();
+    const isDarkMode = theme === 'dark';
     const navigate = useNavigate();
     const [selectedType, setSelectedType] = useState<NotificationType>(NotificationType.ALL);
     // 从store获取状态和操作
@@ -29,7 +31,6 @@ const Notifications: React.FC = () => {
     const deleteNotificationStore = useDeleteNotification();
     const setNotificationsStore = useSetNotifications();
     const setUnreadCount = useSetUnreadCount();
-
     const notificationTypes = [
         { value: 'ALL', label: NotificationTypeMap[NotificationType.ALL] },
         { value: 'SYSTEM', label: NotificationTypeMap[NotificationType.SYSTEM] },
@@ -179,7 +180,7 @@ const Notifications: React.FC = () => {
         refreshNotifications();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedType]);
-    // 初始加载未读数量 - 使用空依赖数组避免无限循环
+    // 初始加载未读数量
     useEffect(() => {
         // 监听WebSocket消息
         const handleNotification = (): void => {
@@ -206,16 +207,20 @@ const Notifications: React.FC = () => {
         <Card
             key={notification.id}
             variant="borderless"
+            style={{
+                borderRadius: '16px',
+                backgroundColor: notification.readStatus === ReadStatus.UNREAD ? `${isDarkMode ? '#4a5565' : '#e5e5e5'}` : `${isDarkMode ? '#1e2939' : 'white'}`
+            }}
             styles={{
                 body: {
                     padding: '12px 20px',
-                    borderBottom: '1px solid #e8e8e8',
+                    borderBottom: `1px solid ${isDarkMode ? '#6a7282' : '#e8e8e8'}`,
                     borderRadius: '16px',
-                    backgroundColor: notification.readStatus === ReadStatus.UNREAD ? '#e5e5e5' : 'white',
+                    backgroundColor: notification.readStatus === ReadStatus.UNREAD ? `${isDarkMode ? '#4a5565' : '#e5e5e5'}` : `${isDarkMode ? '#1e2939' : 'white'}`,
                     transition: 'background-color 0.3s ease'
                 }
             }}
-            className="hover:bg-gray-50 transition-colors"
+            className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${notification.readStatus === ReadStatus.UNREAD ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
         >
             <div className="flex items-start gap-4">
                 {/* 通知内容 */}
@@ -226,19 +231,19 @@ const Notifications: React.FC = () => {
                             <div className="w-2 h-2 rounded-full bg-blue-400 mr-2 mt-1"></div>
                         )}
                         <h3
-                            className="text-lg font-semibold text-secondary-800 hover:text-primary-600 transition-colors duration-200 cursor-pointer"
+                            className="text-lg font-semibold text-secondary-800 dark:text-white hover:text-primary-600 transition-colors duration-200 cursor-pointer"
                             onClick={() => handleNotificationClick(notification)}
                         >
                             {notification.title}
                         </h3>
-                        <span className="text-sm text-secondary-500 ml-2">
+                        <span className="text-sm text-secondary-500 dark:text-gray-400 ml-2">
               {formatTimeShort(notification.createTime)}
             </span>
                     </div>
 
                     {/* 第二行：内容 */}
                     <p
-                        className="text-secondary-600 mb-2 line-clamp-2 cursor-pointer"
+                        className="text-secondary-600 dark:text-gray-300 mb-2 line-clamp-2 cursor-pointer"
                         onClick={() => handleNotificationClick(notification)}
                     >
                         {notification.content}
@@ -247,9 +252,16 @@ const Notifications: React.FC = () => {
                     {/* 操作按钮 */}
                     <div className="flex items-center justify-end space-x-2">
                         {notification.readStatus === ReadStatus.UNREAD && (
-                            <Button type="link" icon={<CheckOutlined/>} onClick={() => markAsRead(notification.id)}>
-                                标为已读
-                            </Button>
+                            <> {isDarkMode ?
+                                (<Button type='text' icon={<CheckOutlined/>}
+                                         onClick={() => markAsRead(notification.id)}>
+                                    标为已读
+                                </Button>) : (
+                                    <Button type='link' icon={<CheckOutlined/>}
+                                            onClick={() => markAsRead(notification.id)}>
+                                        标为已读
+                                    </Button>)
+                            }</>
                         )}
                         <Button
                             type="link"
@@ -267,11 +279,12 @@ const Notifications: React.FC = () => {
     return (
         <div className="mx-auto">
             {/* 页面标题和操作区域 */}
-            <div className="border-b border-gray-200 flex flex-wrap justify-between items-center pb-4 mb-6">
+            <div
+                className="border-b border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center pb-4 mb-6">
                 {/* 左侧：通知中心和数量 */}
                 <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold text-secondary-800">通知中心</h1>
-                    <div>({notifications.length})</div>
+                    <h1 className="text-2xl font-bold text-secondary-800 dark:text-white">通知中心</h1>
+                    <div className="text-gray-500 dark:text-gray-400">({notifications.length})</div>
                     {unreadCount > 0 && (
                         <Badge size={'small'} count={unreadCount}>
                             <BellOutlined style={{ fontSize: 16, color: '#1677ff', marginLeft: '10px' }}/>
@@ -326,8 +339,10 @@ const Notifications: React.FC = () => {
                     </div>
                 }
                 emptyContent={
-                    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm">
-                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无通知" className="py-8"/>
+                    <div
+                        className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm">
+                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无通知"
+                               className="py-8"/>
                     </div>
                 }
                 noMoreText="已经到底了，没有更多通知了"

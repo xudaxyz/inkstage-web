@@ -24,7 +24,7 @@ import Footer from '../../components/common/Footer';
 import CommentSection from '../../components/front/CommentSection';
 import CollectionFolderModal from '../../components/front/CollectionFolderModal';
 import ArticleContent from '../../components/front/ArticleContent';
-import { useUserStore, useArticleStore } from '../../store';
+import { useUserStore, useArticleStore, useTheme } from '../../store';
 import useCollection from '../../hooks/useCollection';
 import articleService from '../../services/articleService';
 import readingHistoryService from '../../services/readingHistoryService';
@@ -32,6 +32,8 @@ import { followUser, unfollowUser, checkFollowStatus } from '../../services/user
 import type { FrontTag } from '../../types/tag';
 
 const ArticleDetail: React.FC = () => {
+    const theme = useTheme();
+    const isDarkMode = theme === 'dark';
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -164,7 +166,6 @@ const ArticleDetail: React.FC = () => {
         window.addEventListener('beforeunload', handleBeforeUnload);
         return (): void => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [id, isLoggedIn, saveReadingHistory]);
-
     // 检查关注状态
     useEffect(() => {
         const checkFollow = async (): Promise<void> => {
@@ -188,7 +189,6 @@ const ArticleDetail: React.FC = () => {
         };
         void checkFollow();
     }, [isLoggedIn, article, user?.id]);
-
     // 处理关注/取消关注
     const handleFollow = async (): Promise<void> => {
         if (!isLoggedIn) {
@@ -232,7 +232,6 @@ const ArticleDetail: React.FC = () => {
             setFollowLoading(false);
         }
     };
-
     const scrollToHeading = (id: string): void => {
         const element = document.getElementById(id);
         if (element) {
@@ -425,7 +424,7 @@ const ArticleDetail: React.FC = () => {
             </Modal>
 
             {/* 主体内容 */}
-            <main className="bg-gray-50 flex-1 pt-8 px-[5%]">
+            <main className="bg-gray-50 dark:bg-gray-800 flex-1 pt-8 px-[5%]">
                 {/* 三栏布局：左侧互动按钮 + 中间文章内容 + 右侧边栏 */}
                 <div className="flex flex-col lg:flex-row">
                     {/* 左侧互动按钮区域 */}
@@ -502,17 +501,17 @@ const ArticleDetail: React.FC = () => {
                     </div>
 
                     {/* 中间文章详情 */}
-                    <div className="bg-white px-10 pt-8 lg:w-3/4 lg:mr-12 rounded-2xl">
+                    <div className="bg-white dark:bg-gray-800 px-10 pt-8 lg:w-3/4 lg:mr-12 rounded-2xl">
                         {/* 响应式调整 */}
                         <div className="md:pr-4">
                             {/* 文章标题 */}
-                            <h1 className="text-4xl font-bold mb-6 text-gray-800 leading-tight tracking-tight">
+                            <h1 className="text-4xl font-bold mb-6 text-gray-800 dark:text-gray-100 leading-tight tracking-tight">
                                 {article.title}
                             </h1>
 
                             {/* 作者信息和统计数据 */}
                             <div
-                                className="flex flex-wrap items-center justify-between gap-5 mb-8 text-gray-500 pb-4 border-b border-gray-100">
+                                className="flex flex-wrap items-center justify-between gap-5 mb-8 text-gray-500 pb-4 border-b dark:border-b border-gray-100 dark:border-gray-600">
                                 <div className="flex flex-wrap items-center gap-4">
                                     <div className="flex items-center gap-3">
                                         <Avatar size={40} src={article.avatar || undefined} alt={article.nickname}
@@ -583,7 +582,7 @@ const ArticleDetail: React.FC = () => {
                                     >
                                         <Button
                                             type="text"
-                                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                                            className="text-gray-400 dark:text-gray-200 hover:text-gray-600 transition-colors"
                                         >
                                             管理 <DownOutlined/>
                                         </Button>
@@ -594,7 +593,7 @@ const ArticleDetail: React.FC = () => {
                             {/* 文章摘要 */}
                             {article.summary && (
                                 <div
-                                    className="mb-8 text-sm text-gray-600 italic border-l-4 border-blue-200 pl-6 py-4 bg-blue-50 rounded-r-lg shadow-sm">
+                                    className="mb-8 text-sm text-gray-600 dark:text-gray-300 dark:border-blue-400 italic border-l-4 border-blue-200 pl-6 py-4 bg-blue-50 dark:bg-gray-600 rounded-r-lg shadow-sm">
                                     {article.summary}
                                 </div>
                             )}
@@ -631,7 +630,7 @@ const ArticleDetail: React.FC = () => {
 
                             {/* 操作按钮 */}
                             <div
-                                className="flex flex-wrap items-center justify-center gap-6 px-6 py-8 border-t border-gray-100">
+                                className="flex flex-wrap items-center justify-center gap-6 px-6 py-8 border-t dark:border-t border-gray-100 dark:border-gray-500">
                                 <Button
                                     onClick={handleLike}
                                     size="large"
@@ -679,22 +678,25 @@ const ArticleDetail: React.FC = () => {
                         {/* 响应式调整 */}
                         <div className="sticky mb-10">
                             {/* 作者信息 */}
-                            <Card style={{ marginBottom: '32px', background: 'white' }}
-                                  className="mb-8 border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                            <Card style={{
+                                marginBottom: '32px',
+                                backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`
+                            }}
+                            >
                                 <div className="text-center">
                                     <Avatar size={88} src={article.avatar || undefined} alt={article.nickname}
                                             className="border-2 border-gray-100 shadow-md"/>
                                     {article.userId ? (
-                                        <h3 className="mt-4 text-lg font-semibold text-gray-800 mb-1">
+                                        <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
                                             <a href={`/user/${article.userId}`}
                                                className="font-semibold text-gray-800 transition-colors">
                                                 {article.nickname || '未知作者'}
                                             </a>
                                         </h3>
                                     ) : (
-                                        <h3 className="mt-4 text-lg font-semibold text-gray-800 mb-1">{article.nickname || '未知作者'}</h3>
+                                        <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">{article.nickname || '未知作者'}</h3>
                                     )}
-                                    <div className="text-center text-sm text-gray-500">
+                                    <div className="text-center text-sm text-gray-500 dark:text-gray-400">
                                         <p className="mt-2">
                                             {article.signature || '暂无简介'}
                                         </p>
@@ -718,7 +720,10 @@ const ArticleDetail: React.FC = () => {
                             </Card>
 
                             {/* 作者相关文章 */}
-                            <Card style={{ marginBottom: '32px', background: 'white' }}
+                            <Card style={{
+                                marginBottom: '32px',
+                                backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`
+                            }}
                                   className="mb-8 border border-gray-100 rounded-lg shadow-sm"
                                   title="作者相关文章">
                                 {relatedArticlesLoading ? (
@@ -759,12 +764,14 @@ const ArticleDetail: React.FC = () => {
 
                             {/* 文章目录 */}
                             {toc.length > 0 && (
-                                <Card variant={'borderless'}>
+                                <Card variant={'borderless'} style={{
+                                    backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`
+                                }}>
                                     <div className="text-sm">
                                         {toc.map((item, index) => (
                                             <div
                                                 key={index}
-                                                className={`mb-2 pl-${(item.level - 1) * 4} cursor-pointer hover:text-blue-600 transition-colors py-1 px-2 rounded-md hover:bg-blue-50`}
+                                                className={`mb-2 pl-${(item.level - 1) * 4} cursor-pointer hover:text-blue-600 transition-colors py-1 px-2 rounded-md hover:bg-blue-50 dark:hover:bg-blue-50`}
                                                 onClick={() => scrollToHeading(item.id)}
                                             >
                                                 <LinkOutlined className="mr-1 text-gray-400"/>

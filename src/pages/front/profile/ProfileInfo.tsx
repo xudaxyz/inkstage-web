@@ -20,13 +20,12 @@ import {
     WomanOutlined,
     LockOutlined
 } from '@ant-design/icons';
-import { useUserStore } from '../../../store';
+import { useTheme, useUserStore } from '../../../store';
 import authService from '../../../services/authService.ts';
 import userService from '../../../services/userService';
 import type { UploadProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { GenderEnum, GenderLabel } from '../../../types/enums';
-
 // 表单值类型定义
 type ProfileFormValues = {
     username: string;
@@ -37,10 +36,10 @@ type ProfileFormValues = {
     location: string;
     signature: string;
 };
-
 const { TextArea } = Input;
-
 const ProfileInfo: React.FC = () => {
+    const theme = useTheme();
+    const isDarkMode = theme === 'dark';
     const { user, updateUser, getProfile } = useUserStore();
     const [form] = Form.useForm();
     const [isModified, setIsModified] = useState(false);
@@ -48,7 +47,6 @@ const ProfileInfo: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [modificationTimeLeft, setModificationTimeLeft] = useState<number>(-1);
     const [usernameForm] = Form.useForm();
-
     // 初始化表单数据
     useEffect(() => {
         // 调用getProfile获取最新的个人资料
@@ -56,7 +54,6 @@ const ProfileInfo: React.FC = () => {
         // 获取修改用户名的剩余时间
         void fetchModificationTimeLeft();
     }, [getProfile]);
-
     // 获取修改用户名的剩余时间
     const fetchModificationTimeLeft = async (): Promise<void> => {
         try {
@@ -66,35 +63,32 @@ const ProfileInfo: React.FC = () => {
             console.error('获取修改时间剩余失败:', error);
         }
     };
-
     // 打开修改用户名模态框
     const handleOpenUpdateUsernameModal = (): void => {
         if (modificationTimeLeft > 0) {
-      const days = Math.floor(modificationTimeLeft / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((modificationTimeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((modificationTimeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      let messageText;
-      if (days > 0) {
-        messageText = `您在${days}天后才能修改用户名`;
-      } else if (hours > 0) {
-        messageText = `您在${hours}小时后才能修改用户名`;
-      } else {
-        messageText = `您在${minutes}分钟后才能修改用户名`;
-      }
-      void message.error(messageText);
-      return;
-    }
+            const days = Math.floor(modificationTimeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((modificationTimeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((modificationTimeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            let messageText;
+            if (days > 0) {
+                messageText = `您在${days}天后才能修改用户名`;
+            } else if (hours > 0) {
+                messageText = `您在${hours}小时后才能修改用户名`;
+            } else {
+                messageText = `您在${minutes}分钟后才能修改用户名`;
+            }
+            void message.error(messageText);
+            return;
+        }
         if (user) {
             usernameForm.setFieldsValue({ newUsername: user.username });
             setUpdateUsernameModalVisible(true);
         }
     };
-
     // 关闭修改用户名模态框
     const handleCloseUpdateUsernameModal = (): void => {
         setUpdateUsernameModalVisible(false);
     };
-
     // 处理修改用户名
     const handleUpdateUsername = async (values: { newUsername: string }): Promise<void> => {
         setIsLoading(true);
@@ -118,7 +112,6 @@ const ProfileInfo: React.FC = () => {
             setIsLoading(false);
         }
     };
-
     // 当用户信息更新时，更新表单数据
     useEffect(() => {
         if (user) {
@@ -133,7 +126,6 @@ const ProfileInfo: React.FC = () => {
             });
         }
     }, [user, form]);
-
     // 处理表单提交
     const handleSubmit = async (values: ProfileFormValues): Promise<void> => {
         try {
@@ -143,7 +135,6 @@ const ProfileInfo: React.FC = () => {
                 // 转换生日字段格式
                 birthDate: values.birthDate ? (typeof values.birthDate === 'string' ? values.birthDate : values.birthDate.format('YYYY-MM-DD')) : undefined
             };
-
             // 更新个人资料
             const response = await authService.updateProfile(submitData);
             if (response.code === 200) {
@@ -166,7 +157,6 @@ const ProfileInfo: React.FC = () => {
             console.error('个人资料更新失败:', error);
         }
     };
-
     // 头像上传配置
     const avatarUploadProps: UploadProps = {
         name: 'avatar',
@@ -209,7 +199,6 @@ const ProfileInfo: React.FC = () => {
             return true;
         }
     };
-
     // 背景图片上传配置
     const coverUploadProps: UploadProps = {
         name: 'cover',
@@ -252,7 +241,6 @@ const ProfileInfo: React.FC = () => {
             return true;
         }
     };
-
     return (
         <div className="mx-auto">
             {/* 背景图片区域 */}
@@ -322,8 +310,12 @@ const ProfileInfo: React.FC = () => {
             </div>
 
             {/* 个人信息表单 */}
-            <Card className="mb-8">
-                <h3 className="text-lg font-medium text-gray-800 mb-6">个人信息</h3>
+            <Card
+                style={{
+                    marginBottom: '16px',
+                    backgroundColor: `${isDarkMode ? '#364153' : 'transparent'}`
+                }}>
+                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-6">个人信息</h3>
 
                 <Form
                     form={form}
@@ -487,5 +479,4 @@ const ProfileInfo: React.FC = () => {
         </div>
     );
 };
-
 export default ProfileInfo;

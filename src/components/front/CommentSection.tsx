@@ -57,7 +57,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             nextPage: response.data?.nextPage || pageNum + 1
         };
     }, [articleId, sortBy]);
-
     // 使用无限滚动hook
     const {
         data: comments,
@@ -107,12 +106,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         />
     );
     return (
-        <div className="mt-10">
+        <div className="mt-10 dark:bg-gray-800">
             {/* 评论标题和排序 */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-semibold text-gray-800">评论</h3>
-                    <span className="text-gray-600 text-sm">{commentCount}</span>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">评论</h3>
+                    <span className="text-gray-600 dark:text-gray-400 text-sm">{commentCount}</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <button

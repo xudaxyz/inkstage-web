@@ -201,12 +201,12 @@ const Home: React.FC = () => {
         <ArticleCard key={`${article.id}-${index}`} article={article}/>
     );
     return (
-        <div className="flex min-h-screen flex-col bg-white dark:bg-gray-900 font-sans">
+        <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800 font-sans">
             {/* 顶部导航栏 */}
             <Header/>
 
             {/* 主体内容 */}
-            <main className="flex-1 py-6 px-[5%] bg-white dark:bg-gray-900">
+            <main className="flex-1 py-6 px-[5%] bg-white dark:bg-gray-800">
                 <div className="flex flex-col md:flex-row gap-12">
                     {/* 左侧内容 */}
                     <div className="md:w-3/4">

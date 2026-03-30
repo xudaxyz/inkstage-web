@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { useTheme } from '../../../store';
 import { Button, Card, Input, message, Modal, Popover, Space, Tag } from 'antd';
 import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
@@ -46,6 +47,8 @@ interface Article {
 
 const MyCreations: React.FC = () => {
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isDarkMode = theme === 'dark';
     // 状态管理
     const [searchText, setSearchText] = useState('');
     const [debouncedSearchText, setDebouncedSearchText] = useState('');
@@ -190,12 +193,13 @@ const MyCreations: React.FC = () => {
     return (
         <div className="mx-auto">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">我的创作 <span
-                    className="text-gray-500 text-lg">({stats.totalArticles})</span></h1>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">我的创作 <span
+                    className="text-gray-500 dark:text-gray-300 text-lg">({stats.totalArticles})</span></h1>
             </div>
 
             {/* 状态标签和搜索区域 */}
-            <div className="border-b border-b-gray-200 flex flex-wrap justify-between items-center pb-4 ">
+            <div
+                className="border-b border-b-gray-200 dark:border-b-gray-700 flex flex-wrap justify-between items-center pb-4 ">
                 {/* 状态标签 */}
                 <div className="flex space-x-6 mb-2 md:mb-0">
                     <Button
@@ -258,8 +262,9 @@ const MyCreations: React.FC = () => {
                           styles={{
                               body: {
                                   padding: '24px 12px',
-                                  borderBottom: '1px solid #e8e8e8',
-                                  borderRadius: 0
+                                  borderBottom: `1px solid ${isDarkMode ? '#6a7282' : '#e8e8e8'}`,
+                                  borderRadius: 0,
+                                  backgroundColor: `${isDarkMode ? '#1e2939' : 'transparent'}`
                               }
                           }}
                     >
@@ -269,15 +274,12 @@ const MyCreations: React.FC = () => {
                                     href={ROUTES.ARTICLE_DETAIL(article.id)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-2xl font-semibold no-underline"
+                                    className="text-2xl font-semibold no-underline text-gray-900 dark:text-white transition-colors duration-200 hover:text-primary-600"
                                     style={{
-                                        color: 'black',
                                         textDecoration: 'none',
                                         fontFamily: 'sans-serif',
                                         letterSpacing: '-0.02em'
                                     }}
-                                    onMouseOver={(e) => e.currentTarget.style.color = '#0284c7'}
-                                    onMouseOut={(e) => e.currentTarget.style.color = 'black'}
                                 >
                                     {article.title}
                                 </a>
@@ -303,12 +305,12 @@ const MyCreations: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="text-gray-600 mb-4 line-clamp-2">
+                        <div className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
                             {article.summary}
                         </div>
 
                         <div className="flex flex-wrap items-center justify-between ">
-                            <div className="flex items-center gap-5 text-sm text-gray-500">
+                            <div className="flex items-center gap-5 text-sm text-gray-500 dark:text-gray-400">
                                 <Tag variant="solid"
                                      color={article.original === ArticleOriginalEnum.ORIGINAL ? 'gold' : 'green'}>
                                     {ArticleOriginalMap[article.original] || ArticleOriginalEnum.OTHER}
@@ -366,7 +368,7 @@ const MyCreations: React.FC = () => {
                     </Card>
                 )}
                 emptyContent={
-                    <div className="py-12 text-center">
+                    <div className="py-12 text-center dark:text-gray-200">
                         <p>暂无文章</p>
                     </div>
                 }
