@@ -66,9 +66,9 @@ function App (): ReactNode {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#0ea5e9',
+          colorPrimary: '#0ea5e9'
         },
-        algorithm: currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        algorithm: currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm
       }}
     >
       <Router>

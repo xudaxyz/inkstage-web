@@ -29,16 +29,16 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
     <div className="border-b border-gray-200 dark:border-gray-800 pt-2 pb-4 mb-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full">
       <div className="flex flex-col md:flex-row gap-6 w-full items-start">
         {/* 左侧内容 */}
-        <div className="flex-1 md:pr-4 flex flex-col min-w-10">
+        <div className="flex-1 px-2 flex flex-col min-w-10">
           {/* 文章标题 */}
-          <h3 className="text-xl font-semibold mb-2 leading-tight">
+          <div className="flex text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200/90 hover:text-blue-600 leading-tight">
             <a href={`/article/${article.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-800 dark:text-gray-200 hover:text-blue-600 transition-colors cursor-pointer">
+              className="text-gray-800 dark:text-gray-200/90 hover:text-blue-600 transition-colors cursor-pointer truncate no-underline">
               {title}
             </a>
-          </h3>
+          </div>
 
           {/* 文章简介 */}
           <p className="text-gray-500 dark:text-gray-400 mb-4 text-base leading-relaxed line-clamp-2">

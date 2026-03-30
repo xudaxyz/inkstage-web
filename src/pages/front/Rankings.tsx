@@ -58,24 +58,24 @@ const Rankings: React.FC = () => {
         setTimeRange(value);
     };
     return (
-        <div className="flex min-h-screen flex-col bg-gray-50 font-sans">
+        <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900 font-sans">
             {/* 顶部导航栏 */}
             <Header/>
 
             {/* 主体内容 */}
-            <main className="flex-1 py-6 px-4 sm:px-6 lg:px-[5%]">
+            <main className="flex-1 py-6 px-4 sm:px-6 lg:px-[5%] bg-gray-50 dark:bg-gray-900">
                 <div className="mx-auto">
-                    {/* 热门选项 - 参考B站热门样式 */}
+                    {/* 热门选项 */}
                     <div className=" rounded-lg mb-8 flex items-center justify-start overflow-x-auto gap-8">
                         <div
-                            className={`flex font-extrabold items-center gap-2 px-6 py-3 rounded-lg cursor-pointer transition-all duration-200 ${timeRange === 'day' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
+                            className={`flex font-extrabold items-center gap-2 px-6 py-3 rounded-lg cursor-pointer transition-all duration-200 ${timeRange === 'day' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-400' : 'hover:bg-gray-100 dark:hover:bg-gray-600 text-blue-800'}`}
                             onClick={() => handleTimeRangeChange('day')}
                         >
                             <BarChartOutlined/>
                             <span>综合热门</span>
                         </div>
                         <div
-                            className={`flex font-extrabold items-center gap-2 px-6 py-3 rounded-lg cursor-pointer transition-all duration-200 ${timeRange === 'week' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
+                            className={`flex font-extrabold items-center gap-2 px-6 py-3 rounded-lg cursor-pointer transition-all duration-200 ${timeRange === 'week' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-white' : 'hover:bg-gray-100 dark:text-white/30 dark:hover:bg-gray-800'}`}
                             onClick={() => handleTimeRangeChange('week')}
                         >
                             <CalendarOutlined/>
@@ -99,7 +99,7 @@ const Rankings: React.FC = () => {
                             <div className="lg:w-[75%]">
                                 <Card
                                     variant="borderless"
-                                    className="shadow-sm rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-300"
+                                    className="shadow-sm rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-300 bg-white dark:bg-gray-800"
                                 >
                                     <List
                                         itemLayout="horizontal"
@@ -107,12 +107,12 @@ const Rankings: React.FC = () => {
                                         renderItem={(article, index) => (
                                             <List.Item
                                                 key={article.id}
-                                                className={`py-4 sm:py-5 border-b border-gray-100 last:border-b-0 ${index < 3 ? 'rounded-lg' : ''} hover:bg-gray-50 transition-colors duration-200`}
+                                                className={`py-4 sm:py-5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${index < 3 ? 'rounded-lg' : ''} hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200`}
                                             >
                                                 <div className="flex flex-col sm:flex-row items-start w-full gap-4">
                                                     {/* 排名序号 */}
                                                     <span
-                                                        className={`text-2xl font-bold w-8 text-center ${index < 3 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                                        className={`text-2xl font-bold w-8 text-center ${index < 3 ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500'}`}>
                             {index + 1}
                           </span>
 
@@ -122,22 +122,22 @@ const Rankings: React.FC = () => {
                                                         <a href={`/article/${article.id}`}
                                                            target="_blank"
                                                            rel="noopener noreferrer"
-                                                           className="text-black font-semibold text-xl mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight  cursor-pointer hover:text-blue-600">
+                                                           className="text-black dark:text-white font-semibold text-xl mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight  cursor-pointer hover:text-blue-600">
                                                             {article.title}
                                                         </a>
 
                                                         {/* 简介 */}
-                                                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                                                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
                                                             {article.summary}
                                                         </p>
 
                                                         {/* 作者信息 */}
                                                         <div
-                                                            className="flex items-center text-gray-500 text-sm mb-3 flex-wrap gap-2">
+                                                            className="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-3 flex-wrap gap-2">
                                                             <Avatar size={20} src={article.avatar}
                                                                     alt={article.nickname} className="mr-2"/>
                                                             <span
-                                                                className="hover:text-blue-600 transition-colors duration-200 cursor-pointer"
+                                                                className="hover:text-blue-600 transition-colors duration-200 cursor-pointer dark:text-gray-300"
                                                                 onClick={() => navigate(`/user/${article.userId}`)}>
                                                                 {article.nickname || '未知用户'}
                                                             </span>
@@ -146,20 +146,20 @@ const Rankings: React.FC = () => {
                                                             </Tag>
                                                             {/* 统计数据 */}
                                                             <div
-                                                                className="flex items-center text-gray-400 text-xs flex-wrap gap-4">
+                                                                className="flex items-center text-gray-400 dark:text-gray-500 text-xs flex-wrap gap-4">
                                                                 <div className="flex items-center">
                                                                     <EyeOutlined className="mr-1"/>
-                                                                    <Text>{article.readCount}</Text>
+                                                                    <Text className="dark:text-gray-400">{article.readCount}</Text>
                                                                 </div>
                                                                 <div className="flex items-center">
                                                                     <LikeOutlined className="mr-1"/>
-                                                                    <Text>{article.likeCount}</Text>
+                                                                    <Text className="dark:text-gray-400">{article.likeCount}</Text>
                                                                 </div>
                                                                 <div className="flex items-center">
                                                                     <MessageOutlined className="mr-1"/>
-                                                                    <Text>{article.commentCount}</Text>
+                                                                    <Text className="dark:text-gray-400">{article.commentCount}</Text>
                                                                 </div>
-                                                                <Text>{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</Text>
+                                                                <Text className="dark:text-gray-400">{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</Text>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -187,11 +187,11 @@ const Rankings: React.FC = () => {
                                 {/* 热门用户 */}
                                 <Card
                                     variant="borderless"
-                                    className="shadow-sm rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow duration-300"
+                                    className="shadow-sm rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow duration-300 bg-white dark:bg-gray-800"
                                     title={
                                         <div className="flex items-center">
                                             <UserOutlined className="mr-2 text-blue-600"/>
-                                            <span className="font-bold">热门用户</span>
+                                            <span className="font-bold dark:text-white">热门用户</span>
                                         </div>
                                     }
                                 >
@@ -201,12 +201,12 @@ const Rankings: React.FC = () => {
                                         renderItem={(user, index) => (
                                             <List.Item
                                                 key={user.id}
-                                                className={`py-3 border-b border-gray-100 last:border-b-0 ${index < 3 ? 'bg-blue-50 rounded-lg' : ''} hover:bg-gray-50 transition-colors duration-200`}
+                                                className={`py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${index < 3 ? 'bg-blue-50 dark:bg-blue-900/20 rounded-lg' : ''} hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200`}
                                             >
                                                 <div className="flex items-center w-full gap-3">
                                                     {/* 排名序号 */}
                                                     <span
-                                                        className={`text-lg font-bold w-6 text-center ${index < 3 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                                        className={`text-lg font-bold w-6 text-center ${index < 3 ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500'}`}>
                             {index + 1}
                           </span>
 
@@ -218,14 +218,14 @@ const Rankings: React.FC = () => {
                                                     <div className="flex-1 min-w-0">
                                                         {/* 姓名 */}
                                                         <span
-                                                            className="text-gray-800 hover:text-blue-600 font-medium text-sm mb-1 block transition-colors duration-200 cursor-pointer"
+                                                            className="text-gray-800 dark:text-gray-200 hover:text-blue-600 font-medium text-sm mb-1 block transition-colors duration-200 cursor-pointer"
                                                             onClick={() => navigate(`/user/${user.id}`)}>
                               {user.nickname}
                             </span>
 
                                                         {/* 统计数据 */}
                                                         <div
-                                                            className="flex items-center text-gray-500 text-xs gap-2 sm:gap-3 flex-wrap">
+                                                            className="flex items-center text-gray-500 dark:text-gray-400 text-xs gap-2 sm:gap-3 flex-wrap">
                                                             <span>{user.followerCount} 粉丝</span>
                                                             <span>{user.articleCount} 文章</span>
                                                             <span>{user.likeCount} 获赞</span>
@@ -240,11 +240,11 @@ const Rankings: React.FC = () => {
                                 {/* 最新文章 */}
                                 <Card
                                     variant="borderless"
-                                    className="shadow-sm rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-300"
+                                    className="shadow-sm rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-300 bg-white dark:bg-gray-800"
                                     title={
                                         <div className="flex items-center">
                                             <BarChartOutlined className="mr-2 text-blue-600"/>
-                                            <span className="font-bold">最新文章</span>
+                                            <span className="font-bold dark:text-white">最新文章</span>
                                         </div>
                                     }
                                 >
@@ -254,7 +254,7 @@ const Rankings: React.FC = () => {
                                         renderItem={(article) => (
                                             <List.Item
                                                 key={article.id}
-                                                className="py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
+                                                className="py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                                             >
                                                 <div className="flex flex-col sm:flex-row items-start gap-3">
                                                     {/* 文章信息 */}
@@ -263,27 +263,27 @@ const Rankings: React.FC = () => {
                                                         <a href={`/article/${article.id}`}
                                                            target="_blank"
                                                            rel="noopener noreferrer"
-                                                           className="text-black font-bold text-base mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight drop-shadow-sm cursor-pointer hover:text-blue-600">
+                                                           className="text-black dark:text-white font-bold text-base mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight drop-shadow-sm cursor-pointer hover:text-blue-600">
                                                             {article.title}
                                                         </a>
 
-                                                        <div className="flex items-start text-gray-500 text-xs mb-1">
+                                                        <div className="flex items-start text-gray-500 dark:text-gray-400 text-xs mb-1">
                                                             {/* 作者信息 */}
                                                             <div
-                                                                className="flex items-center text-gray-400 text-xs gap-1 flex-wrap mr-5">
+                                                                className="flex items-center text-gray-400 dark:text-gray-500 text-xs gap-1 flex-wrap mr-5">
                                                                 <Avatar size={16} src={article.avatar}
                                                                         alt={article.nickname} className="mr-1"/>
                                                                 <span
-                                                                    className="hover:text-blue-600 transition-colors duration-200 cursor-pointer"
+                                                                    className="hover:text-blue-600 transition-colors duration-200 cursor-pointer dark:text-gray-300"
                                                                     onClick={() => navigate(`/user/${article.userId}`)}>
                                 {article.nickname}
                               </span>
                                                             </div>
                                                             {/* 发布时间和阅读量 */}
                                                             <div
-                                                                className="flex items-center text-gray-400 text-xs gap-5 flex-wrap">
-                                                                <span><EyeOutlined className="mr-1"/>{article.readCount}</span>
-                                                                <span><CalendarOutlined
+                                                                className="flex items-center text-gray-400 dark:text-gray-500 text-xs gap-5 flex-wrap">
+                                                                <span className="dark:text-gray-400"><EyeOutlined className="mr-1"/>{article.readCount}</span>
+                                                                <span className="dark:text-gray-400"><CalendarOutlined
                                                                     className="mr-1"/>{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</span>
                                                             </div>
                                                         </div>

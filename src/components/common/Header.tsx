@@ -132,18 +132,18 @@ const user = useUser();
 
         {/* 导航项 */}
         <nav className="hidden md:flex items-center gap-10 whitespace-nowrap">
-          <div className="relative">
+          <div className="relative text-gray-600 dark:text-white">
             <Link to="/"
-              className={`font-medium transition-colors duration-200 ${activeNavItem === 'recommend' ? 'text-primary-600 font-semibold dark:text-gray-200' : 'text-gray-700 font-medium dark:text-gray-200 hover:text-primary-600'}`}>
+              className={`font-medium transition-colors duration-200 ${activeNavItem === 'recommend' ? 'text-gray-600 font-semibold dark:text-white' : 'text-gray-700 font-medium dark:text-white hover:text-primary-600'}`}>
                             推荐
             </Link>
             {activeNavItem === 'recommend' && (
               <div className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
             )}
           </div>
-          <div className="relative">
+          <div className="relative text-gray-600 dark:text-white">
             <Link to="/rankings"
-              className={`font-medium transition-colors duration-200 ${activeNavItem === 'rankings' ? 'text-primary-600 font-semibold dark:text-gray-200' : 'text-gray-700 font-medium dark:text-gray-200 hover:text-primary-600'}`}>
+              className={`font-medium transition-colors duration-200 ${activeNavItem === 'rankings' ? 'text-gray-600 font-semibold dark:text-white' : 'text-gray-700 font-medium dark:text-white hover:text-primary-600'}`}>
                             热门
             </Link>
             {activeNavItem === 'rankings' && (
@@ -198,7 +198,7 @@ const user = useUser();
         </div>
 
         {/* 通知图标 */}
-          {isLoggedIn && (<Link to="/profile/notifications" className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary-600 transition-colors duration-200">
+          {isLoggedIn && (<Link to="/profile/notifications" className="flex items-center text-gray-700 dark:text-white hover:text-primary-600 transition-colors duration-200">
           {unreadCount > 0 ? (
             <Badge count={unreadCount} size="small">
               <BellTwoTone style={{ fontSize: '18px' }} />
@@ -210,7 +210,7 @@ const user = useUser();
 
         {/* 移动端菜单按钮 */}
         <button
-          className="md:hidden flex items-center text-gray-700 dark:text-gray-200"
+          className="md:hidden flex items-center text-gray-700 dark:text-white"
           onClick={toggleMobileMenu}
           aria-label="菜单"
         >
@@ -240,7 +240,7 @@ const user = useUser();
               </div>
               {/* 用户名 */}
               <span
-                className="text-purple-600 font-medium inline-block max-w-[100px] truncate">{user.nickname}</span>
+                className="text-purple-600 dark:text-white font-medium inline-block max-w-[100px] truncate">{user.nickname}</span>
             </div>
 
             {/* 下拉菜单 */}
@@ -250,7 +250,7 @@ const user = useUser();
                 {/* 个人中心 */}
                 <Link
                   to="/profile"
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
                   onClick={closeDropdown}
                 >
                   <UserOutlined className="text-gray-400 dark:text-gray-500"/>
@@ -260,7 +260,7 @@ const user = useUser();
                 {/* 我的创作 */}
                 <Link
                   to="/profile/creations"
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
                   onClick={closeDropdown}
                 >
                   <FileTextOutlined className="text-gray-400 dark:text-gray-500"/>
@@ -286,7 +286,7 @@ const user = useUser();
           <div className="hidden md:flex items-center gap-4">
             {/* 登录按钮 */}
             <Link to="/login"
-              className="text-gray-700 dark:text-gray-200 hover:text-primary-600 font-medium transition-colors duration-200 px-4">
+              className="text-gray-700 dark:text-white hover:text-primary-600 font-medium transition-colors duration-200 px-4">
                             登录
             </Link>
 
@@ -315,7 +315,7 @@ const user = useUser();
           {/* 移动端导航项 */}
           <nav className="flex items-center gap-6 overflow-x-auto whitespace-nowrap pb-2">
             <div className="relative">
-              <Link to="/" className={`font-medium transition-colors duration-200 px-2 ${activeNavItem === 'recommend' ? 'text-primary-600' : 'text-gray-700 dark:text-gray-200 hover:text-primary-600'}`}>
+              <Link to="/" className={`font-medium transition-colors duration-200 px-2 ${activeNavItem === 'recommend' ? 'text-primary-600 dark:text-white' : 'text-gray-700 dark:text-white hover:text-primary-600'}`}>
                             推荐
               </Link>
               {activeNavItem === 'recommend' && (
@@ -323,7 +323,7 @@ const user = useUser();
               )}
             </div>
             <div className="relative">
-              <Link to="/rankings" className={`font-medium transition-colors duration-200 px-2 ${activeNavItem === 'rankings' ? 'text-primary-600' : 'text-gray-700 dark:text-gray-200 hover:text-primary-600'}`}>
+              <Link to="/rankings" className={`font-medium transition-colors duration-200 px-2 ${activeNavItem === 'rankings' ? 'text-primary-600 dark:text-white' : 'text-gray-700 dark:text-white hover:text-primary-600'}`}>
                             热门
               </Link>
               {activeNavItem === 'rankings' && (
