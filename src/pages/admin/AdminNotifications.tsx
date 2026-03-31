@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   Button,
@@ -14,17 +14,15 @@ import {
   Table,
   Tabs,
   Tag,
-  Tooltip,
   Typography
 } from 'antd';
+import AdminNotificationTemplateEditor from '../../components/admin/AdminNotificationTemplateEditor';
 import type { TablePaginationConfig } from 'antd/es/table';
 import {
   CalendarOutlined,
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
-  MinusCircleOutlined,
-  PlusCircleOutlined,
   PlusOutlined,
   SearchOutlined,
   SendOutlined,
@@ -47,6 +45,7 @@ import {
   StatusEnum,
   StatusEnumLabel
 } from '../../types/enums';
+import TemplateVariableSelector from '../../components/admin/TemplateVariableSelector';
 // 自定义防抖 hook
 const useDebounceValue = <T,>(value: T, delay: number): T => {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -88,147 +87,32 @@ const AdminNotifications: React.FC = () => {
     pageSizeOptions: PAGE_SIZE_OPTIONS,
     showTotal: (total: number) => `共 ${total} 条模板`
   });
-  const [form] = Form.useForm();
+
+  // 表单实例
   const [sendForm] = Form.useForm();
   const [previewForm] = Form.useForm();
+
   // 防抖搜索文本
   const debouncedSearchText = useDebounceValue(searchText, 300);
-  // 解析变量数据
-  const parseVariables = (val: string): Array<{ name: string; value: string }> => {
-    if (!val) return [];
-    try {
-      const parsed = JSON.parse(val);
-      // 检查是否为数组
-      if (Array.isArray(parsed)) {
-        return parsed;
-      }
-      return [];
-    } catch {
-      return [];
-    }
-  };
-  const VariableEditor = React.memo<{
-    value: string;
-    onChange: (value: string) => void;
-  }>(({ value, onChange }) => {
-    const parsedVariables = useMemo(() => parseVariables(value), [value]);
-    const [variables, setVariables] = useState<Array<{ name: string; value: string }>>(parsedVariables);
-    const [isExternalUpdate, setIsExternalUpdate] = useState(false);
-    // 使用 useRef 存储 variables 状态，避免在 useEffect 依赖中添加 variables
-    const variablesRef = React.useRef(variables);
-    // 同步 ref 与状态
-    useEffect(() => {
-      variablesRef.current = variables;
-    }, [variables]);
-    // 防抖函数
-    const useDebounce = <A extends unknown[], R>(func: (...args: A) => R, delay: number): ((...args: A) => void) => {
-      const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>(null);
-      return React.useCallback(
-        (...args: A) => {
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-          timeoutRef.current = setTimeout(() => {
-            func(...args);
-          }, delay);
-        },
-        [func, delay]
-      );
-    };
-    // 防抖处理的 onChange 调用
-    const debouncedOnChange = useDebounce(onChange, 300);
-    // 监听 value 变化，更新内部状态
-    useEffect(() => {
-      const newParsed = parseVariables(value);
-      const isValueChanged = JSON.stringify(newParsed) !== JSON.stringify(variablesRef.current);
-      if (isValueChanged) {
-        // 标记为外部更新
-        setIsExternalUpdate(true);
-        setVariables(newParsed);
-      }
-    }, [value]);
-    const handleAdd = useCallback((): void => {
-      setVariables((prev) => {
-        const newVariables = [...prev, { name: `name${prev.length + 1}`, value: '' }];
-        debouncedOnChange(JSON.stringify(newVariables));
-        return newVariables;
-      });
-    }, [debouncedOnChange]);
-    const handleChange = useCallback(
-      (index: number, field: 'name' | 'value', val: string): void => {
-        setVariables((prev) => {
-          const newVariables = [...prev];
-          newVariables[index] = { ...newVariables[index], [field]: val };
-          debouncedOnChange(JSON.stringify(newVariables));
-          return newVariables;
-        });
-      },
-      [debouncedOnChange]
-    );
-    const handleDelete = useCallback(
-      (index: number): void => {
-        setVariables((prev) => {
-          const newVariables = prev.filter((_, i) => i !== index);
-          debouncedOnChange(JSON.stringify(newVariables));
-          return newVariables;
-        });
-      },
-      [debouncedOnChange]
-    );
-    // 只在外部更新时处理，移除对 variables 的监听以避免循环更新
-    useEffect(() => {
-      if (isExternalUpdate) {
-        // 外部更新，重置标志
-        setIsExternalUpdate(false);
-      }
-    }, [isExternalUpdate]);
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center mb-4">
-          <h4 className="text-sm font-semibold text-gray-700">变量说明</h4>
-          <Button icon={<PlusCircleOutlined />} onClick={handleAdd} type="dashed">
-            添加变量
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {variables.map((variable, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                value={variable.name}
-                onChange={(e) => handleChange(index, 'name', e.target.value)}
-                placeholder="变量名"
-                style={{ width: 120 }}
-                size="middle"
-              />
-              <span className="text-gray-500">:</span>
-              <Input
-                value={variable.value}
-                onChange={(e) => handleChange(index, 'value', e.target.value)}
-                placeholder="变量描述"
-                style={{ flex: 1 }}
-                size="middle"
-              />
-              <Button danger icon={<MinusCircleOutlined />} onClick={() => handleDelete(index)} size="small" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  });
-  // 设置 displayName 便于调试
-  VariableEditor.displayName = 'VariableEditor';
+
   // 获取通知模板列表 - 使用后端分页和筛选
   const fetchTemplates = useCallback(
     async (
       pageNum: number = 1,
       pageSize: number = DEFAULT_PAGE_SIZE,
-      type?: NotificationType,
+      notificationType?: NotificationType,
       status?: StatusEnum,
       keyword?: string
     ) => {
       try {
         setLoading(true);
-        const response = await notificationTemplateService.getTemplatePage(pageNum, pageSize, type, status, keyword);
+        const response = await notificationTemplateService.getTemplatePage(
+          pageNum,
+          pageSize,
+          notificationType,
+          status,
+          keyword
+        );
         if (response.code === 200) {
           setTemplates(response.data?.record || []);
           setPagination((prev) => ({
@@ -285,22 +169,6 @@ const AdminNotifications: React.FC = () => {
   const handleEditTemplate = (template: AdminNotificationTemplate): void => {
     setIsEditing(true);
     setCurrentTemplate(template);
-    // 先重置表单，确保不会有上一个模板的残留值
-    form.resetFields();
-    // 然后设置当前模板的值
-    form.setFieldsValue({
-      code: template.code,
-      nameTemplate: template.nameTemplate,
-      titleTemplate: template.titleTemplate,
-      contentTemplate: template.contentTemplate,
-      notificationType: template.notificationType,
-      notificationChannel: template.notificationChannel,
-      variables: template.variables || '[]',
-      description: template.description,
-      actionUrlTemplate: template.actionUrlTemplate,
-      priority: template.priority,
-      status: template.status
-    });
     setIsModalVisible(true);
   };
   // 打开查看模板模态框
@@ -363,16 +231,13 @@ const AdminNotifications: React.FC = () => {
     }
   };
   // 保存模板
-  const handleSaveTemplate = async (): Promise<void> => {
+  const handleSaveTemplate = async (template: NotificationTemplate): Promise<void> => {
     try {
       setLoading(true);
-      const values = await form.validateFields();
-      console.log('表单值:', values);
       if (isEditing && currentTemplate) {
         // 编辑现有模板
         const updateDTO: NotificationTemplate = {
-          id: currentTemplate.id,
-          ...values
+          ...template
         };
         const response = await notificationTemplateService.updateTemplate(currentTemplate.id, updateDTO);
         if (response.code === 200) {
@@ -390,7 +255,7 @@ const AdminNotifications: React.FC = () => {
         }
       } else {
         // 添加新模板
-        const createDTO: NotificationTemplate = values;
+        const createDTO: NotificationTemplate = template;
         // 检查编码是否存在
         const checkResponse = await notificationTemplateService.checkCodeExists(createDTO.code);
         if (checkResponse.code === 200 && checkResponse.data) {
@@ -427,15 +292,7 @@ const AdminNotifications: React.FC = () => {
       const formToUse = isSendForm ? sendForm : previewForm;
       await formToUse.validateFields();
       const values = formToUse.getFieldsValue();
-      let variables: Record<string, object> = {};
-      try {
-        variables = JSON.parse(values.variables);
-      } catch (error) {
-        message.error('变量格式错误，请输入有效的JSON');
-        console.error('变量格式错误', error);
-        return;
-      }
-      const response = await notificationTemplateService.previewTemplate(values.templateCode, variables);
+      const response = await notificationTemplateService.previewTemplate(values.templateCode, values.variables || {});
       if (response.code === 200) {
         setPreviewResult(response.data);
         setIsPreviewModalVisible(true);
@@ -455,17 +312,9 @@ const AdminNotifications: React.FC = () => {
       setLoading(true);
       await sendForm.validateFields();
       const values = sendForm.getFieldsValue();
-      let variables: Record<string, object> = {};
-      try {
-        variables = JSON.parse(values.variables);
-      } catch (error) {
-        message.error('变量格式错误，请输入有效的JSON');
-        console.error('预览模板失败:', error);
-        return;
-      }
       const sendDTO: ManualNotification = {
         templateCode: values.templateCode,
-        variables,
+        variables: values.variables || {},
         userType: values.userType,
         userIds: values.userIds ? values.userIds.split(',').map((id: number) => id) : undefined,
         roleCode: values.roleCode,
@@ -534,8 +383,8 @@ const AdminNotifications: React.FC = () => {
     },
     {
       title: '模板名称',
-      dataIndex: 'nameTemplate',
-      key: 'name',
+      dataIndex: 'templateName',
+      key: 'templateName',
       width: 180,
       render: (text: string): React.ReactNode => (
         <Text ellipsis={{ tooltip: text }} className="font-medium">
@@ -562,43 +411,6 @@ const AdminNotifications: React.FC = () => {
       )
     },
     {
-      title: '变量说明',
-      dataIndex: 'variables',
-      key: 'variables',
-      align: 'center' as const,
-      width: 180,
-      render: (variables: string): React.ReactNode => {
-        try {
-          const parsedVariables = JSON.parse(variables);
-          let variableList: Array<{ name: string; value: string }> = [];
-          if (Array.isArray(parsedVariables)) {
-            variableList = parsedVariables;
-          }
-          const variableCount = variableList.length;
-          const displayEntries = variableList.slice(0, 2);
-          if (variableCount === 0) {
-            return <Tag color="blue">无变量</Tag>;
-          }
-          return (
-            <Tooltip title={`共${variableCount}个变量`}>
-              <div className="space-y-1">
-                {displayEntries.map(({ name, value }) => (
-                  <div key={name} className="flex items-center justify-center">
-                    <Tag color="default">{name}</Tag>
-                    <span className="mx-1">:</span>
-                    <Tag color="cyan-inverse">{value}</Tag>
-                  </div>
-                ))}
-                {variableCount > 2 && <div className="text-gray-400 text-xs">还有{variableCount - 2}个变量...</div>}
-              </div>
-            </Tooltip>
-          );
-        } catch {
-          return <Tag color="red">格式错误</Tag>;
-        }
-      }
-    },
-    {
       title: '优先级',
       dataIndex: 'priority',
       key: 'priority',
@@ -622,7 +434,7 @@ const AdminNotifications: React.FC = () => {
       title: '创建时间',
       dataIndex: 'createTime',
       key: 'createTime',
-      width: 160,
+      width: 180,
       render: (time: string): React.ReactNode => {
         try {
           return new Date(time).toLocaleString();
@@ -630,6 +442,12 @@ const AdminNotifications: React.FC = () => {
           return time;
         }
       }
+    },
+    {
+      title: '更新作者',
+      dataIndex: 'updateUsername',
+      key: 'updateUsername',
+      width: 140
     },
     {
       title: '操作',
@@ -704,7 +522,6 @@ const AdminNotifications: React.FC = () => {
                 onClick={() => {
                   setIsEditing(false);
                   setCurrentTemplate(null);
-                  form.resetFields();
                   setIsModalVisible(true);
                 }}
               >
@@ -742,8 +559,7 @@ const AdminNotifications: React.FC = () => {
                 form={sendForm}
                 layout="vertical"
                 initialValues={{
-                  userType: 'all',
-                  variables: '[]'
+                  userType: 'all'
                 }}
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -756,19 +572,6 @@ const AdminNotifications: React.FC = () => {
                       rules={[{ required: true, message: '请输入模板编码' }]}
                     >
                       <Input placeholder="请输入模板编码" size="large" />
-                    </Form.Item>
-
-                    <Form.Item name="variables">
-                      <Form.Item noStyle shouldUpdate>
-                        {({ getFieldValue }) => (
-                          <VariableEditor
-                            value={getFieldValue('variables') || '[]'}
-                            onChange={(value) => {
-                              sendForm.setFieldsValue({ variables: value });
-                            }}
-                          />
-                        )}
-                      </Form.Item>
                     </Form.Item>
                   </div>
 
@@ -876,23 +679,13 @@ const AdminNotifications: React.FC = () => {
         <TabPane tab="模板预览" key="preview">
           <Card className="mb-6 border border-gray-100 shadow-sm">
             <div className="space-y-6">
-              <Form
-                form={previewForm}
-                layout="vertical"
-                initialValues={{
-                  variables: '{}'
-                }}
-              >
+              <Form form={previewForm} layout="vertical">
                 <Form.Item name="templateCode" label="模板编码" rules={[{ required: true, message: '请输入模板编码' }]}>
                   <Input placeholder="请输入模板编码" />
                 </Form.Item>
 
-                <Form.Item
-                  name="variables"
-                  label="变量（JSON格式）"
-                  rules={[{ required: true, message: '请输入变量' }]}
-                >
-                  <Input.TextArea rows={4} placeholder='例如: {"username": "张三", "articleTitle": "React最佳实践"}' />
+                <Form.Item name="variables" label="模板变量">
+                  <TemplateVariableSelector placeholder="点击可用变量插入到模板" multiline rows={4} />
                 </Form.Item>
 
                 <Form.Item>
@@ -911,256 +704,15 @@ const AdminNotifications: React.FC = () => {
         </TabPane>
       </Tabs>
 
-      {/* 添加/编辑模板模态框 */}
-      <Modal
-        title={isEditing ? '编辑模板' : '添加模板'}
-        open={isModalVisible}
-        onOk={handleSaveTemplate}
+      {/* 添加/编辑模板编辑器 */}
+      <AdminNotificationTemplateEditor
+        visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
-        width={800}
-        okText="保存"
-        cancelText="取消"
-        confirmLoading={loading}
-      >
-        <div className="max-h-[70vh] overflow-y-auto pr-2">
-          <Form
-            form={form}
-            layout="vertical"
-            initialValues={{
-              status: StatusEnum.ENABLED,
-              priority: PriorityEnum.NORMAL,
-              notificationChannel: NotificationChannel.SITE,
-              variables: '[]',
-              description: '',
-              actionUrlTemplate: ''
-            }}
-            className="space-y-2"
-            onValuesChange={(changedValues, allValues) => {
-              // 仅在 notificationType 或 notificationChannel 实际变化时执行，避免死循环
-              if ((changedValues.notificationType || changedValues.notificationChannel) && !isEditing) {
-                const { notificationType, notificationChannel } = allValues;
-                if (notificationType && notificationChannel) {
-                  // 生成模板编码
-                  const code = `${notificationType}_${notificationChannel}`;
-                  // 生成模板名称
-                  const name = `${NotificationTypeMap[notificationType as NotificationType]}(${NotificationChannelMap[notificationChannel as NotificationChannel]})`;
-                  // 生成标题模板和内容模板
-                  let titleTemplate: string;
-                  let contentTemplate: string;
-                  let variables: Array<{ name: string; value: string }>;
-                  switch (notificationType) {
-                    case NotificationType.ARTICLE_LIKE:
-                      titleTemplate = '${nickname}点赞了您的文章';
-                      contentTemplate = '用户${nickname}点赞了您的文章《${articleTitle}》';
-                      variables = [
-                        { name: 'nickname', value: '点赞用户昵称' },
-                        { name: 'articleTitle', value: '文章标题' },
-                        { name: 'articleId', value: '文章ID' }
-                      ];
-                      break;
-                    case NotificationType.ARTICLE_COMMENT:
-                      titleTemplate = '${nickname}评论了您的文章';
-                      contentTemplate = '用户${nickname}评论了您的文章《${articleTitle}》：${commentContent}';
-                      variables = [
-                        { name: 'nickname', value: '评论用户昵称' },
-                        { name: 'articleTitle', value: '文章标题' },
-                        { name: 'articleId', value: '文章ID' },
-                        { name: 'commentContent', value: '评论内容' }
-                      ];
-                      break;
-                    case NotificationType.ARTICLE_COLLECTION:
-                      titleTemplate = '${nickname}收藏了您的文章';
-                      contentTemplate = '用户${nickname}收藏了您的文章《${articleTitle}》';
-                      variables = [
-                        { name: 'nickname', value: '收藏用户昵称' },
-                        { name: 'articleTitle', value: '文章标题' },
-                        { name: 'articleId', value: '文章ID' }
-                      ];
-                      break;
-                    case NotificationType.COMMENT_REPLY:
-                      titleTemplate = '${nickname}回复了您的评论';
-                      contentTemplate = '用户${nickname}回复了您的评论：${replyContent}';
-                      variables = [
-                        { name: 'nickname', value: '回复用户昵称' },
-                        { name: 'articleId', value: '文章ID' },
-                        { name: 'replyContent', value: '回复内容' }
-                      ];
-                      break;
-                    case NotificationType.FOLLOW:
-                      titleTemplate = '${nickname}关注了您';
-                      contentTemplate = '用户${nickname}关注了您';
-                      variables = [
-                        { name: 'nickname', value: '关注用户昵称' },
-                        { name: 'userId', value: '用户ID' }
-                      ];
-                      break;
-                    case NotificationType.SYSTEM:
-                      titleTemplate = '系统通知';
-                      contentTemplate = '${content}';
-                      variables = [{ name: 'content', value: '通知内容' }];
-                      break;
-                    case NotificationType.REPORT:
-                      titleTemplate = '举报处理结果';
-                      contentTemplate = '您的举报已处理，结果：${result}';
-                      variables = [{ name: 'result', value: '处理结果' }];
-                      break;
-                    case NotificationType.FEEDBACK:
-                      titleTemplate = '反馈处理结果';
-                      contentTemplate = '您的反馈已处理，结果：${result}';
-                      variables = [{ name: 'result', value: '处理结果' }];
-                      break;
-                    default:
-                      titleTemplate = '通知';
-                      contentTemplate = '您收到了一条新通知';
-                      variables = [];
-                  }
-                  // 检查当前表单值，避免不必要的更新
-                  const currentValues = form.getFieldsValue();
-                  // 只更新必要的字段，避免触发不必要的回调
-                  const updates: Record<string, unknown> = {};
-                  // 仅当值真正不同时才更新
-                  if (currentValues.code !== code) {
-                    updates.code = code;
-                  }
-                  if (currentValues.nameTemplate !== name) {
-                    updates.nameTemplate = name;
-                  }
-                  if (currentValues.titleTemplate !== titleTemplate) {
-                    updates.titleTemplate = titleTemplate;
-                  }
-                  if (currentValues.contentTemplate !== contentTemplate) {
-                    updates.contentTemplate = contentTemplate;
-                  }
-                  // 特殊处理 variables 字段
-                  const variablesString = JSON.stringify(variables);
-                  const currentVariables = currentValues.variables || '[]';
-                  // 只有在新建模板时，才自动生成 variables
-                  if (!isEditing) {
-                    // 只有当变量真正不同时才更新
-                    try {
-                      const parsedCurrent = JSON.parse(currentVariables);
-                      if (JSON.stringify(parsedCurrent) !== JSON.stringify(variables)) {
-                        updates.variables = variablesString;
-                      }
-                    } catch {
-                      // 如果当前值不是有效的JSON，则更新
-                      updates.variables = variablesString;
-                    }
-                  }
-                  // 只有当有更新时才调用 form.setFieldsValue
-                  if (Object.keys(updates).length > 0) {
-                    form.setFieldsValue(updates);
-                  }
-                }
-              }
-            }}
-          >
-            {/* 通知设置 */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Form.Item
-                name="notificationType"
-                label="通知类型"
-                rules={[{ required: true, message: '请选择通知类型' }]}
-              >
-                <Select placeholder="请选择通知类型">
-                  {Object.entries(NotificationTypeMap).map(([label, value]) => (
-                    <Select.Option key={label} value={label}>
-                      {value}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-                name="notificationChannel"
-                label="通知渠道"
-                rules={[{ required: true, message: '请选择通知渠道' }]}
-              >
-                <Select placeholder="请选择通知渠道">
-                  {Object.entries(NotificationChannelMap).map(([value, label]) => (
-                    <Select.Option key={value} value={value}>
-                      {label}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-
-              <Form.Item name="priority" label="优先级" rules={[{ required: true, message: '请选择优先级' }]}>
-                <Select placeholder="请选择优先级" defaultValue={PriorityEnum.NORMAL}>
-                  {Object.entries(PriorityMap).map(([label, value]) => (
-                    <Select.Option key={value} value={label}>
-                      {value}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-
-              <Form.Item name="status" label="状态" rules={[{ required: true, message: '请选择状态' }]}>
-                <Select placeholder="请选择状态" defaultValue={StatusEnum.ENABLED}>
-                  <Select.Option value={StatusEnum.ENABLED}>启用</Select.Option>
-                  <Select.Option value={StatusEnum.DISABLED}>禁用</Select.Option>
-                </Select>
-              </Form.Item>
-            </div>
-
-            {/* 基本信息 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              <Form.Item
-                name="code"
-                label="模板编码"
-                rules={[
-                  { required: true, message: '请输入模板编码' },
-                  { min: 2, max: 32, message: '编码长度应在2-50个字符之间' }
-                ]}
-              >
-                <Input placeholder="请输入模板编码" disabled={isEditing} />
-              </Form.Item>
-
-              <Form.Item
-                name="nameTemplate"
-                label="模板名称"
-                rules={[
-                  { required: true, message: '请输入模板名称' },
-                  { min: 2, max: 100, message: '名称长度应在2-100个字符之间' }
-                ]}
-              >
-                <Input placeholder="请输入模板名称" />
-              </Form.Item>
-              {/* 模板标题 */}
-              <Form.Item name="titleTemplate" label="标题模板" rules={[{ required: true, message: '请输入标题模板' }]}>
-                <Input placeholder="请输入标题模板，支持变量占位符如 ${username}" />
-              </Form.Item>
-            </div>
-
-            <Form.Item name="contentTemplate" label="内容模板" rules={[{ required: true, message: '请输入内容模板' }]}>
-              <Input.TextArea rows={3} placeholder="请输入内容模板，支持变量占位符如 ${nickname}" />
-            </Form.Item>
-            {/* 操作设置 */}
-            <Form.Item name="actionUrlTemplate" label="操作URL模板">
-              <Input placeholder="请输入操作URL模板，支持变量占位符如 /article/${articleId}" />
-            </Form.Item>
-
-            {/* 变量管理 */}
-            <Form.Item name="variables">
-              <Form.Item noStyle shouldUpdate>
-                {({ getFieldValue }) => (
-                  <VariableEditor
-                    value={getFieldValue('variables') || '[]'}
-                    onChange={(value) => {
-                      form.setFieldsValue({ variables: value });
-                    }}
-                  />
-                )}
-              </Form.Item>
-            </Form.Item>
-
-            {/* 其他设置 */}
-            <Form.Item name="description" label="模板描述">
-              <Input.TextArea rows={2} placeholder="请输入模板描述" />
-            </Form.Item>
-          </Form>
-        </div>
-      </Modal>
+        onSave={handleSaveTemplate}
+        isEditing={isEditing}
+        initialValues={currentTemplate as AdminNotificationTemplate}
+        loading={loading}
+      />
 
       {/* 查看模板模态框 */}
       <Modal
@@ -1184,7 +736,7 @@ const AdminNotifications: React.FC = () => {
                   label="模板编码"
                   children={<Text copyable>{currentTemplate.code}</Text>}
                 ></Descriptions.Item>
-                <Descriptions.Item label="模板名称" children={currentTemplate.nameTemplate}></Descriptions.Item>
+                <Descriptions.Item label="模板名称" children={currentTemplate.templateName}></Descriptions.Item>
                 <Descriptions.Item
                   label="通知类型"
                   children={
@@ -1247,40 +799,7 @@ const AdminNotifications: React.FC = () => {
                     <span className="text-gray-400">-</span>
                   )}
                 </Descriptions.Item>
-                {/* 变量说明 */}
-                <Descriptions.Item label="变量说明" span={2}>
-                  {((): React.ReactNode => {
-                    try {
-                      const parsedVariables = JSON.parse(currentTemplate.variables);
-                      let variableList: Array<{ name: string; value: string }> = [];
-                      if (Array.isArray(parsedVariables)) {
-                        variableList = parsedVariables;
-                      } else if (typeof parsedVariables === 'object') {
-                        variableList = Object.entries(parsedVariables).map(([key, value]) => ({
-                          name: key,
-                          value: String(value)
-                        }));
-                      }
-                      if (variableList.length === 0) {
-                        return <Tag color="blue">无变量</Tag>;
-                      }
-                      return (
-                        <div className="grid grid-cols-3 gap-2">
-                          {variableList.map(({ name, value }) => (
-                            <div key={name} className="flex items-center gap-2">
-                              <span className="font-medium text-gray-700">{name}:</span>
-                              <Tag color="cyan" className="text-center">
-                                {value}
-                              </Tag>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    } catch {
-                      return <Tag color="red">格式错误</Tag>;
-                    }
-                  })()}
-                </Descriptions.Item>
+
                 <Descriptions.Item label="模板描述" span={2}>
                   <div className="bg-gray-50 p-3 rounded text-gray-700 leading-relaxed">
                     {currentTemplate.description || '暂无描述'}
@@ -1295,7 +814,7 @@ const AdminNotifications: React.FC = () => {
                     </span>
                   }
                 >
-                  {currentTemplate.createUserId}
+                  {currentTemplate.createUsername}
                 </Descriptions.Item>
                 <Descriptions.Item
                   label={
@@ -1305,7 +824,7 @@ const AdminNotifications: React.FC = () => {
                     </span>
                   }
                 >
-                  {currentTemplate.updateUserId}
+                  {currentTemplate.updateUsername}
                 </Descriptions.Item>
                 <Descriptions.Item
                   label={

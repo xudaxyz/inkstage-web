@@ -1,13 +1,13 @@
-import { apiClient, API_ENDPOINTS } from '../api';
+import { API_ENDPOINTS, apiClient } from '../api';
 import type { ApiResponse } from '../types/common';
 import type {
-    NotificationTemplate,
-    AdminNotificationTemplate,
-    ManualNotification,
-    AdminNotificationTemplateResponse, TemplatePreview
+  AdminNotificationTemplate,
+  AdminNotificationTemplateResponse,
+  ManualNotification,
+  NotificationTemplate,
+  TemplatePreview
 } from '../types/notificationTemplate';
 import type { NotificationType, StatusEnum } from '../types/enums';
-
 // 参数验证函数
 const validateIdParam = (id: number): void => {
   if (id == null || id <= 0) {
@@ -62,9 +62,15 @@ const notificationTemplateService = {
   },
 
   // 分页查询模板列表
-  getTemplatePage: async (pageNum: number = 1, pageSize: number = 10, type?: NotificationType, status?: StatusEnum, keyword?: string): Promise<ApiResponse<AdminNotificationTemplateResponse>> => {
+  getTemplatePage: async (
+    pageNum: number = 1,
+    pageSize: number = 10,
+    notificationType?: NotificationType,
+    status?: StatusEnum,
+    keyword?: string
+  ): Promise<ApiResponse<AdminNotificationTemplateResponse>> => {
     validatePageParams(pageNum, pageSize);
-    const params = { pageNum, pageSize, type, status, keyword };
+    const params = { pageNum, pageSize, notificationType, status, keyword };
     return await apiClient.get(API_ENDPOINTS.ADMIN.NOTIFICATION_TEMPLATE.LIST, { params });
   },
 
