@@ -1,28 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { useEditor, EditorContent, Editor } from '@tiptap/react';
+import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Extension } from '@tiptap/core';
+import { Markdown } from '@tiptap/markdown';
+import { Plugin } from 'prosemirror-state';
 import EditorToolbar from './EditorToolbar';
 
 // 工具栏工具类型
 interface Tool {
-    id: string;
-    icon: React.ReactNode;
-    label: string;
-    action: (editor: Editor) => void;
-    isActive?: (editor: Editor) => boolean;
-    isDisabled?: (editor: Editor) => boolean;
+  id: string;
+  icon: React.ReactNode;
+  label: string;
+  action: (editor: Editor) => void;
+  isActive?: (editor: Editor) => boolean;
+  isDisabled?: (editor: Editor) => boolean;
 }
 
 // 编辑器属性类型
 interface RichTextEditorProps {
-    content?: string;
-    onContentChange?: (content: string) => void;
-    placeholder?: string;
-    disabled?: boolean;
-    extensions?: Extension[];
-    className?: string;
+  content?: string;
+  onContentChange?: (content: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  extensions?: Extension[];
+  className?: string;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -157,6 +159,37 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   ];
 
+  const PasteMarkdownExtension = Extension.create({
+    name: 'pasteMarkdown',
+    addProseMirrorPlugins: function () {
+      return [
+        new Plugin({
+          props: {
+            handlePaste: (view, event): boolean => {
+              const text = event.clipboardData?.getData('text/plain');
+              if (!text) return false;
+
+              // 检测是否包含 Markdown 语法
+              const isMarkdown = /^#{1,6}\s|^\*|^-|^\d+\.|^>|`{3}|\*\*|\[.*]\(.*\)/m.test(text);
+              if (!isMarkdown) return false;
+
+              try {
+                // 使用 this.editor 访问编辑器实例
+                const json = this.editor.storage.markdown.manager.parse(text);
+                const node = this.editor.schema.nodeFromJSON(json);
+                view.dispatch(view.state.tr.replaceSelectionWith(node));
+                event.preventDefault();
+                return true;
+              } catch {
+                return false;
+              }
+            }
+          }
+        })
+      ];
+    }
+  });
+
   // 初始化编辑器
   const editor = useEditor({
     extensions: [
@@ -164,6 +197,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Placeholder.configure({
         placeholder
       }),
+      Markdown,
+      PasteMarkdownExtension,
       ...extensions
     ],
     content: editorContent,
@@ -184,7 +219,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [content, editor, editorContent]);
 
   return (
-    <div className={`border-1 border-gray-100 bg-white ${className}`}>
+    <div className={`border border-gray-100 bg-white ${className}`}>
       <EditorToolbar editor={editor} tools={defaultTools} />
       <div className="p-4 min-h-[500px]">
         <EditorContent editor={editor} />
