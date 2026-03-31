@@ -100,6 +100,7 @@ const articleService = {
       pageNum?: number;
       pageSize?: number;
       categoryId?: number;
+      tagId?: number;
       keyword?: string;
       sortBy?: string;
       sortOrder?: string;
@@ -111,6 +112,7 @@ const articleService = {
       pageSize: query.pageSize || 10,
       offset: ((query.pageNum || 1) - 1) * (query.pageSize || 10),
       categoryId: query.categoryId,
+      tagId: query.tagId,
       keyword: query.keyword,
       sortBy: query.sortBy || 'publishTime',
       sortOrder: query.sortOrder || 'desc'

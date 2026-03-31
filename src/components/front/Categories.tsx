@@ -1,12 +1,12 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import type { FrontendCategory } from '../../types/category';
 
 interface CategoriesProps {
-    categories?: FrontendCategory[];
-    onSelect?: (category: FrontendCategory | '全部') => void;
-    selectedId?: number | undefined;
+  categories?: FrontendCategory[];
+  onSelect?: (category: FrontendCategory | '全部') => void;
+  selectedId?: number | undefined;
 }
 
 const Categories: React.FC<CategoriesProps> = ({
@@ -22,7 +22,7 @@ const Categories: React.FC<CategoriesProps> = ({
 
   // 计算当前选中的分类名称
   const selectedCategory = useMemo(() => {
-    const category = categories.find(c => c.id === selectedId) || { id: 0, name: '全部' };
+    const category = categories.find((c) => c.id === selectedId) || { id: 0, name: '全部' };
     return selectedId === 0 ? '全部' : category.name;
   }, [selectedId, categories]);
 
@@ -121,9 +121,10 @@ const Categories: React.FC<CategoriesProps> = ({
       }
 
       // 计算目标分类索引
-      const targetIndex = direction === 'left'
-        ? Math.max(0, currentVisibleIndex - categoriesToScroll)
-        : Math.min(categoryElements.length - 1, currentVisibleIndex + categoriesToScroll);
+      const targetIndex =
+        direction === 'left'
+          ? Math.max(0, currentVisibleIndex - categoriesToScroll)
+          : Math.min(categoryElements.length - 1, currentVisibleIndex + categoriesToScroll);
 
       // 滚动到目标分类的位置
       const targetElement = categoryElements[targetIndex] as HTMLElement;
@@ -145,14 +146,15 @@ const Categories: React.FC<CategoriesProps> = ({
   };
 
   return (
-    <div className="mt-4 mb-4 relative flex items-center"
+    <div
+      className="mt-4 mb-4 relative flex items-center"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* 全部分类 - 固定在左侧 */}
       <span
         onClick={() => handleCategorySelect('全部')}
-        className={`px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap transform ${selectedCategory === '全部' ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-md scale-105' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+        className={`px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap transform ${selectedCategory === '全部' ? 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md scale-105' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
       >
         全部
       </span>
@@ -169,7 +171,7 @@ const Categories: React.FC<CategoriesProps> = ({
             <span
               key={category.id}
               onClick={() => handleCategorySelect(category)}
-              className={`px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap transform ${selectedCategory === category.name ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-md scale-105' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              className={`px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap transform ${selectedCategory === category.name ? 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md scale-105' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
             >
               {category.name}
             </span>
@@ -195,7 +197,9 @@ const Categories: React.FC<CategoriesProps> = ({
             onMouseLeave={() => setIsHovered(false)}
             style={{ cursor: canScrollLeft ? 'pointer' : 'default' } as React.CSSProperties}
           >
-            <LeftOutlined className={!canScrollLeft ? 'text-gray-300 dark:text-gray-700' : 'text-gray-600 dark:text-gray-400'} />
+            <LeftOutlined
+              className={!canScrollLeft ? 'text-gray-300 dark:text-gray-700' : 'text-gray-600 dark:text-gray-400'}
+            />
           </motion.button>
 
           {/* 右箭头 */}
@@ -213,7 +217,9 @@ const Categories: React.FC<CategoriesProps> = ({
             onMouseLeave={() => setIsHovered(false)}
             style={{ cursor: canScrollRight ? 'pointer' : 'default' } as React.CSSProperties}
           >
-            <RightOutlined className={!canScrollRight ? 'text-gray-300 dark:text-gray-700' : 'text-gray-600 dark:text-gray-400'} />
+            <RightOutlined
+              className={!canScrollRight ? 'text-gray-300 dark:text-gray-700' : 'text-gray-600 dark:text-gray-400'}
+            />
           </motion.button>
         </div>
       )}
