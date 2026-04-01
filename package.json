@@ -27,6 +27,7 @@
     "@tiptap/react": "^3.17.1",
     "@tiptap/starter-kit": "^3.17.1",
     "antd": "^6.2.1",
+    "antd-img-crop": "^4.30.0",
     "axios": "^1.13.5",
     "framer-motion": "^12.33.0",
     "i18next": "^25.8.0",

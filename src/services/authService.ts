@@ -1,14 +1,7 @@
-import { apiClient, API_ENDPOINTS } from '../api';
-import type {
-  SendCodeResponse,
-  RegisterParams,
-  LoginParams,
-  TokenResponse,
-  UserInfo
-} from '../types/auth';
+import { API_ENDPOINTS, apiClient } from '../api';
+import type { LoginParams, RegisterParams, SendCodeResponse, TokenResponse, UserInfo } from '../types/auth';
 import type { ApiResponse } from '../types/common';
 import { AuthOperationTypeEnum, AuthTypeEnum } from '../types/enums';
-
 // 参数验证函数
 const validateAccount = (account: string, authType?: 'password' | 'code'): boolean => {
   if (!account || account.trim().length === 0) {
@@ -33,11 +26,7 @@ const validatePassword = (password: string): boolean => {
   return true;
 };
 
-const validateSendCodeParams = (params: {
-  account: string;
-  type: 'email' | 'phone';
-  purpose: string
-}): boolean => {
+const validateSendCodeParams = (params: { account: string; type: 'email' | 'phone'; purpose: string }): boolean => {
   if (!params || typeof params !== 'object') {
     throw new Error('参数必须是对象');
   }
@@ -98,7 +87,7 @@ const validateRegisterParams = (params: RegisterParams): boolean => {
   return true;
 };
 
-const validateRefreshTokenParams = ( refresh_token: string ): boolean => {
+const validateRefreshTokenParams = (refresh_token: string): boolean => {
   if (!refresh_token) {
     throw new Error('刷新令牌不能为空');
   }
@@ -128,8 +117,8 @@ const validateFile = (file: File): boolean => {
   if (!file) {
     throw new Error('文件不能为空');
   }
-  if (file.size > 5 * 1024 * 1024) {
-    throw new Error('文件大小不能超过5MB');
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error('文件大小不能超过10MB');
   }
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
   if (!allowedTypes.includes(file.type)) {
@@ -140,7 +129,7 @@ const validateFile = (file: File): boolean => {
 
 const validateUploadFileParams = (file: File, expiry?: number): boolean => {
   validateFile(file);
-  if (expiry &&  expiry < 0) {
+  if (expiry && expiry < 0) {
     throw new Error('过期时间必须是大于等于0的数字');
   }
   return true;
@@ -154,9 +143,9 @@ const authService = {
    * 发送验证码
    */
   sendCode: async (params: {
-      account: string;
-      type: 'email' | 'phone';
-      purpose: string
+    account: string;
+    type: 'email' | 'phone';
+    purpose: string;
   }): Promise<ApiResponse<SendCodeResponse>> => {
     validateSendCodeParams(params);
     return apiClient.post(API_ENDPOINTS.FRONT.AUTH.SEND_CODE, params);
@@ -203,12 +192,12 @@ const authService = {
   },
 
   /**
-     * 刷新令牌
-     */
-    refreshToken: async (refreshToken: string ): Promise<ApiResponse<TokenResponse>> => {
-        validateRefreshTokenParams(refreshToken);
-        return await apiClient.post(API_ENDPOINTS.FRONT.AUTH.REFRESH_TOKEN, null, { params: { refreshToken } });
-    },
+   * 刷新令牌
+   */
+  refreshToken: async (refreshToken: string): Promise<ApiResponse<TokenResponse>> => {
+    validateRefreshTokenParams(refreshToken);
+    return await apiClient.post(API_ENDPOINTS.FRONT.AUTH.REFRESH_TOKEN, null, { params: { refreshToken } });
+  },
 
   /**
    * 获取个人资料

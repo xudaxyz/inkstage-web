@@ -380,9 +380,7 @@ const CreateArticle: React.FC = () => {
             <div className="flex gap-16 mb-6">
               {/* 左侧：分类 */}
               <div className="w-1/5 min-w-[120px]">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  分类
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">分类</label>
                 <Form.Item name="category" rules={[{ required: true, message: '请选择文章分类' }]}>
                   <Select placeholder="请选择分类" className="w-full" loading={loading}>
                     {categories.map((category) => (
@@ -396,9 +394,7 @@ const CreateArticle: React.FC = () => {
 
               {/* 右侧：标签 */}
               <div className="flex-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  标签
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">标签</label>
                 <div>
                   <Form.Item name="tags" noStyle>
                     <Select
@@ -447,28 +443,18 @@ const CreateArticle: React.FC = () => {
                   showCount
                   className="resize-none"
                 />
-                <div className="text-xs text-gray-500 mt-2">
-                  内容为空时默认显示文章前200字，您可以手动更改
-                </div>
+                <div className="text-xs text-gray-500 mt-2">内容为空时默认显示文章前200字，您可以手动更改</div>
               </div>
 
               {/* 右侧：发布设置 */}
               <div className="w-2/5">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  发布设置
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">发布设置</label>
                 <div className="space-y-5">
                   {/* 文章类型 */}
                   <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">
-                      文章类型
-                    </span>
+                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">文章类型</span>
                     <div className="flex-1 text-[#595959]">
-                      <Form.Item
-                        name="original"
-                        initialValue={ArticleOriginalEnum.ORIGINAL}
-                        noStyle
-                      >
+                      <Form.Item name="original" initialValue={ArticleOriginalEnum.ORIGINAL} noStyle>
                         <Radio.Group>
                           <Radio value={ArticleOriginalEnum.ORIGINAL}>原创</Radio>
                           <Radio value={ArticleOriginalEnum.REPRINT}>转载</Radio>
@@ -479,9 +465,7 @@ const CreateArticle: React.FC = () => {
 
                   {/* 是否允许评论 */}
                   <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">
-                      允许评论
-                    </span>
+                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">允许评论</span>
                     <div className="flex-1 text-[#595959]">
                       <Form.Item name="allowComment" initialValue={AllowStatusEnum.ALLOWED} noStyle>
                         <Radio.Group>
@@ -494,9 +478,7 @@ const CreateArticle: React.FC = () => {
 
                   {/* 是否允许转发 */}
                   <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">
-                      允许转发
-                    </span>
+                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">允许转发</span>
                     <div className="flex-1 text-[#595959]">
                       <Form.Item name="allowForward" initialValue={AllowStatusEnum.ALLOWED} noStyle>
                         <Radio.Group>
@@ -509,9 +491,7 @@ const CreateArticle: React.FC = () => {
 
                   {/* 是否置顶 */}
                   <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">
-                      是否置顶
-                    </span>
+                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">是否置顶</span>
                     <div className="flex-1 text-[#595959]">
                       <Form.Item name="top" initialValue={AllowTopEnum.NOT_TOP} noStyle>
                         <Radio.Group>
@@ -524,9 +504,7 @@ const CreateArticle: React.FC = () => {
 
                   {/* 是否公开 */}
                   <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">
-                      是否公开
-                    </span>
+                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">是否公开</span>
                     <div className="flex-1 text-[#595959]">
                       <Form.Item name="visible" initialValue={ArticleVisibleEnum.PUBLIC} noStyle>
                         <Radio.Group>
@@ -623,11 +601,7 @@ const CreateArticle: React.FC = () => {
                 >
                   {fileList.length > 0 ? (
                     <div className="flex justify-center items-center">
-                      <img
-                        src={coverImage}
-                        alt="封面预览"
-                        className="max-w-full max-h-60 object-contain"
-                      />
+                      <img src={coverImage} alt="封面预览" className="max-w-full max-h-60 object-contain" />
                     </div>
                   ) : (
                     <>
@@ -635,7 +609,7 @@ const CreateArticle: React.FC = () => {
                         <InboxOutlined />
                       </p>
                       <p className="ant-upload-text">点击或拖动图片文件到此区域上传封面图片</p>
-                      <p className="ant-upload-hint">支持上传单张图片，最大5MB</p>
+                      <p className="ant-upload-hint">支持上传单张图片，最大10MB</p>
                     </>
                   )}
                 </Dragger>
