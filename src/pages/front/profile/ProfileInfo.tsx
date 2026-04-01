@@ -200,6 +200,7 @@ const ProfileInfo: React.FC = () => {
             {/* 头像 */}
             <div className="shrink relative">
               <ImageUploadWithCrop
+                uploadMode={'immediate'}
                 onUploadSuccess={(url) => {
                   if (user) {
                     void updateUser({ ...user, avatar: url });
@@ -237,6 +238,7 @@ const ProfileInfo: React.FC = () => {
           {/* 设置封面按钮 */}
           <div className="absolute bottom-10 right-24">
             <ImageUploadWithCrop
+              uploadMode={'immediate'}
               onUploadSuccess={(url) => {
                 if (user) {
                   void updateUser({ ...user, coverImage: url });

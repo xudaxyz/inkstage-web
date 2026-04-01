@@ -1,115 +1,369 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import type { UploadFile, UploadProps } from 'antd';
-import { Button, Tooltip, Upload } from 'antd';
-import { CameraOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, message, Tooltip, Upload } from 'antd';
+import { CameraOutlined, DeleteOutlined, UploadOutlined } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
+import type { UploadChangeParam } from 'antd/es/upload';
 
-interface ImageUploadWithCropProps {
-  onUploadSuccess: (url: string) => void;
-  currentImage?: string;
-  cropShape?: 'rect' | 'round';
-  aspectRatio?: number;
-  uploadButton?: React.ReactNode;
-  maxCount?: number;
-  accept?: string;
-  customRequest: UploadProps['customRequest'];
-  placeholder?: string;
-  className?: string;
+/**
+ * 上传模式类型
+ * - immediate: 立即上传(选择图片后立即上传到服务器)
+ * - deferred: 延迟上传(先裁剪预览，稍后手动上传)
+ */
+type UploadMode = 'immediate' | 'deferred';
+
+/**
+ * 裁剪后的文件信息
+ */
+interface CroppedFileInfo {
+  file: File;
+  previewUrl: string;
 }
 
+/**
+ * 图片上传组件属性
+ */
+interface ImageUploadWithCropProps {
+  /** 当前图片URL(用于预览) */
+  currentImage?: string;
+  /** 裁剪形状：rect-矩形，round-圆形 */
+  cropShape?: 'rect' | 'round';
+  /** 裁剪比例，如 1、16/9、4/3 等 */
+  aspectRatio?: number;
+  /** 占位提示文字 */
+  placeholder?: string;
+  /** 自定义类名 */
+  className?: string;
+  /** 接受的文件类型 */
+  accept?: string;
+  /** 最大文件数量 */
+  maxCount?: number;
+  /** 自定义上传按钮 */
+  uploadButton?: React.ReactNode;
+
+  // ===== 立即上传模式属性 =====
+  /** 上传模式，默认为 'immediate' */
+  uploadMode?: UploadMode;
+  /** 立即上传成功回调(uploadMode='immediate' 时必传) */
+  onUploadSuccess?: (url: string) => void;
+  /** 自定义上传请求(uploadMode='immediate' 时必传) */
+  customRequest?: UploadProps['customRequest'];
+
+  // ===== 延迟上传模式属性 =====
+  /** 裁剪完成回调(uploadMode='deferred' 时必传) */
+  onCropComplete?: (fileInfo: CroppedFileInfo) => void;
+  /** 删除图片回调 */
+  onRemove?: () => void;
+}
+
+/**
+ * 图片上传裁剪组件
+ *
+ * 支持两种上传模式：
+ * 1. 立即上传(immediate)：选择图片后立即上传到服务器
+ * 2. 延迟上传(deferred)：先裁剪预览，稍后手动上传
+ */
 const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
-  onUploadSuccess,
   currentImage,
   cropShape = 'rect',
   aspectRatio = 1,
-  uploadButton,
-  maxCount = 1,
-  accept = 'image/*',
-  customRequest,
   placeholder = '点击上传图片',
-  className = ''
+  className = '',
+  accept = 'image/*',
+  maxCount = 1,
+  uploadButton,
+  uploadMode = 'immediate',
+  onUploadSuccess,
+  customRequest,
+  onCropComplete,
+  onRemove
 }) => {
+  // ===== 状态管理 =====
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [previewImage, setPreviewImage] = useState<string>(currentImage || '');
+  const [isUploading, setIsUploading] = useState(false);
 
-  const onChange: UploadProps['onChange'] = ({ file, fileList: newFileList }) => {
-    setFileList(newFileList);
+  // ===== 工具函数 =====
 
-    if (file.status === 'done') {
-      // 上传成功后获取返回的URL
-      if (file.response && file.response.data) {
-        onUploadSuccess(file.response.data);
-      }
+  /**
+   * 验证文件类型和大小
+   */
+  const validateFile = useCallback((file: File): boolean => {
+    // 验证文件类型
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('只能上传图片文件！').then();
+      return false;
     }
-  };
 
-  const defaultUploadButton = uploadButton || (
-    <Button
-      icon={<UploadOutlined />}
-      className={`${className} ${currentImage ? '' : 'w-full h-48 flex items-center justify-center border-dashed'}`}
-    >
-      <Tooltip title={placeholder}>{placeholder}</Tooltip>
-    </Button>
+    // 验证文件大小(最大10MB)
+    const isLt10M = file.size / 1024 / 1024 < 10;
+    if (!isLt10M) {
+      message.error('图片大小不能超过 10MB！').then();
+      return false;
+    }
+
+    return true;
+  }, []);
+
+  /**
+   * 处理文件变化(立即上传模式)
+   */
+  const handleFileChange: UploadProps['onChange'] = useCallback(
+    (info: UploadChangeParam) => {
+      const { file, fileList: newFileList } = info;
+      setFileList(newFileList);
+
+      if (file.status === 'uploading') {
+        setIsUploading(true);
+      } else if (file.status === 'done') {
+        setIsUploading(false);
+        if (file.response?.data) {
+          setPreviewImage(file.response.data);
+          onUploadSuccess?.(file.response.data);
+        }
+      } else if (file.status === 'error') {
+        setIsUploading(false);
+        message.error('上传失败，请重试').then();
+      }
+    },
+    [onUploadSuccess]
   );
 
-  return (
-    <div className="relative">
-      {currentImage && cropShape === 'round' ? (
-        <div className="relative mb-4">
-          <div className="rounded-full overflow-hidden" style={{ width: '100px', height: '100px' }}>
-            <img src={currentImage} alt="当前图片" className="w-full h-full object-cover" />
-          </div>
-          <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-md">
-            <ImgCrop aspect={aspectRatio} cropShape={'round'} rotationSlider>
-              <Upload
-                customRequest={customRequest}
-                fileList={fileList}
-                onChange={onChange}
-                showUploadList={false}
-                maxCount={maxCount}
-                accept={accept}
-              >
-                <Button icon={<CameraOutlined />} size="small" className="rounded-full" />
-              </Upload>
-            </ImgCrop>
-          </div>
+  /**
+   * 处理删除图片
+   */
+  const handleRemove = useCallback(() => {
+    setPreviewImage('');
+    setFileList([]);
+
+    // 释放延迟上传模式创建的URL对象
+    if (uploadMode === 'deferred' && previewImage && previewImage.startsWith('blob:')) {
+      URL.revokeObjectURL(previewImage);
+    }
+
+    onRemove?.();
+  }, [onRemove, previewImage, uploadMode]);
+
+  // ===== 渲染辅助函数 =====
+
+  /**
+   * 渲染上传按钮
+   */
+  const renderUploadButton = useMemo(() => {
+    if (uploadButton) {
+      return uploadButton;
+    }
+
+    return (
+      <Button
+        icon={<UploadOutlined />}
+        className={`${className} ${previewImage ? '' : 'w-full h-48 flex items-center justify-center border-dashed border-2'}`}
+      >
+        <Tooltip title={placeholder}>{placeholder}</Tooltip>
+      </Button>
+    );
+  }, [uploadButton, className, previewImage, placeholder]);
+
+  /**
+   * 渲染预览图(圆形)
+   */
+  const renderRoundPreview = useMemo(
+    () => (
+      <div className="relative mb-4">
+        <div
+          className="rounded-full overflow-hidden border-4 border-white shadow-md"
+          style={{ width: '100px', height: '100px' }}
+        >
+          <img src={previewImage} alt="预览" className="w-full h-full object-cover" />
         </div>
-      ) : currentImage ? (
-        <div className="relative mb-4">
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center rounded-lg">
-            <ImgCrop aspect={aspectRatio} cropShape={'rect'} rotationSlider>
-              <Upload
-                customRequest={customRequest}
-                fileList={fileList}
-                onChange={onChange}
-                showUploadList={false}
-                maxCount={maxCount}
-                accept={accept}
-              >
-                <Button icon={<UploadOutlined />} className="bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-white">
-                  更换图片
-                </Button>
-              </Upload>
-            </ImgCrop>
-          </div>
-        </div>
-      ) : (
-        <div className="mb-4">
-          <ImgCrop aspect={aspectRatio} cropShape={cropShape} rotationSlider>
+        <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-md">
+          <ImgCrop aspect={aspectRatio} cropShape="round" rotationSlider>
             <Upload
-              customRequest={customRequest}
+              customRequest={uploadMode === 'immediate' ? customRequest : undefined}
               fileList={fileList}
-              onChange={onChange}
+              onChange={uploadMode === 'immediate' ? handleFileChange : undefined}
               showUploadList={false}
               maxCount={maxCount}
               accept={accept}
+              beforeUpload={
+                uploadMode === 'deferred'
+                  ? (file): string => {
+                      if (!validateFile(file)) {
+                        return Upload.LIST_IGNORE;
+                      }
+
+                      const previewUrl = URL.createObjectURL(file);
+                      setPreviewImage(previewUrl);
+
+                      if (onCropComplete) {
+                        onCropComplete({
+                          file,
+                          previewUrl
+                        });
+                      }
+
+                      return Upload.LIST_IGNORE;
+                    }
+                  : undefined
+              }
             >
-              {defaultUploadButton}
+              <Button icon={<CameraOutlined />} size="small" className="rounded-full" loading={isUploading} />
             </Upload>
           </ImgCrop>
         </div>
-      )}
+      </div>
+    ),
+    [
+      previewImage,
+      aspectRatio,
+      maxCount,
+      accept,
+      uploadMode,
+      customRequest,
+      fileList,
+      handleFileChange,
+      validateFile,
+      onCropComplete,
+      isUploading
+    ]
+  );
+
+  /**
+   * 渲染预览图(矩形)
+   */
+  const renderRectPreview = useMemo(
+    () => (
+      <div className="relative mb-4">
+        <div className="absolute flex items-center justify-start rounded-lg duration-200">
+          <ImgCrop aspect={aspectRatio} cropShape="rect" rotationSlider>
+            <Upload
+              customRequest={uploadMode === 'immediate' ? customRequest : undefined}
+              fileList={fileList}
+              onChange={uploadMode === 'immediate' ? handleFileChange : undefined}
+              showUploadList={false}
+              maxCount={maxCount}
+              accept={accept}
+              beforeUpload={
+                uploadMode === 'deferred'
+                  ? (file): string => {
+                      if (!validateFile(file)) {
+                        return Upload.LIST_IGNORE;
+                      }
+
+                      const previewUrl = URL.createObjectURL(file);
+                      setPreviewImage(previewUrl);
+
+                      if (onCropComplete) {
+                        onCropComplete({
+                          file,
+                          previewUrl
+                        });
+                      }
+
+                      return Upload.LIST_IGNORE;
+                    }
+                  : undefined
+              }
+            >
+              <Button icon={<UploadOutlined />} variant="solid" color="blue" loading={isUploading}>
+                {previewImage ? '更换图片' : '上传图片'}
+              </Button>
+            </Upload>
+          </ImgCrop>
+          {uploadMode === 'deferred' && (
+            <Button
+              icon={<DeleteOutlined />}
+              variant="solid"
+              color="red"
+              className="text-white hover:bg-red-600 ml-6"
+              onClick={handleRemove}
+            >
+              删除
+            </Button>
+          )}
+        </div>
+      </div>
+    ),
+    [
+      previewImage,
+      aspectRatio,
+      maxCount,
+      accept,
+      uploadMode,
+      customRequest,
+      fileList,
+      handleFileChange,
+      handleRemove,
+      validateFile,
+      onCropComplete,
+      isUploading
+    ]
+  );
+
+  /**
+   * 渲染空状态上传区域
+   */
+  const renderEmptyUpload = useMemo(
+    () => (
+      <div className="mb-4">
+        <ImgCrop aspect={aspectRatio} cropShape={cropShape} rotationSlider>
+          <Upload
+            customRequest={uploadMode === 'immediate' ? customRequest : undefined}
+            fileList={fileList}
+            onChange={uploadMode === 'immediate' ? handleFileChange : undefined}
+            showUploadList={false}
+            maxCount={maxCount}
+            accept={accept}
+            beforeUpload={
+              uploadMode === 'deferred'
+                ? (file): string => {
+                    if (!validateFile(file)) {
+                      return Upload.LIST_IGNORE;
+                    }
+
+                    const previewUrl = URL.createObjectURL(file);
+                    setPreviewImage(previewUrl);
+
+                    if (onCropComplete) {
+                      onCropComplete({
+                        file,
+                        previewUrl
+                      });
+                    }
+
+                    return Upload.LIST_IGNORE;
+                  }
+                : undefined
+            }
+          >
+            {renderUploadButton}
+          </Upload>
+        </ImgCrop>
+      </div>
+    ),
+    [
+      uploadMode,
+      aspectRatio,
+      cropShape,
+      maxCount,
+      accept,
+      renderUploadButton,
+      customRequest,
+      fileList,
+      handleFileChange,
+      validateFile,
+      onCropComplete
+    ]
+  );
+
+  // ===== 主渲染 =====
+  return (
+    <div className="relative">
+      {previewImage ? (cropShape === 'round' ? renderRoundPreview : renderRectPreview) : renderEmptyUpload}
     </div>
   );
 };
 
 export default ImageUploadWithCrop;
+export type { ImageUploadWithCropProps, CroppedFileInfo, UploadMode };

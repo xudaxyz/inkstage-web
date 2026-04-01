@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { UploadFile } from 'antd';
-import { Button, Card, Form, Input, message, Radio, Select, Space, Switch, Upload } from 'antd';
+import { Button, Card, Form, Input, message, Radio, Select, Space, Switch } from 'antd';
 import {
   EyeOutlined,
-  InboxOutlined,
   MoonOutlined,
   SaveOutlined,
   SendOutlined,
@@ -28,9 +27,9 @@ import {
 import RichTextEditor from '../../components/editor/RichTextEditor';
 import './CreateArticle.css';
 import Footer from '../../components/common/Footer.tsx';
+import ImageUploadWithCrop from '../../components/common/ImageUploadWithCrop';
 
 const { Option } = Select;
-const { Dragger } = Upload;
 const CreateArticle: React.FC = () => {
   const theme = useTheme();
   const isDarkMode = theme === 'dark';
@@ -39,8 +38,9 @@ const CreateArticle: React.FC = () => {
   const [, setSelectedTags] = useState<number[]>([]);
   const [availableTags, setAvailableTags] = useState<{ value: string; label: string }[]>([]);
   const [coverImage, setCoverImage] = useState<string>('');
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [, setFileList] = useState<UploadFile[]>([]);
   const [serverCoverImageUrl, setServerCoverImageUrl] = useState<string>('');
+  const [croppedFile, setCroppedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [summary, setSummary] = useState('');
   const [editorContent, setEditorContent] = useState('');
@@ -161,29 +161,44 @@ const CreateArticle: React.FC = () => {
       // 构建标签数组
       const tags: FrontTag[] = [];
       // 处理已存在的标签和新标签
-      for (const tagValue of values.tags) {
-        if (!isNaN(Number(tagValue))) {
-          // 已存在的标签，只包含id和name
-          const tagId = parseInt(tagValue);
-          const tag = availableTags.find((t) => t.value === tagValue);
-          if (tag) {
+      if (values.tags) {
+        for (const tagValue of values.tags) {
+          if (!isNaN(Number(tagValue))) {
+            // 已存在的标签，只包含id和name
+            const tagId = parseInt(tagValue);
+            const tag = availableTags.find((t) => t.value === tagValue);
+            if (tag) {
+              tags.push({
+                id: tagId,
+                name: tag.label,
+                slug: '',
+                description: '',
+                status: StatusEnum.ENABLED
+              });
+            }
+          } else {
+            // 新标签，只包含name
             tags.push({
-              id: tagId,
-              name: tag.label,
+              id: 0, // 0表示新标签
+              name: tagValue,
               slug: '',
               description: '',
               status: StatusEnum.ENABLED
             });
           }
+        }
+      }
+      // 处理封面图(如果有)
+      let coverImageUrl = serverCoverImageUrl; // 初始值(使用局部变量, 避免异步执行文章封面图上传无法及时赋值给serverCoverImageUrl)
+      if (croppedFile) {
+        const uploadResult = await articleService.uploadImage(croppedFile);
+        if (uploadResult.code === 200) {
+          coverImageUrl = uploadResult.data;
+          setCoverImage(uploadResult.data);
         } else {
-          // 新标签，只包含name
-          tags.push({
-            id: 0, // 0表示新标签
-            name: tagValue,
-            slug: '',
-            description: '',
-            status: StatusEnum.ENABLED
-          });
+          message.error('封面上传失败：' + uploadResult.message);
+          setIsSubmitting(false);
+          return;
         }
       }
       // 准备文章数据，包含所有标签信息
@@ -194,7 +209,7 @@ const CreateArticle: React.FC = () => {
         summary: summary,
         categoryId: parseInt(values.category),
         tags: tags,
-        coverImage: serverCoverImageUrl || coverImage,
+        coverImage: coverImageUrl || coverImage,
         status: ArticleStatusEnum.PUBLISHED,
         reviewStatus: ArticleReviewStatusEnum.PENDING,
         visible: values.visible as ArticleVisibleEnum,
@@ -227,6 +242,13 @@ const CreateArticle: React.FC = () => {
   const handleSaveDraft = async (): Promise<void> => {
     setIsSubmitting(true);
     try {
+      // 1. 先上传封面图(如果有)
+      if (croppedFile) {
+        const uploadResult = await articleService.uploadImage(croppedFile);
+        if (uploadResult.code === 200) {
+          setServerCoverImageUrl(uploadResult.data); // 存储服务器返回的URL
+        }
+      }
       const values = await form.validateFields();
       const articleData = {
         id: Number(articleId),
@@ -245,8 +267,12 @@ const CreateArticle: React.FC = () => {
         original: (values.original || ArticleOriginalEnum.ORIGINAL) as ArticleOriginalEnum,
         top: (values.top || AllowTopEnum.NOT_TOP) as AllowTopEnum
       };
-      await articleService.saveDraft(articleData);
-      message.success('草稿保存成功！');
+      const response = await articleService.saveDraft(articleData);
+      if (response.code === 200) {
+        message.success(response.message || '草稿保存成功！');
+      } else {
+        message.error(response.message || '草稿保存失败，请重试');
+      }
     } catch (error) {
       console.error('保存草稿失败:', error);
       message.error('保存失败，请重试');
@@ -520,99 +546,35 @@ const CreateArticle: React.FC = () => {
             </div>
 
             {/* 封面图 */}
-            <div className="mb-8 w-[80%]">
+            <div className="mb-4 w-[80%]">
               <label className=" block text-sm font-medium text-gray-700 mb-4">封面图</label>
+              {coverImage ? <img src={coverImage} alt="预览" className="w-[640px] h-[360px] object-cover" /> : null}
               <Form.Item valuePropName="coverImage">
-                <Dragger
-                  fileList={fileList}
-                  name="coverImage"
-                  multiple={false}
-                  customRequest={async (options): Promise<void> => {
-                    const { file, onSuccess, onError } = options;
-                    try {
-                      setLoading(true);
-                      // 调用服务层上传方法
-                      const result = await articleService.uploadImage(file as File);
-                      if (result.code === 200) {
-                        setServerCoverImageUrl(result.data);
-                        // 生成本地预览
-                        if (file instanceof File) {
-                          const reader = new FileReader();
-                          reader.onload = (e): void => {
-                            if (e.target?.result) {
-                              setCoverImage(e.target.result as string);
-                            }
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                        onSuccess?.(result.data);
-                        // 更新 fileList
-                        setFileList([
-                          {
-                            uid: Date.now().toString(),
-                            name: 'cover-image.jpg',
-                            status: 'done',
-                            url: result.data
-                          }
-                        ]);
-                        message.success('图片上传成功');
-                      } else {
-                        const errorMsg = result.message || '图片上传失败';
-                        onError?.(new Error(errorMsg));
-                        message.error(errorMsg);
+                <ImageUploadWithCrop
+                  uploadMode="deferred" // 延迟上传模式
+                  onCropComplete={({ file, previewUrl }) => {
+                    setCroppedFile(file);
+                    setCoverImage(previewUrl);
+                    setFileList([
+                      {
+                        uid: Date.now().toString(),
+                        name: 'cover-image.jpg',
+                        status: 'done',
+                        url: previewUrl
                       }
-                    } catch (error) {
-                      const errorMsg = error instanceof Error ? error.message : '上传失败，请重试';
-                      onError?.(new Error(errorMsg));
-                      message.error(errorMsg);
-                    } finally {
-                      setLoading(false);
-                    }
+                    ]);
                   }}
                   onRemove={() => {
-                    setFileList([]);
+                    setCroppedFile(null);
                     setCoverImage('');
                     setServerCoverImageUrl('');
+                    setFileList([]);
                   }}
-                  beforeUpload={(file) => {
-                    // 验证文件类型
-                    const isImage = file.type.startsWith('image/');
-                    if (!isImage) {
-                      void message.error('只能上传图片文件！');
-                      return Upload.LIST_IGNORE;
-                    }
-                    // 验证文件大小
-                    const isLt10M = file.size / 1024 / 1024 < 10;
-                    if (!isLt10M) {
-                      void message.error('图片大小不能超过 10MB！');
-                      return Upload.LIST_IGNORE;
-                    }
-                    return true;
-                  }}
-                  onChange={(info) => {
-                    if (info.file?.status === 'uploading') {
-                      setLoading(true);
-                    } else if (info.file?.status === 'done') {
-                      setLoading(false);
-                    } else if (info.file?.status === 'error') {
-                      setLoading(false);
-                    }
-                  }}
-                >
-                  {fileList.length > 0 ? (
-                    <div className="flex justify-center items-center">
-                      <img src={coverImage} alt="封面预览" className="max-w-full max-h-60 object-contain" />
-                    </div>
-                  ) : (
-                    <>
-                      <p className="ant-upload-drag-icon">
-                        <InboxOutlined />
-                      </p>
-                      <p className="ant-upload-text">点击或拖动图片文件到此区域上传封面图片</p>
-                      <p className="ant-upload-hint">支持上传单张图片，最大10MB</p>
-                    </>
-                  )}
-                </Dragger>
+                  currentImage={coverImage}
+                  cropShape="rect"
+                  aspectRatio={16 / 9}
+                  placeholder="点击上传文章封面图"
+                />
               </Form.Item>
             </div>
           </Form>
