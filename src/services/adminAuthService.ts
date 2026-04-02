@@ -1,11 +1,7 @@
-import { apiClient, API_ENDPOINTS } from '../api';
-import type {
-  TokenResponse,
-  UserInfo
-} from '../types/auth';
+import { API_ENDPOINTS, apiClient } from '../api';
+import type { TokenResponse, UserInfo } from '../types/auth';
 import type { ApiResponse } from '../types/common';
-import type { AuthTypeEnum } from '../types/enums';
-
+import type { AuthTypeEnum } from '../types/enums'; // 参数验证函数
 // 参数验证函数
 const validateAccount = (account: string): boolean => {
   if (!account || account.trim().length === 0) {
@@ -24,11 +20,7 @@ const validatePassword = (password: string): boolean => {
   return true;
 };
 
-const validateLoginParams = (params: {
-  account: string;
-  password: string;
-  remember?: boolean;
-}): boolean => {
+const validateLoginParams = (params: { account: string; password: string; remember?: boolean }): boolean => {
   if (!params || typeof params !== 'object') {
     throw new Error('参数必须是对象');
   }
@@ -51,7 +43,7 @@ const adminAuthService = {
   /**
    * 管理员登录
    */
-  login: async (params: {
+  adminLogin: async (params: {
     account: string;
     password: string;
     authType: AuthTypeEnum;

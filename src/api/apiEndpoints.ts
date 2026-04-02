@@ -128,7 +128,7 @@ export const API_ENDPOINTS = {
   ADMIN: {
     // 认证相关
     AUTH: {
-      LOGIN: '/auth/login', // 管理员登录
+      LOGIN: '/auth/admin/login', // 管理员登录
       REFRESH_TOKEN: '/auth/refresh-token' // 管理员刷新令牌
     },
 
