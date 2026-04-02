@@ -602,11 +602,11 @@ const ArticleDetail: React.FC = () => {
                       alt={article.nickname}
                       className="border border-gray-100 shadow-sm"
                     />
-                    <div>
+                    <div className="hover:text-blue-700">
                       {article.userId ? (
                         <a
                           href={`/user/${article.userId}`}
-                          className="font-medium text-gray-800 hover:text-blue-600 transition-colors"
+                          className="font-semibold text-gray-600 hover:text-blue-700 transition-colors"
                         >
                           {article.nickname || '未知作者'}
                         </a>
