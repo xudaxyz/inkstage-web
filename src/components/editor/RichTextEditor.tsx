@@ -307,9 +307,21 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div className={`border border-gray-100 bg-white ${className}`}>
+      <style>
+        {`
+          .editor-content img {
+            max-width: 100%;
+            height: auto;
+            max-height: 600px;
+            object-fit: contain;
+          }
+        `}
+      </style>
       <EditorToolbar editor={editor} tools={defaultTools} />
-      <div className="p-4 min-h-[500px]">
-        <EditorContent editor={editor} />
+      <div className="p-4 min-h-[350px] max-w-full">
+        <div className="editor-content">
+          <EditorContent editor={editor} />
+        </div>
       </div>
 
       {/* 图片上传模态框 */}

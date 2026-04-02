@@ -215,7 +215,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
           <img src={previewImage} alt="预览" className="w-full h-full object-cover" />
         </div>
         <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-md">
-          <ImgCrop aspect={currentAspectRatio} cropShape="round" rotationSlider>
+          <ImgCrop key={currentAspectRatio} aspect={currentAspectRatio} cropShape="round" rotationSlider>
             <Upload
               customRequest={uploadMode === 'immediate' ? customRequest : undefined}
               fileList={fileList}
@@ -278,7 +278,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
     () => (
       <div className="relative mb-4">
         <div className="absolute flex items-center justify-start rounded-lg duration-200">
-          <ImgCrop aspect={currentAspectRatio} cropShape="rect" rotationSlider>
+          <ImgCrop key={currentAspectRatio} aspect={currentAspectRatio} cropShape="rect" rotationSlider>
             <Upload
               customRequest={uploadMode === 'immediate' ? customRequest : undefined}
               fileList={fileList}
@@ -353,7 +353,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
   const renderEmptyUpload = useMemo(
     () => (
       <div className="mb-4">
-        <ImgCrop aspect={currentAspectRatio} cropShape={cropShape} rotationSlider>
+        <ImgCrop key={currentAspectRatio} aspect={currentAspectRatio} cropShape={cropShape} rotationSlider>
           <Upload
             customRequest={uploadMode === 'immediate' ? customRequest : undefined}
             fileList={fileList}
