@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Button, Card, Divider, Dropdown, List, message, Modal, notification, Tooltip } from 'antd';
 import { formatDateTimeShort } from '../../utils';
 import {
-  ArrowLeftOutlined,
   CheckOutlined,
   DeleteOutlined,
   DownOutlined,
@@ -22,6 +21,7 @@ import {
 } from '@ant-design/icons';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import ErrorBoundary from '../../components/common/ErrorBoundary';
 import CommentSection from '../../components/front/CommentSection';
 import CollectionFolderModal from '../../components/front/CollectionFolderModal';
 import ArticleContent from '../../components/front/ArticleContent';
@@ -469,34 +469,7 @@ const ArticleDetail: React.FC = () => {
     );
   }
   if (error || !article) {
-    return (
-      <div className="flex min-h-screen flex-col bg-white font-sans">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-md">
-            <div className="text-red-500 text-6xl mb-4">😢</div>
-            <h2 className="text-2xl font-bold mb-2 text-gray-800">{error || '文章不存在'}</h2>
-            <p className="text-gray-500 mb-6">很抱歉，您访问的文章可能已被删除或不存在。</p>
-            <div className="flex gap-4 justify-center">
-              <Button
-                onClick={() => window.history.back()}
-                className="px-6 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors"
-              >
-                <ArrowLeftOutlined className="mr-1" />
-                返回上一页
-              </Button>
-              <Button
-                onClick={() => (window.location.href = '/')}
-                className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-              >
-                回到首页
-              </Button>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
+    return <ErrorBoundary error={error || '文章不存在'} />;
   }
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans">
