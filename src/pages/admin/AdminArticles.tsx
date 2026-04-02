@@ -311,11 +311,8 @@ const AdminArticles: React.FC = () => {
         message.success(
           response.message || (action === 'approve' ? '审核通过' : action === 'reject' ? '审核拒绝' : '重新审核')
         );
-        // 重新获取文章详情
-        const detailResponse = await articleService.admin.getArticleById(currentArticle.id);
-        if (detailResponse.code === 200 && detailResponse.data) {
-          setCurrentArticle(detailResponse.data);
-        }
+        // 关闭查看文章模态框
+        setIsViewModalVisible(false);
         // 刷新文章列表
         await fetchArticles(pagination.pageNum, pagination.pageSize);
       } else {

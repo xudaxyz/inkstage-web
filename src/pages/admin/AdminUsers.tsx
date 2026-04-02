@@ -115,8 +115,7 @@ const AdminUsers: React.FC = () => {
           pageSize: pageSize,
           keyword: keyword !== undefined ? keyword : searchText,
           userRole: userRole !== undefined ? userRole || undefined : selectedRole || undefined,
-          userStatus:
-            userStatus !== undefined ? userStatus || undefined : selectedStatus || undefined,
+          userStatus: userStatus !== undefined ? userStatus || undefined : selectedStatus || undefined,
           startDate: startDate?.toISOString(),
           endDate: endDate?.toISOString()
         });
@@ -209,28 +208,13 @@ const AdminUsers: React.FC = () => {
     // 先更新状态
     setStartDate(date);
     setPagination((prev) => ({ ...prev, pageNum: 1 }));
-    void fetchUsersWithParams(
-      1,
-      pagination.pageSize,
-      searchText,
-      selectedRole,
-      selectedStatus,
-      date
-    );
+    void fetchUsersWithParams(1, pagination.pageSize, searchText, selectedRole, selectedStatus, date);
   };
   const handleEndDateChange = (date: Dayjs | null): void => {
     // 先更新状态
     setEndDate(date);
     setPagination((prev) => ({ ...prev, pageNum: 1 }));
-    void fetchUsersWithParams(
-      1,
-      pagination.pageSize,
-      searchText,
-      selectedRole,
-      selectedStatus,
-      startDate,
-      date
-    );
+    void fetchUsersWithParams(1, pagination.pageSize, searchText, selectedRole, selectedStatus, startDate, date);
   };
   // 组件挂载时获取用户列表
   useEffect(() => {
@@ -296,6 +280,7 @@ const AdminUsers: React.FC = () => {
         const userDetail = response.data;
         const userWithDefaults = {
           ...userDetail,
+          username: userDetail.username,
           gender: userDetail.gender || GenderEnum.UNKNOWN,
           location: userDetail.location || '',
           signature: userDetail.signature || '',
@@ -327,10 +312,7 @@ const AdminUsers: React.FC = () => {
     setUsernameEditable(false);
   };
   // 处理编辑表单字段变化
-  const handleEditFieldChange = <K extends keyof AdminUser>(
-    field: K,
-    value: AdminUser[K]
-  ): void => {
+  const handleEditFieldChange = <K extends keyof AdminUser>(field: K, value: AdminUser[K]): void => {
     if (editUser) {
       setEditUser((prev) => {
         if (!prev) return prev;
@@ -416,10 +398,7 @@ const AdminUsers: React.FC = () => {
     if (!userToChangeStatus || !targetStatus) return;
     setEditLoading(true);
     try {
-      const response = await userService.admin.updateUserStatus(
-        userToChangeStatus.id,
-        targetStatus
-      );
+      const response = await userService.admin.updateUserStatus(userToChangeStatus.id, targetStatus);
       if (response.code === 200) {
         message.success(response.message || '状态修改成功');
         fetchUsers();
@@ -438,15 +417,12 @@ const AdminUsers: React.FC = () => {
   };
   // 切换用户状态
   const handleToggleUserStatus = async (user: AdminUser): Promise<void> => {
-    const newStatus =
-      user.userStatus === UserStatusEnum.DISABLED ? UserStatusEnum.NORMAL : UserStatusEnum.DISABLED;
+    const newStatus = user.userStatus === UserStatusEnum.DISABLED ? UserStatusEnum.NORMAL : UserStatusEnum.DISABLED;
     setEditLoading(true);
     try {
       const response = await userService.admin.updateUserStatus(user.id, newStatus);
       if (response.code === 200) {
-        message.success(
-          response.message || (newStatus === UserStatusEnum.NORMAL ? '用户已启用' : '用户已禁用')
-        );
+        message.success(response.message || (newStatus === UserStatusEnum.NORMAL ? '用户已启用' : '用户已禁用'));
         fetchUsers();
       } else {
         message.error(response.message || '状态修改失败');
@@ -679,11 +655,7 @@ const AdminUsers: React.FC = () => {
             style={{ width: '100%', maxWidth: 150 }}
             onChange={handleStartDateChange}
           />
-          <DatePicker
-            placeholder="结束日期"
-            style={{ width: '100%', maxWidth: 150 }}
-            onChange={handleEndDateChange}
-          />
+          <DatePicker placeholder="结束日期" style={{ width: '100%', maxWidth: 150 }} onChange={handleEndDateChange} />
         </div>
       </Card>
 
@@ -759,11 +731,7 @@ const AdminUsers: React.FC = () => {
             >
               {currentUser.coverImage && (
                 <div className="absolute inset-0 z-0">
-                  <img
-                    src={currentUser.coverImage}
-                    alt="封面图"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={currentUser.coverImage} alt="封面图" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/30"></div>
                 </div>
               )}
@@ -771,11 +739,7 @@ const AdminUsers: React.FC = () => {
                 <div className="flex flex-col md:flex-row items-center gap-6">
                   <div className="shrink">
                     <div className="w-28 h-28 rounded-full bg-white/20 backdrop-blur-sm overflow-hidden border-3 border-white/30 shadow-lg transition-all duration-300">
-                      <img
-                        src={currentUser.avatar}
-                        alt={currentUser.nickname}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={currentUser.avatar} alt={currentUser.nickname} className="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div className="flex-1 text-center md:text-left">
@@ -797,11 +761,7 @@ const AdminUsers: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
-                      <Tag
-                        color="blue"
-                        variant={'outlined'}
-                        className="font-medium px-3 py-1 text-sm"
-                      >
+                      <Tag color="blue" variant={'outlined'} className="font-medium px-3 py-1 text-sm">
                         {UserRoleEnumLabel[currentUser.userRole]}
                       </Tag>
                       <Tag
@@ -840,27 +800,19 @@ const AdminUsers: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-0 bg-white">
               <div className="p-4 border-b md:border-b-0 md:border-r border-gray-100 hover:bg-gray-50 transition-all duration-200">
                 <div className="text-xs text-gray-500 mb-1">文章数</div>
-                <div className="text-2xl font-bold text-blue-600">
-                  {currentUser.articleCount || 0}
-                </div>
+                <div className="text-2xl font-bold text-blue-600">{currentUser.articleCount || 0}</div>
               </div>
               <div className="p-4 border-b md:border-b-0 md:border-r border-gray-100 hover:bg-gray-50 transition-all duration-200">
                 <div className="text-xs text-gray-500 mb-1">评论数</div>
-                <div className="text-2xl font-bold text-green-600">
-                  {currentUser.commentCount || 0}
-                </div>
+                <div className="text-2xl font-bold text-green-600">{currentUser.commentCount || 0}</div>
               </div>
               <div className="p-4 border-b md:border-b-0 md:border-r border-gray-100 hover:bg-gray-50 transition-all duration-200">
                 <div className="text-xs text-gray-500 mb-1">获赞数</div>
-                <div className="text-2xl font-bold text-orange-500">
-                  {currentUser.likeCount || 0}
-                </div>
+                <div className="text-2xl font-bold text-orange-500">{currentUser.likeCount || 0}</div>
               </div>
               <div className="p-4 border-b md:border-b-0 border-gray-100 hover:bg-gray-50 transition-all duration-200">
                 <div className="text-xs text-gray-500 mb-1">粉丝数</div>
-                <div className="text-2xl font-bold text-purple-600">
-                  {currentUser.followerCount || 0}
-                </div>
+                <div className="text-2xl font-bold text-purple-600">{currentUser.followerCount || 0}</div>
               </div>
             </div>
 
@@ -882,44 +834,32 @@ const AdminUsers: React.FC = () => {
                       <div className="flex flex-col p-3 bg-gray-50 rounded-md">
                         <span className="text-xs text-gray-500 mb-1">注册时间</span>
                         <span className="text-gray-800 text-sm">
-                          {currentUser.registerTime
-                            ? formatDateTime(currentUser.registerTime)
-                            : '未知'}
+                          {currentUser.registerTime ? formatDateTime(currentUser.registerTime) : '未知'}
                         </span>
                       </div>
                       <div className="flex flex-col p-3 bg-gray-50 rounded-md">
                         <span className="text-xs text-gray-500 mb-1">最后登录</span>
                         <span className="text-gray-800 text-sm">
-                          {currentUser.lastLoginTime
-                            ? formatDateTime(currentUser.lastLoginTime)
-                            : '未知'}
+                          {currentUser.lastLoginTime ? formatDateTime(currentUser.lastLoginTime) : '未知'}
                         </span>
                       </div>
                       <div className="flex flex-col p-3 bg-gray-50 rounded-md">
                         <span className="text-xs text-gray-500 mb-1">注册IP</span>
-                        <span className="text-gray-800 text-sm">
-                          {currentUser.registerIp || '未知'}
-                        </span>
+                        <span className="text-gray-800 text-sm">{currentUser.registerIp || '未知'}</span>
                       </div>
                       <div className="flex flex-col p-3 bg-gray-50 rounded-md">
                         <span className="text-xs text-gray-500 mb-1">最后登录IP</span>
-                        <span className="text-gray-800 text-sm">
-                          {currentUser.lastLoginIp || '未知'}
-                        </span>
+                        <span className="text-gray-800 text-sm">{currentUser.lastLoginIp || '未知'}</span>
                       </div>
                     </div>
                     <div className="space-y-3">
                       <div className="flex flex-col p-3 bg-gray-50 rounded-md">
                         <span className="text-xs text-gray-500 mb-1">个人网站</span>
-                        <span className="text-gray-800 text-sm">
-                          {currentUser.website || '未设置'}
-                        </span>
+                        <span className="text-gray-800 text-sm">{currentUser.website || '未设置'}</span>
                       </div>
                       <div className="flex flex-col p-3 bg-gray-50 rounded-md">
                         <span className="text-xs text-gray-500 mb-1">关注数</span>
-                        <span className="text-gray-800 text-sm">
-                          {currentUser.followCount || 0}
-                        </span>
+                        <span className="text-gray-800 text-sm">{currentUser.followCount || 0}</span>
                       </div>
                       <div className="flex flex-col p-3 bg-gray-50 rounded-md">
                         <span className="text-xs text-gray-500 mb-1">邮箱验证</span>
@@ -1018,15 +958,11 @@ const AdminUsers: React.FC = () => {
                         >
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
-                              <p className="text-gray-700 mb-2 text-sm line-clamp-2 pr-4">
-                                {comment.content}
-                              </p>
+                              <p className="text-gray-700 mb-2 text-sm line-clamp-2 pr-4">{comment.content}</p>
                               <div className="flex flex-wrap gap-3 text-xs text-gray-500">
                                 <span className="flex items-center gap-1">
                                   <FileTextOutlined size={12} />
-                                  <span className="text-blue-600 hover:underline">
-                                    {comment.articleTitle}
-                                  </span>
+                                  <span className="text-blue-600 hover:underline">{comment.articleTitle}</span>
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <ClockCircleOutlined size={12} />
@@ -1098,13 +1034,7 @@ const AdminUsers: React.FC = () => {
           <Button key="cancel" onClick={handleCloseEditModal} className="px-4 py-2">
             取消
           </Button>,
-          <Button
-            key="save"
-            type="primary"
-            onClick={handleSaveEdit}
-            loading={editLoading}
-            className="px-6 py-2"
-          >
+          <Button key="save" type="primary" onClick={handleSaveEdit} loading={editLoading} className="px-6 py-2">
             保存修改
           </Button>
         ]}
@@ -1120,9 +1050,7 @@ const AdminUsers: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-1">
-                  <label className="text-base font-medium text-gray-700 whitespace-nowrap">
-                    用户名:
-                  </label>
+                  <label className="text-base font-medium text-gray-700 whitespace-nowrap">用户名:</label>
                   <div className="flex-1 flex items-center gap-2 max-w-64">
                     <Input
                       value={editUser.username}
@@ -1205,9 +1133,7 @@ const AdminUsers: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">邮箱验证状态</label>
                 <Select
                   value={editUser.emailVerified || VerificationStatusEnum.UNVERIFIED}
-                  onChange={(value) =>
-                    handleEditFieldChange('emailVerified', value as VerificationStatusEnum)
-                  }
+                  onChange={(value) => handleEditFieldChange('emailVerified', value as VerificationStatusEnum)}
                   className="w-full"
                 >
                   {verificationOptions.map((option) => (
@@ -1233,9 +1159,7 @@ const AdminUsers: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">手机验证状态</label>
                 <Select
                   value={editUser.phoneVerified || VerificationStatusEnum.UNVERIFIED}
-                  onChange={(value) =>
-                    handleEditFieldChange('phoneVerified', value as VerificationStatusEnum)
-                  }
+                  onChange={(value) => handleEditFieldChange('phoneVerified', value as VerificationStatusEnum)}
                   className="w-full"
                 >
                   {verificationOptions.map((option) => (
@@ -1349,13 +1273,7 @@ const AdminUsers: React.FC = () => {
           <Button key="cancel" onClick={handleCloseChangeRoleModal} className="px-4 py-2">
             取消
           </Button>,
-          <Button
-            key="save"
-            type="primary"
-            onClick={handleSaveRoleChange}
-            loading={editLoading}
-            className="px-6 py-2"
-          >
+          <Button key="save" type="primary" onClick={handleSaveRoleChange} loading={editLoading} className="px-6 py-2">
             保存修改
           </Button>
         ]}
@@ -1377,19 +1295,11 @@ const AdminUsers: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">当前角色</label>
-              <Input
-                value={UserRoleEnumLabel[userToChangeRole.userRole]}
-                disabled
-                className="w-full"
-              />
+              <Input value={UserRoleEnumLabel[userToChangeRole.userRole]} disabled className="w-full" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">新角色</label>
-              <Select
-                value={targetRole}
-                onChange={(value) => setTargetRole(value)}
-                className="w-full"
-              >
+              <Select value={targetRole} onChange={(value) => setTargetRole(value)} className="w-full">
                 {roleOptions.map((option) => (
                   <Option key={option.value} value={option.value}>
                     {option.label}
@@ -1438,19 +1348,11 @@ const AdminUsers: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">当前状态</label>
-              <Input
-                value={UserStatusEnumLabel[userToChangeStatus.userStatus]}
-                disabled
-                className="w-full"
-              />
+              <Input value={UserStatusEnumLabel[userToChangeStatus.userStatus]} disabled className="w-full" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">新状态</label>
-              <Select
-                value={targetStatus}
-                onChange={(value) => setTargetStatus(value)}
-                className="w-full"
-              >
+              <Select value={targetStatus} onChange={(value) => setTargetStatus(value)} className="w-full">
                 {statusOptions.map((option) => (
                   <Option key={option.value} value={option.value}>
                     {option.label}
