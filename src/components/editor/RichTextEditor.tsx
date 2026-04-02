@@ -327,7 +327,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                   .chain()
                   .focus()
                   .insertContent({
-                    type: 'image/jpeg',
+                    type: 'image',
                     attrs: {
                       src: imageUrl,
                       alt: '',
@@ -336,6 +336,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                   })
                   .run();
               }
+              // 关闭上传模态框
+              setShowImageUploadModal(false);
               message.success('图片上传成功');
             } catch {
               onError?.(new Error('图片上传失败'));
@@ -349,7 +351,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             }
           }}
           cropShape="rect"
-          aspectRatio={4 / 3}
           placeholder="点击上传图片"
         />
       </Modal>
