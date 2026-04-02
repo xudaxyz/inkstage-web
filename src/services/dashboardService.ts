@@ -11,7 +11,7 @@ export const dashboardService = {
    * 获取仪表盘统计数据
    * @returns 仪表盘统计数据
    */
-  getDashboardStats: async (days: number): Promise<ApiResponse<DashboardStatsVO>> => {
+  getDashboardStats: async (days: number = 7): Promise<ApiResponse<DashboardStatsVO>> => {
     return await apiClient.get(API_ENDPOINTS.ADMIN.DASHBOARD.STATS, { params: { days } });
   },
 

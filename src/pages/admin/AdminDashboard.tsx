@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar, Button, Card, Col, List, Row, Space, Spin, Statistic, Tag, Typography } from 'antd';
 import {
-  BarChartOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
   EyeOutlined,
   FileTextOutlined,
   MessageOutlined,
   StarOutlined,
+  SyncOutlined,
   TagOutlined,
   UserOutlined
 } from '@ant-design/icons';
@@ -33,6 +33,8 @@ const AdminDashboard: React.FC = () => {
   const [dashboardStats, setDashboardStats] = useState<DashboardStatsVO | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
+  const [countdown, setCountdown] = useState<number>(0);
 
   // 管理员代办事项
   const [todoItems, setTodoItems] = useState<TodoItem[]>([]);
@@ -47,52 +49,94 @@ const AdminDashboard: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await dashboardService.getDashboardStats(3);
+      const response = await dashboardService.getDashboardStats();
       if (response.code === 200) {
         setDashboardStats(response.data);
-      }
 
-      // 构建代办事项数据
-      if (response.data.pendingStats) {
-        const items: TodoItem[] = [
-          {
-            id: 1,
-            title: '文章待审核',
-            count: response.data.pendingStats.pendingArticles,
-            icon: <FileTextOutlined className="text-blue-500" />,
-            color: 'blue',
-            route: '/admin/articles'
-          },
-          {
-            id: 2,
-            title: '标签待审核',
-            count: response.data.pendingStats.pendingTags,
-            icon: <TagOutlined className="text-orange-500" />,
-            color: 'orange',
-            route: '/admin/tags'
-          },
-          {
-            id: 3,
-            title: '评论待审核',
-            count: response.data.pendingStats.pendingComments,
-            icon: <MessageOutlined className="text-purple-500" />,
-            color: 'purple',
-            route: '/admin/comments'
-          },
-          {
-            id: 4,
-            title: '用户待审核',
-            count: response.data.pendingStats.pendingUsers,
-            icon: <UserOutlined className="text-green-500" />,
-            color: 'green',
-            route: '/admin/users'
-          }
-        ];
-        setTodoItems(items);
+        // 构建代办事项数据
+        if (response.data.pendingStats) {
+          const items: TodoItem[] = [
+            {
+              id: 1,
+              title: '文章待审核',
+              count: response.data.pendingStats.pendingArticles,
+              icon: <FileTextOutlined className="text-blue-500" />,
+              color: 'blue',
+              route: '/admin/articles'
+            },
+            {
+              id: 2,
+              title: '标签待审核',
+              count: response.data.pendingStats.pendingTags,
+              icon: <TagOutlined className="text-orange-500" />,
+              color: 'orange',
+              route: '/admin/tags'
+            },
+            {
+              id: 3,
+              title: '评论待审核',
+              count: response.data.pendingStats.pendingComments,
+              icon: <MessageOutlined className="text-purple-500" />,
+              color: 'purple',
+              route: '/admin/comments'
+            },
+            {
+              id: 4,
+              title: '用户待审核',
+              count: response.data.pendingStats.pendingUsers,
+              icon: <UserOutlined className="text-green-500" />,
+              color: 'green',
+              route: '/admin/users'
+            }
+          ];
+          setTodoItems(items);
+        }
       }
     } catch (err) {
       setError('加载仪表盘数据失败');
       console.error('Failed to load dashboard stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 刷新仪表盘数据
+  const refreshDashboardStats = async (): Promise<void> => {
+    const now = Date.now();
+    const timeSinceLastRefresh = now - lastRefreshTime;
+
+    // 检查是否在5秒内已刷新过
+    if (timeSinceLastRefresh < 5000) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await dashboardService.refreshDashboardStats();
+      if (response.code === 200 && response.data) {
+        // 刷新成功后重新加载数据
+        await loadDashboardStats();
+        // 设置最后刷新时间
+        setLastRefreshTime(now);
+        // 开始倒计时
+        setCountdown(5);
+
+        // 倒计时逻辑
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        setError(response.message || '刷新仪表盘数据失败');
+      }
+    } catch {
+      setError('刷新仪表盘数据失败');
     } finally {
       setLoading(false);
     }
@@ -158,12 +202,14 @@ const AdminDashboard: React.FC = () => {
             <Button type="default" size="middle" icon={<CalendarOutlined />}>
               今日
             </Button>
-            <Button type="default" size="middle" icon={<BarChartOutlined />}>
-              数据报表
-            </Button>
-            <Button type="primary" size="middle" onClick={loadDashboardStats}>
-              刷新数据
-            </Button>
+            <Button
+              variant="text"
+              color="blue"
+              size="middle"
+              onClick={refreshDashboardStats}
+              icon={<SyncOutlined />}
+              disabled={countdown > 0}
+            ></Button>
           </Space>
         </div>
       </div>
@@ -418,7 +464,7 @@ const AdminDashboard: React.FC = () => {
                     avatar={<Avatar src={item.avatar} />}
                     title={
                       <div className="flex items-center gap-2">
-                        <Text className="font-medium">{item.userName}</Text>
+                        <Text className="font-medium">{item.nickname}</Text>
                         <Text className="text-gray-500">{item.action}</Text>
                         {item.target && (
                           <Tag color={getStatusColor(item.status)} className="ml-2">

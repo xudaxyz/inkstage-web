@@ -43,7 +43,7 @@ export interface DistributionDataVO {
 export interface ActivityStatVO {
   id: number;
   userId: number;
-  userName: string;
+  nickname: string;
   action: string;
   target: string;
   status: string;
