@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Spin } from 'antd';
+import { Spin } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
@@ -178,9 +178,7 @@ const Home: React.FC = () => {
   // 渲染单个组件的错误状态
   const renderError = (error: Error | undefined): React.ReactNode => {
     if (error) {
-      return (
-        <Alert title={'加载失败'} description={error.message || '未知错误'} type="error" showIcon className="my-4" />
-      );
+      return;
     }
     return null;
   };
