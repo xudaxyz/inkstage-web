@@ -44,7 +44,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       '/admin/tags': 'tags',
       '/admin/comments': 'comments',
       '/admin/notifications': 'notifications',
-      '/admin/analytics': 'analytics',
       '/admin/settings': 'settings'
     };
     return pathToKeyMap[path] || 'dashboard';
@@ -86,11 +85,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       key: 'notifications',
       icon: <BellOutlined />,
       label: <Link to="/admin/notifications">通知管理</Link>
-    },
-    {
-      key: 'analytics',
-      icon: <BarChartOutlined />,
-      label: <Link to="/admin/analytics">数据分析</Link>
     },
     {
       key: 'settings',

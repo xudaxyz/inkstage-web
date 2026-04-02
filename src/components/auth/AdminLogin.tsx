@@ -42,12 +42,30 @@ const AdminLogin: React.FC = () => {
         remember: formData.remember || false
       });
       if (response.code === 200) {
-        // 关闭加载状态，显示成功提示
+        // 显示登录成功提示
         message.success({
-          content: response.message || '登录成功，欢迎回来！',
-          duration: 3,
+          content: response.message || '登录成功，正在加载管理后台...',
+          duration: 2,
           className: 'text-lg font-medium'
         });
+
+        // 显示加载提示
+        const loadingMessage = message.loading({
+          content: '正在加载管理后台，请稍候...',
+          duration: 0, // 不自动关闭
+          className: 'text-lg'
+        });
+
+        // 预加载后台首页组件
+        try {
+          await import('../../pages/admin/AdminDashboard');
+        } catch (e) {
+          console.error('预加载后台组件失败:', e);
+        }
+
+        // 关闭加载提示
+        loadingMessage();
+
         // 登录成功后重定向到后台首页
         const redirectPath = localStorage.getItem('redirect_after_login');
         if (redirectPath) {

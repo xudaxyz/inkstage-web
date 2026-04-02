@@ -17,7 +17,7 @@ const Notification: React.FC = () => {
   useEffect(() => {
     // 检查登录状态变化
     if (isLoggedIn !== lastLoginStatusRef.current.isLoggedIn) {
-      if (isLoggedIn) {
+      if (isLoggedIn && !isAdminLoggedIn) {
         void message.success({
           content: '登录成功！',
           duration: 3,
@@ -29,7 +29,7 @@ const Notification: React.FC = () => {
 
     // 检查管理员登录状态变化
     if (isAdminLoggedIn !== lastLoginStatusRef.current.isAdminLoggedIn) {
-      if (isAdminLoggedIn) {
+      if (isAdminLoggedIn && !isLoggedIn) {
         void message.success({
           content: '管理员登录成功',
           duration: 3,
