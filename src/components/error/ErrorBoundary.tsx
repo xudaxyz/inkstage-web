@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button } from 'antd';
 import { ArrowLeftOutlined, HomeOutlined } from '@ant-design/icons';
-import Header from './Header';
-import Footer from './Footer';
+import Header from '../common/Header.tsx';
+import Footer from '../common/Footer.tsx';
 
 interface ErrorBoundaryProps {
   error?: string;

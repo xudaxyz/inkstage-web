@@ -21,7 +21,7 @@ import {
 } from '@ant-design/icons';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
-import ErrorBoundary from '../../components/common/ErrorBoundary';
+import ErrorBoundary from '../../components/error/ErrorBoundary';
 import CommentSection from '../../components/front/CommentSection';
 import CollectionFolderModal from '../../components/front/CollectionFolderModal';
 import ArticleContent from '../../components/front/ArticleContent';
