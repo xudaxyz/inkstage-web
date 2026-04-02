@@ -52,8 +52,8 @@ interface ImageUploadWithCropProps {
   // ===== 延迟上传模式属性 =====
   /** 裁剪完成回调(uploadMode='deferred' 时必传) */
   onCropComplete?: (fileInfo: CroppedFileInfo) => void;
-  /** 删除图片回调 */
-  onRemove?: () => void;
+  /** 删除图片回调(图片的路径) */
+  onRemove?: (file: UploadFile) => void;
 }
 
 /**
@@ -75,8 +75,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
   uploadMode = 'immediate',
   onUploadSuccess,
   customRequest,
-  onCropComplete,
-  onRemove
+  onCropComplete
 }) => {
   // ===== 状态管理 =====
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -131,19 +130,17 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
   );
 
   /**
-   * 处理删除图片
+   *  延迟上传模式的删除处理
    */
-  const handleRemove = useCallback(() => {
+  const handleDeferredRemove = useCallback(() => {
     setPreviewImage('');
     setFileList([]);
 
     // 释放延迟上传模式创建的URL对象
-    if (uploadMode === 'deferred' && previewImage && previewImage.startsWith('blob:')) {
+    if (previewImage && previewImage.startsWith('blob:')) {
       URL.revokeObjectURL(previewImage);
     }
-
-    onRemove?.();
-  }, [onRemove, previewImage, uploadMode]);
+  }, [previewImage]);
 
   // ===== 渲染辅助函数 =====
 
@@ -277,7 +274,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
               variant="solid"
               color="red"
               className="text-white hover:bg-red-600 ml-6"
-              onClick={handleRemove}
+              onClick={handleDeferredRemove}
             >
               删除
             </Button>
@@ -294,7 +291,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       customRequest,
       fileList,
       handleFileChange,
-      handleRemove,
+      handleDeferredRemove,
       validateFile,
       onCropComplete,
       isUploading

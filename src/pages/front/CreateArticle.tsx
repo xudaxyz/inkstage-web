@@ -191,7 +191,7 @@ const CreateArticle: React.FC = () => {
       // 处理封面图(如果有)
       let coverImageUrl = serverCoverImageUrl; // 初始值(使用局部变量, 避免异步执行文章封面图上传无法及时赋值给serverCoverImageUrl)
       if (croppedFile) {
-        const uploadResult = await articleService.uploadImage(croppedFile);
+        const uploadResult = await articleService.uploadArticleCoverImage(croppedFile);
         if (uploadResult.code === 200) {
           coverImageUrl = uploadResult.data;
           setCoverImage(uploadResult.data);
@@ -244,7 +244,7 @@ const CreateArticle: React.FC = () => {
     try {
       // 1. 先上传封面图(如果有)
       if (croppedFile) {
-        const uploadResult = await articleService.uploadImage(croppedFile);
+        const uploadResult = await articleService.uploadArticleCoverImage(croppedFile);
         if (uploadResult.code === 200) {
           setServerCoverImageUrl(uploadResult.data); // 存储服务器返回的URL
         }

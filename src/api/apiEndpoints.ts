@@ -216,6 +216,7 @@ export const API_ENDPOINTS = {
       COVER: '/upload/user/cover-image', // 上传用户封面图
       AVATAR: '/upload/user/avatar', // 上传用户头像
       ARTICLE_COVER_IMG: '/upload/article/cover-image', // 上传文章封面图
+      ARTICLE_IMG: '/upload/article/image', // 上传文章相关图片
       DELETE: '/upload/delete' // 删除文件
     }
   }
@@ -263,7 +264,8 @@ export const PUBLIC_ENDPOINTS = [
   API_ENDPOINTS.COMMON.AUTH.TOKEN, // 刷新令牌
   API_ENDPOINTS.COMMON.UPLOAD.COVER, // 上传用户封面图
   API_ENDPOINTS.COMMON.UPLOAD.AVATAR, // 上传用户头像
-  API_ENDPOINTS.COMMON.UPLOAD.ARTICLE_COVER_IMG // 上传文章封面图
+  API_ENDPOINTS.COMMON.UPLOAD.ARTICLE_COVER_IMG, // 上传文章封面图
+  API_ENDPOINTS.COMMON.UPLOAD.ARTICLE_IMG // 上传文章图片
 ];
 
 // API端点类型定义

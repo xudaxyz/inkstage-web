@@ -84,13 +84,36 @@ const articleService = {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.DELETE(id));
   },
-  // 上传图片
-  uploadImage: async (file: File): Promise<ApiResponse<string>> => {
+  // 上传文章封面图片
+  uploadArticleCoverImage: async (file: File): Promise<ApiResponse<string>> => {
     const formData = new FormData();
     formData.append('file', file as File);
     return await apiClient.post(API_ENDPOINTS.COMMON.UPLOAD.ARTICLE_COVER_IMG, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+  // 上传文章内容相关图片
+  uploadArticleImage: async (file: File): Promise<ApiResponse<string>> => {
+    const formData = new FormData();
+    formData.append('file', file as File);
+    return await apiClient.post(API_ENDPOINTS.COMMON.UPLOAD.ARTICLE_IMG, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+  // 删除图片
+  deleteImage: async (fileUrl: string): Promise<ApiResponse<void>> => {
+    // 从URL中提取文件路径
+    const fileName = fileUrl.split('/').pop();
+    if (!fileName) {
+      throw new Error('无效的文件URL');
+    }
+    return await apiClient.delete(API_ENDPOINTS.COMMON.UPLOAD.DELETE, {
+      params: {
+        file: fileName
       }
     });
   },

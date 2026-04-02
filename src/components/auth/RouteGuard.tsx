@@ -4,7 +4,6 @@ import { useUserStore } from '../../store';
 import { useAdminStore } from '../../store/adminStore';
 import { UserRoleEnum } from '../../types/enums';
 import { Button, message } from 'antd';
-
 // 私有路由组件，需要登录才能访问
 export const PrivateRoute = ({ children }: { children: React.ReactNode }): React.ReactNode => {
   const { isLoggedIn } = useUserStore();
@@ -34,9 +33,7 @@ export const PermissionRoute = ({
   }
 
   // 检查用户权限
-  const hasPermission = requiredPermissions.some(permission =>
-    user.role === permission
-  );
+  const hasPermission = requiredPermissions.some((permission) => user.role === permission);
 
   if (!hasPermission) {
     return <Navigate to="/" replace />;
@@ -56,7 +53,7 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }): React.R
     const loadingMessage = message.loading('正在验证身份...', 0);
 
     // 初始化认证状态
-    const initializeAuth = async () : Promise<void> => {
+    const initializeAuth = async (): Promise<void> => {
       try {
         // 初始化登录状态
         await initAuth();
@@ -81,7 +78,7 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }): React.R
       }
     };
 
-    initializeAuth();
+    initializeAuth().then();
   }, [initAuth, getProfile]);
 
   // 加载中状态
@@ -102,10 +99,7 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }): React.R
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
-          <Button
-            type="primary"
-            onClick={() => window.location.href = '/admin/login'}
-          >
+          <Button type="primary" onClick={() => (window.location.href = '/admin/login')}>
             重新登录
           </Button>
         </div>

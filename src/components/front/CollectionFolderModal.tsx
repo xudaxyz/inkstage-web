@@ -1,21 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Input, Button, Spin, message } from 'antd';
-import {
-  FolderOutlined,
-  FolderAddOutlined,
-  CheckOutlined
-} from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Button, Input, message, Modal, Spin } from 'antd';
+import { CheckOutlined, FolderAddOutlined, FolderOutlined } from '@ant-design/icons';
 import type { CollectionFolder } from '../../hooks/useCollection';
 
 interface CollectionFolderModalProps {
-    visible: boolean;
-    onClose: () => void;
-    onSave: (folderId: number) => void;
-    folders: CollectionFolder[];
-    loading: boolean;
-    selectedFolderId: number;
-    onSelectFolder: (folderId: number) => void;
-    onCreateFolder: (folderName: string) => Promise<boolean>;
+  visible: boolean;
+  onClose: () => void;
+  onSave: (folderId: number) => void;
+  folders: CollectionFolder[];
+  loading: boolean;
+  selectedFolderId: number;
+  onSelectFolder: (folderId: number) => void;
+  onCreateFolder: (folderName: string) => Promise<boolean>;
 }
 
 const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
@@ -58,7 +54,7 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
 
   const handleSave = (): void => {
     if (selectedFolderId === 0) {
-      message.error('请选择收藏夹');
+      message.error('请选择收藏夹').then();
       return;
     }
     onSave(selectedFolderId);
@@ -88,32 +84,20 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
                 <div
                   key={folder.id}
                   className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${
-                    selectedFolderId === folder.id
-                      ? 'bg-blue-50 border border-blue-200'
-                      : 'hover:bg-gray-50'
+                    selectedFolderId === folder.id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
                   }`}
                   onClick={() => onSelectFolder(folder.id)}
                 >
                   <div className="flex items-center">
-                    <FolderOutlined
-                      className={`mr-3 ${folder.defaultFolder ? 'text-blue-500' : 'text-gray-500'}`}
-                    />
+                    <FolderOutlined className={`mr-3 ${folder.defaultFolder ? 'text-blue-500' : 'text-gray-500'}`} />
                     <span className="text-gray-800">{folder.name}</span>
                     {folder.defaultFolder && (
-                      <span
-                        className="ml-2 text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full"
-                      >
-                                                默认
-                      </span>
+                      <span className="ml-2 text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">默认</span>
                     )}
                   </div>
                   <div className="flex items-center">
-                    <span className="text-xs text-gray-500 mr-3">
-                      {folder.articleCount || 0} 篇
-                    </span>
-                    {selectedFolderId === folder.id && (
-                      <CheckOutlined className="text-blue-500" />
-                    )}
+                    <span className="text-xs text-gray-500 mr-3">{folder.articleCount || 0} 篇</span>
+                    {selectedFolderId === folder.id && <CheckOutlined className="text-blue-500" />}
                   </div>
                 </div>
               ))}
@@ -139,7 +123,7 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
               loading={isCreating}
               icon={<FolderAddOutlined />}
             >
-                            创建
+              创建
             </Button>
           </div>
         </div>

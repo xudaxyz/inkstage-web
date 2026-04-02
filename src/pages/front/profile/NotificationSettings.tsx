@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Button, Switch, List, message, Popconfirm, Divider } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Divider, List, message, Popconfirm, Switch } from 'antd';
 import { BellOutlined, MailOutlined, PushpinOutlined } from '@ant-design/icons';
 import notificationService from '../../../services/notificationService';
 import { type NotificationSetting } from '../../../types/notification';
@@ -24,7 +24,7 @@ const NotificationSettings: React.FC = () => {
 
   // 加载通知设置
   useEffect(() => {
-    const fetchNotificationSetting = async () : Promise<void> => {
+    const fetchNotificationSetting = async (): Promise<void> => {
       try {
         const response = await notificationService.getNotificationSetting();
         if (response.code === 200) {
@@ -56,10 +56,10 @@ const NotificationSettings: React.FC = () => {
       }
     };
 
-    fetchNotificationSetting();
+    fetchNotificationSetting().then();
   }, []);
 
-  const handleSettingChange = async (key: keyof NotificationSetting, value: boolean) : Promise<void> => {
+  const handleSettingChange = async (key: keyof NotificationSetting, value: boolean): Promise<void> => {
     const newSettings = {
       ...notificationSettings,
       [key]: value
@@ -83,7 +83,7 @@ const NotificationSettings: React.FC = () => {
     }
   };
 
-  const handleResetToDefault = async () : Promise<void> => {
+  const handleResetToDefault = async (): Promise<void> => {
     try {
       const response = await notificationService.resetNotificationSetting();
       if (response.code === 200 && response.data) {
@@ -202,10 +202,16 @@ const NotificationSettings: React.FC = () => {
         <p className="text-gray-600 mt-2">管理您的通知偏好和接收方式</p>
       </div>
 
-      <Card title={<span className="flex items-center"><BellOutlined className="mr-2" /> 通知类型</span>}>
+      <Card
+        title={
+          <span className="flex items-center">
+            <BellOutlined className="mr-2" /> 通知类型
+          </span>
+        }
+      >
         <List
           dataSource={notificationTypeSettings}
-          renderItem={item => (
+          renderItem={(item) => (
             <List.Item
               key={item.key}
               actions={[
@@ -215,19 +221,22 @@ const NotificationSettings: React.FC = () => {
                 />
               ]}
             >
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-              />
+              <List.Item.Meta title={item.title} description={item.description} />
             </List.Item>
           )}
         />
       </Card>
 
-      <Card title={<span className="flex items-center"><PushpinOutlined className="mr-2" /> 推送渠道</span>}>
+      <Card
+        title={
+          <span className="flex items-center">
+            <PushpinOutlined className="mr-2" /> 推送渠道
+          </span>
+        }
+      >
         <List
           dataSource={pushChannelSettings}
-          renderItem={item => (
+          renderItem={(item) => (
             <List.Item
               key={item.key}
               actions={[
@@ -254,17 +263,8 @@ const NotificationSettings: React.FC = () => {
       <Divider />
 
       <div className="flex justify-center">
-        <Popconfirm
-          title="确定要恢复默认设置吗？"
-          onConfirm={handleResetToDefault}
-          okText="确定"
-          cancelText="取消"
-        >
-          <Button
-            type="default"
-          >
-            恢复默认设置
-          </Button>
+        <Popconfirm title="确定要恢复默认设置吗？" onConfirm={handleResetToDefault} okText="确定" cancelText="取消">
+          <Button type="default">恢复默认设置</Button>
         </Popconfirm>
       </div>
     </div>

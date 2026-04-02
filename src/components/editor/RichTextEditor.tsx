@@ -5,6 +5,18 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { Extension } from '@tiptap/core';
 import { Markdown } from '@tiptap/markdown';
 import { Plugin } from 'prosemirror-state';
+import { Table } from '@tiptap/extension-table';
+import TableHeader from '@tiptap/extension-table-header';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import Image from '@tiptap/extension-image';
+import Math from '@aarkue/tiptap-math-extension';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import Emoji from '@tiptap/extension-emoji';
+import { common, createLowlight } from 'lowlight';
+import { message, Modal, type UploadFile } from 'antd';
+import ImageUploadWithCrop from '../common/ImageUploadWithCrop';
+import articleService from '../../services/articleService';
 import EditorToolbar from './EditorToolbar';
 
 // 工具栏工具类型
@@ -36,6 +48,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className = ''
 }) => {
   const [editorContent, setEditorContent] = useState(content);
+  const [showImageUploadModal, setShowImageUploadModal] = useState(false);
+
+  // 创建lowlight实例
+  const lowlight = createLowlight(common);
 
   // 基础工具栏工具
   const defaultTools: Tool[] = [
@@ -74,6 +90,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       label: '行内代码',
       action: (editor) => editor.chain().focus().toggleCode().run(),
       isActive: (editor) => editor.isActive('code')
+    },
+    {
+      id: 'emoji',
+      icon: '😊',
+      label: '表情符号',
+      action: (editor) => editor.chain().focus().insertContent('😊').run()
     },
 
     // 段落格式
@@ -136,6 +158,22 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       isActive: (editor) => editor.isActive('orderedList')
     },
 
+    // 表格
+    {
+      id: 'table',
+      icon: '⊞',
+      label: '表格',
+      action: (editor) => editor.chain().focus().insertTable({ rows: 2, cols: 2, withHeaderRow: true }).run()
+    },
+
+    // 数学公式
+    {
+      id: 'math',
+      icon: '∑',
+      label: '数学公式',
+      action: (editor) => editor.chain().focus().insertContent('$E=mc^2$').run()
+    },
+
     // 其他
     {
       id: 'codeBlock',
@@ -150,14 +188,51 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       label: '引用',
       action: (editor) => editor.chain().focus().toggleBlockquote().run(),
       isActive: (editor) => editor.isActive('blockquote')
-    },
+    }, // 其他
     {
       id: 'horizontalRule',
       icon: '—',
       label: '分隔线',
       action: (editor) => editor.chain().focus().setHorizontalRule().run()
+    },
+    // 图片上传
+    {
+      id: 'image',
+      icon: '🖼️',
+      label: '插入图片',
+      action: () => setShowImageUploadModal(true)
     }
   ];
+
+  // 处理图片上传
+  const handleImageUpload = async (file: File): Promise<string> => {
+    try {
+      const uploadResult = await articleService.uploadArticleImage(file);
+      if (uploadResult.code === 200) {
+        return uploadResult.data;
+      } else {
+        message.error('图片上传失败，请删除后重新上传');
+        return '';
+      }
+    } catch (error) {
+      console.error('上传图片失败:', error);
+      throw error;
+    }
+  };
+
+  // 处理图片删除
+  const handleImageDelete = async (fileUrl: string): Promise<void> => {
+    try {
+      await articleService.deleteImage(fileUrl);
+    } catch (error) {
+      console.error('删除图片失败:', error);
+    }
+  };
+
+  // 处理取消上传
+  const handleCancelUpload = (): void => {
+    setShowImageUploadModal(false);
+  };
 
   const PasteMarkdownExtension = Extension.create({
     name: 'pasteMarkdown',
@@ -198,6 +273,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         placeholder
       }),
       Markdown,
+      Table.configure({
+        resizable: true
+      }),
+      TableHeader,
+      TableRow,
+      TableCell,
+      Image,
+      Math,
+      CodeBlockLowlight.configure({
+        lowlight
+      }),
+      Emoji,
       PasteMarkdownExtension,
       ...extensions
     ],
@@ -224,6 +311,48 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <div className="p-4 min-h-[500px]">
         <EditorContent editor={editor} />
       </div>
+
+      {/* 图片上传模态框 */}
+      <Modal title="上传图片" open={showImageUploadModal} onCancel={handleCancelUpload} okText="完成" cancelText="取消">
+        <ImageUploadWithCrop
+          uploadMode="immediate"
+          customRequest={async (options) => {
+            const { file, onSuccess, onError } = options;
+            try {
+              const imageUrl = await handleImageUpload(file as File);
+              onSuccess?.({ data: imageUrl });
+              // 插入图片到编辑器
+              if (editor) {
+                editor
+                  .chain()
+                  .focus()
+                  .insertContent({
+                    type: 'image/jpeg',
+                    attrs: {
+                      src: imageUrl,
+                      alt: '',
+                      title: ''
+                    }
+                  })
+                  .run();
+              }
+              message.success('图片上传成功');
+            } catch {
+              onError?.(new Error('图片上传失败'));
+              message.error('图片上传失败，请重试');
+            }
+          }}
+          onUploadSuccess={() => {}}
+          onRemove={async (file: UploadFile) => {
+            if (file.response?.data) {
+              await handleImageDelete(file.response.data);
+            }
+          }}
+          cropShape="rect"
+          aspectRatio={4 / 3}
+          placeholder="点击上传图片"
+        />
+      </Modal>
     </div>
   );
 };

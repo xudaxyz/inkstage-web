@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { Avatar, Button, Input, Popover, message } from 'antd';
+import { Avatar, Button, Input, message, Popover } from 'antd';
 import { SmileOutlined } from '@ant-design/icons';
 import useCommentStore from '../../store/CommentStore';
 
 const { TextArea } = Input;
 
 interface CommentInputProps {
-    articleId: number;
-    parentId?: number;
-    currentUserId?: number;
-    currentUserNickname?: string;
-    currentUserAvatar?: string;
-    onSubmitSuccess?: () => void;
+  articleId: number;
+  parentId?: number;
+  currentUserId?: number;
+  currentUserNickname?: string;
+  currentUserAvatar?: string;
+  onSubmitSuccess?: () => void;
 }
 
 const CommentInput: React.FC<CommentInputProps> = ({
@@ -30,16 +30,13 @@ const CommentInput: React.FC<CommentInputProps> = ({
   const MAX_LENGTH = 500;
 
   // 常用表情
-  const emojis = [
-    '😊', '😂', '❤️', '👍', '👎', '🔥', '🎉', '👏',
-    '🤔', '😮', '😢', '😡', '😍', '🤣', '🤩', '🤗'
-  ];
+  const emojis = ['😊', '😂', '❤️', '👍', '👎', '🔥', '🎉', '👏', '🤔', '😮', '😢', '😡', '😍', '🤣', '🤩', '🤗'];
 
-  const handleEmojiClick = (emoji: string) => {
-    setContent(prev => prev + emoji);
+  const handleEmojiClick = (emoji: string): void => {
+    setContent((prev) => prev + emoji);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<void> => {
     if (!currentUserId) {
       message.warning('您还没有登录，请先登录！');
       return;
@@ -88,11 +85,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
 
   return (
     <div className="flex gap-3">
-      <Avatar
-        src={currentUserAvatar || undefined}
-        alt={currentUserNickname}
-        className="w-8 h-8 shrink-0"
-      />
+      <Avatar src={currentUserAvatar || undefined} alt={currentUserNickname} className="w-8 h-8 shrink-0" />
       <div className="flex-1">
         <div className="relative">
           <TextArea
@@ -111,14 +104,9 @@ const CommentInput: React.FC<CommentInputProps> = ({
               open={showEmojiPicker}
               onOpenChange={setShowEmojiPicker}
             >
-              <Button
-                icon={<SmileOutlined/>}
-                size="small"
-                className="text-gray-500"
-              />
+              <Button icon={<SmileOutlined />} size="small" className="text-gray-500" />
             </Popover>
-            <span
-              className={`text-xs ${content.length > MAX_LENGTH * 0.8 ? 'text-red-500' : 'text-gray-400'}`}>
+            <span className={`text-xs ${content.length > MAX_LENGTH * 0.8 ? 'text-red-500' : 'text-gray-400'}`}>
               {content.length}/{MAX_LENGTH}
             </span>
           </div>
@@ -131,7 +119,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
             }}
             className="text-gray-500"
           >
-                        取消
+            取消
           </Button>
           <Button
             type="primary"
@@ -139,7 +127,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
             loading={isSubmitting}
             className={`${content.trim() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300'} text-white`}
           >
-                        发布
+            发布
           </Button>
         </div>
       </div>
