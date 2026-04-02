@@ -1,190 +1,102 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Tag, Button, Space, Typography, Table, Avatar, List } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Avatar, Button, Card, Col, List, Row, Space, Spin, Statistic, Tag, Typography } from 'antd';
 import {
-  UserOutlined,
-  FileTextOutlined,
-  TagOutlined,
-  MessageOutlined,
-  EyeOutlined,
-  StarOutlined,
   BarChartOutlined,
   CalendarOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  EyeOutlined,
+  FileTextOutlined,
+  MessageOutlined,
+  StarOutlined,
+  TagOutlined,
+  UserOutlined
 } from '@ant-design/icons';
-import { Line, Pie, Column } from '@ant-design/plots';
+import { Line, Pie } from '@ant-design/plots';
+import { dashboardService } from '../../services/dashboardService';
+import type { DashboardStatsVO } from '../../types/admin';
 
 const { Title, Text } = Typography;
 
-// 模拟统计数据
-const mockStats = {
-  users: {
-    total: 1234,
-    growth: 12.5,
-    trend: 'up'
-  },
-  articles: {
-    total: 5678,
-    growth: 8.2,
-    trend: 'up'
-  },
-  tags: {
-    total: 123,
-    growth: 5.8,
-    trend: 'up'
-  },
-  comments: {
-    total: 9876,
-    growth: -2.1,
-    trend: 'down'
-  },
-  views: {
-    total: 125000,
-    growth: 15.3,
-    trend: 'up'
-  },
-  collections: {
-    total: 3456,
-    growth: 7.8,
-    trend: 'up'
-  }
-};
-
-// 模拟最近活动数据
-const mockActivities = [
-  {
-    id: 1,
-    user: '张三',
-    action: '发布了新文章',
-    target: '《React最佳实践》',
-    time: '2分钟前',
-    status: 'success',
-    avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
-  },
-  {
-    id: 2,
-    user: '李四',
-    action: '评论了文章',
-    target: '《TypeScript高级特性》',
-    time: '15分钟前',
-    status: 'info',
-    avatar: 'https://randomuser.me/api/portraits/women/2.jpg'
-  },
-  {
-    id: 3,
-    user: '王五',
-    action: '注册了新账号',
-    target: '',
-    time: '1小时前',
-    status: 'success',
-    avatar: 'https://randomuser.me/api/portraits/men/3.jpg'
-  },
-  {
-    id: 4,
-    user: '赵六',
-    action: '更新了个人资料',
-    target: '',
-    time: '2小时前',
-    status: 'info',
-    avatar: 'https://randomuser.me/api/portraits/women/4.jpg'
-  },
-  {
-    id: 5,
-    user: '孙七',
-    action: '收藏了文章',
-    target: '《Node.js性能优化》',
-    time: '3小时前',
-    status: 'info',
-    avatar: 'https://randomuser.me/api/portraits/men/5.jpg'
-  }
-];
-
-// 模拟热门文章数据
-const mockHotArticles = [
-  {
-    key: '1',
-    title: 'React最佳实践',
-    nickname: '张三',
-    views: 1234,
-    comments: 56,
-    date: '2026-03-01',
-    status: 'published'
-  },
-  {
-    key: '2',
-    title: 'TypeScript高级特性',
-    nickname: '李四',
-    views: 987,
-    comments: 45,
-    date: '2026-03-02',
-    status: 'published'
-  },
-  {
-    key: '3',
-    title: 'Node.js性能优化',
-    nickname: '王五',
-    views: 876,
-    comments: 34,
-    date: '2026-03-03',
-    status: 'published'
-  },
-  {
-    key: '4',
-    title: 'Tailwind CSS使用指南',
-    nickname: '赵六',
-    views: 765,
-    comments: 23,
-    date: '2026-03-04',
-    status: 'draft'
-  },
-  {
-    key: '5',
-    title: 'React Hooks深入理解',
-    nickname: '孙七',
-    views: 654,
-    comments: 12,
-    date: '2026-03-05',
-    status: 'published'
-  }
-];
-
-// 模拟浏览量趋势数据
-const mockViewsData = [
-  { date: '2026-02-29', views: 8500 },
-  { date: '2026-03-01', views: 9200 },
-  { date: '2026-03-02', views: 8800 },
-  { date: '2026-03-03', views: 10500 },
-  { date: '2026-03-04', views: 11200 },
-  { date: '2026-03-05', views: 9800 },
-  { date: '2026-03-06', views: 12000 },
-  { date: '2026-03-07', views: 11500 },
-  { date: '2026-03-08', views: 13000 }
-];
-
-// 模拟文章分类数据
-const mockArticleCategoryData = [
-  { category: '前端开发', value: 35 },
-  { category: '后端开发', value: 25 },
-  { category: '移动开发', value: 15 },
-  { category: 'DevOps', value: 10 },
-  { category: '其他', value: 15 }
-];
-
-// 模拟用户增长数据
-const mockUserGrowthData = [
-  { month: '1月', users: 850 },
-  { month: '2月', users: 920 },
-  { month: '3月', users: 1234 }
-];
+// 管理员代办事项类型定义
+interface TodoItem {
+  id: number;
+  title: string;
+  count: number;
+  icon: React.ReactNode;
+  color: string;
+  route: string;
+}
 
 const AdminDashboard: React.FC = () => {
-  const [stats] = useState(mockStats);
-  const [activities] = useState(mockActivities);
-  const [hotArticles] = useState(mockHotArticles);
+  // 状态管理
+  const [dashboardStats, setDashboardStats] = useState<DashboardStatsVO | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 模拟数据加载
+  // 管理员代办事项
+  const [todoItems, setTodoItems] = useState<TodoItem[]>([]);
+
+  // 数据加载
   useEffect(() => {
+    loadDashboardStats().then();
   }, []);
 
+  // 加载仪表盘数据
+  const loadDashboardStats = async (): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await dashboardService.getDashboardStats(3);
+      if (response.code === 200) {
+        setDashboardStats(response.data);
+      }
+
+      // 构建代办事项数据
+      if (response.data.pendingStats) {
+        const items: TodoItem[] = [
+          {
+            id: 1,
+            title: '文章待审核',
+            count: response.data.pendingStats.pendingArticles,
+            icon: <FileTextOutlined className="text-blue-500" />,
+            color: 'blue',
+            route: '/admin/articles'
+          },
+          {
+            id: 2,
+            title: '标签待审核',
+            count: response.data.pendingStats.pendingTags,
+            icon: <TagOutlined className="text-orange-500" />,
+            color: 'orange',
+            route: '/admin/tags'
+          },
+          {
+            id: 3,
+            title: '评论待审核',
+            count: response.data.pendingStats.pendingComments,
+            icon: <MessageOutlined className="text-purple-500" />,
+            color: 'purple',
+            route: '/admin/comments'
+          },
+          {
+            id: 4,
+            title: '用户待审核',
+            count: response.data.pendingStats.pendingUsers,
+            icon: <UserOutlined className="text-green-500" />,
+            color: 'green',
+            route: '/admin/users'
+          }
+        ];
+        setTodoItems(items);
+      }
+    } catch (err) {
+      setError('加载仪表盘数据失败');
+      console.error('Failed to load dashboard stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 获取状态标签颜色
   const getStatusColor = (status: string): string => {
@@ -202,57 +114,35 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // 热门文章表格列配置
-  const columns = [
-    {
-      title: '文章标题',
-      dataIndex: 'title',
-      key: 'title',
-      render: (text: string): React.ReactNode => <Text ellipsis={{ tooltip: text }}>{text}</Text>
-    },
-    {
-      title: '作者',
-      dataIndex: 'nickname',
-      key: 'nickname'
-    },
-    {
-      title: '浏览量',
-      dataIndex: 'views',
-      key: 'views',
-      render: (views: number): React.ReactNode => (
-        <div className="flex items-center gap-1">
-          <EyeOutlined className="text-gray-400"/>
-          <span>{views}</span>
+  // 处理加载状态
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spin size="large" tip="加载中..." />
+      </div>
+    );
+  }
+
+  // 处理错误状态
+  if (error || !dashboardStats) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">😢</div>
+          <h2 className="text-2xl font-bold mb-2 text-gray-800">{error || '加载失败'}</h2>
+          <p className="text-gray-500 mb-6">很抱歉，无法加载仪表盘数据。</p>
+          <Button
+            onClick={loadDashboardStats}
+            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          >
+            重试
+          </Button>
         </div>
-      )
-    },
-    {
-      title: '评论数',
-      dataIndex: 'comments',
-      key: 'comments',
-      render: (comments: number): React.ReactNode => (
-        <div className="flex items-center gap-1">
-          <MessageOutlined className="text-gray-400"/>
-          <span>{comments}</span>
-        </div>
-      )
-    },
-    {
-      title: '发布日期',
-      dataIndex: 'date',
-      key: 'date'
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string): React.ReactNode => (
-        <Tag color={status === 'published' ? 'green' : 'orange'}>
-          {status === 'published' ? '已发布' : '草稿'}
-        </Tag>
-      )
-    }
-  ];
+      </div>
+    );
+  }
+
+  const { coreStats, viewsTrend, userGrowthTrend, articleCategoryDistribution, recentActivities } = dashboardStats;
 
   return (
     <div>
@@ -260,22 +150,19 @@ const AdminDashboard: React.FC = () => {
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>
-            <Title level={2} className="text-gray-800 mb-2">控制台</Title>
+            <Title level={2} className="text-gray-800 mb-2">
+              控制台
+            </Title>
           </div>
           <Space className="mt-4 md:mt-0">
-            <Button
-              type="default"
-              size="middle"
-              icon={<CalendarOutlined/>}
-            >
-                            今日
+            <Button type="default" size="middle" icon={<CalendarOutlined />}>
+              今日
             </Button>
-            <Button
-              type="default"
-              size="middle"
-              icon={<BarChartOutlined/>}
-            >
-                            数据报表
+            <Button type="default" size="middle" icon={<BarChartOutlined />}>
+              数据报表
+            </Button>
+            <Button type="primary" size="middle" onClick={loadDashboardStats}>
+              刷新数据
             </Button>
           </Space>
         </div>
@@ -287,108 +174,142 @@ const AdminDashboard: React.FC = () => {
           <Card className="border border-gray-100 gap-2 shadow-sm hover:shadow-md transition-all duration-300">
             <Statistic
               title="用户总数"
-              value={stats.users.total}
+              value={coreStats.totalUsers}
               precision={0}
-              prefix={<UserOutlined/>}
+              prefix={<UserOutlined />}
               styles={{ content: { color: 'red' } }}
               suffix={
                 <span
-                  className={`inline-flex items-center gap-1 ${stats.users.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                  {stats.users.trend === 'up' ? '↑' : '↓'}
-                  <span>{Math.abs(stats.users.growth)}%</span>
+                  className={`inline-flex items-center gap-1 ${coreStats.usersGrowthRate >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                >
+                  {coreStats.usersGrowthRate >= 0 ? '↑' : '↓'}
+                  <span>{Math.abs(coreStats.usersGrowthRate)}%</span>
                 </span>
               }
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={8} lg={4}>
-          <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+          <Card className="border border-gray-100 gap-2 shadow-sm hover:shadow-md transition-all duration-300">
             <Statistic
               title="文章总数"
-              value={stats.articles.total}
+              value={coreStats.totalArticles}
               precision={0}
               styles={{ content: { color: '#2362b3' } }}
-              prefix={<FileTextOutlined/>}
+              prefix={<FileTextOutlined />}
               suffix={
                 <span
-                  className={`inline-flex items-center gap-1 ${stats.articles.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                  {stats.articles.trend === 'up' ? '↑' : '↓'}
-                  <span>{Math.abs(stats.articles.growth)}%</span>
+                  className={`inline-flex items-center gap-1 ${coreStats.articlesGrowthRate >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                >
+                  {coreStats.articlesGrowthRate >= 0 ? '↑' : '↓'}
+                  <span>{Math.abs(coreStats.articlesGrowthRate)}%</span>
                 </span>
               }
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={8} lg={4}>
-          <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+          <Card className="border border-gray-100 gap-2 shadow-sm hover:shadow-md transition-all duration-300">
             <Statistic
               title="标签总数"
-              value={stats.tags.total}
+              value={coreStats.totalTags}
               precision={0}
               styles={{ content: { color: '#fa8c16' } }}
-              prefix={<TagOutlined/>}
+              prefix={<TagOutlined />}
               suffix={
                 <span
-                  className={`inline-flex items-center gap-1 ${stats.tags.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                  {stats.tags.trend === 'up' ? '↑' : '↓'}
-                  <span>{Math.abs(stats.tags.growth)}%</span>
+                  className={`inline-flex items-center gap-1 ${coreStats.tagsGrowthRate >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                >
+                  {coreStats.tagsGrowthRate >= 0 ? '↑' : '↓'}
+                  <span>{Math.abs(coreStats.tagsGrowthRate)}%</span>
                 </span>
               }
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={8} lg={4}>
-          <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+          <Card className="border border-gray-100 gap-2 shadow-sm hover:shadow-md transition-all duration-300">
             <Statistic
               title="评论总数"
-              value={stats.comments.total}
+              value={coreStats.totalComments}
               precision={0}
               styles={{ content: { color: '#722ed1' } }}
-              prefix={<MessageOutlined/>}
+              prefix={<MessageOutlined />}
               suffix={
                 <span
-                  className={`inline-flex items-center gap-1 ${stats.comments.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                  {stats.comments.trend === 'up' ? '↑' : '↓'}
-                  <span>{Math.abs(stats.comments.growth)}%</span>
+                  className={`inline-flex items-center gap-1 ${coreStats.commentsGrowthRate >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                >
+                  {coreStats.commentsGrowthRate >= 0 ? '↑' : '↓'}
+                  <span>{Math.abs(coreStats.commentsGrowthRate)}%</span>
                 </span>
               }
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={8} lg={4}>
-          <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+          <Card className="border border-gray-100 gap-2 shadow-sm hover:shadow-md transition-all duration-300">
             <Statistic
               title="总浏览量"
-              value={stats.views.total}
+              value={coreStats.totalViews}
               precision={0}
               styles={{ content: { color: '#13c2c2' } }}
-              prefix={<EyeOutlined/>}
+              prefix={<EyeOutlined />}
               suffix={
                 <span
-                  className={`inline-flex items-center gap-1 ${stats.views.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                  {stats.views.trend === 'up' ? '↑' : '↓'}
-                  <span>{Math.abs(stats.views.growth)}%</span>
+                  className={`inline-flex items-center gap-1 ${coreStats.viewsGrowthRate >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                >
+                  {coreStats.viewsGrowthRate >= 0 ? '↑' : '↓'}
+                  <span>{Math.abs(coreStats.viewsGrowthRate)}%</span>
                 </span>
               }
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={8} lg={4}>
-          <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+          <Card className="border border-gray-100 gap-2 shadow-sm hover:shadow-md transition-all duration-300">
             <Statistic
               title="收藏总数"
-              value={stats.collections.total}
+              value={coreStats.totalCollections}
               precision={0}
               styles={{ content: { color: '#eb2f96' } }}
-              prefix={<StarOutlined/>}
+              prefix={<StarOutlined />}
               suffix={
                 <span
-                  className={`inline-flex items-center gap-1 ${stats.collections.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                  {stats.collections.trend === 'up' ? '↑' : '↓'}
-                  <span>{Math.abs(stats.collections.growth)}%</span>
+                  className={`inline-flex items-center gap-1 ${coreStats.collectionsGrowthRate >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                >
+                  {coreStats.collectionsGrowthRate >= 0 ? '↑' : '↓'}
+                  <span>{Math.abs(coreStats.collectionsGrowthRate)}%</span>
                 </span>
               }
             />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 管理员代办事项 */}
+      <Row gutter={[16, 16]} className="mb-6">
+        <Col xs={24}>
+          <Card title="管理员代办事项" variant={'borderless'} className=" shadow-sm" size="small">
+            <Row gutter={[16, 16]}>
+              {todoItems.map((item) => (
+                <Col key={item.id} xs={24} sm={12} md={6}>
+                  <Link to={item.route} className="block">
+                    <Card
+                      variant={'borderless'}
+                      className={'hover:shadow-md transition-all duration-300 hover:border-cyan-300'}
+                      hoverable
+                    >
+                      <div className="flex flex-col items-center justify-center p-4">
+                        <div className={`text-${item.color}-500 text-2xl mb-3`}>{item.icon}</div>
+                        <h3 className="text-lg font-medium mb-2 text-gray-800">{item.title}</h3>
+                        <div className={`text-${item.color}-600 text-2xl font-bold mb-2`}>{item.count}</div>
+                        <div className="text-sm text-gray-500">点击查看详情</div>
+                      </div>
+                    </Card>
+                  </Link>
+                </Col>
+              ))}
+            </Row>
           </Card>
         </Col>
       </Row>
@@ -397,14 +318,10 @@ const AdminDashboard: React.FC = () => {
       <Row gutter={[16, 16]} className="mb-6">
         {/* 浏览量趋势 */}
         <Col xs={24} md={12}>
-          <Card
-            title="浏览量趋势"
-            className="border border-gray-100 shadow-sm"
-            size="small"
-          >
+          <Card title="浏览量趋势" className="border border-gray-100 shadow-sm" size="small">
             <div style={{ height: 300 }}>
               <Line
-                data={mockViewsData}
+                data={viewsTrend.map((item) => ({ date: item.timeValue, views: item.value }))}
                 xField="date"
                 yField="views"
                 smooth
@@ -433,36 +350,23 @@ const AdminDashboard: React.FC = () => {
 
         {/* 文章分类分布 */}
         <Col xs={24} md={12}>
-          <Card
-            title="文章分类分布"
-            className="border border-gray-100 shadow-sm"
-            size="small"
-          >
+          <Card title="文章分类分布" className="border border-gray-100 shadow-sm" size="small">
             <div style={{ height: 300 }}>
               <Pie
-                data={mockArticleCategoryData}
+                data={articleCategoryDistribution}
                 angleField="value"
-                colorField="category"
+                colorField="name"
                 radius={0.8}
                 label={{
-                  type: 'inner',
-                  content: '{name}: {value}%'
+                  position: 'outside',
+                  text: 'name',
+                  offsetY: 10
                 }}
                 tooltip={{
-                  formatter: (datum: { category: string; value: number }) => {
-                    return {
-                      name: datum.category,
-                      value: `${datum.value}%`
-                    };
-                  }
+                  title: 'name',
+                  items: ['value']
                 }}
-                color={[
-                  '#1677ff',
-                  '#52c41a',
-                  '#fa8c16',
-                  '#722ed1',
-                  '#13c2c2'
-                ]}
+                color={['#1677ff', '#52c41a', '#fa8c16', '#722ed1', '#13c2c2']}
               />
             </div>
           </Card>
@@ -472,40 +376,31 @@ const AdminDashboard: React.FC = () => {
       <Row gutter={[16, 16]} className="mb-6">
         {/* 用户增长趋势 */}
         <Col xs={24} md={12}>
-          <Card
-            title="用户增长趋势"
-            className="border border-gray-100 shadow-sm"
-            size="small"
-          >
+          <Card title="用户增长趋势" className="border border-gray-100 shadow-sm" size="small">
             <div style={{ height: 300 }}>
-              <Column
-                data={mockUserGrowthData}
-                xField="month"
+              <Line
+                data={userGrowthTrend.map((item) => ({ date: item.timeValue, users: item.value }))}
+                xField="date"
                 yField="users"
-                columnStyle={{
-                  fill: '#722ed1'
+                smooth
+                lineStyle={{
+                  stroke: '#722ed1',
+                  lineWidth: 2
                 }}
-                label={{
-                  position: 'top',
-                  formatter: (datum: { month: string; users: number }) => datum.users
+                pointStyle={{
+                  fill: '#722ed1',
+                  stroke: '#fff',
+                  lineWidth: 2
                 }}
                 tooltip={{
-                  formatter: (datum: { month: string; users: number }) => {
+                  formatter: (datum: { date: string; users: number }) => {
                     return {
-                      name: datum.month,
+                      name: datum.date,
                       value: datum.users
                     };
                   }
                 }}
-                grid={{
-                  y: {
-                    line: {
-                      style: {
-                        stroke: '#f0f0f0'
-                      }
-                    }
-                  }
-                }}
+                grid={{}}
               />
             </div>
           </Card>
@@ -513,21 +408,17 @@ const AdminDashboard: React.FC = () => {
 
         {/* 最近活动 */}
         <Col xs={24} md={12}>
-          <Card
-            title="最近活动"
-            className="border border-gray-100 shadow-sm"
-            size="small"
-          >
+          <Card title="最近活动" className="border border-gray-100 shadow-sm" size="small">
             <List
               size="small"
-              dataSource={activities}
+              dataSource={recentActivities}
               renderItem={(item) => (
                 <List.Item className="py-3">
                   <List.Item.Meta
-                    avatar={<Avatar src={item.avatar}/>}
+                    avatar={<Avatar src={item.avatar} />}
                     title={
                       <div className="flex items-center gap-2">
-                        <Text className="font-medium">{item.user}</Text>
+                        <Text className="font-medium">{item.userName}</Text>
                         <Text className="text-gray-500">{item.action}</Text>
                         {item.target && (
                           <Tag color={getStatusColor(item.status)} className="ml-2">
@@ -538,7 +429,7 @@ const AdminDashboard: React.FC = () => {
                     }
                     description={
                       <div className="flex items-center gap-2">
-                        <ClockCircleOutlined className="text-gray-400"/>
+                        <ClockCircleOutlined className="text-gray-400" />
                         <Text className="text-xs text-gray-500">{item.time}</Text>
                       </div>
                     }
@@ -548,31 +439,7 @@ const AdminDashboard: React.FC = () => {
             />
             <div className="mt-4 text-center">
               <Button type="text" className="text-primary">
-                                查看全部活动
-              </Button>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[16, 16]} className="mb-6">
-        {/* 热门文章 */}
-        <Col xs={24}>
-          <Card
-            title="热门文章"
-            className="border border-gray-100 shadow-sm"
-            size="small"
-          >
-            <Table
-              columns={columns}
-              dataSource={hotArticles}
-              size="small"
-              pagination={false}
-              rowKey="key"
-            />
-            <div className="mt-4 text-center">
-              <Button type="text" className="text-primary">
-                                查看全部文章
+                查看全部活动
               </Button>
             </div>
           </Card>

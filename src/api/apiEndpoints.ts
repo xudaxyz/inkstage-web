@@ -200,6 +200,12 @@ export const API_ENDPOINTS = {
       CHECK_CODE: '/admin/notification-templates/check-code', // 检查编码是否存在
       PREVIEW: (code: string): string => `/admin/notification-templates/preview/${code}`, // 预览模板渲染效果
       SEND: '/admin/notification-templates/send' // 手动发送通知
+    },
+
+    // 仪表盘相关
+    DASHBOARD: {
+      STATS: '/admin/dashboard/stats', // 获取仪表盘统计数据
+      REFRESH: '/admin/dashboard/refresh' // 刷新仪表盘统计数据
     }
   },
 

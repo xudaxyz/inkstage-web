@@ -139,7 +139,6 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
         }
 
         resolve(closestRatio.value);
-        console.log('closestRatio', closestRatio);
       };
       img.src = URL.createObjectURL(file);
     });

@@ -1,29 +1,28 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, Switch } from 'antd';
 import {
-    AppstoreOutlined,
-    BarChartOutlined,
-    BellOutlined,
-    DashboardOutlined,
-    FileTextOutlined,
-    LogoutOutlined,
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-    MessageOutlined,
-    MoonOutlined,
-    SettingOutlined,
-    SunOutlined,
-    TagOutlined,
-    UsergroupAddOutlined,
-    UserOutlined
+  AppstoreOutlined,
+  BellOutlined,
+  DashboardOutlined,
+  FileTextOutlined,
+  LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  MessageOutlined,
+  MoonOutlined,
+  SettingOutlined,
+  SunOutlined,
+  TagOutlined,
+  UsergroupAddOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import { useAdminStore } from '../store/adminStore';
 
 const { Header, Sider, Content } = Layout;
 
 interface AdminLayoutProps {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
@@ -94,12 +93,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   ];
 
   // 处理菜单点击
-  const handleMenuClick = () : void => {
+  const handleMenuClick = (): void => {
     // 不再在这里设置current状态，由useEffect根据路由变化来更新
   };
 
   // 处理退出登录
-  const handleLogout = async () : Promise<void> => {
+  const handleLogout = async (): Promise<void> => {
     try {
       logout();
       navigate('/admin/login');
@@ -112,7 +111,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const handleUserActivity = useCallback((): void => {
     // 每5分钟自动刷新令牌
     if (isAdminLoggedIn) {
-      refreshToken().catch(error => {
+      refreshToken().catch((error) => {
         console.error('自动刷新令牌失败:', error);
       });
     }
@@ -136,7 +135,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
     // 监听用户活动
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-    events.forEach(event => {
+    events.forEach((event) => {
       document.addEventListener(event, debouncedHandleUserActivity);
     });
 
@@ -145,7 +144,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
     return (): void => {
       clearInterval(autoRefreshInterval);
-      events.forEach(event => {
+      events.forEach((event) => {
         document.removeEventListener(event, debouncedHandleUserActivity);
       });
     };
@@ -195,9 +194,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         >
           <div className="flex items-center gap-4">
             <div className="flex text-cyan-500 items-center gap-2">
-              <div className="text-xl font-bold">
-                                InkStage-后台管理系统
-              </div>
+              <div className="text-xl font-bold">InkStage-后台管理系统</div>
             </div>
           </div>
 
@@ -217,15 +214,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             {/* 用户头像和下拉菜单 */}
             <Dropdown menu={{ items: userMenu }} placement="bottomRight">
               <div className="flex items-center gap-3 cursor-pointer p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
-                <Avatar
-                  size="small"
-                  icon={<UserOutlined />}
-                >
+                <Avatar size="small" icon={<UserOutlined />}>
                   {'A'}
                 </Avatar>
-                <span className="text-sm text-gray-400 font-medium">
-                  {adminUser?.nickname || '管理员'}
-                </span>
+                <span className="text-sm text-gray-400 font-medium">{adminUser?.nickname || '管理员'}</span>
               </div>
             </Dropdown>
           </div>
@@ -260,14 +252,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               />
             </div>
             {/* 折叠展开按钮 */}
-            <div style={{
-              position: 'absolute',
-              bottom: 20,
-              left: 0,
-              right: 0,
-              display: 'flex',
-              justifyContent: 'center'
-            }}>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 20,
+                left: 0,
+                right: 0,
+                display: 'flex',
+                justifyContent: 'center'
+              }}
+            >
               <Button
                 variant="text"
                 color="cyan"
@@ -287,9 +281,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               overflowY: 'auto'
             }}
           >
-            <div className="bg-white rounded-lg shadow-sm p-6 transition-all duration-300">
-              {children}
-            </div>
+            <div className="bg-white rounded-lg shadow-sm p-6 transition-all duration-300">{children}</div>
           </Content>
         </Layout>
       </Layout>
