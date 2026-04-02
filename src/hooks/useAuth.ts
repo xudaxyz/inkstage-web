@@ -1,11 +1,96 @@
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store';
-import type { AuthTypeEnum } from '../types/enums';
+import type { AuthTypeEnum, GenderEnum, UserRoleEnum } from '../types/enums';
 
 /**
  * 前台认证相关的自定义Hook
  */
-export const useAuth = () => {
+export const useAuth = (): {
+  user: {
+    id: number | null;
+    username: string | null;
+    email: string | null;
+    avatar?: string;
+    nickname?: string;
+    coverImage?: string;
+    signature?: string;
+    gender?: GenderEnum;
+    birthDate?: string;
+    location?: string;
+    role?: UserRoleEnum;
+  };
+  isLoggedIn: boolean;
+  isLoading: boolean;
+  checkAuth: () => boolean;
+  handleLogin: (params: {
+    account: string;
+    authType: AuthTypeEnum;
+    password?: string;
+    code?: string;
+    remember?: boolean;
+  }) => Promise<{
+    code: number;
+    message: string;
+    data: {
+      access_token: string;
+      refresh_token: string;
+      expires_in: number;
+      userInfo: {
+        id: number;
+        username: string;
+        email: string;
+        avatar?: string;
+        nickname?: string;
+        coverImage?: string;
+        signature?: string;
+        gender?: GenderEnum;
+        birthDate?: string;
+        location?: string;
+        role?: UserRoleEnum;
+      };
+    };
+  }>;
+  handleLogout: () => void;
+  register: (params: {
+    account: string;
+    authType: import('../types/enums').AuthTypeEnum;
+    password?: string;
+    confirmPassword?: string;
+    code?: string;
+    agreeTerms: boolean;
+  }) => Promise<{
+    code: number;
+    message: string;
+    data: {
+      access_token: string;
+      refresh_token: string;
+      expires_in: number;
+      userInfo: {
+        id: number;
+        username: string;
+        email: string;
+        avatar?: string;
+        nickname?: string;
+        coverImage?: string;
+        signature?: string;
+        gender?: import('../types/enums').GenderEnum;
+        birthDate?: string;
+        location?: string;
+        role?: import('../types/enums').UserRoleEnum;
+      };
+    };
+  }>;
+  sendCode: (params: { account: string; type: 'email' | 'phone'; purpose: string }) => Promise<{
+    code: number;
+    message: string;
+    data: {
+      expireTime: number;
+    };
+  }>;
+  getProfile: () => Promise<void>;
+  refreshToken: () => Promise<void>;
+  checkPermission: (requiredRoles: string[]) => boolean;
+} => {
   const navigate = useNavigate();
   const { user, isLoggedIn, isLoading, login, logout, register, sendCode, getProfile, refreshToken } = useUserStore();
 
@@ -28,7 +113,28 @@ export const useAuth = () => {
     password?: string;
     code?: string;
     remember?: boolean;
-  }) => {
+  }): Promise<{
+    code: number;
+    message: string;
+    data: {
+      access_token: string;
+      refresh_token: string;
+      expires_in: number;
+      userInfo: {
+        id: number;
+        username: string;
+        email: string;
+        avatar?: string;
+        nickname?: string;
+        coverImage?: string;
+        signature?: string;
+        gender?: GenderEnum;
+        birthDate?: string;
+        location?: string;
+        role?: UserRoleEnum;
+      };
+    };
+  }> => {
     const result = await login(params);
     if (result.code === 200) {
       // 登录成功后处理重定向
