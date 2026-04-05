@@ -16,7 +16,6 @@ const NotificationSettings: React.FC = () => {
       setLoading(true);
       try {
         const response = await notificationService.getNotificationSetting();
-        console.log('getNotificationSetting', response);
         if (response.code === 200) {
           // 将后端返回的 number 类型转换为 boolean 类型
           const settings = response.data;
