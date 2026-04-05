@@ -25,6 +25,7 @@ body {
     line-height: var(--line-height-base);
     letter-spacing: var(--letter-spacing-base);
     scrollbar-gutter: stable;
+    overflow-y: scroll;
 }
 
 /* 文章内容区域的额外样式 */

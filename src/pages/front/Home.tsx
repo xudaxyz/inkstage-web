@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Spin } from 'antd';
 import { useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import Banner from '../../components/front/Banner';
@@ -87,9 +88,13 @@ const Home: React.FC = () => {
   // 状态管理
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
   const [selectedTag, setSelectedTag] = useState<number | undefined>(undefined);
+  const [isContentChanging, setIsContentChanging] = useState(false);
   // 搜索参数
   const [searchParams, setSearchParams] = useSearchParams();
   const keyword = searchParams.get('keyword') || '';
+  // 容器高度引用
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState('auto');
   // React Query 数据获取
   const { data: bannerArticles, error: bannerError, isLoading: bannerLoading } = useBannerArticles();
   const { data: latestArticles, error: latestError, isLoading: latestLoading } = useLatestArticles();
@@ -152,8 +157,33 @@ const Home: React.FC = () => {
   });
   // 当搜索关键词、分类或标签变化时刷新文章列表
   useEffect(() => {
-    refreshArticles();
+    // 记录当前容器高度
+    if (contentRef.current) {
+      setContentHeight(`${contentRef.current.offsetHeight}px`);
+    }
+    // 开始内容切换
+    setIsContentChanging(true);
+
+    // 延迟执行刷新，确保动画效果
+    const timer = setTimeout(() => {
+      refreshArticles();
+    }, 100);
+
+    return (): void => clearTimeout(timer);
   }, [keyword, selectedCategory, selectedTag, refreshArticles]);
+  // 当文章加载完成后，结束内容切换
+  useEffect(() => {
+    if (!articlesLoading && isContentChanging) {
+      // 等待动画完成后再重置状态
+      const timer = setTimeout(() => {
+        setIsContentChanging(false);
+        setContentHeight('auto');
+      }, 500);
+
+      return (): void => clearTimeout(timer);
+    }
+    return (): void => {};
+  }, [articlesLoading, isContentChanging]);
   // 处理分类选择
   const handleCategorySelect = (category: FrontendCategory | '全部'): void => {
     if (category === '全部') {
@@ -184,12 +214,13 @@ const Home: React.FC = () => {
   };
   // 自定义加载中内容
   const articlesLoadingContent = (
-    <div className="space-y-4">
-      {[...Array(5)].map((_, index) => (
-        <div key={index} className="bg-gray-100 rounded-lg p-4">
-          <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+    <div className="space-y-4" style={{ minHeight: '60vh' }}>
+      {[...Array(8)].map((_, index) => (
+        <div key={index} className="bg-gray-100 rounded-lg p-6 h-64">
+          <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
           <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3 mb-6"></div>
           <div className="flex justify-between items-center">
             <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
             <div className="h-4 bg-gray-200 rounded w-16"></div>
@@ -247,34 +278,52 @@ const Home: React.FC = () => {
             )}
 
             {/* 文章列表 - 无限滚动 */}
-            <div className="mt-6">
-              <InfiniteScrollContainer
-                infiniteScroll={{
-                  data: articles,
-                  isLoading: articlesLoading,
-                  isLoadingMore,
-                  isError: articlesIsError,
-                  error: articlesError,
-                  hasMore,
-                  loadMoreRef,
-                  refresh: refreshArticles,
-                  total: 0,
-                  pageSize: 0,
-                  setPageSize: async () => {},
-                  setData: setArticles
-                }}
-                renderItem={renderArticleItem}
-                loadingContent={articlesLoadingContent}
-                loadingMoreContent={articlesLoadingMoreContent}
-                emptyContent={
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">暂无文章</p>
-                    {keyword && <p className="text-gray-400 text-sm mt-2">没有找到与 "{keyword}" 相关的文章</p>}
-                  </div>
-                }
-                noMoreText="已经到底了，没有更多文章了"
-                itemGap="16px"
-              />
+            <div
+              ref={contentRef}
+              className="mt-6"
+              style={{
+                minHeight: '60vh',
+                height: contentHeight
+              }}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${selectedCategory}-${selectedTag}-${keyword}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full"
+                >
+                  <InfiniteScrollContainer
+                    infiniteScroll={{
+                      data: articles,
+                      isLoading: articlesLoading,
+                      isLoadingMore,
+                      isError: articlesIsError,
+                      error: articlesError,
+                      hasMore,
+                      loadMoreRef,
+                      refresh: refreshArticles,
+                      total: 0,
+                      pageSize: 0,
+                      setPageSize: async () => {},
+                      setData: setArticles
+                    }}
+                    renderItem={renderArticleItem}
+                    loadingContent={articlesLoadingContent}
+                    loadingMoreContent={articlesLoadingMoreContent}
+                    emptyContent={
+                      <div className="text-center py-12" style={{ minHeight: '60vh' }}>
+                        <p className="text-gray-500">暂无文章</p>
+                        {keyword && <p className="text-gray-400 text-sm mt-2">没有找到与 "{keyword}" 相关的文章</p>}
+                      </div>
+                    }
+                    noMoreText="已经到底了，没有更多文章了"
+                    itemGap="16px"
+                  />
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
 
