@@ -1,10 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   // 配置需要处理的文件路径
-  content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   // 配置主题
   theme: {
     extend: {
@@ -20,7 +17,7 @@ export default {
           600: '#0284c7',
           700: '#0369a1',
           800: '#075985',
-          900: '#0c4a6e',
+          900: '#0c4a6e'
         },
         secondary: {
           50: '#f8fafc',
@@ -32,7 +29,7 @@ export default {
           600: '#475569',
           700: '#334155',
           800: '#1e293b',
-          900: '#0f172a',
+          900: '#0f172a'
         },
         accent: {
           50: '#fdf2f8',
@@ -44,7 +41,7 @@ export default {
           600: '#db2777',
           700: '#be185d',
           800: '#9d174d',
-          900: '#831843',
+          900: '#831843'
         },
         success: {
           50: '#f0fdf4',
@@ -56,7 +53,7 @@ export default {
           600: '#16a34a',
           700: '#15803d',
           800: '#166534',
-          900: '#14532d',
+          900: '#14532d'
         },
         warning: {
           50: '#fffbeb',
@@ -68,8 +65,12 @@ export default {
           600: '#d97706',
           700: '#b45309',
           800: '#92400e',
-          900: '#78350f',
+          900: '#78350f'
         },
+        idea: {
+          bg: '#1e1e1e',
+          text: '#d4d4d4'
+        }
       },
       // 扩展字体
       fontFamily: {
@@ -81,52 +82,50 @@ export default {
           'Roboto',
           'Helvetica Neue',
           'Arial',
-          'sans-serif',
+          'sans-serif'
         ],
-        serif: [
-          'Georgia',
-          'Cambria',
-          'serif',
-        ],
+        serif: ['Georgia', 'Cambria', 'serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', 'monospace']
       },
       // 扩展间距
       spacing: {
         18: '4.5rem',
         88: '22rem',
         128: '32rem',
-        144: '36rem',
+        144: '36rem'
       },
       // 扩展字体大小
       fontSize: {
-        'xxs': '0.625rem',
-        'xs': '0.75rem',
-        'sm': '0.875rem',
-        'base': '1rem',
-        'lg': '1.125rem',
-        'xl': '1.25rem',
+        xxs: '0.625rem',
+        xs: '0.75rem',
+        sm: '0.875rem',
+        base: '1rem',
+        lg: '1.125rem',
+        xl: '1.25rem',
         '2xl': '1.5rem',
         '3xl': '1.875rem',
         '4xl': '2.25rem',
-        '5xl': '3rem',
+        '5xl': '3rem'
       },
       // 扩展行高
       lineHeight: {
-        'tight': '1.2',
-        'normal': '1.5',
-        'relaxed': '1.6',
-        'loose': '1.8',
+        tight: '1.2',
+        normal: '1.5',
+        relaxed: '1.6',
+        loose: '1.8'
       },
       // 扩展边框圆角
       borderRadius: {
-        '4xl': '2rem',
+        '4xl': '2rem'
       },
-    },
+      // 扩展列表样式
+      listStyleType: {
+        'disc-solid': 'disc'
+      }
+    }
   },
   // 配置插件
-  plugins: [
-      require('@tailwindcss/forms'),
-      require('@tailwindcss/typography')
-  ],
+  plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
   // 配置深色模式
-  darkMode: 'class',
-}
+  darkMode: 'class'
+};

@@ -124,3 +124,9 @@ a {
     text-decoration: none;
     color: inherit;
 }
+
+/* 代码字体样式 - IDEA风格 */
+.article-content code,
+.article-content pre {
+    font-family: "JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+}

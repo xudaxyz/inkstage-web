@@ -110,9 +110,7 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
         }}
       >
         <div
-          className={`
-            prose max-w-none mx-auto
-            prose-headings:text-gray-800 prose-headings:font-bold
+          className="prose max-w-none mx-auto prose-headings:text-gray-800 prose-headings:font-bold
             prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-h4:text-base prose-h5:text-sm prose-h6:text-xs
             prose-h1:mb-6 prose-h2:mb-5 prose-h3:mb-4 prose-h4:mb-3
             prose-h1:mt-10 prose-h2:mt-8 prose-h3:mt-6 prose-h4:mt-5
@@ -126,16 +124,16 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
             prose-li:mb-2
             prose-img:rounded-lg prose-img:my-8 prose-img:shadow-md prose-img:max-w-full prose-img:h-auto
             prose-blockquote:border-l-4 prose-blockquote:border-blue-200 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:mb-6 prose-blockquote:text-gray-600
-            prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono
-            prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-lg prose-pre:p-4 prose-pre:my-6 prose-pre:shadow-md prose-pre:font-mono
+            prose-code:bg-idea-bg prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:text-idea-text prose-code:font-mono
+            prose-pre:bg-idea-bg prose-pre:text-idea-text prose-pre:rounded-lg prose-pre:p-4 prose-pre:my-6 prose-pre:shadow-md prose-pre:font-mono
             prose-table:border prose-table:border-gray-200 prose-table:w-full prose-table:my-6 prose-table:shadow-sm
             prose-hr:border-gray-200 prose-hr:my-8
             dark:prose-invert dark:prose-headings:text-gray-100 dark:prose-p:text-gray-300
             dark:prose-strong:text-gray-100 dark:prose-em:text-gray-300
-            dark:prose-blockquote:text-gray-400 dark:prose-code:bg-gray-800
-            dark:prose-pre:bg-gray-900 dark:prose-table:border-gray-700
+            dark:prose-blockquote:text-gray-400 dark:prose-code:bg-idea-bg dark:prose-code:text-idea-text
+            dark:prose-pre:bg-idea-bg dark:prose-pre:text-idea-text dark:prose-table:border-gray-700
             dark:prose-hr:border-gray-700
-          `}
+            "
           dangerouslySetInnerHTML={{ __html: renderedContent }}
         />
       </Typography>
