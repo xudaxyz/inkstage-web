@@ -100,7 +100,8 @@ export const API_ENDPOINTS = {
       SETTING: {
         GET: '/front/notification/setting/get', // 获取通知设置
         SAVE: '/front/notification/setting/save', // 保存通知设置
-        RESET: '/front/notification/setting/reset' // 恢复默认通知设置
+        RESET: '/front/notification/setting/reset', // 恢复默认通知设置
+        UPDATE: '/front/notification/setting/update' // 更新单个通知设置
       }
     },
 

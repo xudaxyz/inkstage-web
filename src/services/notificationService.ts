@@ -1,11 +1,7 @@
-import { apiClient, API_ENDPOINTS } from '../api';
+import { API_ENDPOINTS, apiClient } from '../api';
 import type { ApiResponse } from '../types/common';
 import { NotificationType } from '../types/enums';
-import type {
-  NotificationSetting,
-  NotificationListResponse
-} from '../types/notification';
-
+import type { NotificationListResponse, NotificationSetting } from '../types/notification';
 // 参数验证函数
 const validateIdParam = (id: number): void => {
   if (id == null || id <= 0) {
@@ -28,11 +24,21 @@ const validateNotificationSetting = (setting: NotificationSetting): void => {
   }
   // 验证布尔类型字段
   const booleanFields = [
-    'articlePublish', 'articleLike', 'articleCollection', 'articleComment',
-    'commentReply', 'commentLike', 'follow', 'message', 'report',
-    'feedback', 'system', 'emailNotification', 'siteNotification'
+    'articlePublish',
+    'articleLike',
+    'articleCollection',
+    'articleComment',
+    'commentReply',
+    'commentLike',
+    'follow',
+    'message',
+    'report',
+    'feedback',
+    'system',
+    'emailNotification',
+    'siteNotification'
   ];
-  booleanFields.forEach(field => {
+  booleanFields.forEach((field) => {
     if (typeof setting[field as keyof NotificationSetting] !== 'boolean') {
       throw new Error(`${field}必须是布尔值`);
     }
@@ -42,7 +48,11 @@ const validateNotificationSetting = (setting: NotificationSetting): void => {
 // 通知服务
 const notificationService = {
   // 获取通知列表（支持分页）
-  getNotificationList: async (notificationType: NotificationType | undefined, pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<NotificationListResponse>> => {
+  getNotificationList: async (
+    notificationType: NotificationType | undefined,
+    pageNum: number = 1,
+    pageSize: number = 10
+  ): Promise<ApiResponse<NotificationListResponse>> => {
     validatePageParams(pageNum, pageSize);
     const params = notificationType ? { notificationType, pageNum, pageSize } : { pageNum, pageSize };
     return await apiClient.get(API_ENDPOINTS.FRONT.NOTIFICATION.LIST, { params });
@@ -76,7 +86,11 @@ const notificationService = {
   },
 
   // 分页获取通知列表
-  getNotificationListWithPage: async (notificationType?: NotificationType, pageNum: number = 1, pageSize: number = 10): Promise<ApiResponse<NotificationListResponse>> => {
+  getNotificationListWithPage: async (
+    notificationType?: NotificationType,
+    pageNum: number = 1,
+    pageSize: number = 10
+  ): Promise<ApiResponse<NotificationListResponse>> => {
     validatePageParams(pageNum, pageSize);
     const params = notificationType ? { notificationType, pageNum, pageSize } : { pageNum, pageSize };
     return await apiClient.get(API_ENDPOINTS.FRONT.NOTIFICATION.LIST_PAGE, { params });
@@ -96,6 +110,18 @@ const notificationService = {
   // 恢复默认通知设置
   resetNotificationSetting: async (): Promise<ApiResponse<boolean>> => {
     return await apiClient.put(API_ENDPOINTS.FRONT.NOTIFICATION.SETTING.RESET);
+  },
+
+  // 更新单个通知设置
+  updateNotificationSetting: async (params: {
+    notificationType: NotificationType | undefined;
+    notificationValue: boolean;
+  }): Promise<ApiResponse<boolean>> => {
+    const data = {
+      notificationType: params.notificationType,
+      notificationValue: params.notificationValue
+    };
+    return await apiClient.put(API_ENDPOINTS.FRONT.NOTIFICATION.SETTING.UPDATE, data);
   }
 };
 
