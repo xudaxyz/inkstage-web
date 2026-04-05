@@ -83,11 +83,38 @@ export default {
           'Arial',
           'sans-serif',
         ],
+        serif: [
+          'Georgia',
+          'Cambria',
+          'serif',
+        ],
       },
       // 扩展间距
       spacing: {
         18: '4.5rem',
         88: '22rem',
+        128: '32rem',
+        144: '36rem',
+      },
+      // 扩展字体大小
+      fontSize: {
+        'xxs': '0.625rem',
+        'xs': '0.75rem',
+        'sm': '0.875rem',
+        'base': '1rem',
+        'lg': '1.125rem',
+        'xl': '1.25rem',
+        '2xl': '1.5rem',
+        '3xl': '1.875rem',
+        '4xl': '2.25rem',
+        '5xl': '3rem',
+      },
+      // 扩展行高
+      lineHeight: {
+        'tight': '1.2',
+        'normal': '1.5',
+        'relaxed': '1.6',
+        'loose': '1.8',
       },
       // 扩展边框圆角
       borderRadius: {
