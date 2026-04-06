@@ -31,7 +31,7 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({ articles = [] }) => {
                   href={`/article/${article.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium transition-colors truncate no-underline"
+                  className="text-[13px] font-medium transition-colors truncate no-underline"
                 >
                   {article.title}
                 </a>

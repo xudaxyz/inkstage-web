@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Input, Form, message, Checkbox } from 'antd';
+import { Button, Checkbox, Form, Input, message } from 'antd';
 import { Link } from 'react-router-dom';
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
@@ -12,12 +11,12 @@ import { getRandomCaptchaImage } from '../../utils';
 
 // 登录表单数据类型
 interface LoginFormData {
-    // 统一登录字段
-    account: string;
-    password?: string;
-    code?: string;
-    // 通用
-    remember?: boolean;
+  // 统一登录字段
+  account: string;
+  password?: string;
+  code?: string;
+  // 通用
+  remember?: boolean;
 }
 
 const Login: React.FC = () => {
@@ -29,14 +28,14 @@ const Login: React.FC = () => {
   const [form] = Form.useForm<LoginFormData>();
 
   // 表单提交处理
-  const handleFormSubmit = (values: LoginFormData) : void => {
+  const handleFormSubmit = (values: LoginFormData): void => {
     // 保存表单数据，弹出验证码模态框
     setFormData(values);
     setCaptchaModalVisible(true);
   };
 
   // 验证码成功后的登录处理
-  const handleCaptchaSuccess = async () : Promise<void> => {
+  const handleCaptchaSuccess = async (): Promise<void> => {
     if (!formData) return;
 
     try {
@@ -49,7 +48,7 @@ const Login: React.FC = () => {
       });
 
       if (response.code !== 200) {
-          message.error(response.message || '登录失败，请稍后重试！');
+        message.error(response.message || '登录失败，请稍后重试！');
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -66,7 +65,7 @@ const Login: React.FC = () => {
   };
 
   // 发送验证码
-  const handleSendCode = async () : Promise<void> => {
+  const handleSendCode = async (): Promise<void> => {
     const account = form.getFieldValue('account');
     if (!account) {
       message.error('请输入邮箱或手机号');
@@ -113,20 +112,16 @@ const Login: React.FC = () => {
   return (
     <AuthLayout title="">
       {/* 登录表单 */}
-      <Form
-        form={form}
-        onFinish={handleFormSubmit}
-        layout="vertical"
-        className="w-full"
-      >
+      <Form form={form} onFinish={handleFormSubmit} layout="vertical" className="w-full">
         {/* 左侧登录，右侧注册链接 */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">请登录</h2>
+          <h2 className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+            请登录
+          </h2>
           <div className="text-sm">
             <span className="text-gray-600">没有账号？</span>
-            <Link to="/register"
-              className="ml-1 text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200">
-                            点击注册
+            <Link to="/register" className="ml-1 hover:underline transition-colors duration-200">
+              <span className="text-blue-500 hover:text-blue-700">点击注册</span>
             </Link>
           </div>
         </div>
@@ -137,13 +132,20 @@ const Login: React.FC = () => {
           rules={[
             {
               required: true,
-              message: loginType === (AuthTypeEnum.EMAIL || AuthTypeEnum.PHONE) ? '请输入邮箱或手机号' : '请输入用户名、邮箱或手机号'
+              message:
+                loginType === (AuthTypeEnum.EMAIL || AuthTypeEnum.PHONE)
+                  ? '请输入邮箱或手机号'
+                  : '请输入用户名、邮箱或手机号'
             }
           ]}
           className="mb-4"
         >
           <Input
-            placeholder={loginType === (AuthTypeEnum.EMAIL || AuthTypeEnum.PHONE) ? '请输入邮箱或手机号' : '请输入用户名、邮箱或手机号'}
+            placeholder={
+              loginType === (AuthTypeEnum.EMAIL || AuthTypeEnum.PHONE)
+                ? '请输入邮箱或手机号'
+                : '请输入用户名、邮箱或手机号'
+            }
             size="large"
             className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
           />
@@ -177,11 +179,7 @@ const Login: React.FC = () => {
 
         {/* 验证码登录 */}
         {(loginType === AuthTypeEnum.EMAIL || loginType === AuthTypeEnum.PHONE) && (
-          <Form.Item
-            name="code"
-            rules={[{ required: true, message: '请输入验证码' }]}
-            className="mb-4"
-          >
+          <Form.Item name="code" rules={[{ required: true, message: '请输入验证码' }]} className="mb-4">
             <div className="flex gap-3 items-center">
               <Input
                 placeholder="请输入验证码"
@@ -194,7 +192,7 @@ const Login: React.FC = () => {
                 className="rounded-md bg-primary-600 hover:bg-primary-700 text-white font-medium px-6 py-2.5 transition-all duration-200 hover:shadow-sm"
                 onClick={handleSendCode}
               >
-                                获取验证码
+                获取验证码
               </Button>
             </div>
           </Form.Item>
@@ -208,14 +206,16 @@ const Login: React.FC = () => {
 
           <a
             href="#"
-            className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200"
+            className="text-sm hover:underline transition-colors duration-200"
             onClick={(e) => {
               e.preventDefault();
-              setLoginType(loginType === AuthTypeEnum.USERNAME ? AuthTypeEnum.EMAIL : AuthTypeEnum.USERNAME );
+              setLoginType(loginType === AuthTypeEnum.USERNAME ? AuthTypeEnum.EMAIL : AuthTypeEnum.USERNAME);
               form.resetFields(['password', 'code']);
             }}
           >
-            {loginType === AuthTypeEnum.USERNAME ? '验证码登录' : '密码登录'}
+            <span className="text-blue-500 hover:text-blue-700">
+              {loginType === AuthTypeEnum.USERNAME ? '验证码登录' : '密码登录'}
+            </span>
           </a>
         </div>
 
@@ -228,7 +228,7 @@ const Login: React.FC = () => {
             className="w-full rounded-md bg-primary-600 hover:bg-primary-700 text-white font-semibold text-base py-2.5 px-6 transition-all duration-200 flex items-center justify-center"
             loading={isLoading}
           >
-                        登录
+            登录
           </Button>
         </Form.Item>
 
@@ -250,9 +250,11 @@ const Login: React.FC = () => {
 
         {/* 忘记密码 */}
         <div className="text-center">
-          <a href="#"
-            className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200">
-                        已有账号，忘记密码？
+          <a
+            href="#"
+            className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200"
+          >
+            <span className="text-blue-400 hover:text-blue-700">已有账号，忘记密码？</span>
           </a>
         </div>
       </Form>

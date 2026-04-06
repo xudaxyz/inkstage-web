@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Spin } from 'antd';
 import { useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import Banner from '../../components/front/Banner';
@@ -289,10 +289,10 @@ const Home: React.FC = () => {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`${selectedCategory}-${selectedTag}-${keyword}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
+                  initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
                   className="w-full"
                 >
                   <InfiniteScrollContainer
@@ -319,7 +319,7 @@ const Home: React.FC = () => {
                         {keyword && <p className="text-gray-400 text-sm mt-2">没有找到与 "{keyword}" 相关的文章</p>}
                       </div>
                     }
-                    noMoreText="已经到底了，没有更多文章了"
+                    noMoreText="已经到底啦！"
                     itemGap="16px"
                   />
                 </motion.div>
@@ -349,7 +349,7 @@ const Home: React.FC = () => {
             <div>
               {tagsLoading ? (
                 <div className="bg-gray-100 rounded-lg p-4">
-                  <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                  <div className="h-6 rounded w-1/2 mb-4"></div>
                   <div className="flex flex-wrap gap-2">
                     {[...Array(8)].map((_, index) => (
                       <div key={index} className="h-8 bg-gray-200 rounded-full px-3"></div>

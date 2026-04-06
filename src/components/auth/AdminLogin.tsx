@@ -154,7 +154,7 @@ const AdminLogin: React.FC = () => {
             href="#"
             className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200"
           >
-            忘记密码？
+            <span className="text-blue-500 hover:text-blue-700">忘记密码？</span>
           </a>
         </div>
 
@@ -193,7 +193,7 @@ const AdminLogin: React.FC = () => {
             to="/"
             className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200 flex items-center justify-center gap-1"
           >
-            <span>返回前台首页</span>
+            <span className="text-gray-700 hover:text-gray-500">返回前台首页</span>
           </Link>
         </div>
       </Form>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Input, Form, message, Checkbox } from 'antd';
+import { Button, Checkbox, Form, Input, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
@@ -10,16 +9,15 @@ import { useUserStore } from '../../store';
 import type { AuthTypeEnum } from '../../types/enums';
 import { getRandomCaptchaImage } from '../../utils';
 
-
 // 注册表单数据类型
 interface RegisterFormData {
-    // 统一注册字段
-    account: string;
-    password?: string;
-    confirmPassword?: string;
-    code?: string;
-    // 通用
-    agreeTerms?: boolean;
+  // 统一注册字段
+  account: string;
+  password?: string;
+  confirmPassword?: string;
+  code?: string;
+  // 通用
+  agreeTerms?: boolean;
 }
 
 // 密码强度类型
@@ -74,7 +72,6 @@ const Register: React.FC = () => {
   const handlePasswordChange = (value: string): void => {
     setPasswordStrength(checkPasswordStrength(value));
   };
-
 
   // 表单提交处理
   const handleRegister = (values: RegisterFormData): void => {
@@ -187,20 +184,16 @@ const Register: React.FC = () => {
   return (
     <AuthLayout title="">
       {/* 注册表单 */}
-      <Form
-        form={form}
-        onFinish={handleRegister}
-        layout="vertical"
-        className="w-full"
-      >
+      <Form form={form} onFinish={handleRegister} layout="vertical" className="w-full">
         {/* 左侧注册，右侧登录链接 */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">欢迎注册</h2>
+          <h2 className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+            欢迎注册
+          </h2>
           <div className="text-sm">
             <span className="text-gray-600">已有账号？</span>
-            <Link to="/login"
-              className="ml-1 text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200">
-                            点击登录
+            <Link to="/login" className="ml-1 hover:underline transition-colors duration-200">
+              <span className="text-blue-600 hover:text-blue-800">点击登录</span>
             </Link>
           </div>
         </div>
@@ -274,7 +267,8 @@ const Register: React.FC = () => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs text-gray-600">密码强度：</span>
                   <span
-                    className={`text-xs font-medium ${passwordStrength === 'weak' ? 'text-red-500' : passwordStrength === 'medium' ? 'text-yellow-500' : 'text-green-500'}`}>
+                    className={`text-xs font-medium ${passwordStrength === 'weak' ? 'text-red-500' : passwordStrength === 'medium' ? 'text-yellow-500' : 'text-green-500'}`}
+                  >
                     {passwordStrength === 'weak' && '弱'}
                     {passwordStrength === 'medium' && '中'}
                     {passwordStrength === 'strong' && '强'}
@@ -284,10 +278,9 @@ const Register: React.FC = () => {
                   <div
                     className="h-full rounded-full transition-all duration-300"
                     style={{
-                      width: passwordStrength === 'weak' ? '33%' :
-                        passwordStrength === 'medium' ? '66%' : '100%',
-                      backgroundColor: passwordStrength === 'weak' ? '#ef4444' :
-                        passwordStrength === 'medium' ? '#f59e0b' : '#10b981'
+                      width: passwordStrength === 'weak' ? '33%' : passwordStrength === 'medium' ? '66%' : '100%',
+                      backgroundColor:
+                        passwordStrength === 'weak' ? '#ef4444' : passwordStrength === 'medium' ? '#f59e0b' : '#10b981'
                     }}
                   ></div>
                 </div>
@@ -331,11 +324,7 @@ const Register: React.FC = () => {
 
         {/* 验证码注册方式 */}
         {registerType === 'code' && (
-          <Form.Item
-            name="code"
-            rules={[{ required: true, message: '请输入验证码' }]}
-            className="mb-4"
-          >
+          <Form.Item name="code" rules={[{ required: true, message: '请输入验证码' }]} className="mb-4">
             <div className="flex gap-3 items-center">
               <Input
                 placeholder="请输入验证码"
@@ -359,20 +348,28 @@ const Register: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <Form.Item name="agreeTerms" valuePropName="checked" noStyle>
             <Checkbox className="text-sm text-gray-600">
-                            我已阅读并同意
-              <a href="#"
-                className="mx-1 text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200 cursor-pointer"
+              我已阅读并同意
+              <a
+                href="#"
+                className="mx-1 hover:underline transition-colors duration-200 cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
                   void message.info('🤫 悄悄告诉你, 用户协议还在和产品经理"打架"中, 敬请期待！');
-                }}>服务条款</a>
-                            和
-              <a href="#"
+                }}
+              >
+                <span className="text-blue-500 hover:text-blue-700">服务条款</span>
+              </a>
+              和
+              <a
+                href="#"
                 className="mx-1 text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200 cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
                   void message.info('🔒 隐私政策正在“梳妆打扮”, 马上就和大家见面啦！');
-                }}>隐私政策</a>
+                }}
+              >
+                <span className="text-blue-500 hover:text-blue-700">隐私政策</span>
+              </a>
             </Checkbox>
           </Form.Item>
 
@@ -396,7 +393,9 @@ const Register: React.FC = () => {
               setPasswordStrength('weak');
             }}
           >
-            {registerType === 'password' ? '验证码注册' : '密码注册'}
+            <span className="text-blue-600 hover:text-blue-800">
+              {registerType === 'password' ? '验证码注册' : '密码注册'}
+            </span>
           </a>
         </div>
 
@@ -409,7 +408,7 @@ const Register: React.FC = () => {
             className="w-full rounded-md bg-primary-600 hover:bg-primary-700 text-white font-semibold text-base py-2.5 px-6 transition-all duration-200 flex items-center justify-center"
             loading={isLoading}
           >
-                        注册
+            注册
           </Button>
         </Form.Item>
 

@@ -12,11 +12,27 @@ const HotTags: React.FC<HotTagsProps> = ({ tags = [], onSelect }) => {
   const theme = useTheme();
   const isDarkMode = theme === 'dark';
 
+  // 预设标签颜色
+  const tagColors = ['magenta', 'red', 'volcano', 'orange', 'gold', 'lime', 'green', 'cyan', 'blue', 'purple'];
+
   const handleTagClick = (e: React.MouseEvent, tag: FrontTag): void => {
     e.preventDefault();
     if (onSelect) {
       onSelect(tag);
     }
+  };
+
+  const getTagColor = (tag: FrontTag): string => {
+    // 基于标签名称生成一个固定的哈希值
+    let hash = 0;
+    for (let i = 0; i < tag.name.length; i++) {
+      const char = tag.name.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // 转换为32位整数
+    }
+    // 使用哈希值获取颜色索引，确保每个标签都有固定的颜色
+    const colorIndex = Math.abs(hash) % tagColors.length;
+    return tagColors[colorIndex];
   };
 
   return (
@@ -28,15 +44,17 @@ const HotTags: React.FC<HotTagsProps> = ({ tags = [], onSelect }) => {
       }}
     >
       <div className="flex flex-wrap gap-4">
-        {tags.map((tag, index) => (
+        {tags.map((tag) => (
           <Tag
-            key={index}
-            className="cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-sm bg-gray-100 dark:bg-gray-200 text-gray-700 dark:text-gray-300"
+            variant="solid"
+            color={getTagColor(tag)}
+            className="cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-sm"
           >
             <a
               href={`/tag/${tag.name}`}
-              className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-500"
+              className="text-xs font-normal"
               onClick={(e) => handleTagClick(e, tag)}
+              style={{ color: 'inherit' }}
             >
               {tag.name}
             </a>
@@ -46,4 +64,5 @@ const HotTags: React.FC<HotTagsProps> = ({ tags = [], onSelect }) => {
     </Card>
   );
 };
+
 export default HotTags;
