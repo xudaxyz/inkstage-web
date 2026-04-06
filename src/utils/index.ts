@@ -21,3 +21,6 @@ export * from './commentUtils';
 // 错误处理工具
 export * from './errorHandler';
 
+// 标签工具
+export * from './tagUtils';
+

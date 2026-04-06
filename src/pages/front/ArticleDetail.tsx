@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Button, Card, Divider, Dropdown, List, message, Modal, notification, Tooltip } from 'antd';
-import { formatDateTimeShort } from '../../utils';
+import { Avatar, Button, Card, Divider, Dropdown, List, message, Modal, notification, Tag, Tooltip } from 'antd';
+import { formatDateTimeShort, getTagColor } from '../../utils';
 import {
   CheckOutlined,
   DeleteOutlined,
@@ -77,6 +77,7 @@ const ArticleDetail: React.FC = () => {
     moveCollection,
     createFolder
   } = useCollection();
+
   // 获取文章操作方法
   const { likeArticle, unLikeArticle, collectArticle, unCollectArticle } = useArticleStore();
   // 生成唯一ID的辅助函数
@@ -674,14 +675,16 @@ const ArticleDetail: React.FC = () => {
 
               {/* 文章标签 */}
               {article.tags && Array.isArray(article.tags) && (
-                <div className="mb-12 flex flex-wrap gap-3">
+                <div className="mb-12 flex flex-wrap gap-4">
                   {article.tags.map((tag: FrontTag, index: number) => (
-                    <span
+                    <Tag
                       key={tag.id || index}
-                      className="text-xs bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full hover:bg-blue-100 transition-colors shadow-sm"
+                      variant="solid"
+                      color={getTagColor(tag)}
+                      className="cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-sm"
                     >
                       {tag.name}
-                    </span>
+                    </Tag>
                   ))}
                 </div>
               )}
