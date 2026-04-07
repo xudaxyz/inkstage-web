@@ -37,7 +37,7 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
       </button>
 
       {/* 轮播图 */}
-      <Carousel ref={carouselRef} autoplay effect="fade" speed={1500} autoplaySpeed={5000}>
+      <Carousel adaptiveHeight={true} ref={carouselRef} autoplay effect="fade" speed={1500} autoplaySpeed={5000}>
         {articles.map((article) => (
           <div key={article.id} className="relative aspect-16/3">
             {/* 封面图 */}
@@ -51,7 +51,7 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
 
             {/* 内容 */}
             <div className="relative px-[10%] py-10 text-white flex flex-col justify-center h-full">
-              <h2 className="text-2xl md:text-3xl font-bold mb-3 max-w-3xl leading-tight">
+              <h2 className="text-2xl font-bold mb-4 max-w-3xl leading-tight hover:text-blue-600">
                 <a
                   href={`/article/${article.id}`}
                   target="_blank"
@@ -59,10 +59,10 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
                   className="text-white hover:text-blue-200 transition-colors no-underline"
                   style={{ color: 'white', textDecoration: 'none' }}
                 >
-                  {article.title}
+                  <span className="text-white hover:text-blue-500">{article.title}</span>
                 </a>
               </h2>
-              <p className="text-base text-white max-w-2xl leading-relaxed">{article.summary}</p>
+              <p className="h-20 text-base text-gray-100 max-w-2xl leading-relaxed truncate">{article.summary}</p>
               <div className="mt-6">
                 <a
                   href={`/article/${article.id}`}
