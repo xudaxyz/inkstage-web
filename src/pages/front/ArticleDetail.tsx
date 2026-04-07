@@ -659,11 +659,11 @@ const ArticleDetail: React.FC = () => {
 
               {/* 文章封面图 */}
               {article.coverImage && (
-                <div className="mb-8 rounded-xl overflow-hidden shadow-lg">
+                <div className="mb-8 rounded-xl shadow-lg">
                   <img
                     src={article.coverImage}
                     alt={article.title}
-                    className="w-full h-72 md:h-96 object-cover transition-transform duration-500 hover:scale-105"
+                    className="w-full aspect-ratio transition-transform duration-500 hover:scale-105"
                   />
                 </div>
               )}
@@ -736,7 +736,7 @@ const ArticleDetail: React.FC = () => {
           {/* 右侧边栏 */}
           <div className="lg:w-1/4">
             {/* 响应式调整 */}
-            <div className="mb-10">
+            <div className="relative">
               {/* 作者信息 */}
               <Card
                 style={{
@@ -829,31 +829,31 @@ const ArticleDetail: React.FC = () => {
 
               {/* 文章目录 */}
               {toc.length > 0 && (
-                <Card
-                  variant={'borderless'}
-                  style={{
-                    backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`,
-                    marginTop: '32px',
-                    position: 'sticky',
-                    top: '150px'
-                  }}
-                >
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">文章目录</h3>
-                  <div className="text-sm max-h-[400px] overflow-y-auto pr-2">
-                    {toc.map((item, index) => (
-                      <div
-                        key={index}
-                        className={`mb-2 pl-${(item.level - 1) * 6} cursor-pointer transition-colors py-1 px-2 rounded-md ${activeTocId === item.id ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
-                        onClick={() => scrollToHeading(item.id)}
-                      >
-                        <LinkOutlined
-                          className={`mr-1 ${activeTocId === item.id ? 'text-blue-600' : 'text-gray-400'}`}
-                        />
-                        {item.text}
-                      </div>
-                    ))}
-                  </div>
-                </Card>
+                <div className="relative">
+                  <Card
+                    variant={'borderless'}
+                    style={{
+                      backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`,
+                      top: '32px'
+                    }}
+                  >
+                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">文章目录</h3>
+                    <div className="text-sm max-h-[400px] overflow-y-auto pr-2">
+                      {toc.map((item, index) => (
+                        <div
+                          key={index}
+                          className={`mb-2 pl-${(item.level - 1) * 6} cursor-pointer transition-colors py-1 px-2 rounded-md ${activeTocId === item.id ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                          onClick={() => scrollToHeading(item.id)}
+                        >
+                          <LinkOutlined
+                            className={`mr-1 ${activeTocId === item.id ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                          {item.text}
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
               )}
 
               {/* 回到顶部按钮 */}
