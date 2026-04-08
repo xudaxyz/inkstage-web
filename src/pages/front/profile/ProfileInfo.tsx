@@ -206,7 +206,13 @@ const ProfileInfo: React.FC = () => {
                     void updateUser({ ...user, avatar: url });
                   }
                 }}
-                currentImage={user?.avatar}
+                currentImage={
+                  user?.avatar ? (
+                    user.avatar
+                  ) : (
+                    <span className="text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
+                  )
+                }
                 cropShape={'round'}
                 aspectRatio={1}
                 customRequest={handleAvatarUpload}
@@ -236,7 +242,7 @@ const ProfileInfo: React.FC = () => {
           </div>
 
           {/* 设置封面按钮 */}
-          <div className="absolute bottom-10 right-24">
+          <div className="absolute bottom-12 right-32">
             <ImageUploadWithCrop
               uploadMode={'immediate'}
               onUploadSuccess={(url) => {

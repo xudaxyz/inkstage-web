@@ -24,8 +24,8 @@ interface CroppedFileInfo {
  * 图片上传组件属性
  */
 interface ImageUploadWithCropProps {
-  /** 当前图片URL(用于预览) */
-  currentImage?: string;
+  /** 当前图片URL(用于预览)或React元素(用于默认头像) */
+  currentImage?: string | React.ReactNode;
   /** 裁剪形状：rect-矩形，round-圆形 */
   cropShape?: 'rect' | 'round';
   /** 裁剪比例，如 1/1、16/9、4/3 等 */
@@ -79,7 +79,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
 }) => {
   // ===== 状态管理 =====
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [previewImage, setPreviewImage] = useState<string>(currentImage || '');
+  const [previewImage, setPreviewImage] = useState<string | React.ReactNode>(currentImage || '');
   const [isUploading, setIsUploading] = useState(false);
   const [currentAspectRatio, setCurrentAspectRatio] = useState<number>(aspectRatio);
 
@@ -176,7 +176,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
     setFileList([]);
 
     // 释放延迟上传模式创建的URL对象
-    if (previewImage && previewImage.startsWith('blob:')) {
+    if (typeof previewImage === 'string' && previewImage.startsWith('blob:')) {
       URL.revokeObjectURL(previewImage);
     }
   }, [previewImage]);
@@ -211,7 +211,11 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
           className="rounded-full overflow-hidden border-4 border-white shadow-md"
           style={{ width: '100px', height: '100px' }}
         >
-          <img src={previewImage} alt="预览" className="w-full h-full object-cover" />
+          {typeof previewImage === 'string' ? (
+            <img src={previewImage} alt="预览" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">{previewImage}</div>
+          )}
         </div>
         <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-md">
           <ImgCrop key={currentAspectRatio} aspect={currentAspectRatio} cropShape="round" rotationSlider>
@@ -276,7 +280,16 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
   const renderRectPreview = useMemo(
     () => (
       <div className="relative mb-4">
-        <div className="absolute flex items-center justify-start rounded-lg duration-200">
+        <div className="mb-4">
+          {typeof previewImage === 'string' ? (
+            <img src={previewImage} alt="预览" className="max-w-full h-auto rounded-lg" />
+          ) : (
+            <div className="p-8 border border-dashed rounded-lg bg-gray-50 flex items-center justify-center">
+              {previewImage}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-start rounded-lg duration-200">
           <ImgCrop key={currentAspectRatio} aspect={currentAspectRatio} cropShape="rect" rotationSlider>
             <Upload
               customRequest={uploadMode === 'immediate' ? customRequest : undefined}
@@ -311,7 +324,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
               }}
             >
               <Button icon={<UploadOutlined />} variant="solid" color="blue" loading={isUploading}>
-                {previewImage ? '更换图片' : '上传图片'}
+                更换图片
               </Button>
             </Upload>
           </ImgCrop>
