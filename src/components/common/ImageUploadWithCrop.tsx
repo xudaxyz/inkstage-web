@@ -10,12 +10,12 @@ import type { UploadChangeParam } from 'antd/es/upload';
  * - immediate: 立即上传(选择图片后立即上传到服务器)
  * - deferred: 延迟上传(先裁剪预览，稍后手动上传)
  */
-type UploadMode = 'immediate' | 'deferred';
+export type UploadMode = 'immediate' | 'deferred';
 
 /**
  * 裁剪后的文件信息
  */
-interface CroppedFileInfo {
+export interface CroppedFileInfo {
   file: File;
   previewUrl: string;
 }
@@ -23,7 +23,7 @@ interface CroppedFileInfo {
 /**
  * 图片上传组件属性
  */
-interface ImageUploadWithCropProps {
+export interface ImageUploadWithCropProps {
   /** 当前图片URL(用于预览)或React元素(用于默认头像) */
   currentImage?: string | React.ReactNode;
   /** 裁剪形状：rect-矩形，round-圆形 */
@@ -75,7 +75,8 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
   uploadMode = 'immediate',
   onUploadSuccess,
   customRequest,
-  onCropComplete
+  onCropComplete,
+  onRemove
 }) => {
   // ===== 状态管理 =====
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -179,9 +180,44 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
     if (typeof previewImage === 'string' && previewImage.startsWith('blob:')) {
       URL.revokeObjectURL(previewImage);
     }
-  }, [previewImage]);
 
-  // ===== 渲染辅助函数 =====
+    if (onRemove) {
+      onRemove({} as UploadFile);
+    }
+  }, [previewImage, onRemove]);
+
+  /**
+   * 处理文件上传前的验证和处理
+   */
+  const handleBeforeUpload = useCallback(
+    async (file: File) => {
+      if (!validateFile(file)) {
+        return Upload.LIST_IGNORE;
+      }
+
+      // 计算合适的裁剪比例
+      const calculatedRatio = await calculateAspectRatio(file);
+      setCurrentAspectRatio(calculatedRatio);
+
+      if (uploadMode === 'deferred') {
+        const previewUrl = URL.createObjectURL(file);
+        setPreviewImage(previewUrl);
+
+        if (onCropComplete) {
+          onCropComplete({
+            file,
+            previewUrl
+          });
+        }
+
+        return Upload.LIST_IGNORE;
+      }
+
+      // 立即上传模式：不创建本地预览，直接返回文件
+      return file;
+    },
+    [validateFile, calculateAspectRatio, uploadMode, onCropComplete]
+  );
 
   /**
    * 渲染上传按钮
@@ -226,31 +262,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
               showUploadList={false}
               maxCount={maxCount}
               accept={accept}
-              beforeUpload={async (file) => {
-                if (!validateFile(file)) {
-                  return Upload.LIST_IGNORE;
-                }
-
-                // 计算合适的裁剪比例
-                const calculatedRatio = await calculateAspectRatio(file);
-                setCurrentAspectRatio(calculatedRatio);
-
-                if (uploadMode === 'deferred') {
-                  const previewUrl = URL.createObjectURL(file);
-                  setPreviewImage(previewUrl);
-
-                  if (onCropComplete) {
-                    onCropComplete({
-                      file,
-                      previewUrl
-                    });
-                  }
-
-                  return Upload.LIST_IGNORE;
-                }
-
-                return file;
-              }}
+              beforeUpload={handleBeforeUpload}
             >
               <Button icon={<CameraOutlined />} size="small" className="rounded-full" loading={isUploading} />
             </Upload>
@@ -259,7 +271,6 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       </div>
     ),
     [
-      calculateAspectRatio,
       previewImage,
       currentAspectRatio,
       maxCount,
@@ -268,8 +279,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       customRequest,
       fileList,
       handleFileChange,
-      validateFile,
-      onCropComplete,
+      handleBeforeUpload,
       isUploading
     ]
   );
@@ -280,15 +290,6 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
   const renderRectPreview = useMemo(
     () => (
       <div className="relative mb-4">
-        <div className="mb-4">
-          {typeof previewImage === 'string' ? (
-            <img src={previewImage} alt="预览" className="max-w-full h-auto rounded-lg" />
-          ) : (
-            <div className="p-8 border border-dashed rounded-lg bg-gray-50 flex items-center justify-center">
-              {previewImage}
-            </div>
-          )}
-        </div>
         <div className="flex items-center justify-start rounded-lg duration-200">
           <ImgCrop key={currentAspectRatio} aspect={currentAspectRatio} cropShape="rect" rotationSlider>
             <Upload
@@ -298,32 +299,9 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
               showUploadList={false}
               maxCount={maxCount}
               accept={accept}
-              beforeUpload={async (file) => {
-                if (!validateFile(file)) {
-                  return Upload.LIST_IGNORE;
-                }
-
-                // 计算合适的裁剪比例
-                const calculatedRatio = await calculateAspectRatio(file);
-                setCurrentAspectRatio(calculatedRatio);
-                const previewUrl = '';
-                if (uploadMode === 'deferred') {
-                  setPreviewImage(URL.createObjectURL(file));
-
-                  if (onCropComplete) {
-                    onCropComplete({
-                      file,
-                      previewUrl
-                    });
-                  }
-
-                  return Upload.LIST_IGNORE;
-                }
-
-                return file;
-              }}
+              beforeUpload={handleBeforeUpload}
             >
-              <Button icon={<UploadOutlined />} variant="solid" color="blue" loading={isUploading}>
+              <Button icon={<UploadOutlined />} variant="solid" color="blue" className="mt-4" loading={isUploading}>
                 更换图片
               </Button>
             </Upload>
@@ -333,7 +311,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
               icon={<DeleteOutlined />}
               variant="solid"
               color="red"
-              className="text-white hover:bg-red-600 ml-6"
+              className="text-white hover:bg-red-600 ml-16 mt-4"
               onClick={handleDeferredRemove}
             >
               删除
@@ -343,8 +321,6 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       </div>
     ),
     [
-      calculateAspectRatio,
-      previewImage,
       currentAspectRatio,
       maxCount,
       accept,
@@ -353,8 +329,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       fileList,
       handleFileChange,
       handleDeferredRemove,
-      validateFile,
-      onCropComplete,
+      handleBeforeUpload,
       isUploading
     ]
   );
@@ -373,30 +348,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
             showUploadList={false}
             maxCount={maxCount}
             accept={accept}
-            beforeUpload={async (file) => {
-              if (!validateFile(file)) {
-                return Upload.LIST_IGNORE;
-              }
-
-              // 计算合适的裁剪比例
-              const calculatedRatio = await calculateAspectRatio(file);
-              setCurrentAspectRatio(calculatedRatio);
-
-              if (uploadMode !== 'deferred') {
-                return file;
-              }
-              const previewUrl = URL.createObjectURL(file);
-              setPreviewImage(previewUrl);
-
-              if (onCropComplete) {
-                onCropComplete({
-                  file,
-                  previewUrl
-                });
-              }
-
-              return Upload.LIST_IGNORE;
-            }}
+            beforeUpload={handleBeforeUpload}
           >
             {renderUploadButton}
           </Upload>
@@ -404,7 +356,6 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       </div>
     ),
     [
-      calculateAspectRatio,
       uploadMode,
       currentAspectRatio,
       cropShape,
@@ -414,8 +365,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       customRequest,
       fileList,
       handleFileChange,
-      validateFile,
-      onCropComplete
+      handleBeforeUpload
     ]
   );
 
@@ -428,4 +378,3 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
 };
 
 export default ImageUploadWithCrop;
-export type { ImageUploadWithCropProps, CroppedFileInfo, UploadMode };

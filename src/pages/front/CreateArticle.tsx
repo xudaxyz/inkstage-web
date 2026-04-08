@@ -27,7 +27,7 @@ import {
 import RichTextEditor from '../../components/editor/RichTextEditor';
 import './CreateArticle.css';
 import Footer from '../../components/common/Footer.tsx';
-import ImageUploadWithCrop from '../../components/common/ImageUploadWithCrop';
+import ArticleCoverUploader from '../../components/upload/ArticleCoverUploader';
 
 const { Option } = Select;
 const CreateArticle: React.FC = () => {
@@ -550,8 +550,7 @@ const CreateArticle: React.FC = () => {
               <label className=" block text-sm font-medium text-gray-700 mb-4">封面图</label>
               {coverImage ? <img src={coverImage} alt="预览" className="w-[640px] h-[360px] object-cover" /> : null}
               <Form.Item valuePropName="coverImage">
-                <ImageUploadWithCrop
-                  uploadMode="deferred" // 延迟上传模式
+                <ArticleCoverUploader
                   onCropComplete={({ file, previewUrl }) => {
                     setCroppedFile(file);
                     setCoverImage(previewUrl);
@@ -570,10 +569,6 @@ const CreateArticle: React.FC = () => {
                     setServerCoverImageUrl('');
                     setFileList([]);
                   }}
-                  currentImage={coverImage}
-                  cropShape="rect"
-                  aspectRatio={16 / 9}
-                  placeholder="点击上传文章封面图"
                 />
               </Form.Item>
             </div>

@@ -6,7 +6,8 @@ import authService from '../../../services/authService';
 import userService from '../../../services/userService';
 import dayjs, { type Dayjs } from 'dayjs';
 import { GenderEnum, GenderLabel } from '../../../types/enums';
-import ImageUploadWithCrop from '../../../components/common/ImageUploadWithCrop';
+import AvatarUploader from '../../../components/upload/AvatarUploader';
+import UserCoverUploader from '../../../components/upload/UserCoverUploader.tsx';
 // 表单值类型定义
 type ProfileFormValues = {
   username: string;
@@ -199,24 +200,20 @@ const ProfileInfo: React.FC = () => {
           <div className="absolute bottom-6 left-6 flex items-end gap-4">
             {/* 头像 */}
             <div className="shrink relative">
-              <ImageUploadWithCrop
-                uploadMode={'immediate'}
-                onUploadSuccess={(url) => {
-                  if (user) {
-                    void updateUser({ ...user, avatar: url });
-                  }
-                }}
-                currentImage={
+              <AvatarUploader
+                currentAvatar={
                   user?.avatar ? (
                     user.avatar
                   ) : (
                     <span className="text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
                   )
                 }
-                cropShape={'round'}
-                aspectRatio={1}
+                onUploadSuccess={(url) => {
+                  if (user) {
+                    void updateUser({ ...user, avatar: url });
+                  }
+                }}
                 customRequest={handleAvatarUpload}
-                placeholder={'上传头像'}
               />
             </div>
 
@@ -242,19 +239,14 @@ const ProfileInfo: React.FC = () => {
           </div>
 
           {/* 设置封面按钮 */}
-          <div className="absolute bottom-12 right-32">
-            <ImageUploadWithCrop
-              uploadMode={'immediate'}
+          <div className="absolute bottom-5 right-12">
+            <UserCoverUploader
               onUploadSuccess={(url) => {
                 if (user) {
                   void updateUser({ ...user, coverImage: url });
                 }
               }}
-              currentImage={user?.coverImage}
-              cropShape={'rect'}
-              aspectRatio={16 / 9}
               customRequest={handleCoverImageUpload}
-              placeholder={'设置封面图片'}
             />
           </div>
         </div>

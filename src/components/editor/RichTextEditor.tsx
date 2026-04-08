@@ -14,8 +14,8 @@ import Math from '@aarkue/tiptap-math-extension';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Emoji from '@tiptap/extension-emoji';
 import { common, createLowlight } from 'lowlight';
-import { message, Modal, type UploadFile } from 'antd';
-import ImageUploadWithCrop from '../common/ImageUploadWithCrop';
+import { message, Modal } from 'antd';
+import EditorImageUploader from '../upload/EditorImageUploader';
 import articleService from '../../services/articleService';
 import EditorToolbar from './EditorToolbar';
 
@@ -220,15 +220,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   };
 
-  // 处理图片删除
-  const handleImageDelete = async (fileUrl: string): Promise<void> => {
-    try {
-      await articleService.deleteImage(fileUrl);
-    } catch (error) {
-      console.error('删除图片失败:', error);
-    }
-  };
-
   // 处理取消上传
   const handleCancelUpload = (): void => {
     setShowImageUploadModal(false);
@@ -326,8 +317,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       {/* 图片上传模态框 */}
       <Modal title="上传图片" open={showImageUploadModal} onCancel={handleCancelUpload} okText="完成" cancelText="取消">
-        <ImageUploadWithCrop
-          uploadMode="immediate"
+        <EditorImageUploader
           customRequest={async (options) => {
             const { file, onSuccess, onError } = options;
             try {
@@ -357,13 +347,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             }
           }}
           onUploadSuccess={() => {}}
-          onRemove={async (file: UploadFile) => {
-            if (file.response?.data) {
-              await handleImageDelete(file.response.data);
-            }
-          }}
-          cropShape="rect"
-          placeholder="点击上传图片"
         />
       </Modal>
     </div>
