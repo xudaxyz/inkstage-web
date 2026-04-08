@@ -36,8 +36,7 @@ export default defineConfig([
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],
       'arrow-spacing': ['error', { 'before': true, 'after': true }],
-      'space-before-function-paren': ['error', 'always'],
-      
+
       // TypeScript 规则
       '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'warn',
