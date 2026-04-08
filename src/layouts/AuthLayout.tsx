@@ -16,7 +16,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title }) => {
           <div className="hidden md:block md:w-1/2">
             <div className="h-[600px] bg-gray-100 rounded-l-lg overflow-hidden">
               <img
-                src="/src/assets/images/inkstage-bg1.png"
+                src="/assets/images/inkstage-bg.png"
                 alt="InkStage Background"
                 className="w-full h-full object-cover"
               />
@@ -29,7 +29,9 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title }) => {
               {/* 品牌标识 */}
               <div className="flex flex-col items-center mb-8">
                 <Link to="/" className="cursor-pointer transition-all duration-300 hover:scale-105">
-                  <h1 className="text-2xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent mb-2">InkStage</h1>
+                  <h1 className="text-2xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent mb-2">
+                    InkStage
+                  </h1>
                 </Link>
               </div>
 
@@ -37,9 +39,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title }) => {
               <h2 className="text-2xl font-semibold text-gray-800 mb-8 text-center">{title}</h2>
 
               {/* 子组件插槽 - 登录/注册表单 */}
-              <div className="w-full">
-                {children}
-              </div>
+              <div className="w-full">{children}</div>
             </div>
           </div>
         </div>

@@ -144,7 +144,8 @@ export const useAuth = (): {
         // 确保 redirectPath 是一个正确的路径，以 / 开头
         const normalizedPath = redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`;
         // 移除可能的完整 URL 部分
-        const cleanPath = normalizedPath.split('localhost:3000')[1] || normalizedPath;
+        const baseUrl = import.meta.env.VITE_API_FRONT_URL;
+        const cleanPath = normalizedPath.split(baseUrl)[1] || normalizedPath;
         // 检查是否是后台路径
         if (cleanPath.startsWith('/admin')) {
           // 普通用户不能访问后台，重定向到首页

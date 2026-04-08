@@ -7,16 +7,13 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://172.26.16.229:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace('/api', '')
-
       }
     }
   },
-  plugins: [
-    tailwindcss(), react()
-  ],
+  plugins: [tailwindcss(), react()],
   resolve: {
     alias: {
       '@': '/src'

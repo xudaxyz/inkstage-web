@@ -2,16 +2,16 @@
 
 // 验证码图片路径数组
 const captchaImagePaths = [
-  '/src/assets/images/captcha/captcha-photo-1.jpg',
-  '/src/assets/images/captcha/captcha-photo-2.jpg',
-  '/src/assets/images/captcha/captcha-photo-3.jpg',
-  '/src/assets/images/captcha/captcha-photo-4.jpg',
-  '/src/assets/images/captcha/captcha-photo-5.jpg',
-  '/src/assets/images/captcha/captcha-photo-6.jpg',
-  '/src/assets/images/captcha/captcha-photo-7.jpg',
-  '/src/assets/images/captcha/captcha-photo-8.jpg',
-  '/src/assets/images/captcha/captcha-photo-9.jpg',
-  '/src/assets/images/captcha/captcha-photo-10.jpg'
+  '/assets/images/captcha/captcha-photo-1.jpg',
+  '/assets/images/captcha/captcha-photo-2.jpg',
+  '/assets/images/captcha/captcha-photo-3.jpg',
+  '/assets/images/captcha/captcha-photo-4.jpg',
+  '/assets/images/captcha/captcha-photo-5.jpg',
+  '/assets/images/captcha/captcha-photo-6.jpg',
+  '/assets/images/captcha/captcha-photo-7.jpg',
+  '/assets/images/captcha/captcha-photo-8.jpg',
+  '/assets/images/captcha/captcha-photo-9.jpg',
+  '/assets/images/captcha/captcha-photo-10.jpg'
 ];
 
 /**

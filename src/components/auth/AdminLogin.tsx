@@ -71,7 +71,8 @@ const AdminLogin: React.FC = () => {
         if (redirectPath) {
           localStorage.removeItem('redirect_after_login');
           const normalizedPath = redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`;
-          const cleanPath = normalizedPath.split('localhost:3000')[1] || normalizedPath;
+          const baseUrl = import.meta.env.VITE_API_FRONT_URL;
+          const cleanPath = normalizedPath.split(baseUrl)[1] || normalizedPath;
           navigate(cleanPath);
         } else {
           navigate('/admin');
