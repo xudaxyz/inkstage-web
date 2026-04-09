@@ -76,6 +76,8 @@ export interface AdminState {
   checkTokenExpiry: () => boolean;
   refreshToken: () => Promise<void>;
   initAuth: () => Promise<void>;
+  startTokenExpiryCheck: () => void;
+  stopTokenExpiryCheck: () => void;
 }
 
 // 辅助函数：标准化用户数据
@@ -227,6 +229,8 @@ export const useAdminStore = create<AdminState>()(
           if (response.code === 200) {
             const rememberMe = params.remember || false;
             localStorage.setItem('admin_remember_me', rememberMe.toString());
+            // 启动令牌过期检查
+            get().startTokenExpiryCheck();
           }
           return handleAuthResponse(get, response);
         } catch (error) {
@@ -293,6 +297,33 @@ export const useAdminStore = create<AdminState>()(
           set({ isLoading: false });
         }
       },
+      // 启动令牌过期检查
+      startTokenExpiryCheck: (): void => {
+        // 清除之前的定时器
+        if ((window as Window & { adminTokenExpiryCheckTimer?: number }).adminTokenExpiryCheckTimer) {
+          clearInterval((window as Window & { adminTokenExpiryCheckTimer?: number }).adminTokenExpiryCheckTimer);
+        }
+
+        // 每30秒检查一次令牌是否即将过期
+        (window as Window & { adminTokenExpiryCheckTimer?: number }).adminTokenExpiryCheckTimer = window.setInterval(() => {
+          const isExpiring = get().checkTokenExpiry();
+          if (isExpiring && get().isAdminLoggedIn) {
+            // 自动刷新令牌
+            get().refreshToken().catch((error) => {
+              console.error('自动刷新管理员令牌失败:', error);
+            });
+          }
+        }, 30000); // 30秒检查一次
+      },
+
+      // 停止令牌过期检查
+      stopTokenExpiryCheck: (): void => {
+        if ((window as Window & { adminTokenExpiryCheckTimer?: number }).adminTokenExpiryCheckTimer) {
+          clearInterval((window as Window & { adminTokenExpiryCheckTimer?: number }).adminTokenExpiryCheckTimer);
+          (window as Window & { adminTokenExpiryCheckTimer?: number }).adminTokenExpiryCheckTimer = undefined;
+        }
+      },
+
       // 初始化登录状态
       initAuth: async (): Promise<void> => {
         // 检查当前是否在登录页面，如果是，则不进行初始化
@@ -321,9 +352,13 @@ export const useAdminStore = create<AdminState>()(
               });
               // 尝试获取用户信息
               await get().getProfile();
+              // 启动令牌过期检查
+              get().startTokenExpiryCheck();
             } else if (adminRememberMe) {
               // 令牌过期但用户选择了记住我，尝试刷新令牌
               await get().refreshToken();
+              // 启动令牌过期检查
+              get().startTokenExpiryCheck();
             }
           }
           // 移除else分支，保持当前登录状态
