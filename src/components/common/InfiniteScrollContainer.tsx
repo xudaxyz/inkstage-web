@@ -1,5 +1,5 @@
 import React from 'react';
-import { Spin, Alert, Button } from 'antd';
+import { Button, Spin } from 'antd';
 import type { InfiniteScrollResult } from '../../types/infiniteScroll';
 
 interface InfiniteScrollContainerProps<T> {
@@ -29,7 +29,7 @@ interface InfiniteScrollContainerProps<T> {
  * 无限滚动容器组件
  * 封装了无限滚动的通用UI逻辑
  */
-export function InfiniteScrollContainer<T> ({
+export function InfiniteScrollContainer<T>({
   infiniteScroll,
   renderItem,
   emptyContent,
@@ -41,16 +41,7 @@ export function InfiniteScrollContainer<T> ({
   loadMoreText = '加载更多',
   noMoreText = '没有更多数据了'
 }: InfiniteScrollContainerProps<T>): React.ReactNode {
-  const {
-    data,
-    isLoading,
-    isLoadingMore,
-    isError,
-    error,
-    hasMore,
-    loadMoreRef,
-    refresh
-  } = infiniteScroll;
+  const { data, isLoading, isLoadingMore, isError, error, hasMore, loadMoreRef, refresh } = infiniteScroll;
 
   // 默认加载中内容
   const defaultLoadingContent = (
@@ -67,29 +58,12 @@ export function InfiniteScrollContainer<T> ({
   );
 
   // 默认空状态
-  const defaultEmptyContent = (
-    <div className="py-12 text-center text-gray-500">
-      暂无数据
-    </div>
-  );
+  const defaultEmptyContent = <div className="py-12 text-center text-gray-500">暂无数据</div>;
 
   // 错误状态
   if (isError && data.length === 0) {
-    return (
-      <div className="py-12">
-        <Alert
-          title="加载失败"
-          description={error?.message || '请稍后重试'}
-          type="error"
-          showIcon
-          action={
-            <Button size="small" type="primary" onClick={refresh}>
-              重试
-            </Button>
-          }
-        />
-      </div>
-    );
+    console.log(error);
+    // 错误状态或网络状态不显示错误
   }
 
   // 初始加载中
@@ -107,9 +81,7 @@ export function InfiniteScrollContainer<T> ({
       {/* 数据列表 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: itemGap }}>
         {data.map((item, index) => (
-          <React.Fragment key={index}>
-            {renderItem(item, index)}
-          </React.Fragment>
+          <React.Fragment key={index}>{renderItem(item, index)}</React.Fragment>
         ))}
       </div>
 
@@ -118,9 +90,7 @@ export function InfiniteScrollContainer<T> ({
         {isLoadingMore && (loadingMoreContent || defaultLoadingMoreContent)}
 
         {!isLoadingMore && !hasMore && data.length > 0 && (
-          <div className="py-4 text-center text-gray-400 text-sm">
-            {noMoreText}
-          </div>
+          <div className="py-4 text-center text-gray-400 text-sm">{noMoreText}</div>
         )}
 
         {showLoadMoreButton && hasMore && !isLoadingMore && (

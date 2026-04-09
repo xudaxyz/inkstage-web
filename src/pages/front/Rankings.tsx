@@ -49,7 +49,7 @@ const Rankings: React.FC = () => {
         setLatestArticles(latestArticlesResponse.data);
       } catch (err) {
         console.error('加载数据失败:', err);
-        setError('加载数据失败，请稍后重试');
+        setError(null);
       } finally {
         setLoading(false);
       }
