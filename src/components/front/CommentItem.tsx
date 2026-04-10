@@ -149,12 +149,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
         {comment.userId ? (
           <a
             href={`/user/${comment.userId}`}
-            className="font-bold text-[#373A40] dark:text-gray-200 ml-2 hover:text-blue-600 transition-colors"
+            className="font-bold text-[#373A40] dark:text-gray-200 ml-1 hover:text-blue-600 transition-colors"
           >
             {comment.nickname}
           </a>
         ) : (
-          <span className="font-bold text-[#373A40] dark:text-gray-200 ml-2">{comment.nickname}</span>
+          <span className="font-bold text-[#373A40] dark:text-gray-200 ml-1">{comment.nickname}</span>
         )}
         {comment.top === CommentTopStatus.TOP && (
           <span className="inline-flex items-end text-xs bg-red-100 text-red-600 px-2 py-1 rounded">置顶</span>
@@ -162,7 +162,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
       </div>
 
       {/* 评论内容 */}
-      <div className="ml-11 mb-3 text-gray-700 dark:text-gray-300 font-medium text-base leading-relaxed">
+      <div className="ml-12 mb-3 text-gray-700 dark:text-gray-300 font-medium text-base leading-relaxed">
         {displayContent}
         {isLongComment && (
           <button onClick={toggleExpand} className="text-blue-600 text-sm ml-2">
