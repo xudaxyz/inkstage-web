@@ -102,7 +102,7 @@ const UserProfile: React.FC = () => {
           };
           setUser(formattedUser);
           if (!paramNickname) {
-            navigate(`/user/${formattedUser.id}/${formattedUser.nickname}`, { replace: true });
+            navigate(`/user/${formattedUser.id}`, { replace: true });
           }
         } catch (error) {
           console.error('获取用户资料失败:', error);
@@ -193,7 +193,7 @@ const UserProfile: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{user.nickname} - 个人主页 - InkStage</title>
+        <title>{loading ? '加载中...' : `${user.nickname} - 个人主页 - InkStage`}</title>
       </Helmet>
       <div className="flex min-h-screen flex-col bg-gray-50">
         {/* 顶部导航栏 */}

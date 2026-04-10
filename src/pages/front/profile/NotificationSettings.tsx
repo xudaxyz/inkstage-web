@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Card, Divider, List, message, Popconfirm, Spin, Switch } from 'antd';
+import { Helmet } from 'react-helmet-async';
 import { BellOutlined, MailOutlined, PushpinOutlined } from '@ant-design/icons';
 import notificationService from '../../../services/notificationService';
 import { type NotificationSetting } from '../../../types/notification';
@@ -213,94 +214,104 @@ const NotificationSettings: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-800">通知设置</h1>
-        <p className="text-gray-600 mt-2">管理您的通知偏好和接收方式</p>
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <Spin size="large" tip="加载中..." />
+    <>
+      <Helmet>
+        <title>通知设置 - InkStage</title>
+      </Helmet>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-800">通知设置</h1>
+          <p className="text-gray-600 mt-2">管理您的通知偏好和接收方式</p>
         </div>
-      ) : notificationSettings ? (
-        <>
-          <Card
-            title={
-              <span className="flex items-center">
-                <BellOutlined className="mr-2" /> 通知类型
-              </span>
-            }
-          >
-            <List
-              dataSource={notificationTypeSettings}
-              renderItem={(item) => (
-                <List.Item
-                  key={item.key}
-                  actions={[
-                    <Switch
-                      checked={Boolean(notificationSettings[item.key])}
-                      onChange={(checked) => handleSettingChange(item.key, item.notificationType, checked)}
-                      loading={updating}
-                    />
-                  ]}
-                >
-                  <List.Item.Meta title={item.title} description={item.description} />
-                </List.Item>
-              )}
-            />
-          </Card>
 
-          <Card
-            title={
-              <span className="flex items-center">
-                <PushpinOutlined className="mr-2" /> 推送渠道
-              </span>
-            }
-          >
-            <List
-              dataSource={pushChannelSettings}
-              renderItem={(item) => (
-                <List.Item
-                  key={item.key}
-                  actions={[
-                    <Switch
-                      checked={Boolean(notificationSettings[item.key])}
-                      onChange={(checked) => handleSettingChange(item.key, undefined, checked)}
-                      loading={updating}
-                    />
-                  ]}
-                >
-                  <List.Item.Meta
-                    title={
-                      <div className="flex items-center">
-                        {item.icon}
-                        {item.title}
-                      </div>
-                    }
-                    description={item.description}
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
-
-          <Divider />
-
-          <div className="flex justify-center">
-            <Popconfirm title="确定要恢复默认设置吗？" onConfirm={handleResetToDefault} okText="确定" cancelText="取消">
-              <Button type="default" loading={updating}>
-                恢复默认设置
-              </Button>
-            </Popconfirm>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" tip="加载中..." />
           </div>
-        </>
-      ) : (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">获取通知设置失败，请刷新页面重试</p>
-        </div>
-      )}
-    </div>
+        ) : notificationSettings ? (
+          <>
+            <Card
+              title={
+                <span className="flex items-center">
+                  <BellOutlined className="mr-2" /> 通知类型
+                </span>
+              }
+            >
+              <List
+                dataSource={notificationTypeSettings}
+                renderItem={(item) => (
+                  <List.Item
+                    key={item.key}
+                    actions={[
+                      <Switch
+                        checked={Boolean(notificationSettings[item.key])}
+                        onChange={(checked) => handleSettingChange(item.key, item.notificationType, checked)}
+                        loading={updating}
+                      />
+                    ]}
+                  >
+                    <List.Item.Meta title={item.title} description={item.description} />
+                  </List.Item>
+                )}
+              />
+            </Card>
+
+            <Card
+              title={
+                <span className="flex items-center">
+                  <PushpinOutlined className="mr-2" /> 推送渠道
+                </span>
+              }
+            >
+              <List
+                dataSource={pushChannelSettings}
+                renderItem={(item) => (
+                  <List.Item
+                    key={item.key}
+                    actions={[
+                      <Switch
+                        checked={Boolean(notificationSettings[item.key])}
+                        onChange={(checked) => handleSettingChange(item.key, undefined, checked)}
+                        loading={updating}
+                      />
+                    ]}
+                  >
+                    <List.Item.Meta
+                      title={
+                        <div className="flex items-center">
+                          {item.icon}
+                          {item.title}
+                        </div>
+                      }
+                      description={item.description}
+                    />
+                  </List.Item>
+                )}
+              />
+            </Card>
+
+            <Divider />
+
+            <div className="flex justify-center">
+              <Popconfirm
+                title="确定要恢复默认设置吗？"
+                onConfirm={handleResetToDefault}
+                okText="确定"
+                cancelText="取消"
+              >
+                <Button type="default" loading={updating}>
+                  恢复默认设置
+                </Button>
+              </Popconfirm>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-gray-500">获取通知设置失败，请刷新页面重试</p>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 

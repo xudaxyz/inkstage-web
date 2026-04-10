@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Checkbox, Form, Input, message } from 'antd';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
@@ -182,253 +183,262 @@ const Register: React.FC = () => {
   };
 
   return (
-    <AuthLayout title="">
-      {/* 注册表单 */}
-      <Form form={form} onFinish={handleRegister} layout="vertical" className="w-full">
-        {/* 左侧注册，右侧登录链接 */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
-            欢迎注册
-          </h2>
-          <div className="text-sm">
-            <span className="text-gray-600">已有账号？</span>
-            <Link to="/login" className="ml-1 hover:underline transition-colors duration-200">
-              <span className="text-blue-600 hover:text-blue-800">点击登录</span>
-            </Link>
+    <>
+      <Helmet>
+        <title>注册 - InkStage</title>
+      </Helmet>
+      <AuthLayout title="注册">
+        {/* 注册表单 */}
+        <Form form={form} onFinish={handleRegister} layout="vertical" className="w-full">
+          {/* 左侧注册，右侧登录链接 */}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+              欢迎注册
+            </h2>
+            <div className="text-sm">
+              <span className="text-gray-600">已有账号？</span>
+              <Link to="/login" className="ml-1 hover:underline transition-colors duration-200">
+                <span className="text-blue-600 hover:text-blue-800">点击登录</span>
+              </Link>
+            </div>
           </div>
-        </div>
-        {/* 用户名/邮箱/手机号输入 */}
-        <Form.Item
-          name="account"
-          rules={[
-            { required: true, message: '请输入用户名、邮箱或手机号' },
-            {
-              validator: (_, value): Promise<void> => {
-                if (!value) return Promise.resolve();
-                // 邮箱或手机号验证
-                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-                const isPhone = /^1[3-9]\d{9}$/.test(value);
-                const isUsername = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,16}$/.test(value);
+          {/* 用户名/邮箱/手机号输入 */}
+          <Form.Item
+            name="account"
+            rules={[
+              { required: true, message: '请输入用户名、邮箱或手机号' },
+              {
+                validator: (_, value): Promise<void> => {
+                  if (!value) return Promise.resolve();
+                  // 邮箱或手机号验证
+                  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                  const isPhone = /^1[3-9]\d{9}$/.test(value);
+                  const isUsername = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,16}$/.test(value);
 
-                if (isEmail || isPhone || isUsername) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error('请输入有效的用户名、邮箱或手机号'));
-              }
-            }
-          ]}
-          className="mb-4"
-        >
-          <Input
-            placeholder="请输入用户名、邮箱或手机号"
-            size="large"
-            className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
-          />
-        </Form.Item>
-
-        {/* 密码注册方式 */}
-        {registerType === 'password' && (
-          <>
-            {/* 第三层：密码输入 */}
-            <Form.Item
-              name="password"
-              rules={[
-                { required: true, message: '请输入密码' },
-                { min: 6, max: 32, message: '密码长度必须在6-32个字符之间' },
-                {
-                  validator: (_, value): Promise<void> => {
-                    if (!value) return Promise.resolve();
-                    if (value.length < 6) return Promise.reject(new Error('密码长度至少6位'));
+                  if (isEmail || isPhone || isUsername) {
                     return Promise.resolve();
                   }
+                  return Promise.reject(new Error('请输入有效的用户名、邮箱或手机号'));
                 }
-              ]}
-              className="mb-2"
-            >
-              <Input.Password
-                placeholder="请输入密码"
-                size="large"
-                className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
-                onChange={(e) => handlePasswordChange(e.target.value)}
-                iconRender={(visible) => (
-                  <FontAwesomeIcon
-                    icon={visible ? faEyeSlash : faEye}
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                  />
-                )}
-                visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }}
-              />
-            </Form.Item>
+              }
+            ]}
+            className="mb-4"
+          >
+            <Input
+              placeholder="请输入用户名、邮箱或手机号"
+              size="large"
+              className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
+            />
+          </Form.Item>
 
-            {/* 密码强度提示 - 仅当输入密码时显示 */}
-            {form.getFieldValue('password') && (
-              <div className="mb-4 py-2">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs text-gray-600">密码强度：</span>
-                  <span
-                    className={`text-xs font-medium ${passwordStrength === 'weak' ? 'text-red-500' : passwordStrength === 'medium' ? 'text-yellow-500' : 'text-green-500'}`}
-                  >
-                    {passwordStrength === 'weak' && '弱'}
-                    {passwordStrength === 'medium' && '中'}
-                    {passwordStrength === 'strong' && '强'}
-                  </span>
-                </div>
-                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{
-                      width: passwordStrength === 'weak' ? '33%' : passwordStrength === 'medium' ? '66%' : '100%',
-                      backgroundColor:
-                        passwordStrength === 'weak' ? '#ef4444' : passwordStrength === 'medium' ? '#f59e0b' : '#10b981'
-                    }}
-                  ></div>
-                </div>
-              </div>
-            )}
-
-            {/* 确认密码输入 */}
-            <Form.Item
-              name="confirmPassword"
-              dependencies={['password']}
-              rules={[
-                { required: true, message: '请确认密码' },
-                {
-                  validator: (_, value): Promise<void> => {
-                    const password = form.getFieldValue('password');
-                    if (!value || password === value) {
+          {/* 密码注册方式 */}
+          {registerType === 'password' && (
+            <>
+              {/* 第三层：密码输入 */}
+              <Form.Item
+                name="password"
+                rules={[
+                  { required: true, message: '请输入密码' },
+                  { min: 6, max: 32, message: '密码长度必须在6-32个字符之间' },
+                  {
+                    validator: (_, value): Promise<void> => {
+                      if (!value) return Promise.resolve();
+                      if (value.length < 6) return Promise.reject(new Error('密码长度至少6位'));
                       return Promise.resolve();
                     }
-                    return Promise.reject(new Error('两次输入的密码不一致'));
                   }
-                }
-              ]}
-              className="mb-4"
-            >
-              <Input.Password
-                placeholder="请再次输入密码"
-                size="large"
-                className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
-                iconRender={(visible) => (
-                  <FontAwesomeIcon
-                    icon={visible ? faEyeSlash : faEye}
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                  />
-                )}
-                visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }}
-              />
+                ]}
+                className="mb-2"
+              >
+                <Input.Password
+                  placeholder="请输入密码"
+                  size="large"
+                  className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  iconRender={(visible) => (
+                    <FontAwesomeIcon
+                      icon={visible ? faEyeSlash : faEye}
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                    />
+                  )}
+                  visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }}
+                />
+              </Form.Item>
+
+              {/* 密码强度提示 - 仅当输入密码时显示 */}
+              {form.getFieldValue('password') && (
+                <div className="mb-4 py-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs text-gray-600">密码强度：</span>
+                    <span
+                      className={`text-xs font-medium ${passwordStrength === 'weak' ? 'text-red-500' : passwordStrength === 'medium' ? 'text-yellow-500' : 'text-green-500'}`}
+                    >
+                      {passwordStrength === 'weak' && '弱'}
+                      {passwordStrength === 'medium' && '中'}
+                      {passwordStrength === 'strong' && '强'}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: passwordStrength === 'weak' ? '33%' : passwordStrength === 'medium' ? '66%' : '100%',
+                        backgroundColor:
+                          passwordStrength === 'weak'
+                            ? '#ef4444'
+                            : passwordStrength === 'medium'
+                              ? '#f59e0b'
+                              : '#10b981'
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
+              {/* 确认密码输入 */}
+              <Form.Item
+                name="confirmPassword"
+                dependencies={['password']}
+                rules={[
+                  { required: true, message: '请确认密码' },
+                  {
+                    validator: (_, value): Promise<void> => {
+                      const password = form.getFieldValue('password');
+                      if (!value || password === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('两次输入的密码不一致'));
+                    }
+                  }
+                ]}
+                className="mb-4"
+              >
+                <Input.Password
+                  placeholder="请再次输入密码"
+                  size="large"
+                  className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
+                  iconRender={(visible) => (
+                    <FontAwesomeIcon
+                      icon={visible ? faEyeSlash : faEye}
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                    />
+                  )}
+                  visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }}
+                />
+              </Form.Item>
+            </>
+          )}
+
+          {/* 验证码注册方式 */}
+          {registerType === 'code' && (
+            <Form.Item name="code" rules={[{ required: true, message: '请输入验证码' }]} className="mb-4">
+              <div className="flex gap-3 items-center">
+                <Input
+                  placeholder="请输入验证码"
+                  size="large"
+                  className="flex-1 rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
+                />
+                <Button
+                  type="primary"
+                  size="large"
+                  className="rounded-md bg-primary-600 hover:bg-primary-700 text-white font-medium px-6 py-2.5 transition-all duration-200 hover:shadow-sm"
+                  onClick={handleSendCode}
+                  disabled={isLoading || codeCountdown > 0}
+                >
+                  {codeCountdown > 0 ? `${codeCountdown}s后重发` : '获取验证码'}
+                </Button>
+              </div>
             </Form.Item>
-          </>
-        )}
+          )}
 
-        {/* 验证码注册方式 */}
-        {registerType === 'code' && (
-          <Form.Item name="code" rules={[{ required: true, message: '请输入验证码' }]} className="mb-4">
-            <div className="flex gap-3 items-center">
-              <Input
-                placeholder="请输入验证码"
-                size="large"
-                className="flex-1 rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
-              />
-              <Button
-                type="primary"
-                size="large"
-                className="rounded-md bg-primary-600 hover:bg-primary-700 text-white font-medium px-6 py-2.5 transition-all duration-200 hover:shadow-sm"
-                onClick={handleSendCode}
-                disabled={isLoading || codeCountdown > 0}
-              >
-                {codeCountdown > 0 ? `${codeCountdown}s后重发` : '获取验证码'}
-              </Button>
-            </div>
+          {/* 同意条款和注册类型切换 */}
+          <div className="flex justify-between items-center mb-6">
+            <Form.Item name="agreeTerms" valuePropName="checked" noStyle>
+              <Checkbox className="text-sm text-gray-600">
+                我已阅读并同意
+                <a
+                  href="#"
+                  className="mx-1 hover:underline transition-colors duration-200 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void message.info('🤫 悄悄告诉你, 用户协议还在和产品经理"打架"中, 敬请期待！');
+                  }}
+                >
+                  <span className="text-blue-500 hover:text-blue-700">服务条款</span>
+                </a>
+                和
+                <a
+                  href="#"
+                  className="mx-1 text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void message.info('🔒 隐私政策正在“梳妆打扮”, 马上就和大家见面啦！');
+                  }}
+                >
+                  <span className="text-blue-500 hover:text-blue-700">隐私政策</span>
+                </a>
+              </Checkbox>
+            </Form.Item>
+
+            <a
+              href="#"
+              className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200"
+              onClick={(e) => {
+                e.preventDefault();
+                // 切换注册类型
+                const newRegisterType = registerType === 'password' ? 'code' : 'password';
+                setRegisterType(newRegisterType);
+                // 重置相关字段
+                if (newRegisterType === 'code') {
+                  // 切换到验证码注册，重置密码相关字段
+                  form.resetFields(['password', 'confirmPassword']);
+                } else {
+                  // 切换到密码注册，重置验证码字段
+                  form.resetFields(['code']);
+                }
+                // 重置密码强度状态
+                setPasswordStrength('weak');
+              }}
+            >
+              <span className="text-blue-600 hover:text-blue-800">
+                {registerType === 'password' ? '验证码注册' : '密码注册'}
+              </span>
+            </a>
+          </div>
+
+          {/* 第六层：注册按钮 */}
+          <Form.Item className="mb-6">
+            <Button
+              type="primary"
+              htmlType="submit"
+              size="large"
+              className="w-full rounded-md bg-primary-600 hover:bg-primary-700 text-white font-semibold text-base py-2.5 px-6 transition-all duration-200 flex items-center justify-center"
+              loading={isLoading}
+            >
+              注册
+            </Button>
           </Form.Item>
-        )}
 
-        {/* 同意条款和注册类型切换 */}
-        <div className="flex justify-between items-center mb-6">
-          <Form.Item name="agreeTerms" valuePropName="checked" noStyle>
-            <Checkbox className="text-sm text-gray-600">
-              我已阅读并同意
-              <a
-                href="#"
-                className="mx-1 hover:underline transition-colors duration-200 cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  void message.info('🤫 悄悄告诉你, 用户协议还在和产品经理"打架"中, 敬请期待！');
-                }}
-              >
-                <span className="text-blue-500 hover:text-blue-700">服务条款</span>
-              </a>
-              和
-              <a
-                href="#"
-                className="mx-1 text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200 cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  void message.info('🔒 隐私政策正在“梳妆打扮”, 马上就和大家见面啦！');
-                }}
-              >
-                <span className="text-blue-500 hover:text-blue-700">隐私政策</span>
-              </a>
-            </Checkbox>
-          </Form.Item>
-
-          <a
-            href="#"
-            className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200"
-            onClick={(e) => {
-              e.preventDefault();
-              // 切换注册类型
-              const newRegisterType = registerType === 'password' ? 'code' : 'password';
-              setRegisterType(newRegisterType);
-              // 重置相关字段
-              if (newRegisterType === 'code') {
-                // 切换到验证码注册，重置密码相关字段
-                form.resetFields(['password', 'confirmPassword']);
-              } else {
-                // 切换到密码注册，重置验证码字段
-                form.resetFields(['code']);
-              }
-              // 重置密码强度状态
-              setPasswordStrength('weak');
+          {/* 流畅滑动验证码模态框 */}
+          <SlideCaptchaModal
+            visible={captchaModalVisible}
+            onClose={() => {
+              setCaptchaModalVisible(false);
+              setFormData(null);
             }}
-          >
-            <span className="text-blue-600 hover:text-blue-800">
-              {registerType === 'password' ? '验证码注册' : '密码注册'}
-            </span>
-          </a>
-        </div>
-
-        {/* 第六层：注册按钮 */}
-        <Form.Item className="mb-6">
-          <Button
-            type="primary"
-            htmlType="submit"
-            size="large"
-            className="w-full rounded-md bg-primary-600 hover:bg-primary-700 text-white font-semibold text-base py-2.5 px-6 transition-all duration-200 flex items-center justify-center"
-            loading={isLoading}
-          >
-            注册
-          </Button>
-        </Form.Item>
-
-        {/* 流畅滑动验证码模态框 */}
-        <SlideCaptchaModal
-          visible={captchaModalVisible}
-          onClose={() => {
-            setCaptchaModalVisible(false);
-            setFormData(null);
-          }}
-          onSuccess={handleCaptchaSuccess}
-          imgUrl={getRandomCaptchaImage()}
-          captchaProps={{
-            gapShape: 'trapezoid', // 梯形缺口
-            gapTolerance: 6, // 更严格的对齐精度
-            tipText: '拖动滑块完成拼图'
-          }}
-        />
-      </Form>
-    </AuthLayout>
+            onSuccess={handleCaptchaSuccess}
+            imgUrl={getRandomCaptchaImage()}
+            captchaProps={{
+              gapShape: 'trapezoid', // 梯形缺口
+              gapTolerance: 6, // 更严格的对齐精度
+              tipText: '拖动滑块完成拼图'
+            }}
+          />
+        </Form>
+      </AuthLayout>
+    </>
   );
 };
 
