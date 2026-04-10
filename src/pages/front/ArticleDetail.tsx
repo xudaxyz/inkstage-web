@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Button, Card, Divider, Dropdown, List, message, Modal, notification, Tag, Tooltip } from 'antd';
+import { Helmet } from 'react-helmet-async';
 import { formatDateTimeShort, getTagColor } from '../../utils';
 import {
   CheckOutlined,
@@ -31,7 +32,13 @@ import articleService from '../../services/articleService';
 import readingHistoryService from '../../services/readingHistoryService';
 import { checkFollowStatus, followUser, unfollowUser } from '../../services/userService';
 import type { FrontTag } from '../../types/tag';
-
+// 标题截断函数
+const truncateTitle = (title: string, maxLength: number = 30): string => {
+  if (title.length <= maxLength) {
+    return title;
+  }
+  return title.substring(0, maxLength) + '...';
+};
 const ArticleDetail: React.FC = () => {
   const theme = useTheme();
   const isDarkMode = theme === 'dark';
@@ -473,424 +480,429 @@ const ArticleDetail: React.FC = () => {
     return <ErrorBoundary error={error || '文章不存在'} />;
   }
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans">
-      {/* 顶部导航栏 */}
-      <Header />
+    <>
+      <Helmet>
+        <title>{article ? `${truncateTitle(article.title)} - InkStage` : 'InkStage-web'}</title>
+      </Helmet>
+      <div className="flex min-h-screen flex-col bg-white font-sans">
+        {/* 顶部导航栏 */}
+        <Header />
 
-      {/* 删除确认对话框 */}
-      <Modal
-        title="确认删除"
-        open={deleteModalVisible}
-        onOk={confirmDelete}
-        onCancel={() => setDeleteModalVisible(false)}
-        okText="确认删除"
-        cancelText="取消"
-        okType="danger"
-      >
-        <p>您确定要删除这篇文章吗？此操作不可恢复。</p>
-      </Modal>
+        {/* 删除确认对话框 */}
+        <Modal
+          title="确认删除"
+          open={deleteModalVisible}
+          onOk={confirmDelete}
+          onCancel={() => setDeleteModalVisible(false)}
+          okText="确认删除"
+          cancelText="取消"
+          okType="danger"
+        >
+          <p>您确定要删除这篇文章吗？此操作不可恢复。</p>
+        </Modal>
 
-      {/* 主体内容 */}
-      <main className="bg-gray-50 dark:bg-gray-800 flex-1 pt-8 px-[5%]">
-        {/* 三栏布局：左侧互动按钮 + 中间文章内容 + 右侧边栏 */}
-        <div className="flex flex-col lg:flex-row">
-          {/* 左侧互动按钮区域 */}
-          <div className="hidden lg:block lg:w-[2%] ">
-            <div className="sticky top-36 flex flex-col items-end gap-6 max-h-[400px]">
-              {/* 点赞按钮 */}
-              <div className="flex flex-col items-center gap-1">
-                <Tooltip title="点赞">
-                  <Button
-                    type="text"
-                    variant="outlined"
-                    size="large"
-                    onClick={handleLike}
-                    loading={likeLoading}
-                    icon={article.isLiked ? <LikeTwoTone /> : <LikeOutlined />}
-                  />
-                </Tooltip>
-                <span className="text-xs text-gray-500">{article.likeCount || 0}</span>
-              </div>
-
-              {/* 收藏按钮 */}
-              <div className="flex flex-col items-center gap-1">
-                <Tooltip title="收藏">
-                  <Button
-                    type="text"
-                    variant="outlined"
-                    size="large"
-                    onClick={handleCollect}
-                    loading={collectLoading}
-                    icon={article.isCollected ? <StarTwoTone /> : <StarOutlined />}
-                  />
-                </Tooltip>
-                <span className="text-xs text-gray-500">{article.collectionCount || 0}</span>
-              </div>
-
-              {/* 评论按钮 */}
-              <div className="flex flex-col items-center gap-1">
-                <Tooltip title="评论">
-                  <Button type="text" variant="outlined" size="large" icon={<MessageOutlined />} />
-                </Tooltip>
-                <span className="text-xs text-gray-500">{article.commentCount || 0}</span>
-              </div>
-
-              {/* 转发按钮 */}
-              <div className="flex flex-col items-center gap-1">
-                <Tooltip title="转发">
-                  <Button
-                    type="text"
-                    variant="outlined"
-                    size="large"
-                    onClick={handleShare}
-                    icon={<ShareAltOutlined />}
-                  />
-                </Tooltip>
-              </div>
-
-              {/* 举报按钮 */}
-              <div className="flex flex-col items-end gap-1">
-                <Tooltip title="举报">
-                  <Button type="text" variant="outlined" size="large" icon={<ExclamationCircleOutlined />} />
-                </Tooltip>
-              </div>
-            </div>
-          </div>
-
-          {/* 中间文章详情 */}
-          <div className="bg-white dark:bg-gray-800 px-10 pt-8 lg:w-3/4 lg:mr-12 rounded-2xl">
-            {/* 响应式调整 */}
-            <div className="md:pr-4">
-              {/* 文章标题 */}
-              <h1 className="text-4xl font-bold mb-6 text-gray-800 dark:text-gray-100 leading-tight tracking-tight">
-                {article.title}
-              </h1>
-
-              {/* 作者信息和统计数据 */}
-              <div className="flex flex-wrap items-center justify-between gap-5 mb-8 text-gray-500 pb-4 border-b dark:border-b border-gray-100 dark:border-gray-600">
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      size={40}
-                      src={article.avatar || undefined}
-                      alt={article.nickname}
-                      className="border border-gray-100 shadow-sm"
-                    />
-                    <div className="hover:text-blue-700">
-                      {article.userId ? (
-                        <a
-                          href={`/user/${article.userId}`}
-                          className="font-semibold text-gray-600 hover:text-blue-700 transition-colors"
-                        >
-                          {article.nickname || '未知作者'}
-                        </a>
-                      ) : (
-                        <span className="font-medium text-gray-800">{article.nickname || '未知作者'}</span>
-                      )}
-                    </div>
-                  </div>
-                  {article.categoryName && (
-                    <span className="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded-4xl">
-                      {article.categoryName}
-                    </span>
-                  )}
-                  <div className="flex items-center gap-4 text-sm">
-                    <Tooltip title="阅读量">
-                      <div className="flex items-center gap-2">
-                        <EyeOutlined className="text-gray-400" />
-                        <span>{article.readCount || 0}</span>
-                      </div>
-                    </Tooltip>
-                    <Tooltip title="点赞数">
-                      <div className="flex items-center gap-2">
-                        <LikeOutlined className={`${article.isLiked ? 'text-red-500' : 'text-gray-400'}`} />
-                        <span>{article.likeCount || 0}</span>
-                      </div>
-                    </Tooltip>
-                    <Tooltip title="评论数">
-                      <div className="flex items-center gap-1">
-                        <MessageOutlined className="text-gray-400" />
-                        <span>{article.commentCount || 0}</span>
-                      </div>
-                    </Tooltip>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <span className="text-sm text-gray-400">
-                      {article.publishTime ? formatDateTimeShort(article.publishTime) : ''}
-                    </span>
-                  </div>
-                </div>
-                {isArticleUser && (
-                  <Dropdown
-                    menu={{
-                      items: [
-                        {
-                          key: 'edit',
-                          icon: <EditOutlined />,
-                          label: '修改',
-                          onClick: handleEdit
-                        },
-                        {
-                          key: 'delete',
-                          icon: <DeleteOutlined />,
-                          label: '删除',
-                          onClick: handleDelete
-                        }
-                      ]
-                    }}
-                    placement="bottomRight"
-                  >
+        {/* 主体内容 */}
+        <main className="bg-gray-50 dark:bg-gray-800 flex-1 pt-8 px-[5%]">
+          {/* 三栏布局：左侧互动按钮 + 中间文章内容 + 右侧边栏 */}
+          <div className="flex flex-col lg:flex-row">
+            {/* 左侧互动按钮区域 */}
+            <div className="hidden lg:block lg:w-[2%] ">
+              <div className="sticky top-36 flex flex-col items-end gap-6 max-h-[400px]">
+                {/* 点赞按钮 */}
+                <div className="flex flex-col items-center gap-1">
+                  <Tooltip title="点赞">
                     <Button
                       type="text"
-                      className="text-gray-400 dark:text-gray-200 hover:text-gray-600 transition-colors"
-                    >
-                      管理 <DownOutlined />
-                    </Button>
-                  </Dropdown>
-                )}
-              </div>
-
-              {/* 文章摘要 */}
-              {article.summary && (
-                <div className="mb-8 text-sm text-gray-600 dark:text-gray-300 dark:border-blue-400 italic border-l-4 border-blue-200 pl-6 py-4 bg-blue-50 dark:bg-gray-600 rounded-r-lg shadow-sm">
-                  {article.summary}
+                      variant="outlined"
+                      size="large"
+                      onClick={handleLike}
+                      loading={likeLoading}
+                      icon={article.isLiked ? <LikeTwoTone /> : <LikeOutlined />}
+                    />
+                  </Tooltip>
+                  <span className="text-xs text-gray-500">{article.likeCount || 0}</span>
                 </div>
-              )}
 
-              {/* 文章封面图 */}
-              {article.coverImage && (
-                <div className="mb-8 rounded-xl shadow-lg">
-                  <img
-                    src={article.coverImage}
-                    alt={article.title}
-                    className="w-full aspect-ratio transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-              )}
-
-              {/* 文章内容 */}
-              <div ref={contentRef}>
-                <ArticleContent content={article.content || ''} />
-              </div>
-
-              {/* 文章标签 */}
-              {article.tags && Array.isArray(article.tags) && (
-                <div className="mb-12 flex flex-wrap gap-4">
-                  {article.tags.map((tag: FrontTag, index: number) => (
-                    <Tag
-                      key={tag.id || index}
-                      variant="solid"
-                      color={getTagColor(tag)}
-                      className="cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-sm"
-                    >
-                      {tag.name}
-                    </Tag>
-                  ))}
-                </div>
-              )}
-
-              {/* 操作按钮 */}
-              <div className="flex flex-wrap items-center justify-center gap-6 px-6 py-8 border-t dark:border-t border-gray-100 dark:border-gray-500">
-                <Button
-                  onClick={handleLike}
-                  size="large"
-                  shape="round"
-                  loading={likeLoading}
-                  icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''} />}
-                  className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300`}
-                >
-                  {article.isLiked ? '已点赞' : '点赞'}
-                </Button>
-                <Button
-                  onClick={handleCollect}
-                  size="large"
-                  shape="round"
-                  loading={collectLoading}
-                  icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''} />}
-                  className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300`}
-                >
-                  {article.isCollected ? '已收藏' : '收藏'}
-                </Button>
-                <Button
-                  onClick={handleShare}
-                  size="large"
-                  shape="round"
-                  icon={<ShareAltOutlined />}
-                  className="text-gray-600 border-gray-200 px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300"
-                >
-                  分享
-                </Button>
-              </div>
-
-              {/* 评论区 */}
-              <CommentSection
-                articleId={Number(id)}
-                currentUserId={isLoggedIn ? Number(user.id) : undefined}
-                currentUserNickname={user.nickname}
-                currentUserAvatar={user.avatar}
-                onCommentCountChange={updateCommentCount}
-              />
-            </div>
-          </div>
-
-          {/* 右侧边栏 */}
-          <div className="lg:w-1/4">
-            {/* 响应式调整 */}
-            <div className="relative">
-              {/* 作者信息 */}
-              <Card
-                style={{
-                  marginBottom: '32px',
-                  backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`
-                }}
-              >
-                <div className="text-center">
-                  <Avatar
-                    size={88}
-                    src={article.avatar || undefined}
-                    alt={article.nickname}
-                    className="border-2 border-gray-100 shadow-md"
-                  />
-                  {article.userId ? (
-                    <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
-                      <a href={`/user/${article.userId}`} className="font-semibold text-gray-800 transition-colors">
-                        {article.nickname || '未知作者'}
-                      </a>
-                    </h3>
-                  ) : (
-                    <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
-                      {article.nickname || '未知作者'}
-                    </h3>
-                  )}
-                  <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-                    <p className="mt-2">{article.signature || '暂无简介'}</p>
-                  </div>
-                  <Divider className="my-6" />
-                  {isLoggedIn && user?.id && article?.userId && (
+                {/* 收藏按钮 */}
+                <div className="flex flex-col items-center gap-1">
+                  <Tooltip title="收藏">
                     <Button
-                      type={isFollowing ? 'default' : 'primary'}
-                      loading={followLoading}
-                      onClick={handleFollow}
-                      icon={isFollowing ? <CheckOutlined /> : <PlusOutlined />}
-                      className={`w-[60%] py-2 rounded-lg shadow-sm hover:shadow-md transition-colors ${
-                        isFollowing
-                          ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-300'
-                          : 'bg-blue-500 text-white hover:bg-blue-600'
-                      }`}
+                      type="text"
+                      variant="outlined"
+                      size="large"
+                      onClick={handleCollect}
+                      loading={collectLoading}
+                      icon={article.isCollected ? <StarTwoTone /> : <StarOutlined />}
+                    />
+                  </Tooltip>
+                  <span className="text-xs text-gray-500">{article.collectionCount || 0}</span>
+                </div>
+
+                {/* 评论按钮 */}
+                <div className="flex flex-col items-center gap-1">
+                  <Tooltip title="评论">
+                    <Button type="text" variant="outlined" size="large" icon={<MessageOutlined />} />
+                  </Tooltip>
+                  <span className="text-xs text-gray-500">{article.commentCount || 0}</span>
+                </div>
+
+                {/* 转发按钮 */}
+                <div className="flex flex-col items-center gap-1">
+                  <Tooltip title="转发">
+                    <Button
+                      type="text"
+                      variant="outlined"
+                      size="large"
+                      onClick={handleShare}
+                      icon={<ShareAltOutlined />}
+                    />
+                  </Tooltip>
+                </div>
+
+                {/* 举报按钮 */}
+                <div className="flex flex-col items-end gap-1">
+                  <Tooltip title="举报">
+                    <Button type="text" variant="outlined" size="large" icon={<ExclamationCircleOutlined />} />
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+
+            {/* 中间文章详情 */}
+            <div className="bg-white dark:bg-gray-800 px-10 pt-8 lg:w-3/4 lg:mr-12 rounded-2xl">
+              {/* 响应式调整 */}
+              <div className="md:pr-4">
+                {/* 文章标题 */}
+                <h1 className="text-4xl font-bold mb-6 text-gray-800 dark:text-gray-100 leading-tight tracking-tight">
+                  {article.title}
+                </h1>
+
+                {/* 作者信息和统计数据 */}
+                <div className="flex flex-wrap items-center justify-between gap-5 mb-8 text-gray-500 pb-4 border-b dark:border-b border-gray-100 dark:border-gray-600">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        size={40}
+                        src={article.avatar || undefined}
+                        alt={article.nickname}
+                        className="border border-gray-100 shadow-sm"
+                      />
+                      <div className="hover:text-blue-700">
+                        {article.userId ? (
+                          <a
+                            href={`/user/${article.userId}`}
+                            className="font-semibold text-gray-600 hover:text-blue-700 transition-colors"
+                          >
+                            {article.nickname || '未知作者'}
+                          </a>
+                        ) : (
+                          <span className="font-medium text-gray-800">{article.nickname || '未知作者'}</span>
+                        )}
+                      </div>
+                    </div>
+                    {article.categoryName && (
+                      <span className="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded-4xl">
+                        {article.categoryName}
+                      </span>
+                    )}
+                    <div className="flex items-center gap-4 text-sm">
+                      <Tooltip title="阅读量">
+                        <div className="flex items-center gap-2">
+                          <EyeOutlined className="text-gray-400" />
+                          <span>{article.readCount || 0}</span>
+                        </div>
+                      </Tooltip>
+                      <Tooltip title="点赞数">
+                        <div className="flex items-center gap-2">
+                          <LikeOutlined className={`${article.isLiked ? 'text-red-500' : 'text-gray-400'}`} />
+                          <span>{article.likeCount || 0}</span>
+                        </div>
+                      </Tooltip>
+                      <Tooltip title="评论数">
+                        <div className="flex items-center gap-1">
+                          <MessageOutlined className="text-gray-400" />
+                          <span>{article.commentCount || 0}</span>
+                        </div>
+                      </Tooltip>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="text-sm text-gray-400">
+                        {article.publishTime ? formatDateTimeShort(article.publishTime) : ''}
+                      </span>
+                    </div>
+                  </div>
+                  {isArticleUser && (
+                    <Dropdown
+                      menu={{
+                        items: [
+                          {
+                            key: 'edit',
+                            icon: <EditOutlined />,
+                            label: '修改',
+                            onClick: handleEdit
+                          },
+                          {
+                            key: 'delete',
+                            icon: <DeleteOutlined />,
+                            label: '删除',
+                            onClick: handleDelete
+                          }
+                        ]
+                      }}
+                      placement="bottomRight"
                     >
-                      {isFollowing ? '已关注' : '关注作者'}
-                    </Button>
+                      <Button
+                        type="text"
+                        className="text-gray-400 dark:text-gray-200 hover:text-gray-600 transition-colors"
+                      >
+                        管理 <DownOutlined />
+                      </Button>
+                    </Dropdown>
                   )}
                 </div>
-              </Card>
 
-              {/* 作者相关文章 */}
-              <Card
-                style={{
-                  backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`
-                }}
-                className="mb-8 border border-gray-100 rounded-lg shadow-sm"
-                title="作者相关文章"
-              >
-                {relatedArticlesLoading ? (
-                  <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                {/* 文章摘要 */}
+                {article.summary && (
+                  <div className="mb-8 text-sm text-gray-600 dark:text-gray-300 dark:border-blue-400 italic border-l-4 border-blue-200 pl-6 py-4 bg-blue-50 dark:bg-gray-600 rounded-r-lg shadow-sm">
+                    {article.summary}
                   </div>
-                ) : relatedArticles.length > 0 ? (
-                  <List
-                    size="small"
-                    dataSource={relatedArticles}
-                    renderItem={(item): React.ReactNode => (
-                      <List.Item className="py-3">
-                        <List.Item.Meta
-                          title={
-                            <a
-                              href={`/article/${item.id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-gray-800 hover:text-blue-600 transition-colors"
-                            >
-                              {item.title}
-                            </a>
-                          }
-                          description={
-                            <span className="text-gray-400 text-xs">
-                              {item.publishTime ? formatDateTimeShort(item.publishTime) : ''}
-                            </span>
-                          }
-                        />
-                      </List.Item>
-                    )}
-                  />
-                ) : (
-                  <div className="text-center py-4 text-gray-500 text-sm">暂无相关文章</div>
                 )}
-              </Card>
 
-              {/* 文章目录 */}
-              {toc.length > 0 && (
-                <div className="relative">
-                  <Card
-                    variant={'borderless'}
-                    style={{
-                      backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`,
-                      top: '32px'
-                    }}
-                  >
-                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">文章目录</h3>
-                    <div className="text-sm max-h-[400px] overflow-y-auto pr-2">
-                      {toc.map((item, index) => (
-                        <div
-                          key={index}
-                          className={`mb-2 pl-${(item.level - 1) * 6} cursor-pointer transition-colors py-1 px-2 rounded-md ${activeTocId === item.id ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
-                          onClick={() => scrollToHeading(item.id)}
-                        >
-                          <LinkOutlined
-                            className={`mr-1 ${activeTocId === item.id ? 'text-blue-600' : 'text-gray-400'}`}
-                          />
-                          {item.text}
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
+                {/* 文章封面图 */}
+                {article.coverImage && (
+                  <div className="mb-8 rounded-xl shadow-lg">
+                    <img
+                      src={article.coverImage}
+                      alt={article.title}
+                      className="w-full aspect-ratio transition-transform duration-500 hover:scale-105"
+                    />
+                  </div>
+                )}
+
+                {/* 文章内容 */}
+                <div ref={contentRef}>
+                  <ArticleContent content={article.content || ''} />
                 </div>
-              )}
 
-              {/* 回到顶部按钮 */}
-              {showBackToTop && (
-                <div className="fixed bottom-24 right-24 z-50">
+                {/* 文章标签 */}
+                {article.tags && Array.isArray(article.tags) && (
+                  <div className="mb-12 flex flex-wrap gap-4">
+                    {article.tags.map((tag: FrontTag, index: number) => (
+                      <Tag
+                        key={tag.id || index}
+                        variant="solid"
+                        color={getTagColor(tag)}
+                        className="cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-sm"
+                      >
+                        {tag.name}
+                      </Tag>
+                    ))}
+                  </div>
+                )}
+
+                {/* 操作按钮 */}
+                <div className="flex flex-wrap items-center justify-center gap-6 px-6 py-8 border-t dark:border-t border-gray-100 dark:border-gray-500">
                   <Button
-                    variant={'text'}
-                    color={'cyan'}
-                    shape="circle"
-                    icon={<UpOutlined />}
-                    onClick={scrollToTop}
-                    className="shadow-lg hover:shadow-xl transition-all duration-300"
+                    onClick={handleLike}
                     size="large"
-                  />
+                    shape="round"
+                    loading={likeLoading}
+                    icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''} />}
+                    className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300`}
+                  >
+                    {article.isLiked ? '已点赞' : '点赞'}
+                  </Button>
+                  <Button
+                    onClick={handleCollect}
+                    size="large"
+                    shape="round"
+                    loading={collectLoading}
+                    icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''} />}
+                    className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300`}
+                  >
+                    {article.isCollected ? '已收藏' : '收藏'}
+                  </Button>
+                  <Button
+                    onClick={handleShare}
+                    size="large"
+                    shape="round"
+                    icon={<ShareAltOutlined />}
+                    className="text-gray-600 border-gray-200 px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300"
+                  >
+                    分享
+                  </Button>
                 </div>
-              )}
+
+                {/* 评论区 */}
+                <CommentSection
+                  articleId={Number(id)}
+                  currentUserId={isLoggedIn ? Number(user.id) : undefined}
+                  currentUserNickname={user.nickname}
+                  currentUserAvatar={user.avatar}
+                  onCommentCountChange={updateCommentCount}
+                />
+              </div>
+            </div>
+
+            {/* 右侧边栏 */}
+            <div className="lg:w-1/4">
+              {/* 响应式调整 */}
+              <div className="relative">
+                {/* 作者信息 */}
+                <Card
+                  style={{
+                    marginBottom: '32px',
+                    backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`
+                  }}
+                >
+                  <div className="text-center">
+                    <Avatar
+                      size={88}
+                      src={article.avatar || undefined}
+                      alt={article.nickname}
+                      className="border-2 border-gray-100 shadow-md"
+                    />
+                    {article.userId ? (
+                      <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                        <a href={`/user/${article.userId}`} className="font-semibold text-gray-800 transition-colors">
+                          {article.nickname || '未知作者'}
+                        </a>
+                      </h3>
+                    ) : (
+                      <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                        {article.nickname || '未知作者'}
+                      </h3>
+                    )}
+                    <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                      <p className="mt-2">{article.signature || '暂无简介'}</p>
+                    </div>
+                    <Divider className="my-6" />
+                    {isLoggedIn && user?.id && article?.userId && (
+                      <Button
+                        type={isFollowing ? 'default' : 'primary'}
+                        loading={followLoading}
+                        onClick={handleFollow}
+                        icon={isFollowing ? <CheckOutlined /> : <PlusOutlined />}
+                        className={`w-[60%] py-2 rounded-lg shadow-sm hover:shadow-md transition-colors ${
+                          isFollowing
+                            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-300'
+                            : 'bg-blue-500 text-white hover:bg-blue-600'
+                        }`}
+                      >
+                        {isFollowing ? '已关注' : '关注作者'}
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+
+                {/* 作者相关文章 */}
+                <Card
+                  style={{
+                    backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`
+                  }}
+                  className="mb-8 border border-gray-100 rounded-lg shadow-sm"
+                  title="作者相关文章"
+                >
+                  {relatedArticlesLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                    </div>
+                  ) : relatedArticles.length > 0 ? (
+                    <List
+                      size="small"
+                      dataSource={relatedArticles}
+                      renderItem={(item): React.ReactNode => (
+                        <List.Item className="py-3">
+                          <List.Item.Meta
+                            title={
+                              <a
+                                href={`/article/${item.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-800 hover:text-blue-600 transition-colors"
+                              >
+                                {item.title}
+                              </a>
+                            }
+                            description={
+                              <span className="text-gray-400 text-xs">
+                                {item.publishTime ? formatDateTimeShort(item.publishTime) : ''}
+                              </span>
+                            }
+                          />
+                        </List.Item>
+                      )}
+                    />
+                  ) : (
+                    <div className="text-center py-4 text-gray-500 text-sm">暂无相关文章</div>
+                  )}
+                </Card>
+
+                {/* 文章目录 */}
+                {toc.length > 0 && (
+                  <div className="relative">
+                    <Card
+                      variant={'borderless'}
+                      style={{
+                        backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`,
+                        top: '32px'
+                      }}
+                    >
+                      <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">文章目录</h3>
+                      <div className="text-sm max-h-[400px] overflow-y-auto pr-2">
+                        {toc.map((item, index) => (
+                          <div
+                            key={index}
+                            className={`mb-2 pl-${(item.level - 1) * 6} cursor-pointer transition-colors py-1 px-2 rounded-md ${activeTocId === item.id ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                            onClick={() => scrollToHeading(item.id)}
+                          >
+                            <LinkOutlined
+                              className={`mr-1 ${activeTocId === item.id ? 'text-blue-600' : 'text-gray-400'}`}
+                            />
+                            {item.text}
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  </div>
+                )}
+
+                {/* 回到顶部按钮 */}
+                {showBackToTop && (
+                  <div className="fixed bottom-24 right-24 z-50">
+                    <Button
+                      variant={'text'}
+                      color={'cyan'}
+                      shape="circle"
+                      icon={<UpOutlined />}
+                      onClick={scrollToTop}
+                      className="shadow-lg hover:shadow-xl transition-all duration-300"
+                      size="large"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      {/* 收藏成功提示使用Ant Design的message组件 */}
-      {/* 文件夹选择模态框 */}
-      <CollectionFolderModal
-        visible={folderModalVisible}
-        onClose={() => setFolderModalVisible(false)}
-        onSave={handleSaveToFolder}
-        folders={folders}
-        loading={isLoadingFolders}
-        selectedFolderId={selectedFolderId}
-        onSelectFolder={setSelectedFolderId}
-        onCreateFolder={createFolder}
-      />
+        {/* 收藏成功提示使用Ant Design的message组件 */}
+        {/* 文件夹选择模态框 */}
+        <CollectionFolderModal
+          visible={folderModalVisible}
+          onClose={() => setFolderModalVisible(false)}
+          onSave={handleSaveToFolder}
+          folders={folders}
+          loading={isLoadingFolders}
+          selectedFolderId={selectedFolderId}
+          onSelectFolder={setSelectedFolderId}
+          onCreateFolder={createFolder}
+        />
 
-      {/* 页脚信息 */}
-      <Footer />
-    </div>
+        {/* 页脚信息 */}
+        <Footer />
+      </div>
+    </>
   );
 };
 export default ArticleDetail;

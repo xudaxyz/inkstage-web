@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Sentry初始化
 import * as Sentry from '@sentry/react';
@@ -34,15 +35,17 @@ const rootElement = document.getElementById('root');
 if (rootElement) {
   createRoot(rootElement).render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        {import.meta.env.PROD ? (
-          <Sentry.ErrorBoundary fallback={<div className="text-center p-8">应用程序出现错误，请刷新页面重试</div>}>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          {import.meta.env.PROD ? (
+            <Sentry.ErrorBoundary fallback={<div className="text-center p-8">应用程序出现错误，请刷新页面重试</div>}>
+              <App />
+            </Sentry.ErrorBoundary>
+          ) : (
             <App />
-          </Sentry.ErrorBoundary>
-        ) : (
-          <App />
-        )}
-      </QueryClientProvider>
+          )}
+        </QueryClientProvider>
+      </HelmetProvider>
     </StrictMode>
   );
 } else {

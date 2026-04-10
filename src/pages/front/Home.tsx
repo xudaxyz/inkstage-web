@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { Spin } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import Banner from '../../components/front/Banner';
@@ -240,135 +241,140 @@ const Home: React.FC = () => {
     <ArticleCard key={`${article.id}-${index}`} article={article} />
   );
   return (
-    <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800 font-sans">
-      {/* 顶部导航栏 */}
-      <Header />
+    <>
+      <Helmet>
+        <title>InkStage - 高质量内容创作与分享平台</title>
+      </Helmet>
+      <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800 font-sans">
+        {/* 顶部导航栏 */}
+        <Header />
 
-      {/* 主体内容 */}
-      <main className="flex-1 py-6 px-[5%] bg-white dark:bg-gray-800">
-        <div className="flex flex-col md:flex-row gap-12">
-          {/* 左侧内容 */}
-          <div className="md:w-3/4">
-            {/* 轮播图 */}
-            {bannerLoading ? (
-              <div className="h-64 bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
-                <Spin size="large" />
-              </div>
-            ) : bannerError ? (
-              <div className="h-64 bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
-                {renderError(bannerError)}
-              </div>
-            ) : (
-              <Banner articles={bannerArticles || []} />
-            )}
-
-            {/* 文章分类 */}
-            {categoriesLoading ? (
-              <div className="h-16 bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
-                <Spin size="small" />
-              </div>
-            ) : categoriesError ? (
-              renderError(categoriesError)
-            ) : (
-              <Categories
-                categories={frontendCategory || []}
-                onSelect={handleCategorySelect}
-                selectedId={selectedCategory}
-              />
-            )}
-
-            {/* 文章列表 - 无限滚动 */}
-            <div
-              ref={contentRef}
-              className="mt-6"
-              style={{
-                minHeight: '60vh',
-                height: contentHeight
-              }}
-            >
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${selectedCategory}-${selectedTag}-${keyword}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  className="w-full"
-                >
-                  <InfiniteScrollContainer
-                    infiniteScroll={{
-                      data: articles,
-                      isLoading: articlesLoading,
-                      isLoadingMore,
-                      isError: articlesIsError,
-                      error: articlesError,
-                      hasMore,
-                      loadMoreRef,
-                      refresh: refreshArticles,
-                      total: 0,
-                      pageSize: 0,
-                      setPageSize: async () => {},
-                      setData: setArticles
-                    }}
-                    renderItem={renderArticleItem}
-                    loadingContent={articlesLoadingContent}
-                    loadingMoreContent={articlesLoadingMoreContent}
-                    emptyContent={
-                      <div className="text-center py-12" style={{ minHeight: '60vh' }}>
-                        <p className="text-gray-500">暂无文章</p>
-                        {keyword && <p className="text-gray-400 text-sm mt-2">没有找到与 "{keyword}" 相关的文章</p>}
-                      </div>
-                    }
-                    noMoreText="已经到底啦！"
-                    itemGap="16px"
-                  />
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* 右侧内容 */}
-          <div className="md:w-1/4">
-            {/* 最新文章 */}
-            <div className="mb-8">
-              {latestLoading ? (
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
-                  {[...Array(5)].map((_, index) => (
-                    <div key={index} className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                  ))}
+        {/* 主体内容 */}
+        <main className="flex-1 py-6 px-[5%] bg-white dark:bg-gray-800">
+          <div className="flex flex-col md:flex-row gap-12">
+            {/* 左侧内容 */}
+            <div className="md:w-3/4">
+              {/* 轮播图 */}
+              {bannerLoading ? (
+                <div className="h-64 bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
+                  <Spin size="large" />
                 </div>
-              ) : latestError ? (
-                renderError(latestError)
+              ) : bannerError ? (
+                <div className="h-64 bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
+                  {renderError(bannerError)}
+                </div>
               ) : (
-                <LatestArticles articles={latestArticles || []} />
+                <Banner articles={bannerArticles || []} />
               )}
+
+              {/* 文章分类 */}
+              {categoriesLoading ? (
+                <div className="h-16 bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
+                  <Spin size="small" />
+                </div>
+              ) : categoriesError ? (
+                renderError(categoriesError)
+              ) : (
+                <Categories
+                  categories={frontendCategory || []}
+                  onSelect={handleCategorySelect}
+                  selectedId={selectedCategory}
+                />
+              )}
+
+              {/* 文章列表 - 无限滚动 */}
+              <div
+                ref={contentRef}
+                className="mt-6"
+                style={{
+                  minHeight: '60vh',
+                  height: contentHeight
+                }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${selectedCategory}-${selectedTag}-${keyword}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    className="w-full"
+                  >
+                    <InfiniteScrollContainer
+                      infiniteScroll={{
+                        data: articles,
+                        isLoading: articlesLoading,
+                        isLoadingMore,
+                        isError: articlesIsError,
+                        error: articlesError,
+                        hasMore,
+                        loadMoreRef,
+                        refresh: refreshArticles,
+                        total: 0,
+                        pageSize: 0,
+                        setPageSize: async () => {},
+                        setData: setArticles
+                      }}
+                      renderItem={renderArticleItem}
+                      loadingContent={articlesLoadingContent}
+                      loadingMoreContent={articlesLoadingMoreContent}
+                      emptyContent={
+                        <div className="text-center py-12" style={{ minHeight: '60vh' }}>
+                          <p className="text-gray-500">暂无文章</p>
+                          {keyword && <p className="text-gray-400 text-sm mt-2">没有找到与 "{keyword}" 相关的文章</p>}
+                        </div>
+                      }
+                      noMoreText="已经到底啦！"
+                      itemGap="16px"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
 
-            {/* 热门标签 */}
-            <div>
-              {tagsLoading ? (
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <div className="h-6 rounded w-1/2 mb-4"></div>
-                  <div className="flex flex-wrap gap-2">
-                    {[...Array(8)].map((_, index) => (
-                      <div key={index} className="h-8 bg-gray-200 rounded-full px-3"></div>
+            {/* 右侧内容 */}
+            <div className="md:w-1/4">
+              {/* 最新文章 */}
+              <div className="mb-8">
+                {latestLoading ? (
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                    {[...Array(5)].map((_, index) => (
+                      <div key={index} className="h-4 bg-gray-200 rounded w-full mb-2"></div>
                     ))}
                   </div>
-                </div>
-              ) : tagsError ? (
-                renderError(tagsError)
-              ) : (
-                <HotTags tags={frontTag || []} onSelect={handleTagSelect} />
-              )}
+                ) : latestError ? (
+                  renderError(latestError)
+                ) : (
+                  <LatestArticles articles={latestArticles || []} />
+                )}
+              </div>
+
+              {/* 热门标签 */}
+              <div>
+                {tagsLoading ? (
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <div className="h-6 rounded w-1/2 mb-4"></div>
+                    <div className="flex flex-wrap gap-2">
+                      {[...Array(8)].map((_, index) => (
+                        <div key={index} className="h-8 bg-gray-200 rounded-full px-3"></div>
+                      ))}
+                    </div>
+                  </div>
+                ) : tagsError ? (
+                  renderError(tagsError)
+                ) : (
+                  <HotTags tags={frontTag || []} onSelect={handleTagSelect} />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      {/* 页脚信息 */}
-      <Footer />
-    </div>
+        {/* 页脚信息 */}
+        <Footer />
+      </div>
+    </>
   );
 };
 export default Home;

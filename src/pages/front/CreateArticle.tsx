@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { UploadFile } from 'antd';
 import { Button, Card, Form, Input, message, Radio, Select, Space, Switch } from 'antd';
+import { Helmet } from 'react-helmet-async';
 import {
   EyeOutlined,
   MoonOutlined,
@@ -281,303 +282,308 @@ const CreateArticle: React.FC = () => {
     }
   };
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
-      {/* 顶部导航栏 */}
-      <header className="h-16 bg-white dark:bg-gray-800 border-b dark:border-b border-gray-200 dark:border-gray-700 flex items-center px-[5%] sticky top-0 z-10 shadow-sm">
-        {/* 左侧：Logo和标题 */}
-        <div className="flex items-baseline">
-          <span className="text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide">
-            InkStage
-          </span>
-          <span className="mx-2 items-center text-base text-gray-400">\</span>
-          <span className="text-base items-center font-medium text-gray-800 dark:text-gray-300">
-            {isEditMode ? '编辑文章' : '写文章'}
-          </span>
-        </div>
-
-        {/* 右侧：操作按钮和用户信息 */}
-        <div className="flex items-center gap-5 ml-auto">
-          {/* 主题切换按钮 */}
-          <div className="flex items-center gap-2">
-            {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
-            <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" />
+    <>
+      <Helmet>
+        <title>{isEditMode ? '编辑文章 - InkStage' : '写文章 - InkStage'}</title>
+      </Helmet>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
+        {/* 顶部导航栏 */}
+        <header className="h-16 bg-white dark:bg-gray-800 border-b dark:border-b border-gray-200 dark:border-gray-700 flex items-center px-[5%] sticky top-0 z-10 shadow-sm">
+          {/* 左侧：Logo和标题 */}
+          <div className="flex items-baseline">
+            <span className="text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide">
+              InkStage
+            </span>
+            <span className="mx-2 items-center text-base text-gray-400">\</span>
+            <span className="text-base items-center font-medium text-gray-800 dark:text-gray-300">
+              {isEditMode ? '编辑文章' : '写文章'}
+            </span>
           </div>
-          {/* 操作按钮 */}
-          <Space size="middle">
-            <Button
-              icon={<SwapLeftOutlined />}
-              onClick={() => navigate('/')}
-              className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-            >
-              返回首页
-            </Button>
-            <Button
-              color="cyan"
-              variant="solid"
-              icon={<SaveOutlined />}
-              onClick={handleSaveDraft}
-              loading={isSubmitting}
-              className=" hover:bg-blue-600"
-            >
-              保存草稿
-            </Button>
-            <Button
-              type="primary"
-              icon={<SendOutlined />}
-              onClick={() => form.submit()}
-              loading={isSubmitting}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              发布
-            </Button>
-          </Space>
 
-          {/* 用户信息 */}
-          {user && (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={user.nickname || ''}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
-                )}
-              </div>
-              <span className="text-purple-600 font-medium text-sm hidden w-[100px] md:inline-block truncate">
-                {user.nickname}
-              </span>
+          {/* 右侧：操作按钮和用户信息 */}
+          <div className="flex items-center gap-5 ml-auto">
+            {/* 主题切换按钮 */}
+            <div className="flex items-center gap-2">
+              {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
+              <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" />
             </div>
-          )}
-        </div>
-      </header>
+            {/* 操作按钮 */}
+            <Space size="middle">
+              <Button
+                icon={<SwapLeftOutlined />}
+                onClick={() => navigate('/')}
+                className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                返回首页
+              </Button>
+              <Button
+                color="cyan"
+                variant="solid"
+                icon={<SaveOutlined />}
+                onClick={handleSaveDraft}
+                loading={isSubmitting}
+                className=" hover:bg-blue-600"
+              >
+                保存草稿
+              </Button>
+              <Button
+                type="primary"
+                icon={<SendOutlined />}
+                onClick={() => form.submit()}
+                loading={isSubmitting}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                发布
+              </Button>
+            </Space>
 
-      {/* 主要内容区域 */}
-      <div className="px-[5%] bg-white dark:bg-gray-800">
-        <Card
-          variant="borderless"
-          style={{
-            backgroundColor: `${isDarkMode ? '#364153' : 'transparent'}`
-          }}
-        >
-          <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            {/* 第二层：文章标题 */}
-            <div className="mb-4">
-              <div className="flex items-center gap-10">
-                <div className="flex-2">
-                  <Form.Item
-                    name="title"
-                    rules={[
-                      { required: true, message: '文章标题不能为空' },
-                      {
-                        max: 100,
-                        message: '标题不能超过100字'
-                      }
-                    ]}
-                  >
-                    <Input
-                      placeholder="请输入文章标题..."
-                      className="placeholder:text-gray-400/70"
-                      maxLength={100}
-                      showCount
-                      size="large"
-                      variant="underlined"
-                      style={{
-                        fontSize: '30px',
-                        fontStyle: 'normal',
-                        fontWeight: 500,
-                        fontFamily: 'sans-serif'
-                      }}
+            {/* 用户信息 */}
+            {user && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.nickname || ''}
+                      className="w-full h-full rounded-full object-cover"
                     />
-                  </Form.Item>
+                  ) : (
+                    <span className="text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
+                  )}
                 </div>
-                <Button
-                  icon={<EyeOutlined />}
-                  className=" bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 whitespace-nowrap mt-1 transition-all duration-200 shadow-sm"
-                >
-                  预览
-                </Button>
+                <span className="text-purple-600 font-medium text-sm hidden w-[100px] md:inline-block truncate">
+                  {user.nickname}
+                </span>
               </div>
-            </div>
+            )}
+          </div>
+        </header>
 
-            {/* 第三层：分类和标签 */}
-            <div className="flex gap-16 mb-6">
-              {/* 左侧：分类 */}
-              <div className="w-1/5 min-w-[120px]">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">分类</label>
-                <Form.Item name="category" rules={[{ required: true, message: '请选择文章分类' }]}>
-                  <Select placeholder="请选择分类" className="w-full" loading={loading}>
-                    {categories.map((category) => (
-                      <Option key={category.value} value={category.value}>
-                        {category.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
-
-              {/* 右侧：标签 */}
-              <div className="flex-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">标签</label>
-                <div>
-                  <Form.Item name="tags" noStyle>
-                    <Select
-                      mode="tags"
-                      placeholder="请选择标签，或输入新标签名称"
-                      style={{ width: '100%' }}
-                      onChange={handleTagChange}
-                      maxTagCount={5}
-                      loading={loading}
-                      tokenSeparators={[',', ' ']}
+        {/* 主要内容区域 */}
+        <div className="px-[5%] bg-white dark:bg-gray-800">
+          <Card
+            variant="borderless"
+            style={{
+              backgroundColor: `${isDarkMode ? '#364153' : 'transparent'}`
+            }}
+          >
+            <Form form={form} layout="vertical" onFinish={handleSubmit}>
+              {/* 第二层：文章标题 */}
+              <div className="mb-4">
+                <div className="flex items-center gap-10">
+                  <div className="flex-2">
+                    <Form.Item
+                      name="title"
+                      rules={[
+                        { required: true, message: '文章标题不能为空' },
+                        {
+                          max: 100,
+                          message: '标题不能超过100字'
+                        }
+                      ]}
                     >
-                      {availableTags.map((tag) => (
-                        <Option key={tag.value} value={tag.value}>
-                          {tag.label}
+                      <Input
+                        placeholder="请输入文章标题..."
+                        className="placeholder:text-gray-400/70"
+                        maxLength={100}
+                        showCount
+                        size="large"
+                        variant="underlined"
+                        style={{
+                          fontSize: '30px',
+                          fontStyle: 'normal',
+                          fontWeight: 500,
+                          fontFamily: 'sans-serif'
+                        }}
+                      />
+                    </Form.Item>
+                  </div>
+                  <Button
+                    icon={<EyeOutlined />}
+                    className=" bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 whitespace-nowrap mt-1 transition-all duration-200 shadow-sm"
+                  >
+                    预览
+                  </Button>
+                </div>
+              </div>
+
+              {/* 第三层：分类和标签 */}
+              <div className="flex gap-16 mb-6">
+                {/* 左侧：分类 */}
+                <div className="w-1/5 min-w-[120px]">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">分类</label>
+                  <Form.Item name="category" rules={[{ required: true, message: '请选择文章分类' }]}>
+                    <Select placeholder="请选择分类" className="w-full" loading={loading}>
+                      {categories.map((category) => (
+                        <Option key={category.value} value={category.value}>
+                          {category.label}
                         </Option>
                       ))}
                     </Select>
                   </Form.Item>
                 </div>
+
+                {/* 右侧：标签 */}
+                <div className="flex-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">标签</label>
+                  <div>
+                    <Form.Item name="tags" noStyle>
+                      <Select
+                        mode="tags"
+                        placeholder="请选择标签，或输入新标签名称"
+                        style={{ width: '100%' }}
+                        onChange={handleTagChange}
+                        maxTagCount={5}
+                        loading={loading}
+                        tokenSeparators={[',', ' ']}
+                      >
+                        {availableTags.map((tag) => (
+                          <Option key={tag.value} value={tag.value}>
+                            {tag.label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* 错误信息显示 */}
-            {error && <div className="mb-6 p-3 bg-red-50 text-red-600 rounded-md">{error}</div>}
+              {/* 错误信息显示 */}
+              {error && <div className="mb-6 p-3 bg-red-50 text-red-600 rounded-md">{error}</div>}
 
-            {/* 第四层：富文本编辑器 */}
-            <div className="mb-8">
-              <RichTextEditor
-                content={editorContent}
-                onContentChange={setEditorContent}
-                placeholder="开始撰写你的文章..."
-              />
-            </div>
-
-            {/* 文章简介和发布设置 */}
-            <div className="flex gap-32 mb-8">
-              {/* 左侧：文章简介 */}
-              <div className="w-2/5">
-                <label className="block text-sm font-medium text-gray-700 mb-2">文章简介</label>
-                <Input.TextArea
-                  placeholder="请输入文章简介"
-                  value={summary}
-                  onChange={(e) => setSummary(e.target.value)}
-                  rows={5}
-                  maxLength={200}
-                  showCount
-                  className="resize-none"
+              {/* 第四层：富文本编辑器 */}
+              <div className="mb-8">
+                <RichTextEditor
+                  content={editorContent}
+                  onContentChange={setEditorContent}
+                  placeholder="开始撰写你的文章..."
                 />
-                <div className="text-xs text-gray-500 mt-2">内容为空时默认显示文章前200字，您可以手动更改</div>
               </div>
 
-              {/* 右侧：发布设置 */}
-              <div className="w-2/5">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">发布设置</label>
-                <div className="space-y-5">
-                  {/* 文章类型 */}
-                  <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">文章类型</span>
-                    <div className="flex-1 text-[#595959]">
-                      <Form.Item name="original" initialValue={ArticleOriginalEnum.ORIGINAL} noStyle>
-                        <Radio.Group>
-                          <Radio value={ArticleOriginalEnum.ORIGINAL}>原创</Radio>
-                          <Radio value={ArticleOriginalEnum.REPRINT}>转载</Radio>
-                        </Radio.Group>
-                      </Form.Item>
-                    </div>
-                  </div>
+              {/* 文章简介和发布设置 */}
+              <div className="flex gap-32 mb-8">
+                {/* 左侧：文章简介 */}
+                <div className="w-2/5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">文章简介</label>
+                  <Input.TextArea
+                    placeholder="请输入文章简介"
+                    value={summary}
+                    onChange={(e) => setSummary(e.target.value)}
+                    rows={5}
+                    maxLength={200}
+                    showCount
+                    className="resize-none"
+                  />
+                  <div className="text-xs text-gray-500 mt-2">内容为空时默认显示文章前200字，您可以手动更改</div>
+                </div>
 
-                  {/* 是否允许评论 */}
-                  <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">允许评论</span>
-                    <div className="flex-1 text-[#595959]">
-                      <Form.Item name="allowComment" initialValue={AllowStatusEnum.ALLOWED} noStyle>
-                        <Radio.Group>
-                          <Radio value={AllowStatusEnum.ALLOWED}>允许</Radio>
-                          <Radio value={AllowStatusEnum.PROHIBITED}>禁止</Radio>
-                        </Radio.Group>
-                      </Form.Item>
+                {/* 右侧：发布设置 */}
+                <div className="w-2/5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">发布设置</label>
+                  <div className="space-y-5">
+                    {/* 文章类型 */}
+                    <div className="flex items-center">
+                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">文章类型</span>
+                      <div className="flex-1 text-[#595959]">
+                        <Form.Item name="original" initialValue={ArticleOriginalEnum.ORIGINAL} noStyle>
+                          <Radio.Group>
+                            <Radio value={ArticleOriginalEnum.ORIGINAL}>原创</Radio>
+                            <Radio value={ArticleOriginalEnum.REPRINT}>转载</Radio>
+                          </Radio.Group>
+                        </Form.Item>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* 是否允许转发 */}
-                  <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">允许转发</span>
-                    <div className="flex-1 text-[#595959]">
-                      <Form.Item name="allowForward" initialValue={AllowStatusEnum.ALLOWED} noStyle>
-                        <Radio.Group>
-                          <Radio value={AllowStatusEnum.ALLOWED}>允许</Radio>
-                          <Radio value={AllowStatusEnum.PROHIBITED}>禁止</Radio>
-                        </Radio.Group>
-                      </Form.Item>
+                    {/* 是否允许评论 */}
+                    <div className="flex items-center">
+                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">允许评论</span>
+                      <div className="flex-1 text-[#595959]">
+                        <Form.Item name="allowComment" initialValue={AllowStatusEnum.ALLOWED} noStyle>
+                          <Radio.Group>
+                            <Radio value={AllowStatusEnum.ALLOWED}>允许</Radio>
+                            <Radio value={AllowStatusEnum.PROHIBITED}>禁止</Radio>
+                          </Radio.Group>
+                        </Form.Item>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* 是否置顶 */}
-                  <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">是否置顶</span>
-                    <div className="flex-1 text-[#595959]">
-                      <Form.Item name="top" initialValue={AllowTopEnum.NOT_TOP} noStyle>
-                        <Radio.Group>
-                          <Radio value={AllowTopEnum.TOP}>置顶</Radio>
-                          <Radio value={AllowTopEnum.NOT_TOP}>不置顶</Radio>
-                        </Radio.Group>
-                      </Form.Item>
+                    {/* 是否允许转发 */}
+                    <div className="flex items-center">
+                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">允许转发</span>
+                      <div className="flex-1 text-[#595959]">
+                        <Form.Item name="allowForward" initialValue={AllowStatusEnum.ALLOWED} noStyle>
+                          <Radio.Group>
+                            <Radio value={AllowStatusEnum.ALLOWED}>允许</Radio>
+                            <Radio value={AllowStatusEnum.PROHIBITED}>禁止</Radio>
+                          </Radio.Group>
+                        </Form.Item>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* 是否公开 */}
-                  <div className="flex items-center">
-                    <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">是否公开</span>
-                    <div className="flex-1 text-[#595959]">
-                      <Form.Item name="visible" initialValue={ArticleVisibleEnum.PUBLIC} noStyle>
-                        <Radio.Group>
-                          <Radio value={ArticleVisibleEnum.PUBLIC}>公开</Radio>
-                          <Radio value={ArticleVisibleEnum.PRIVATE}>不公开</Radio>
-                          <Radio value={ArticleVisibleEnum.FOLLOWERS_ONLY}>仅粉丝可见</Radio>
-                        </Radio.Group>
-                      </Form.Item>
+                    {/* 是否置顶 */}
+                    <div className="flex items-center">
+                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">是否置顶</span>
+                      <div className="flex-1 text-[#595959]">
+                        <Form.Item name="top" initialValue={AllowTopEnum.NOT_TOP} noStyle>
+                          <Radio.Group>
+                            <Radio value={AllowTopEnum.TOP}>置顶</Radio>
+                            <Radio value={AllowTopEnum.NOT_TOP}>不置顶</Radio>
+                          </Radio.Group>
+                        </Form.Item>
+                      </div>
+                    </div>
+
+                    {/* 是否公开 */}
+                    <div className="flex items-center">
+                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">是否公开</span>
+                      <div className="flex-1 text-[#595959]">
+                        <Form.Item name="visible" initialValue={ArticleVisibleEnum.PUBLIC} noStyle>
+                          <Radio.Group>
+                            <Radio value={ArticleVisibleEnum.PUBLIC}>公开</Radio>
+                            <Radio value={ArticleVisibleEnum.PRIVATE}>不公开</Radio>
+                            <Radio value={ArticleVisibleEnum.FOLLOWERS_ONLY}>仅粉丝可见</Radio>
+                          </Radio.Group>
+                        </Form.Item>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* 封面图 */}
-            <div className="mb-4 w-[80%]">
-              <label className=" block text-sm font-medium text-gray-700 mb-4">封面图</label>
-              {coverImage ? <img src={coverImage} alt="预览" className="w-[640px] h-[360px] object-cover" /> : null}
-              <Form.Item valuePropName="coverImage">
-                <ArticleCoverUploader
-                  onCropComplete={({ file, previewUrl }) => {
-                    setCroppedFile(file);
-                    setCoverImage(previewUrl);
-                    setFileList([
-                      {
-                        uid: Date.now().toString(),
-                        name: 'cover-image.jpg',
-                        status: 'done',
-                        url: previewUrl
-                      }
-                    ]);
-                  }}
-                  onRemove={() => {
-                    setCroppedFile(null);
-                    setCoverImage('');
-                    setServerCoverImageUrl('');
-                    setFileList([]);
-                  }}
-                />
-              </Form.Item>
-            </div>
-          </Form>
-        </Card>
+              {/* 封面图 */}
+              <div className="mb-4 w-[80%]">
+                <label className=" block text-sm font-medium text-gray-700 mb-4">封面图</label>
+                {coverImage ? <img src={coverImage} alt="预览" className="w-[640px] h-[360px] object-cover" /> : null}
+                <Form.Item valuePropName="coverImage">
+                  <ArticleCoverUploader
+                    onCropComplete={({ file, previewUrl }) => {
+                      setCroppedFile(file);
+                      setCoverImage(previewUrl);
+                      setFileList([
+                        {
+                          uid: Date.now().toString(),
+                          name: 'cover-image.jpg',
+                          status: 'done',
+                          url: previewUrl
+                        }
+                      ]);
+                    }}
+                    onRemove={() => {
+                      setCroppedFile(null);
+                      setCoverImage('');
+                      setServerCoverImageUrl('');
+                      setFileList([]);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </Form>
+          </Card>
+        </div>
+        {/* 页脚信息 */}
+        <Footer />
       </div>
-      {/* 页脚信息 */}
-      <Footer />
-    </div>
+    </>
   );
 };
 export default CreateArticle;
