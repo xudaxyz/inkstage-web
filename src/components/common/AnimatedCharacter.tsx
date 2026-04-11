@@ -364,16 +364,12 @@ const AnimatedCharacter: React.FC<AnimatedCharacterProps> = ({
     // 使用setTimeout延迟执行，避免同步调用setState
     const handleInputState = (): (() => void) | undefined => {
       if (isPasswordGuardMode) {
-        if (isLooking) {
-          setIsLooking(false);
-        }
+        setIsLooking(false);
         return;
       }
 
       if (isTyping && !isShowingPassword) {
-        if (!isLooking) {
-          setIsLooking(true);
-        }
+        setIsLooking(true);
 
         const timer = setTimeout(() => {
           setIsLooking(false);
@@ -381,16 +377,14 @@ const AnimatedCharacter: React.FC<AnimatedCharacterProps> = ({
 
         return (): void => clearTimeout(timer);
       } else {
-        if (isLooking) {
-          setIsLooking(false);
-        }
+        setIsLooking(false);
       }
     };
 
     // 使用setTimeout避免同步调用setState
     const timeoutId = setTimeout(handleInputState, 0);
     return (): void => clearTimeout(timeoutId);
-  }, [isTyping, isShowingPassword, isPasswordGuardMode, isLooking]);
+  }, [isTyping, isShowingPassword, isPasswordGuardMode]);
 
   return (
     <div ref={containerRef} className={`relative w-[550px] h-[400px] ${className}`}>
