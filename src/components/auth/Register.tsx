@@ -34,6 +34,8 @@ const Register: React.FC = () => {
   const [formData, setFormData] = useState<RegisterFormData | null>(null);
   const [codeCountdown, setCodeCountdown] = useState(0);
   const [form] = Form.useForm<RegisterFormData>();
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   // 开始倒计时
   const startCountdown = (): void => {
@@ -187,7 +189,7 @@ const Register: React.FC = () => {
       <Helmet>
         <title>注册 - InkStage</title>
       </Helmet>
-      <AuthLayout title="注册">
+      <AuthLayout title="注册" isPasswordGuardMode={passwordFocused} isTyping={isTyping}>
         {/* 注册表单 */}
         <Form form={form} onFinish={handleRegister} layout="vertical" className="w-full">
           {/* 左侧注册，右侧登录链接 */}
@@ -228,6 +230,8 @@ const Register: React.FC = () => {
               placeholder="请输入用户名、邮箱或手机号"
               size="large"
               className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
+              onFocus={() => setIsTyping(true)}
+              onBlur={() => setIsTyping(false)}
             />
           </Form.Item>
 
@@ -263,6 +267,8 @@ const Register: React.FC = () => {
                     />
                   )}
                   visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
                 />
               </Form.Item>
 
@@ -326,6 +332,8 @@ const Register: React.FC = () => {
                     />
                   )}
                   visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
                 />
               </Form.Item>
             </>

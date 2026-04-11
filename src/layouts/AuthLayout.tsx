@@ -1,12 +1,15 @@
 import React, { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import AnimatedCharacter from '../components/common/AnimatedCharacter';
 
 interface AuthLayoutProps {
   children: ReactNode;
   title: string;
+  isPasswordGuardMode?: boolean;
+  isTyping?: boolean;
 }
 
-const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title }) => {
+const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, isPasswordGuardMode = false, isTyping = false }) => {
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans">
       {/* 主体内容 - 左右布局，整体居中 */}
@@ -14,12 +17,16 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title }) => {
         <div className="flex flex-col md:flex-row items-center md:items-stretch max-w-5xl w-full">
           {/* 左侧图片 */}
           <div className="hidden md:block md:w-1/2">
-            <div className="h-[600px] bg-gray-100 rounded-l-lg overflow-hidden">
+            <div className="h-[600px] bg-gray-100 rounded-l-lg overflow-hidden relative">
               <img
                 src="/assets/images/inkstage-bg.png"
                 alt="InkStage Background"
                 className="w-full h-full object-cover"
               />
+              {/* 互动小人 */}
+              <div className="absolute bottom-0 left-0 w-full h-[400px]">
+                <AnimatedCharacter isPasswordGuardMode={isPasswordGuardMode} isTyping={isTyping} className="mx-auto" />
+              </div>
             </div>
           </div>
 
