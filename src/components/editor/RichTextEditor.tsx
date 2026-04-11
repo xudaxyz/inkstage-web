@@ -135,6 +135,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       isActive: (editor) => editor.isActive('heading', { level: 5 })
     },
     {
+      id: 'heading6',
+      icon: 'H6',
+      label: '标题 6',
+      action: (editor) => editor.chain().focus().setHeading({ level: 6 }).run(),
+      isActive: (editor) => editor.isActive('heading', { level: 6 })
+    },
+    {
       id: 'paragraph',
       icon: 'P',
       label: '段落',
@@ -163,7 +170,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       id: 'table',
       icon: '⊞',
       label: '表格',
-      action: (editor) => editor.chain().focus().insertTable({ rows: 2, cols: 2, withHeaderRow: true }).run()
+      action: (editor) => editor.chain().focus().insertTable({ rows: 4, cols: 4, withHeaderRow: true }).run()
     },
 
     // 数学公式
@@ -297,7 +304,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [content, editor, editorContent]);
 
   return (
-    <div className={`border border-gray-100 bg-white ${className}`}>
+    <div className={`border border-gray-200 bg-white ${className}`}>
       <style>
         {`
           .editor-content img {
@@ -308,7 +315,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           }
         `}
       </style>
-      <EditorToolbar editor={editor} tools={defaultTools} />
+      <EditorToolbar editor={editor} tools={defaultTools} className="sticky top-16 z-20" />
       <div className="p-4 min-h-[350px] max-w-full">
         <div className="editor-content">
           <EditorContent editor={editor} />
