@@ -288,10 +288,13 @@ const CreateArticle: React.FC = () => {
       </Helmet>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
         {/* 顶部导航栏 */}
-        <header className="h-16 bg-white dark:bg-gray-800 border-b dark:border-b border-gray-200 dark:border-gray-700 flex items-center px-[5%] sticky top-0 z-10 shadow-sm">
+        <header className="h-16 bg-white dark:bg-gray-800 border-b dark:border-b border-gray-200 dark:border-gray-700 flex items-center px-[5%] sticky top-0 z-30 shadow-sm">
           {/* 左侧：Logo和标题 */}
           <div className="flex items-baseline">
-            <span className="text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide">
+            <span
+              className="text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              onClick={() => navigate('/')}
+            >
               InkStage
             </span>
             <span className="mx-2 items-center text-base text-gray-400">\</span>

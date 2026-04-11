@@ -21,7 +21,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, tools, className 
   if (!editor) return null;
 
   return (
-    <div className={`border-b-1 border-b-gray-300 p-1 flex flex-wrap bg-gray-50 ${className} sticky top-16 z-20`}>
+    <div className={`border-b border-b-gray-300 p-1 flex flex-wrap bg-gray-50 ${className}`}>
       {tools?.map((tool, index) => {
         const isActive = tool.isActive?.(editor) || false;
         const isDisabled = tool.isDisabled?.(editor) || false;
