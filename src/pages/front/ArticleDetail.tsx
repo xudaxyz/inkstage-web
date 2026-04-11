@@ -32,6 +32,7 @@ import articleService from '../../services/articleService';
 import readingHistoryService from '../../services/readingHistoryService';
 import { checkFollowStatus, followUser, unfollowUser } from '../../services/userService';
 import type { FrontTag } from '../../types/tag';
+import { ROUTES } from '../../constants/navigation';
 // 标题截断函数
 const truncateTitle = (title: string, maxLength: number = 30): string => {
   if (title.length <= maxLength) {
@@ -433,7 +434,7 @@ const ArticleDetail: React.FC = () => {
   };
   // 处理文章编辑
   const handleEdit = (): void => {
-    navigate(`/edit-article/${id}`);
+    navigate(`${ROUTES.EDIT_ARTICLE}/${id}`);
   };
   // 处理文章删除
   const handleDelete = (): void => {
