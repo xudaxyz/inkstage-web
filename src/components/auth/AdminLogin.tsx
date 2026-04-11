@@ -25,6 +25,8 @@ const AdminLogin: React.FC = () => {
   const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
   const [formData, setFormData] = useState<AdminLoginFormData | null>(null);
   const [form] = Form.useForm<AdminLoginFormData>();
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   // 表单提交处理
   const handleFormSubmit = (values: AdminLoginFormData): void => {
     // 保存表单数据，弹出验证码模态框
@@ -94,7 +96,7 @@ const AdminLogin: React.FC = () => {
     }
   };
   return (
-    <AuthLayout title="">
+    <AuthLayout title="管理员登录" isPasswordGuardMode={passwordFocused} isTyping={isTyping}>
       {/* 登录表单 */}
       <Form form={form} onFinish={handleFormSubmit} layout="vertical" className="w-full">
         {/* 左侧登录，右侧注册链接 */}
@@ -122,6 +124,8 @@ const AdminLogin: React.FC = () => {
             placeholder="请输入管理员账号"
             size="large"
             className="rounded-md border border-gray-200 px-4 py-2.5 text-base focus:border-primary-500 focus:ring-1 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-gray-300"
+            onFocus={() => setIsTyping(true)}
+            onBlur={() => setIsTyping(false)}
           />
         </Form.Item>
 
@@ -146,6 +150,8 @@ const AdminLogin: React.FC = () => {
               />
             )}
             visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }}
+            onFocus={() => setPasswordFocused(true)}
+            onBlur={() => setPasswordFocused(false)}
           />
         </Form.Item>
 

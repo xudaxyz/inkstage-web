@@ -15,6 +15,7 @@ import {
   Typography
 } from 'antd';
 import {
+  AuditOutlined,
   CalendarOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -285,6 +286,16 @@ const AdminTags: React.FC = () => {
             className="text-green-500"
           >
             编辑
+          </Button>
+          <Button
+            variant={'text'}
+            color={'cyan'}
+            icon={<AuditOutlined />}
+            onClick={() => handleEditTag(record)}
+            className="text-red-500"
+            disabled={record.slug != null && record.slug != ''}
+          >
+            {record.slug == null || record.slug === '' ? '待审核' : '已通过'}
           </Button>
           <Button
             variant={'text'}
