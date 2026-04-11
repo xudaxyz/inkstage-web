@@ -436,9 +436,25 @@ const CreateArticle: React.FC = () => {
                         placeholder="请选择标签，或输入新标签名称"
                         style={{ width: '100%' }}
                         onChange={handleTagChange}
-                        maxTagCount={5}
+                        maxTagCount={10}
                         loading={loading}
                         tokenSeparators={[',', ' ']}
+                        tagRender={(props) => {
+                          const { label, value, closable, onClose } = props;
+                          // 查找标签名称
+                          const tag = availableTags.find((t) => t.value === value);
+                          const displayLabel = tag ? tag.label : label;
+                          return (
+                            <span className="ant-select-selection-item">
+                              {displayLabel}
+                              {closable && (
+                                <span className="ant-select-selection-item-remove" onClick={onClose}>
+                                  ×
+                                </span>
+                              )}
+                            </span>
+                          );
+                        }}
                       >
                         {availableTags.map((tag) => (
                           <Option key={tag.value} value={tag.value}>
@@ -559,6 +575,7 @@ const CreateArticle: React.FC = () => {
                 {coverImage ? <img src={coverImage} alt="预览" className="w-[640px] h-[360px] object-cover" /> : null}
                 <Form.Item valuePropName="coverImage">
                   <ArticleCoverUploader
+                    currentCover={coverImage}
                     onCropComplete={({ file, previewUrl }) => {
                       setCroppedFile(file);
                       setCoverImage(previewUrl);

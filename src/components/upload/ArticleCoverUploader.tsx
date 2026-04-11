@@ -23,10 +23,16 @@ interface ArticleCoverUploaderProps {
  * - 显示预览图片
  * - 按钮在预览图下方
  */
-const ArticleCoverUploader: React.FC<ArticleCoverUploaderProps> = ({ onCropComplete, onRemove, className = '' }) => {
+const ArticleCoverUploader: React.FC<ArticleCoverUploaderProps> = ({
+  currentCover,
+  onCropComplete,
+  onRemove,
+  className = ''
+}) => {
   return (
     <div className={`relative ${className}`}>
       <ImageUploadWithCrop
+        currentImage={currentCover}
         cropShape="rect"
         aspectRatio={16 / 9}
         placeholder="上传文章封面"

@@ -80,9 +80,12 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
 }) => {
   // ===== 状态管理 =====
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [previewImage, setPreviewImage] = useState<string | React.ReactNode>(currentImage || '');
+  const [localPreviewImage, setLocalPreviewImage] = useState<string | React.ReactNode>('');
   const [isUploading, setIsUploading] = useState(false);
   const [currentAspectRatio, setCurrentAspectRatio] = useState<number>(aspectRatio);
+
+  // 确定要显示的预览图片：优先使用本地上传的图片，其次使用传入的currentImage
+  const previewImage = localPreviewImage || currentImage || '';
 
   // ===== 工具函数 =====
 
@@ -100,7 +103,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
     // 验证文件大小(最大10MB)
     const isLt10M = file.size / 1024 / 1024 < 10;
     if (!isLt10M) {
-      message.error('图片大小不能超过 10MB！').then();
+      message.error('图片大小不能超过10MB！').then();
       return false;
     }
 
@@ -158,7 +161,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       } else if (file.status === 'done') {
         setIsUploading(false);
         if (file.response?.data) {
-          setPreviewImage(file.response.data);
+          setLocalPreviewImage(file.response.data);
           onUploadSuccess?.(file.response.data);
         }
       } else if (file.status === 'error') {
@@ -173,18 +176,18 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
    *  延迟上传模式的删除处理
    */
   const handleDeferredRemove = useCallback(() => {
-    setPreviewImage('');
+    setLocalPreviewImage('');
     setFileList([]);
 
     // 释放延迟上传模式创建的URL对象
-    if (typeof previewImage === 'string' && previewImage.startsWith('blob:')) {
-      URL.revokeObjectURL(previewImage);
+    if (typeof localPreviewImage === 'string' && localPreviewImage.startsWith('blob:')) {
+      URL.revokeObjectURL(localPreviewImage);
     }
 
     if (onRemove) {
       onRemove({} as UploadFile);
     }
-  }, [previewImage, onRemove]);
+  }, [localPreviewImage, onRemove]);
 
   /**
    * 处理文件上传前的验证和处理
@@ -201,7 +204,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
 
       if (uploadMode === 'deferred') {
         const previewUrl = URL.createObjectURL(file);
-        setPreviewImage(previewUrl);
+        setLocalPreviewImage(previewUrl);
 
         if (onCropComplete) {
           onCropComplete({
