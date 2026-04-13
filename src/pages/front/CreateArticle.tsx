@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { UploadFile } from 'antd';
-import { Button, Card, Form, Input, message, Radio, Select, Space, Switch } from 'antd';
+import { Button, Card, Form, Input, message, Modal, Radio, Select, Space, Switch } from 'antd';
 import { Helmet } from 'react-helmet-async';
 import {
   EyeOutlined,
@@ -48,6 +48,10 @@ const CreateArticle: React.FC = () => {
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewContent, setPreviewContent] = useState('');
+  const [previewTitle, setPreviewTitle] = useState('');
+  const [previewCover, setPreviewCover] = useState('');
   const navigate = useNavigate();
   const { user } = useUserStore();
   const { articleId } = useParams<{ articleId: string }>();
@@ -281,6 +285,19 @@ const CreateArticle: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+  // 处理预览
+  const handlePreview = async (): Promise<void> => {
+    try {
+      const values = await form.validateFields();
+      setPreviewTitle(values.title || '未命名文章');
+      setPreviewContent(editorContent);
+      setPreviewCover(serverCoverImageUrl || coverImage);
+      setPreviewVisible(true);
+    } catch (error) {
+      console.error('预览失败:', error);
+      message.error('预览失败，请检查表单数据');
+    }
+  };
   return (
     <>
       <Helmet>
@@ -403,6 +420,7 @@ const CreateArticle: React.FC = () => {
                   </div>
                   <Button
                     icon={<EyeOutlined />}
+                    onClick={handlePreview}
                     className=" bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 whitespace-nowrap mt-1 transition-all duration-200 shadow-sm"
                   >
                     预览
@@ -602,6 +620,44 @@ const CreateArticle: React.FC = () => {
         </div>
         {/* 页脚信息 */}
         <Footer />
+
+        {/* 预览模态框 */}
+        <Modal
+          title="文章预览"
+          open={previewVisible}
+          onCancel={() => setPreviewVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setPreviewVisible(false)}>
+              关闭
+            </Button>
+          ]}
+          width={800}
+          style={{
+            top: 20
+          }}
+        >
+          <div className="preview-container">
+            {/* 预览标题 */}
+            <h1 className="text-2xl font-bold mb-4">{previewTitle}</h1>
+
+            {/* 预览封面图 */}
+            {previewCover && (
+              <div className="mb-6">
+                <img
+                  src={previewCover}
+                  alt="文章封面"
+                  className="w-full h-48 object-cover rounded"
+                />
+              </div>
+            )}
+
+            {/* 预览内容 */}
+            <div
+              className="preview-content prose dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: previewContent }}
+            />
+          </div>
+        </Modal>
       </div>
     </>
   );
