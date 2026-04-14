@@ -34,7 +34,9 @@ export const HandleReportResultEnum = {
   WARNING: 'WARNING',
   DELETE_CONTENT: 'DELETE_CONTENT',
   BAN_USER: 'BAN_USER',
-  OTHER: 'OTHER'
+  OTHER: 'OTHER',
+  REJECTED: 'REJECTED',
+  UNHANDLED: 'UNHANDLED'
 } as const;
 
 // 导出类型
@@ -44,14 +46,14 @@ export type ReportStatusEnum = (typeof ReportStatusEnum)[keyof typeof ReportStat
 export type HandleReportResultEnum = (typeof HandleReportResultEnum)[keyof typeof HandleReportResultEnum];
 
 // 枚举映射（用于UI显示）
-export const ReportTargetTypeMap = {
+export const ReportTargetTypeMap: Record<string, string> = {
   [ReportTargetTypeEnum.ARTICLE]: '文章',
   [ReportTargetTypeEnum.COMMENT]: '评论',
   [ReportTargetTypeEnum.USER]: '用户',
   [ReportTargetTypeEnum.OTHER]: '其他'
 };
 
-export const ReportTypeMap = {
+export const ReportTypeMap: Record<string, string> = {
   [ReportTypeEnum.PORNOGRAPHY]: '色情低俗',
   [ReportTypeEnum.VIOLENCE]: '暴力恐怖',
   [ReportTypeEnum.POLITICAL]: '政治敏感',
@@ -64,7 +66,7 @@ export const ReportTypeMap = {
   [ReportTypeEnum.OTHER]: '其他'
 };
 
-export const ReportStatusMap = {
+export const ReportStatusMap: Record<string, string> = {
   [ReportStatusEnum.PENDING]: '待处理',
   [ReportStatusEnum.IN_PROGRESS]: '处理中',
   [ReportStatusEnum.ACCEPTED]: '已受理',
@@ -72,9 +74,11 @@ export const ReportStatusMap = {
   [ReportStatusEnum.CLOSED]: '已关闭'
 };
 
-export const HandleReportResultMap = {
+export const HandleReportResultMap: Record<string, string> = {
   [HandleReportResultEnum.WARNING]: '警告',
   [HandleReportResultEnum.DELETE_CONTENT]: '删除内容',
   [HandleReportResultEnum.BAN_USER]: '封禁账号',
-  [HandleReportResultEnum.OTHER]: '其他'
+  [HandleReportResultEnum.OTHER]: '其他',
+  [HandleReportResultEnum.REJECTED]: '驳回',
+  [HandleReportResultEnum.UNHANDLED]: '未处理'
 };

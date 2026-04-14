@@ -6,7 +6,7 @@
 export interface NotificationTemplateVariable {
   key: string;
   description: string;
-  category: 'user' | 'article' | 'comment' | 'system' | 'general' | 'notification';
+  category: 'user' | 'article' | 'comment' | 'system' | 'general' | 'notification' | 'report';
 }
 
 // 用户相关变量
@@ -31,6 +31,14 @@ export const COMMENT_VARIABLES: NotificationTemplateVariable[] = [
   { key: 'commentId', description: '评论ID', category: 'comment' },
   { key: 'commentContent', description: '评论内容', category: 'comment' },
   { key: 'commentAuthor', description: '评论作者', category: 'comment' }
+];
+
+// 举报相关变量
+export const REPORT_VARIABLES: NotificationTemplateVariable[] = [
+  { key: 'reportedContent', description: '举报内容', category: 'report' },
+  { key: 'relatedId', description: '关联链接', category: 'report' },
+  { key: 'handleResult', description: '处理结果', category: 'report' },
+  { key: 'reason', description: '处理说明', category: 'report' }
 ];
 
 // 系统相关变量
@@ -60,6 +68,7 @@ export const ALL_TEMPLATE_VARIABLES: NotificationTemplateVariable[] = [
   ...USER_VARIABLES,
   ...ARTICLE_VARIABLES,
   ...COMMENT_VARIABLES,
+  ...REPORT_VARIABLES,
   ...SYSTEM_VARIABLES,
   ...GENERAL_VARIABLES,
   ...NOTIFICATION_VARIABLES

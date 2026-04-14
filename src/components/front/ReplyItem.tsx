@@ -150,7 +150,8 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
           reportedType={ReportTargetTypeEnum.COMMENT}
           relatedId={reply.id}
           reportedId={reply.userId}
-          reportedName={reply.content}
+          reportedName={reply.nickname}
+          reportedContent={reply.content}
         />
       </div>
     </div>

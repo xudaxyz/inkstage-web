@@ -351,7 +351,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
         reportedType={ReportTargetTypeEnum.COMMENT}
         relatedId={comment.id}
         reportedId={comment.userId}
-        reportedName={comment.content}
+        reportedName={comment.nickname}
+        reportedContent={comment.content}
       />
     </div>
   );

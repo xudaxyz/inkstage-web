@@ -126,9 +126,7 @@ export const API_ENDPOINTS = {
 
     // 举报相关
     REPORT: {
-      CREATE: '/front/report/create', // 创建举报
-      MY_REPORT: '/front/report/my-report', // 获取用户的举报列表
-      DETAIL: (id: number): string => `/front/report/get/${id}` // 获取举报详情
+      CREATE: '/front/report/create' // 创建举报
     }
   },
 
@@ -138,6 +136,13 @@ export const API_ENDPOINTS = {
     AUTH: {
       LOGIN: '/auth/admin/login', // 管理员登录
       REFRESH_TOKEN: '/auth/refresh-token' // 管理员刷新令牌
+    },
+
+    // 举报相关
+    REPORT: {
+      LIST: '/admin/report/list', // 获取举报列表
+      DETAIL: (id: number): string => `/admin/report/get/${id}`, // 获取举报详情
+      HANDLE: (id: number): string => `/admin/report/handle/${id}` // 处理举报
     },
 
     // 用户管理

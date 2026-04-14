@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Checkbox, Form, Input, message, Modal, Select } from 'antd';
-import { ReportTargetTypeEnum, ReportTypeMap } from '../../types/enums';
+import { DefaultStatusEnum, ReportTargetTypeEnum, ReportTypeMap } from '../../types/enums';
 import reportService from '../../services/reportService';
 import type { FrontReport } from '../../types/report.ts';
 
@@ -10,7 +10,8 @@ interface ReportModalProps {
   reportedType: ReportTargetTypeEnum;
   relatedId: number;
   reportedId: number;
-  reportedName?: string;
+  reportedName: string;
+  reportedContent: string;
 }
 
 const ReportModal: React.FC<ReportModalProps> = ({
@@ -19,7 +20,8 @@ const ReportModal: React.FC<ReportModalProps> = ({
   reportedType,
   reportedId,
   relatedId,
-  reportedName
+  reportedName,
+  reportedContent
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -31,11 +33,12 @@ const ReportModal: React.FC<ReportModalProps> = ({
         reportedType,
         reportedId,
         reportedName,
+        reportedContent,
         relatedId: relatedId,
         reportType: values.reportType,
         reason: values.reason,
         evidence: values.evidence,
-        anonymous: values.anonymous
+        anonymous: values.anonymous ? DefaultStatusEnum.YES : DefaultStatusEnum.NO
       };
 
       const response = await reportService.createReport(reportData);

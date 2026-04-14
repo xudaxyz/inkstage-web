@@ -4,6 +4,7 @@ import {
   BellOutlined,
   CommentOutlined,
   DownOutlined,
+  ExclamationCircleOutlined,
   FileTextOutlined,
   LinkOutlined,
   SettingOutlined,
@@ -66,6 +67,7 @@ const TemplateVariableSelector: React.FC<TemplateVariableSelectorProps> = ({
     user: <UserOutlined />,
     article: <FileTextOutlined />,
     comment: <CommentOutlined />,
+    report: <ExclamationCircleOutlined />,
     system: <SettingOutlined />,
     general: <LinkOutlined />,
     notification: <BellOutlined />
@@ -76,6 +78,7 @@ const TemplateVariableSelector: React.FC<TemplateVariableSelectorProps> = ({
     user: '用户相关',
     article: '文章相关',
     comment: '评论相关',
+    report: '举报相关',
     system: '系统相关',
     general: '通用变量',
     notification: '通知相关'
@@ -86,6 +89,7 @@ const TemplateVariableSelector: React.FC<TemplateVariableSelectorProps> = ({
     user: 'blue',
     article: 'green',
     comment: 'orange',
+    report: 'yellow',
     system: 'purple',
     general: 'cyan',
     notification: 'red'

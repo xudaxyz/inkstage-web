@@ -12,7 +12,6 @@ import {
   EyeOutlined,
   LikeOutlined,
   LikeTwoTone,
-  LinkOutlined,
   MessageOutlined,
   PlusOutlined,
   ShareAltOutlined,
@@ -874,9 +873,6 @@ const ArticleDetail: React.FC = () => {
                             className={`mb-2 pl-${(item.level - 1) * 6} cursor-pointer transition-colors py-1 px-2 rounded-md ${activeTocId === item.id ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                             onClick={() => scrollToHeading(item.id)}
                           >
-                            <LinkOutlined
-                              className={`mr-1 ${activeTocId === item.id ? 'text-blue-600' : 'text-gray-400'}`}
-                            />
                             {item.text}
                           </div>
                         ))}
@@ -924,7 +920,8 @@ const ArticleDetail: React.FC = () => {
           reportedType={ReportTargetTypeEnum.ARTICLE}
           relatedId={Number(id)} // 文章id
           reportedId={Number(article?.userId)}
-          reportedName={article.title}
+          reportedName={article?.nickname}
+          reportedContent={article?.title}
         />
 
         {/* 页脚信息 */}

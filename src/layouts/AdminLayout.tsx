@@ -5,6 +5,7 @@ import {
   AppstoreOutlined,
   BellOutlined,
   DashboardOutlined,
+  ExclamationCircleOutlined,
   FileTextOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -43,6 +44,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       '/admin/tags': 'tags',
       '/admin/comments': 'comments',
       '/admin/notifications': 'notifications',
+      '/admin/reports': 'reports',
       '/admin/settings': 'settings'
     };
     return pathToKeyMap[path] || 'dashboard';
@@ -84,6 +86,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       key: 'notifications',
       icon: <BellOutlined />,
       label: <Link to="/admin/notifications">通知管理</Link>
+    },
+    {
+      key: 'reports',
+      icon: <ExclamationCircleOutlined />,
+      label: <Link to="/admin/reports">举报管理</Link>
     },
     {
       key: 'settings',
