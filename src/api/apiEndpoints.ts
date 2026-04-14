@@ -122,6 +122,13 @@ export const API_ENDPOINTS = {
       REGISTER: '/auth/register', // 用户注册
       LOGIN: '/auth/login', // 用户登录
       REFRESH_TOKEN: '/auth/refresh-token' // 刷新令牌
+    },
+
+    // 举报相关
+    REPORT: {
+      CREATE: '/front/report/create', // 创建举报
+      MY_REPORT: '/front/report/my-report', // 获取用户的举报列表
+      DETAIL: (id: number): string => `/front/report/get/${id}` // 获取举报详情
     }
   },
 

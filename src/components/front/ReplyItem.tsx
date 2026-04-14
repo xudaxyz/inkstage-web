@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Avatar, Dropdown } from 'antd';
+import { Avatar, Dropdown, message } from 'antd';
 import { DislikeOutlined, EllipsisOutlined, FlagOutlined, LikeOutlined, MessageOutlined } from '@ant-design/icons';
+import ReportModal from './ReportModal';
+import { ReportTargetTypeEnum } from '../../types/enums';
 import type { FrontArticleCommentList } from '../../types/comment';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
@@ -24,9 +26,18 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
   topCommentId
 }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const { toggleLike, toggleDislike, refreshComments } = useCommentStore();
   const handleReply = (): void => {
     setShowReplyForm(!showReplyForm);
+  };
+
+  const handleReport = (): void => {
+    if (!currentUserId) {
+      message.info('请先登录').then();
+      return;
+    }
+    setReportModalVisible(true);
   };
   return (
     <div
@@ -94,7 +105,10 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
                     {
                       key: 'report',
                       label: (
-                        <button className="flex items-center gap-1 text-gray-500 hover:text-blue-600 w-full text-left px-2 py-1">
+                        <button
+                          className="flex items-center gap-1 text-gray-500 hover:text-blue-600 w-full text-left px-2 py-1"
+                          onClick={handleReport}
+                        >
                           <FlagOutlined />
                           举报
                         </button>
@@ -128,6 +142,16 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
             </div>
           )}
         </div>
+
+        {/* 举报模态框 */}
+        <ReportModal
+          visible={reportModalVisible}
+          onClose={() => setReportModalVisible(false)}
+          reportedType={ReportTargetTypeEnum.COMMENT}
+          relatedId={reply.id}
+          reportedId={reply.userId}
+          reportedName={reply.content}
+        />
       </div>
     </div>
   );

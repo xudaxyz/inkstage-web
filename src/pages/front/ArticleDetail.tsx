@@ -33,6 +33,8 @@ import readingHistoryService from '../../services/readingHistoryService';
 import { checkFollowStatus, followUser, unfollowUser } from '../../services/userService';
 import type { FrontTag } from '../../types/tag';
 import { ROUTES } from '../../constants/navigation';
+import ReportModal from '../../components/front/ReportModal';
+import { ReportTargetTypeEnum } from '../../types/enums';
 // 标题截断函数
 const truncateTitle = (title: string, maxLength: number = 30): string => {
   if (title.length <= maxLength) {
@@ -47,6 +49,7 @@ const ArticleDetail: React.FC = () => {
   const navigate = useNavigate();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [folderModalVisible, setFolderModalVisible] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   // 阅读历史相关状态
   const readingStartTimeRef = useRef<number>(0);
@@ -425,6 +428,14 @@ const ArticleDetail: React.FC = () => {
     void message.info('分享功能即将上线');
   };
 
+  const handleReport = (): void => {
+    if (!isLoggedIn) {
+      message.info('请先登录').then();
+      return;
+    }
+    setReportModalVisible(true);
+  };
+
   // 回到顶部函数
   const scrollToTop = (): void => {
     window.scrollTo({
@@ -563,7 +574,13 @@ const ArticleDetail: React.FC = () => {
                 {/* 举报按钮 */}
                 <div className="flex flex-col items-end gap-1">
                   <Tooltip title="举报">
-                    <Button type="text" variant="outlined" size="large" icon={<ExclamationCircleOutlined />} />
+                    <Button
+                      type="text"
+                      variant="outlined"
+                      size="large"
+                      icon={<ExclamationCircleOutlined />}
+                      onClick={handleReport}
+                    />
                   </Tooltip>
                 </div>
               </div>
@@ -898,6 +915,16 @@ const ArticleDetail: React.FC = () => {
           selectedFolderId={selectedFolderId}
           onSelectFolder={setSelectedFolderId}
           onCreateFolder={createFolder}
+        />
+
+        {/* 举报模态框 */}
+        <ReportModal
+          visible={reportModalVisible}
+          onClose={() => setReportModalVisible(false)}
+          reportedType={ReportTargetTypeEnum.ARTICLE}
+          relatedId={Number(id)} // 文章id
+          reportedId={Number(article?.userId)}
+          reportedName={article.title}
         />
 
         {/* 页脚信息 */}

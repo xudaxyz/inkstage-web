@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, Dropdown, Pagination, Popconfirm, Spin } from 'antd';
+import { Avatar, Dropdown, message, Pagination, Popconfirm, Spin } from 'antd';
 import {
   DeleteOutlined,
   DislikeOutlined,
@@ -11,8 +11,9 @@ import {
   MessageOutlined,
   UpOutlined
 } from '@ant-design/icons';
+import ReportModal from './ReportModal';
+import { CommentTopStatus, ReportTargetTypeEnum } from '../../types/enums';
 import type { FrontArticleCommentList } from '../../types/comment';
-import { CommentTopStatus } from '../../types/enums';
 import ReplyItem from './ReplyItem';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
@@ -46,6 +47,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [replies, setReplies] = useState<FrontArticleCommentList[]>([]);
   const [totalRepliesCount, setTotalRepliesCount] = useState(0);
   const [needsRepliesRefresh, setNeedsRepliesRefresh] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const isLoadingRepliesRef = useRef(isLoadingReplies);
   const needsRepliesRefreshRef = useRef(needsRepliesRefresh);
   // 同步ref和state
@@ -102,6 +104,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
     setIsRepliesExpanded(!isRepliesExpanded);
     // 切换时重置到第一页
     setRepliesCurrentPage(1);
+  };
+
+  const handleReport = (): void => {
+    if (!currentUserId) {
+      message.info('请先登录').then();
+      return;
+    }
+    setReportModalVisible(true);
   };
   const handleRepliesPageChange = useCallback(
     async (page: number): Promise<void> => {
@@ -203,7 +213,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 {
                   key: 'report',
                   label: (
-                    <button className="flex items-center gap-1 text-gray-500 hover:text-blue-600 w-full text-left px-2 py-1">
+                    <button
+                      className="flex items-center gap-1 text-gray-500 hover:text-blue-600 w-full text-left px-2 py-1"
+                      onClick={handleReport}
+                    >
                       <FlagOutlined />
                       举报
                     </button>
@@ -330,6 +343,16 @@ const CommentItem: React.FC<CommentItemProps> = ({
           )}
         </div>
       )}
+
+      {/* 举报模态框 */}
+      <ReportModal
+        visible={reportModalVisible}
+        onClose={() => setReportModalVisible(false)}
+        reportedType={ReportTargetTypeEnum.COMMENT}
+        relatedId={comment.id}
+        reportedId={comment.userId}
+        reportedName={comment.content}
+      />
     </div>
   );
 };
