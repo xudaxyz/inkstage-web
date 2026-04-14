@@ -8,7 +8,7 @@ interface ReportModalProps {
   visible: boolean;
   onClose: () => void;
   reportedType: ReportTargetTypeEnum;
-  relatedId?: number;
+  relatedId: number;
   reportedId: number;
   reportedName?: string;
 }
