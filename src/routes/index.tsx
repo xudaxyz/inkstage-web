@@ -15,6 +15,10 @@ const CreateArticle = lazy(() => import('../pages/front/CreateArticle.tsx'));
 const ArticleDetail = lazy(() => import('../pages/front/ArticleDetail.tsx'));
 const Rankings = lazy(() => import('../pages/front/Rankings.tsx'));
 const UserProfile = lazy(() => import('../pages/front/UserProfile.tsx'));
+const About = lazy(() => import('../pages/front/About.tsx'));
+const Help = lazy(() => import('../pages/front/Help.tsx'));
+const CommunityRules = lazy(() => import('../pages/front/CommunityRules.tsx'));
+const Contact = lazy(() => import('../pages/front/Contact.tsx'));
 const ProfileInfo = lazy(() => import('../pages/front/profile/ProfileInfo'));
 const MyCreations = lazy(() => import('../pages/front/profile/MyCreations'));
 const MyCollections = lazy(() => import('../pages/front/profile/MyCollections'));
@@ -59,6 +63,11 @@ const AppRoutes = (): React.ReactNode => {
         {/* 用户主页路由 */}
         <Route path="/user/:id" element={<UserProfile />} />
         <Route path="/user/:id/:nickname" element={<UserProfile />} />
+        {/* 静态页面路由 */}
+        <Route path="/about" element={<About />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/community-rules" element={<CommunityRules />} />
+        <Route path="/contact" element={<Contact />} />
         {/* 个人中心路由 */}
         <Route path="/profile" element={<PrivateRoute><ProfileLayout /></PrivateRoute>}>
           <Route index element={<Profile />} />
