@@ -96,20 +96,17 @@ const Notifications: React.FC = () => {
     [selectedType]
   );
   // 使用无限滚动hook
-  const {
-    data: notifications,
-    isLoading,
-    isLoadingMore,
-    isError,
-    error,
-    hasMore,
-    loadMoreRef,
-    refresh: refreshNotifications,
-    setData: setInfiniteScrollData
-  } = useInfiniteScroll<Notification>(notificationsFetcher, {
+  const infiniteScroll = useInfiniteScroll<Notification>(notificationsFetcher, {
     pageSize: 10,
     threshold: 0.1
   });
+
+  // 解构需要单独使用的变量
+  const {
+    data: notifications,
+    refresh: refreshNotifications,
+    setData: setInfiniteScrollData
+  } = infiniteScroll;
   // 创建兼容的setData函数
   const setData = useCallback(
     (value: Notification[] | ((prev: Notification[]) => Notification[])): void => {
@@ -324,17 +321,7 @@ const Notifications: React.FC = () => {
         {/* 消息列表 - 无限滚动 */}
         <InfiniteScrollContainer
           infiniteScroll={{
-            data: notifications,
-            isLoading,
-            isLoadingMore,
-            isError,
-            error,
-            hasMore,
-            loadMoreRef,
-            refresh: refreshNotifications,
-            total: 0,
-            pageSize: 0,
-            setPageSize: async () => {},
+            ...infiniteScroll,
             setData: setData
           }}
           renderItem={renderNotificationItem}

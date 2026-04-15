@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Spin } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -113,14 +113,15 @@ const Home: React.FC = () => {
           sortBy: 'relevance'
         });
       } else {
-        response = await articleService.getArticles({
+        const params = {
           pageNum: pageNum,
           pageSize: pageSize,
-          categoryId: selectedCategory,
-          tagId: selectedTag,
-          sortBy: 'publishTime',
-          sortOrder: 'desc'
-        });
+          sortBy: 'publishTime' as const,
+          sortOrder: 'desc' as const,
+          ...(selectedCategory !== undefined && { categoryId: selectedCategory }),
+          ...(selectedTag !== undefined && { tagId: selectedTag })
+        };
+        response = await articleService.getArticles(params);
       }
       if (response.code !== 200) {
         throw new Error(response.message || '文章列表加载失败');
@@ -151,10 +152,13 @@ const Home: React.FC = () => {
     hasMore,
     loadMoreRef,
     refresh: refreshArticles,
-    setData: setArticles
+    setData: setArticles,
+    isAutoRetrying,
+    retryCount
   } = useInfiniteScroll<IndexArticleList>(articlesFetcher, {
     pageSize: INFINITE_SCROLL_PAGE_SIZE,
-    threshold: 0.1
+    threshold: 0.1,
+    autoRetry: selectedCategory === 0 && !selectedTag && !keyword
   });
   // 当搜索关键词、分类或标签变化时刷新文章列表
   useEffect(() => {
@@ -243,7 +247,7 @@ const Home: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>InkStage - 高质量内容创作与分享平台</title>
+        <title>InkStage - 遇见更有价值的笔墨</title>
       </Helmet>
       <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800 font-sans">
         {/* 顶部导航栏 */}
@@ -313,7 +317,9 @@ const Home: React.FC = () => {
                         total: 0,
                         pageSize: 0,
                         setPageSize: async () => {},
-                        setData: setArticles
+                        setData: setArticles,
+                        isAutoRetrying: isAutoRetrying,
+                        retryCount: retryCount
                       }}
                       renderItem={renderArticleItem}
                       loadingContent={articlesLoadingContent}

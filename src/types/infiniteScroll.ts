@@ -16,6 +16,8 @@ export interface InfiniteScrollOptions {
   persistSize?: boolean;
   /** 是否启用自动加载，默认true */
   autoLoad?: boolean;
+  /** 是否启用自动重试，默认false */
+  autoRetry?: boolean;
 }
 
 /**
@@ -46,6 +48,10 @@ export interface InfiniteScrollResult<T> {
   setPageSize: (pageSize: number | ((pageSize: number) => number)) => Promise<void>;
   /** 直接设置数据（用于乐观更新） */
   setData: React.Dispatch<React.SetStateAction<T[]>>;
+  /** 是否正在自动重试 */
+  isAutoRetrying?: boolean;
+  /** 当前重试次数 */
+  retryCount?: number;
 }
 
 /**
