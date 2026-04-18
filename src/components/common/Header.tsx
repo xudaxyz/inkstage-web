@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Badge, Button, Divider, Drawer, Input, Switch } from 'antd';
 import {
+  BellOutlined,
   BellTwoTone,
   EditOutlined,
   FileTextOutlined,
@@ -186,7 +187,7 @@ const Header: React.FC = () => {
           <div className="flex justify-start">
             <Link to={ROUTES.NOTIFICATIONS} onClick={closeMobileDrawer}>
               <Button type="text" block className="mb-3 rounded-lg">
-                <BellTwoTone /> 通知中心
+                <BellOutlined /> 通知中心
               </Button>
             </Link>
           </div>
@@ -283,7 +284,7 @@ const Header: React.FC = () => {
       </div>
 
       {/* 右侧区域 - 桌面端 */}
-      <div className="hidden md:flex items-center gap-4 ml-auto">
+      <div className="hidden md:flex items-center gap-6 ml-auto">
         {/* 搜索框 */}
         <div className="w-64 md:w-72 lg:w-80 xl:w-96">
           <Input

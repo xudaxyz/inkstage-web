@@ -23,7 +23,7 @@ export const ROUTES = {
 
   // 文章相关
   ARTICLE_DETAIL: (id: number): string => `/article/${id}`,
-  CREATE_ARTICLE: '/article/create',
+  CREATE_ARTICLE: '/create-article',
   UPDATE_ARTICLE: (id: number): string => `/edit-article/${id}`,
 
   // 管理后台
