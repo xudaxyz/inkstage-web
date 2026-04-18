@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Card, Divider, Form, Input, message, Modal, notification, Popover, Space, Spin, Tag } from 'antd';
+import { Button, Card, Form, Input, message, Modal, notification, Popover, Space, Spin, Tag } from 'antd';
 import { Helmet } from 'react-helmet-async';
 import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
@@ -18,6 +18,7 @@ import {
   MoreOutlined,
   SearchOutlined,
   ShareAltOutlined,
+  StarOutlined,
   UpOutlined
 } from '@ant-design/icons';
 import { ROUTES } from '../../../constants/routes';
@@ -343,16 +344,16 @@ const MyCollections: React.FC = () => {
       <Helmet>
         <title>我的收藏 - InkStage</title>
       </Helmet>
-      <div className="mx-auto">
+      <div className="mx-auto px-4 sm:px-6">
         {/* 页面标题 */}
         <div className="flex items-center gap-2 mb-6">
           <h1 className="text-2xl font-bold text-secondary-800 dark:text-white">我的收藏</h1>
           <div className="text-gray-500 dark:text-gray-400">({totalCollectionCount})</div>
         </div>
 
-        <div className="flex gap-4">
-          {/* 左侧收藏夹列表 */}
-          <div className="w-48 shrink-0">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* 左侧收藏夹列表 - 移动端可折叠 */}
+          <div className="w-full lg:w-48 shrink-0">
             <Card
               title="收藏夹列表"
               variant={'borderless'}
@@ -442,9 +443,9 @@ const MyCollections: React.FC = () => {
           {/* 右侧文章列表 */}
           <div className="flex-1">
             {/* 排序和搜索区域 */}
-            <div className="border-b border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center pb-4 mb-6">
+            <div className="border-b border-gray-200 dark:border-gray-700 flex flex-row sm:flex-row flex-wrap justify-between items-start sm:items-center pb-4 mb-6 gap-4">
               {/* 排序选项 */}
-              <div className="flex space-x-4 mb-2 md:mb-0">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   color={sortType === 'recent' ? 'cyan' : 'default'}
                   variant={sortType === 'recent' ? 'solid' : 'text'}
@@ -472,13 +473,13 @@ const MyCollections: React.FC = () => {
               </div>
 
               {/* 搜索框 */}
-              <div className="flex items-center gap-24">
+              <div className="w-full sm:w-auto flex-1 sm:flex-initial">
                 <Input
                   placeholder="搜索收藏的文章"
                   prefix={<SearchOutlined />}
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  style={{ width: 300 }}
+                  style={{ width: '100%', maxWidth: 300 }}
                 />
               </div>
             </div>
@@ -502,51 +503,31 @@ const MyCollections: React.FC = () => {
                     }
                   }}
                 >
-                  <div className="flex items-start gap-4">
-                    {/* 文章内容 */}
+                  <div className={`flex ${collection.coverImage ? 'flex-col sm:flex-row' : 'flex-col'} items-start gap-4`}>
                     <div className="flex-1">
-                      {/* 第一行：文章标题 */}
                       <div className="flex items-center mb-2">
-                        <h3 className="text-xl font-semibold text-secondary-800 dark:text-white hover:text-primary-600 transition-colors duration-200 flex-1">
-                          <a
-                            href={ROUTES.ARTICLE_DETAIL(collection.articleId)}
-                            className="hover:underline"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
+                        <h3 className="text-base sm:text-xl font-semibold text-secondary-800 dark:text-white hover:text-primary-600 transition-colors duration-200 flex-1">
+                          <a href={ROUTES.ARTICLE_DETAIL(collection.articleId)} className="hover:underline" target="_blank" rel="noopener noreferrer">
                             {collection.title}
                           </a>
                         </h3>
                       </div>
-
-                      {/* 第二行：简介 */}
                       <div className="text-sm text-secondary-500 dark:text-gray-300 mb-4 line-clamp-2">
                         {collection.summary}
                       </div>
-
-                      {/* 第三行：收藏时间、作者信息、统计数据 */}
-                      <div className="flex flex-wrap items-center justify-between">
-                        <div className="flex items-center gap-3 justify-between text-sm text-secondary-500 dark:text-gray-400">
-                          {/*原创*/}
-                          <div className="flex items-center">
-                            <Tag variant="solid" color={'gold'}>
+                      <div className="hidden sm:flex flex-wrap items-center gap-3 text-sm text-secondary-500 dark:text-gray-400">
+                        <div className="flex-1 flex flex-wrap items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <Tag variant="solid" color="gold">
                               {ArticleOriginalMap[collection.originalStatus]}
                             </Tag>
-                            <Divider orientation="vertical" className={'bg-gray-300'} style={{ height: '16px' }} />
-                            {/*分类*/}
                             <span>{collection.categoryName || '无'}</span>
-                            <Divider orientation="vertical" className={'bg-gray-300'} style={{ height: '16px' }} />
                           </div>
-
+                          <div className="flex items-center">
+                            <img src={collection.avatar} alt={collection.nickname} className="w-5 h-5 rounded-full object-cover mr-2" />
+                            <span>{collection.nickname}</span>
+                          </div>
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center">
-                              <img
-                                src={collection.avatar}
-                                alt={collection.nickname}
-                                className="w-7 h-7 rounded-full object-cover mr-2"
-                              />
-                              <span>{collection.nickname}</span>
-                            </div>
                             <Space size={4}>
                               <EyeOutlined /> {collection.readCount}
                             </Space>
@@ -556,15 +537,14 @@ const MyCollections: React.FC = () => {
                             <Space size={4}>
                               <MessageOutlined /> {collection.commentCount}
                             </Space>
-                            <div className="flex items-center pl-2">
-                              <span>
-                                收藏于: {collection.collectTime ? formatDateTimeShort(collection.collectTime) : ''}
-                              </span>
-                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <Space size={4}>
+                              <StarOutlined />
+                              {collection.collectTime ? formatDateTimeShort(collection.collectTime) : ''}
+                            </Space>
                           </div>
                         </div>
-
-                        {/* 更多操作 */}
                         <div className="flex items-center space-x-2">
                           <Popover
                             placement="bottom"
@@ -576,21 +556,10 @@ const MyCollections: React.FC = () => {
                                 <Button icon={<FlagOutlined />} size="small" type="text" onClick={handleReport}>
                                   举报
                                 </Button>
-                                <Button
-                                  icon={<FolderOpenOutlined />}
-                                  size="small"
-                                  type="text"
-                                  onClick={() => handleOpenMoveModal(collection.articleId)}
-                                >
+                                <Button icon={<FolderOpenOutlined />} size="small" type="text" onClick={() => handleOpenMoveModal(collection.articleId)}>
                                   移动
                                 </Button>
-                                <Button
-                                  icon={<DeleteOutlined />}
-                                  size="small"
-                                  type="text"
-                                  danger
-                                  onClick={() => handleSingleDelete(collection.articleId.toString())}
-                                >
+                                <Button icon={<DeleteOutlined />} size="small" type="text" danger onClick={() => handleSingleDelete(collection.articleId.toString())}>
                                   取消收藏
                                 </Button>
                               </Space>
@@ -601,16 +570,65 @@ const MyCollections: React.FC = () => {
                           </Popover>
                         </div>
                       </div>
+                      <div className="sm:hidden flex flex-col gap-3 text-sm text-secondary-500 dark:text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <Tag variant="solid" color="gold">
+                            {ArticleOriginalMap[collection.originalStatus]}
+                          </Tag>
+                          <span>{collection.categoryName || '无'}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="flex items-center">
+                            <img src={collection.avatar} alt={collection.nickname} className="w-5 h-5 rounded-full object-cover mr-2" />
+                            <span>{collection.nickname}</span>
+                          </div>
+                          <Space size={4}>
+                            <EyeOutlined /> {collection.readCount}
+                          </Space>
+                          <Space size={4}>
+                            <LikeOutlined /> {collection.likeCount}
+                          </Space>
+                          <Space size={4}>
+                            <MessageOutlined /> {collection.commentCount}
+                          </Space>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <Space size={4}>
+                              <StarOutlined />
+                              {collection.collectTime ? formatDateTimeShort(collection.collectTime) : ''}
+                            </Space>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Popover
+                              placement="bottom"
+                              content={
+                                <Space orientation="vertical">
+                                  <Button icon={<ShareAltOutlined />} size="small" type="text" onClick={handleShare}>
+                                    转发
+                                  </Button>
+                                  <Button icon={<FlagOutlined />} size="small" type="text" onClick={handleReport}>
+                                    举报
+                                  </Button>
+                                  <Button icon={<FolderOpenOutlined />} size="small" type="text" onClick={() => handleOpenMoveModal(collection.articleId)}>
+                                    移动
+                                  </Button>
+                                  <Button icon={<DeleteOutlined />} size="small" type="text" danger onClick={() => handleSingleDelete(collection.articleId.toString())}>
+                                    取消收藏
+                                  </Button>
+                                </Space>
+                              }
+                              trigger="click"
+                            >
+                              <Button icon={<MoreOutlined />} size="small" type="text" />
+                            </Popover>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-
-                    {/* 文章封面图 */}
                     {collection.coverImage && (
-                      <div className="shrink-0">
-                        <img
-                          src={collection.coverImage}
-                          alt={collection.title}
-                          className="w-48 h-28 object-cover rounded-lg"
-                        />
+                      <div className="shrink-0 w-full sm:w-48 h-24 sm:h-28">
+                        <img src={collection.coverImage} alt={collection.title} className="w-full h-full object-cover rounded-lg" />
                       </div>
                     )}
                   </div>

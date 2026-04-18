@@ -105,7 +105,7 @@ const ReadingHistories: React.FC = () => {
       <Helmet>
         <title>阅读历史 - InkStage</title>
       </Helmet>
-      <div className="mx-auto">
+      <div className="mx-auto px-4 sm:px-6">
         {/* 页面标题 */}
         <div className="flex items-center gap-2 mb-6">
           <h1 className="text-2xl font-bold text-secondary-800 dark:text-white">阅读历史</h1>
@@ -113,16 +113,16 @@ const ReadingHistories: React.FC = () => {
         </div>
 
         {/* 搜索和操作区域 */}
-        <div className="border-b border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center pb-4 mb-6">
+        <div className="border-b border-gray-200 dark:border-gray-700 flex flex-row flex-wrap items-center justify-between pb-4 mb-6 gap-5">
           {/* 搜索框 */}
-          <div className="flex items-center gap-24 mb-2 md:mb-0">
+          <div className="flex-1 min-w-0">
             <Input
               placeholder="搜索阅读历史"
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               className="w-full rounded-lg"
-              style={{ width: '100%' }}
+              style={{ maxWidth: 400 }}
             />
           </div>
 
@@ -176,12 +176,12 @@ const ReadingHistories: React.FC = () => {
                         }
                       }}
                     >
-                      <div className="flex items-start gap-4">
+                      <div className="flex flex-col sm:flex-row items-start gap-4">
                         {/* 文章内容 */}
                         <div className="flex-1">
                           {/* 第一行：文章标题 */}
                           <div className="flex items-center mb-2">
-                            <h3 className="text-xl font-semibold text-secondary-800 dark:text-white hover:text-primary-600 transition-colors duration-200 flex-1">
+                            <h3 className="text-base sm:text-xl font-semibold text-secondary-800 dark:text-white hover:text-primary-600 transition-colors duration-200 flex-1">
                               <a
                                 href={ROUTES.ARTICLE_DETAIL(history.articleId)}
                                 className="hover:underline"
@@ -199,8 +199,8 @@ const ReadingHistories: React.FC = () => {
                           </div>
 
                           {/* 第三行：阅读信息、作者信息、统计数据 */}
-                          <div className="flex flex-wrap items-center justify-between">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-secondary-500 dark:text-gray-400">
+                          <div className="hidden sm:flex flex-wrap items-center justify-between gap-3 text-sm text-secondary-500 dark:text-gray-400">
+                            <div className="flex flex-wrap items-center gap-4">
                               {/* 作者信息 */}
                               <div className="flex items-center gap-2">
                                 <img
@@ -213,7 +213,7 @@ const ReadingHistories: React.FC = () => {
                                 </span>
                               </div>
                               {/* 阅读时间和时长 */}
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+                              <div className="flex flex-wrap items-center gap-x-3 text-xs text-gray-400">
                                 <span className="flex items-center gap-1">
                                   <ClockCircleOutlined />
                                   {formatTimeShort(history.readTime)}
@@ -223,12 +223,8 @@ const ReadingHistories: React.FC = () => {
                                   {history.duration} 分钟
                                 </span>
                               </div>
-                            </div>
-
-                            {/* 操作按钮 */}
-                            <div className="flex items-center space-x-2">
                               {/* 阅读进度 */}
-                              <div className="flex items-center gap-2 mr-4">
+                              <div className="flex items-center gap-2">
                                 <Tag variant="outlined" color={history.progress === 100 ? 'green' : 'blue'}>
                                   {history.progress}%
                                 </Tag>
@@ -241,7 +237,8 @@ const ReadingHistories: React.FC = () => {
                                   ></div>
                                 </div>
                               </div>
-
+                            </div>
+                            <div className="flex items-center">
                               <Popover
                                 placement="bottom"
                                 content={
@@ -271,15 +268,91 @@ const ReadingHistories: React.FC = () => {
                               </Popover>
                             </div>
                           </div>
+
+                          {/* 移动端布局 */}
+                          <div className="sm:hidden flex flex-col gap-3 text-sm text-secondary-500 dark:text-gray-400">
+                            {/* 第一行：用户名、阅读时间、阅读时长 */}
+                            <div className="flex flex-wrap items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={history.avatar || '/default-avatar.png'}
+                                  alt={history.nickname}
+                                  className="w-5 h-5 rounded-full object-cover"
+                                />
+                                <span className="hover:text-blue-500 cursor-pointer transition-colors">
+                                  {history.nickname}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-x-3 text-xs text-gray-400">
+                                <span className="flex items-center gap-1">
+                                  <ClockCircleOutlined />
+                                  {formatTimeShort(history.readTime)}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <ClockCircleOutlined />
+                                  {history.duration} 分钟
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* 第二行：阅读进度和更多操作 */}
+                            <div className="flex items-center justify-between">
+                              {/* 阅读进度 */}
+                              <div className="flex items-center gap-2 flex-1">
+                                <Tag variant="outlined" color={history.progress === 100 ? 'green' : 'blue'}>
+                                  {history.progress}%
+                                </Tag>
+                                <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                                  <div
+                                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                                      history.progress === 100 ? 'bg-green-500' : 'bg-blue-500'
+                                    }`}
+                                    style={{ width: `${history.progress}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+
+                              {/* 更多操作 */}
+                              <div className="flex items-center ml-3">
+                                <Popover
+                                  placement="bottom"
+                                  content={
+                                    <Space orientation="vertical">
+                                      <Button
+                                        icon={<EyeOutlined />}
+                                        size="small"
+                                        type="text"
+                                        onClick={() => handleContinueReading(history.articleId)}
+                                      >
+                                        继续阅读
+                                      </Button>
+                                      <Button
+                                        icon={<DeleteOutlined />}
+                                        size="small"
+                                        type="text"
+                                        danger
+                                        onClick={() => handleDeleteSingle(history.articleId)}
+                                      >
+                                        删除
+                                      </Button>
+                                    </Space>
+                                  }
+                                  trigger="click"
+                                >
+                                  <Button icon={<MoreOutlined />} size="small" type="text" />
+                                </Popover>
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         {/* 文章封面图 */}
                         {history.coverImage && (
-                          <div className="shrink-0">
+                          <div className="shrink-0 w-full sm:w-48 h-24 sm:h-28">
                             <img
                               src={history.coverImage}
                               alt={history.title}
-                              className="w-48 h-28 object-cover rounded-lg"
+                              className="w-full h-full object-cover rounded-lg"
                             />
                           </div>
                         )}

@@ -120,25 +120,27 @@ const Rankings: React.FC = () => {
                           key={article.id}
                           className={`py-4 sm:py-5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${index < 3 ? 'rounded-lg' : ''} hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200`}
                         >
-                          <div className="flex flex-col sm:flex-row items-start w-full gap-4">
-                            {/* 排名序号 */}
-                            <span
-                              className={`text-2xl font-bold w-8 text-center ${index < 3 ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500'}`}
-                            >
-                              {index + 1}
-                            </span>
-
+                          <div className="flex flex-col sm:flex-row w-full gap-4">
                             {/* 文章内容 */}
                             <div className="flex-1 min-w-0">
-                              {/* 标题 */}
-                              <a
-                                href={`/article/${article.id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-black dark:text-white font-semibold text-xl mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight  cursor-pointer hover:text-blue-600"
-                              >
-                                {article.title}
-                              </a>
+                              {/* 排名序号和标题 */}
+                              <div className="flex items-end gap-3">
+                                {/* 排名序号 */}
+                                <span
+                                  className={`text-4xl italic font-bold mb-1 w-8 text-center shrink-0 ${index < 3 ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500'}`}
+                                >
+                                  {index + 1}
+                                </span>
+                                {/* 标题 */}
+                                <a
+                                  href={`/article/${article.id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-black dark:text-white font-semibold text-xl mb-2 line-clamp-1 transition-colors duration-200 leading-tight tracking-tight cursor-pointer hover:text-blue-600 flex-1 overflow-hidden text-ellipsis ml-1"
+                                >
+                                  {article.title}
+                                </a>
+                              </div>
 
                               {/* 简介 */}
                               <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
@@ -171,21 +173,30 @@ const Rankings: React.FC = () => {
                                     <MessageOutlined className="mr-1" />
                                     <Text className="dark:text-gray-400">{article.commentCount}</Text>
                                   </div>
-                                  <Text className="dark:text-gray-400">
-                                    {article.publishTime ? formatDateTimeShort(article.publishTime) : ''}
-                                  </Text>
+                                  <span className="hidden sm:inline">
+                                    <Text className="dark:text-gray-400">
+                                      {article.publishTime ? formatDateTimeShort(article.publishTime) : ''}
+                                    </Text>
+                                  </span>
+                                  <span className="sm:hidden">
+                                    <Text className="dark:text-gray-400">
+                                      {article.publishTime ? formatDateOnly(article.publishTime) : ''}
+                                    </Text>
+                                  </span>
                                 </div>
                               </div>
                             </div>
 
                             {/* 封面图 */}
                             {article.coverImage && (
-                              <div className="flex-shrink-0 w-48 sm:w-48 h-32 sm:h-32 rounded-lg overflow-hidden">
-                                <img
-                                  src={article.coverImage}
-                                  alt={article.title}
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                />
+                              <div className="w-full sm:w-48 aspect-video sm:aspect-9/4 rounded-lg overflow-hidden shrink-0">
+                                <a href={`/article/${article.id}`} target="_blank" rel="noopener noreferrer">
+                                  <img
+                                    src={article.coverImage}
+                                    alt={article.title}
+                                    className="w-full h-full object-cover hover:opacity-90 transition-opacity duration-300"
+                                  />
+                                </a>
                               </div>
                             )}
                           </div>

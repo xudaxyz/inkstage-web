@@ -218,7 +218,7 @@ const NotificationSettings: React.FC = () => {
       <Helmet>
         <title>通知设置 - InkStage</title>
       </Helmet>
-      <div className="p-6 space-y-6">
+      <div className="px-4 sm:px-6 py-6 space-y-6">
         <div>
           <h1 className="text-2xl font-semibold text-gray-800">通知设置</h1>
           <p className="text-gray-600 mt-2">管理您的通知偏好和接收方式</p>

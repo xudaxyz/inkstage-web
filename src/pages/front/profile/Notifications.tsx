@@ -248,7 +248,7 @@ const Notifications: React.FC = () => {
 
           {/* 第二行：内容 */}
           <p
-            className="text-secondary-600 dark:text-gray-300 mb-2 line-clamp-2 cursor-pointer"
+            className="text-secondary-600 dark:text-gray-300 mb-2 md:line-clamp-2 cursor-pointer"
             onClick={() => handleNotificationClick(notification)}
           >
             {notification.content}
@@ -283,11 +283,11 @@ const Notifications: React.FC = () => {
       <Helmet>
         <title>我的通知 - InkStage</title>
       </Helmet>
-      <div className="mx-auto">
+      <div className="mx-auto px-4 sm:px-6">
         {/* 页面标题和操作区域 */}
         <div className="border-b border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center pb-4 mb-6">
           {/* 左侧：通知中心和数量 */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-4 sm:mb-0">
             <h1 className="text-2xl font-bold text-secondary-800 dark:text-white">通知中心</h1>
             <div className="text-gray-500 dark:text-gray-400">({notifications.length})</div>
             {unreadCount > 0 && (
@@ -298,24 +298,17 @@ const Notifications: React.FC = () => {
           </div>
 
           {/* 右侧：消息类别和全部已读按钮 */}
-          <div className="flex md:flex-row md:items-center md:justify-center gap-6">
+          <div className="flex items-center justify-between gap-4 w-full sm:w-auto">
             <Select
               value={selectedType}
               onChange={setSelectedType}
               options={notificationTypes}
-              className="w-full sm:w-36 md:w-48"
+              className="w-36 md:w-48"
               size="middle"
               variant="outlined"
               prefix={<FilterOutlined className="text-gray-300" />}
             />
-            <Button
-              type="primary"
-              variant="text"
-              size="middle"
-              onClick={markAllAsRead}
-              disabled={unreadCount === 0}
-              className="w-full sm:w-auto"
-            >
+            <Button type="primary" variant="text" size="middle" onClick={markAllAsRead} disabled={unreadCount === 0}>
               全部已读
             </Button>
           </div>

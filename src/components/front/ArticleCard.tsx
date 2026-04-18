@@ -82,7 +82,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             </span>
 
             {/* 发布时间 */}
-            <span className="hidden sm:flex items-center gap-1">
+            <span className="flex items-center gap-1">
               <CalendarOutlined />
               {formatDateTimeShort(publishTime)}
             </span>
