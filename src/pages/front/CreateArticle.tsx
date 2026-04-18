@@ -332,7 +332,7 @@ const CreateArticle: React.FC = () => {
               <Button
                 icon={<SwapLeftOutlined />}
                 onClick={() => navigate('/')}
-                className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 !px-2 md:!px-4"
+                className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                 size="middle"
               >
                 <span className="hidden md:inline">返回首页</span>
@@ -343,7 +343,7 @@ const CreateArticle: React.FC = () => {
                 icon={<SaveOutlined />}
                 onClick={handleSaveDraft}
                 loading={isSubmitting}
-                className="hover:bg-blue-600 !px-2 md:!px-4"
+                className="hover:bg-blue-600"
                 size="middle"
               >
                 <span className="hidden md:inline">保存草稿</span>
@@ -353,7 +353,7 @@ const CreateArticle: React.FC = () => {
                 icon={<SendOutlined />}
                 onClick={() => form.submit()}
                 loading={isSubmitting}
-                className="bg-green-600 hover:bg-green-700 !px-2 md:!px-4"
+                className="bg-green-600 hover:bg-green-700"
                 size="middle"
               >
                 <span className="hidden md:inline">发布</span>

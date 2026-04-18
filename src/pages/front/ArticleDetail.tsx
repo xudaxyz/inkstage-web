@@ -528,7 +528,6 @@ const ArticleDetail: React.FC = () => {
                     onClick={handleLike}
                     loading={likeLoading}
                     icon={article.isLiked ? <LikeTwoTone /> : <LikeOutlined />}
-                    className="!rounded-full"
                   />
                 </Tooltip>
                 <span className="text-xs text-gray-500">{article.likeCount || 0}</span>
@@ -542,7 +541,6 @@ const ArticleDetail: React.FC = () => {
                     onClick={handleCollect}
                     loading={collectLoading}
                     icon={article.isCollected ? <StarTwoTone /> : <StarOutlined />}
-                    className="!rounded-full"
                   />
                 </Tooltip>
                 <span className="text-xs text-gray-500">{article.collectionCount || 0}</span>
@@ -554,7 +552,6 @@ const ArticleDetail: React.FC = () => {
                     variant="outlined"
                     size="large"
                     icon={<MessageOutlined />}
-                    className="!rounded-full"
                     onClick={() => document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' })}
                   />
                 </Tooltip>
@@ -568,7 +565,6 @@ const ArticleDetail: React.FC = () => {
                     size="large"
                     onClick={handleShare}
                     icon={<ShareAltOutlined />}
-                    className="!rounded-full"
                   />
                 </Tooltip>
 
@@ -580,7 +576,6 @@ const ArticleDetail: React.FC = () => {
                     size="large"
                     icon={<ExclamationCircleOutlined />}
                     onClick={handleReport}
-                    className="!rounded-full"
                   />
                 </Tooltip>
               </div>
@@ -726,7 +721,7 @@ const ArticleDetail: React.FC = () => {
                     shape="round"
                     loading={likeLoading}
                     icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''} />}
-                    className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none !h-11 md:!h-auto px-4 md:px-6`}
+                    className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none px-4 md:px-6`}
                   >
                     <span className="md:hidden">{article.likeCount || 0}</span>
                     <span className="hidden md:inline">{article.isLiked ? '已点赞' : '点赞'}</span>
@@ -737,27 +732,17 @@ const ArticleDetail: React.FC = () => {
                     shape="round"
                     loading={collectLoading}
                     icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''} />}
-                    className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none !h-11 md:!h-auto px-4 md:px-6`}
+                    className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none px-4 md:px-6`}
                   >
                     <span className="md:hidden">{article.collectionCount || 0}</span>
                     <span className="hidden md:inline">{article.isCollected ? '已收藏' : '收藏'}</span>
-                  </Button>
-                  <Button
-                    onClick={() => document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' })}
-                    size="large"
-                    shape="round"
-                    icon={<MessageOutlined />}
-                    className="text-gray-600 border-gray-200 flex-1 md:flex-none !h-11 md:!h-auto px-4 md:px-6"
-                  >
-                    <span className="md:hidden">{article.commentCount || 0}</span>
-                    <span className="hidden md:inline">评论</span>
                   </Button>
                   <Button
                     onClick={handleShare}
                     size="large"
                     shape="round"
                     icon={<ShareAltOutlined />}
-                    className="text-gray-600 border-gray-200 flex-1 md:flex-none !h-11 md:!h-auto px-4 md:px-6"
+                    className="text-gray-600 border-gray-200 flex-1 md:flex-none px-4 md:px-6"
                   >
                     <span className="hidden md:inline">分享</span>
                   </Button>
@@ -944,31 +929,40 @@ const ArticleDetail: React.FC = () => {
           <div className="flex items-center justify-around gap-2">
             <Button
               onClick={handleLike}
-              size="small"
+              size="middle"
+              type="text"
               loading={likeLoading}
               icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''} />}
-              className={`${article.isLiked ? 'text-red-500' : 'text-gray-600'} !border-0`}
+              className={`${article.isLiked ? 'text-red-500' : 'text-gray-600'}`}
             >
               {article.likeCount || 0}
             </Button>
             <Button
               onClick={handleCollect}
-              size="small"
+              size="middle"
+              type="text"
               loading={collectLoading}
               icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''} />}
-              className={`${article.isCollected ? 'text-yellow-500' : 'text-gray-600'} !border-0`}
+              className={`${article.isCollected ? 'text-yellow-500' : 'text-gray-600'}`}
             >
               {article.collectionCount || 0}
             </Button>
             <Button
-              size="small"
+              size="middle"
+              type="text"
               icon={<MessageOutlined />}
-              className="text-gray-600 !border-0"
+              className="text-gray-600"
               onClick={() => document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' })}
             >
               {article.commentCount || 0}
             </Button>
-            <Button size="small" icon={<ShareAltOutlined />} className="text-gray-600 !border-0" onClick={handleShare}>
+            <Button
+              size="middle"
+              type="text"
+              icon={<ShareAltOutlined />}
+              className="text-gray-600"
+              onClick={handleShare}
+            >
               分享
             </Button>
           </div>
