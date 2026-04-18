@@ -15,7 +15,7 @@ import Footer from '../../components/common/Footer';
 import rankingService from '../../services/rankingService';
 import type { HotArticle } from '../../types/article';
 import type { HotUser } from '../../types/user';
-import { formatDateTimeShort } from '../../utils';
+import { formatDateOnly, formatDateTimeShort } from '../../utils';
 import { useTheme } from '../../store';
 
 const { Text } = Typography;
@@ -279,7 +279,7 @@ const Rankings: React.FC = () => {
                           key={article.id}
                           className="py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors duration-200"
                         >
-                          <div className="flex flex-col rounded-lg px-3 sm:flex-row items-start gap-3">
+                          <div className="flex flex-col sm:flex-row items-start gap-3">
                             {/* 文章信息 */}
                             <div className="flex-1 min-w-0">
                               {/* 标题 */}
@@ -292,9 +292,9 @@ const Rankings: React.FC = () => {
                                 {article.title}
                               </a>
 
-                              <div className="flex items-start text-gray-500 dark:text-gray-400 text-xs mb-1">
+                              <div className="flex flex-col sm:flex-row justify-between sm:items-center text-gray-500 dark:text-gray-400 text-xs gap-2">
                                 {/* 作者信息 */}
-                                <div className="flex items-center text-gray-400 dark:text-gray-500 text-xs gap-1 flex-wrap mr-5">
+                                <div className="flex items-center text-gray-400 dark:text-gray-500 text-xs gap-1">
                                   <Avatar size={18} src={article.avatar} alt={article.nickname} className="mr-1" />
                                   <span
                                     className="hover:text-blue-600 transition-colors duration-200 cursor-pointer dark:text-gray-300"
@@ -304,14 +304,14 @@ const Rankings: React.FC = () => {
                                   </span>
                                 </div>
                                 {/* 发布时间和阅读量 */}
-                                <div className="flex items-center text-gray-400 dark:text-gray-500 text-xs gap-5 flex-wrap">
-                                  <span className="dark:text-gray-400">
+                                <div className="flex items-center text-gray-400 dark:text-gray-500 text-xs gap-3">
+                                  <span className="dark:text-gray-400 flex items-center">
                                     <EyeOutlined className="mr-1" />
                                     {article.readCount}
                                   </span>
-                                  <span className="dark:text-gray-400">
+                                  <span className="dark:text-gray-400 flex items-center">
                                     <CalendarOutlined className="mr-1" />
-                                    {article.publishTime ? formatDateTimeShort(article.publishTime) : ''}
+                                    {article.publishTime ? formatDateOnly(article.publishTime) : ''}
                                   </span>
                                 </div>
                               </div>

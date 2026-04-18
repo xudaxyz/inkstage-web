@@ -26,35 +26,35 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   const { title, summary, coverImage, nickname, avatar, likeCount, readCount, commentCount, publishTime } = article;
   return (
     <div className="border-b border-gray-200 dark:border-gray-800 pt-2 pb-4 mb-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-t-lg">
-      <div className="flex flex-col md:flex-row gap-6 w-full items-start">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full items-start">
         {/* 左侧内容 */}
         <div className="flex-1 px-2 flex flex-col min-w-10">
           {/* 文章标题 */}
-          <div className="flex text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200/90 hover:text-blue-600 leading-tight">
+          <div className="text-base md:text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200/90 hover:text-blue-600 leading-tight">
             <a
               href={`/article/${article.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-800 dark:text-gray-200/90 hover:text-blue-600 transition-colors cursor-pointer truncate no-underline"
+              className="text-gray-800 dark:text-gray-200/90 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 no-underline"
             >
               {title}
             </a>
           </div>
 
           {/* 文章简介 */}
-          <p className="text-gray-500 dark:text-gray-400 mb-4 text-[15px] leading-relaxed line-clamp-2">
+          <p className="text-gray-500 dark:text-gray-400 mb-3 md:mb-4 text-sm md:text-[15px] leading-relaxed line-clamp-2">
             {summary || '暂无简介'}
           </p>
 
           {/* 用户信息和互动数据 */}
-          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 flex-wrap mt-auto">
+          <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-500 dark:text-gray-400 flex-wrap mt-auto">
             {/* 用户信息 */}
-            <div className="flex items-center gap-2">
-              <Avatar src={avatar} alt={nickname} className="w-6 h-6" />
+            <div className="flex items-center gap-1 md:gap-2">
+              <Avatar src={avatar} alt={nickname} className="w-5 h-5 md:w-6 md:h-6" />
               {article.userId ? (
                 <a
                   href={`/user/${article.userId}`}
-                  className="font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
+                  className="font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors truncate max-w-[80px] md:max-w-none"
                 >
                   {nickname}
                 </a>
@@ -82,7 +82,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             </span>
 
             {/* 发布时间 */}
-            <span className="flex items-center gap-1">
+            <span className="hidden sm:flex items-center gap-1">
               <CalendarOutlined />
               {formatDateTimeShort(publishTime)}
             </span>
@@ -91,7 +91,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
 
         {/* 右侧封面图 */}
         {coverImage ? (
-          <div className="w-full md:w-64 h-40 md:h-32 rounded-md overflow-hidden flex-shrink-0">
+          <div className="w-full md:w-56 lg:w-64 aspect-video md:aspect-[9/4] rounded-md overflow-hidden flex-shrink-0">
             <a href={`/article/${article.id}`} target="_blank" rel="noopener noreferrer">
               <LazyImage
                 src={coverImage}
@@ -101,7 +101,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             </a>
           </div>
         ) : (
-          <div className="w-1 h-40 md:h-32 flex-shrink-0"></div>
+          <div className="hidden md:block w-1 h-32 flex-shrink-0"></div>
         )}
       </div>
     </div>

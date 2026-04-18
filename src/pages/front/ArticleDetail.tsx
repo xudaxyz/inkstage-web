@@ -513,84 +513,85 @@ const ArticleDetail: React.FC = () => {
         </Modal>
 
         {/* 主体内容 */}
-        <main className="bg-gray-50 dark:bg-gray-800 flex-1 pt-8 px-[5%]">
+        <main className="bg-gray-50 dark:bg-gray-800 flex-1 pt-4 md:pt-8 px-3 md:px-[5%]">
           {/* 三栏布局：左侧互动按钮 + 中间文章内容 + 右侧边栏 */}
           <div className="flex flex-col lg:flex-row">
-            {/* 左侧互动按钮区域 */}
-            <div className="hidden lg:block lg:w-[2%] ">
-              <div className="sticky top-36 flex flex-col items-end gap-6 max-h-[400px]">
+            {/* 左侧互动按钮区域 - 桌面端显示 */}
+            <div className="hidden lg:flex lg:flex-col lg:items-center lg:w-[5%] lg:gap-4">
+              <div className="sticky top-36 flex flex-col items-center gap-4">
                 {/* 点赞按钮 */}
-                <div className="flex flex-col items-center gap-1">
-                  <Tooltip title="点赞">
-                    <Button
-                      type="text"
-                      variant="outlined"
-                      size="large"
-                      onClick={handleLike}
-                      loading={likeLoading}
-                      icon={article.isLiked ? <LikeTwoTone /> : <LikeOutlined />}
-                    />
-                  </Tooltip>
-                  <span className="text-xs text-gray-500">{article.likeCount || 0}</span>
-                </div>
+                <Tooltip title="点赞">
+                  <Button
+                    type="text"
+                    variant="outlined"
+                    size="large"
+                    onClick={handleLike}
+                    loading={likeLoading}
+                    icon={article.isLiked ? <LikeTwoTone /> : <LikeOutlined />}
+                    className="!rounded-full"
+                  />
+                </Tooltip>
+                <span className="text-xs text-gray-500">{article.likeCount || 0}</span>
 
                 {/* 收藏按钮 */}
-                <div className="flex flex-col items-center gap-1">
-                  <Tooltip title="收藏">
-                    <Button
-                      type="text"
-                      variant="outlined"
-                      size="large"
-                      onClick={handleCollect}
-                      loading={collectLoading}
-                      icon={article.isCollected ? <StarTwoTone /> : <StarOutlined />}
-                    />
-                  </Tooltip>
-                  <span className="text-xs text-gray-500">{article.collectionCount || 0}</span>
-                </div>
+                <Tooltip title="收藏">
+                  <Button
+                    type="text"
+                    variant="outlined"
+                    size="large"
+                    onClick={handleCollect}
+                    loading={collectLoading}
+                    icon={article.isCollected ? <StarTwoTone /> : <StarOutlined />}
+                    className="!rounded-full"
+                  />
+                </Tooltip>
+                <span className="text-xs text-gray-500">{article.collectionCount || 0}</span>
 
                 {/* 评论按钮 */}
-                <div className="flex flex-col items-center gap-1">
-                  <Tooltip title="评论">
-                    <Button type="text" variant="outlined" size="large" icon={<MessageOutlined />} />
-                  </Tooltip>
-                  <span className="text-xs text-gray-500">{article.commentCount || 0}</span>
-                </div>
+                <Tooltip title="评论">
+                  <Button
+                    type="text"
+                    variant="outlined"
+                    size="large"
+                    icon={<MessageOutlined />}
+                    className="!rounded-full"
+                    onClick={() => document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  />
+                </Tooltip>
+                <span className="text-xs text-gray-500">{article.commentCount || 0}</span>
 
                 {/* 转发按钮 */}
-                <div className="flex flex-col items-center gap-1">
-                  <Tooltip title="转发">
-                    <Button
-                      type="text"
-                      variant="outlined"
-                      size="large"
-                      onClick={handleShare}
-                      icon={<ShareAltOutlined />}
-                    />
-                  </Tooltip>
-                </div>
+                <Tooltip title="转发">
+                  <Button
+                    type="text"
+                    variant="outlined"
+                    size="large"
+                    onClick={handleShare}
+                    icon={<ShareAltOutlined />}
+                    className="!rounded-full"
+                  />
+                </Tooltip>
 
                 {/* 举报按钮 */}
-                <div className="flex flex-col items-end gap-1">
-                  <Tooltip title="举报">
-                    <Button
-                      type="text"
-                      variant="outlined"
-                      size="large"
-                      icon={<ExclamationCircleOutlined />}
-                      onClick={handleReport}
-                    />
-                  </Tooltip>
-                </div>
+                <Tooltip title="举报">
+                  <Button
+                    type="text"
+                    variant="outlined"
+                    size="large"
+                    icon={<ExclamationCircleOutlined />}
+                    onClick={handleReport}
+                    className="!rounded-full"
+                  />
+                </Tooltip>
               </div>
             </div>
 
             {/* 中间文章详情 */}
-            <div className="bg-white dark:bg-gray-800 px-10 pt-8 lg:w-3/4 lg:mr-12 rounded-2xl">
+            <div className="bg-white dark:bg-gray-800 px-4 md:px-6 lg:px-10 pt-6 md:pt-8 lg:w-3/4 lg:mr-12 rounded-2xl w-full">
               {/* 响应式调整 */}
               <div className="md:pr-4">
                 {/* 文章标题 */}
-                <h1 className="text-4xl font-bold mb-6 text-gray-800 dark:text-gray-100 leading-tight tracking-tight">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6 text-gray-800 dark:text-gray-100 leading-tight tracking-tight">
                   {article.title}
                 </h1>
 
@@ -717,17 +718,18 @@ const ArticleDetail: React.FC = () => {
                   </div>
                 )}
 
-                {/* 操作按钮 */}
-                <div className="flex flex-wrap items-center justify-center gap-6 px-6 py-8 border-t dark:border-t border-gray-100 dark:border-gray-500">
+                {/* 操作按钮 - 移动端优化 */}
+                <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 px-4 md:px-6 py-6 md:py-8 border-t dark:border-t border-gray-100 dark:border-gray-500">
                   <Button
                     onClick={handleLike}
                     size="large"
                     shape="round"
                     loading={likeLoading}
                     icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''} />}
-                    className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300`}
+                    className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none !h-11 md:!h-auto px-4 md:px-6`}
                   >
-                    {article.isLiked ? '已点赞' : '点赞'}
+                    <span className="md:hidden">{article.likeCount || 0}</span>
+                    <span className="hidden md:inline">{article.isLiked ? '已点赞' : '点赞'}</span>
                   </Button>
                   <Button
                     onClick={handleCollect}
@@ -735,34 +737,47 @@ const ArticleDetail: React.FC = () => {
                     shape="round"
                     loading={collectLoading}
                     icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''} />}
-                    className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300`}
+                    className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none !h-11 md:!h-auto px-4 md:px-6`}
                   >
-                    {article.isCollected ? '已收藏' : '收藏'}
+                    <span className="md:hidden">{article.collectionCount || 0}</span>
+                    <span className="hidden md:inline">{article.isCollected ? '已收藏' : '收藏'}</span>
+                  </Button>
+                  <Button
+                    onClick={() => document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' })}
+                    size="large"
+                    shape="round"
+                    icon={<MessageOutlined />}
+                    className="text-gray-600 border-gray-200 flex-1 md:flex-none !h-11 md:!h-auto px-4 md:px-6"
+                  >
+                    <span className="md:hidden">{article.commentCount || 0}</span>
+                    <span className="hidden md:inline">评论</span>
                   </Button>
                   <Button
                     onClick={handleShare}
                     size="large"
                     shape="round"
                     icon={<ShareAltOutlined />}
-                    className="text-gray-600 border-gray-200 px-6 py-2.5 rounded-full hover:shadow-md transition-all duration-300"
+                    className="text-gray-600 border-gray-200 flex-1 md:flex-none !h-11 md:!h-auto px-4 md:px-6"
                   >
-                    分享
+                    <span className="hidden md:inline">分享</span>
                   </Button>
                 </div>
 
                 {/* 评论区 */}
-                <CommentSection
-                  articleId={Number(id)}
-                  currentUserId={isLoggedIn ? Number(user.id) : undefined}
-                  currentUserNickname={user.nickname}
-                  currentUserAvatar={user.avatar}
-                  onCommentCountChange={updateCommentCount}
-                />
+                <div id="comment-section">
+                  <CommentSection
+                    articleId={Number(id)}
+                    currentUserId={isLoggedIn ? Number(user.id) : undefined}
+                    currentUserNickname={user.nickname}
+                    currentUserAvatar={user.avatar}
+                    onCommentCountChange={updateCommentCount}
+                  />
+                </div>
               </div>
             </div>
 
             {/* 右侧边栏 */}
-            <div className="lg:w-1/4">
+            <div className="hidden lg:block lg:w-1/4">
               {/* 响应式调整 */}
               <div className="relative">
                 {/* 作者信息 */}
@@ -924,8 +939,46 @@ const ArticleDetail: React.FC = () => {
           reportedContent={article?.title}
         />
 
+        {/* 移动端浮动操作栏 */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 px-2 py-2 safe-area-inset-bottom">
+          <div className="flex items-center justify-around gap-2">
+            <Button
+              onClick={handleLike}
+              size="small"
+              loading={likeLoading}
+              icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''} />}
+              className={`${article.isLiked ? 'text-red-500' : 'text-gray-600'} !border-0`}
+            >
+              {article.likeCount || 0}
+            </Button>
+            <Button
+              onClick={handleCollect}
+              size="small"
+              loading={collectLoading}
+              icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''} />}
+              className={`${article.isCollected ? 'text-yellow-500' : 'text-gray-600'} !border-0`}
+            >
+              {article.collectionCount || 0}
+            </Button>
+            <Button
+              size="small"
+              icon={<MessageOutlined />}
+              className="text-gray-600 !border-0"
+              onClick={() => document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              {article.commentCount || 0}
+            </Button>
+            <Button size="small" icon={<ShareAltOutlined />} className="text-gray-600 !border-0" onClick={handleShare}>
+              分享
+            </Button>
+          </div>
+        </div>
+
         {/* 页脚信息 */}
         <Footer />
+
+        {/* 底部安全区域padding */}
+        <div className="h-16 lg:hidden"></div>
       </div>
     </>
   );

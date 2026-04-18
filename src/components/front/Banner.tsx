@@ -36,10 +36,10 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
         </svg>
       </button>
 
-      {/* 轮播图 */}
+      {/* 轮播图 - 移动端 9/4 竖屏比例，桌面端 16/4 宽屏比例 */}
       <Carousel adaptiveHeight={true} ref={carouselRef} autoplay effect="fade" speed={1500} autoplaySpeed={5000}>
         {articles.map((article) => (
-          <div key={article.id} className="relative aspect-16/3">
+          <div key={article.id} className="relative aspect-9/4 md:aspect-16/4">
             {/* 封面图 */}
             <div className="absolute inset-0 overflow-hidden">
               <LazyImage
@@ -49,9 +49,9 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
               />
             </div>
 
-            {/* 内容 */}
-            <div className="relative px-[10%] py-10 text-white flex flex-col justify-center h-full">
-              <h2 className="text-2xl font-bold mb-4 max-w-3xl leading-tight hover:text-blue-600">
+            {/* 内容 - 响应式调整 */}
+            <div className="relative px-4 md:px-[10%] py-6 md:py-10 text-white flex flex-col justify-center h-full">
+              <h2 className="text-lg md:text-2xl font-bold mb-2 md:mb-4 max-w-3xl leading-tight line-clamp-2">
                 <a
                   href={`/article/${article.id}`}
                   target="_blank"
@@ -62,13 +62,15 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
                   <span className="text-white hover:text-blue-500">{article.title}</span>
                 </a>
               </h2>
-              <p className="h-20 text-base text-gray-100 max-w-2xl leading-relaxed truncate">{article.summary}</p>
-              <div className="mt-6">
+              <p className="hidden sm:block h-12 md:h-20 text-sm md:text-base text-gray-100 max-w-2xl leading-relaxed line-clamp-2 md:line-clamp-3">
+                {article.summary}
+              </p>
+              <div className="mt-3 md:mt-6">
                 <a
                   href={`/article/${article.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block px-6 py-2 bg-white text-blue-600 font-medium rounded-full hover:bg-opacity-90 transition-all duration-300"
+                  className="inline-block px-4 md:px-6 py-1.5 md:py-2 bg-white text-blue-600 font-medium rounded-full hover:bg-opacity-90 transition-all duration-300 text-sm md:text-base"
                 >
                   阅读全文
                 </a>

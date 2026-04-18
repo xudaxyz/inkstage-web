@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { UploadFile } from 'antd';
-import { Button, Card, Form, Input, message, Modal, Radio, Select, Space, Switch } from 'antd';
+import { Button, Card, Form, Input, message, Modal, Radio, Select, Switch } from 'antd';
 import { Helmet } from 'react-helmet-async';
 import {
   EyeOutlined,
@@ -305,36 +305,37 @@ const CreateArticle: React.FC = () => {
       </Helmet>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
         {/* 顶部导航栏 */}
-        <header className="h-16 bg-white dark:bg-gray-800 border-b dark:border-b border-gray-200 dark:border-gray-700 flex items-center px-[5%] sticky top-0 z-30 shadow-sm">
+        <header className="h-14 md:h-16 bg-white dark:bg-gray-800 border-b dark:border-b border-gray-200 dark:border-gray-700 flex items-center px-3 md:px-[5%] sticky top-0 z-30 shadow-sm">
           {/* 左侧：Logo和标题 */}
-          <div className="flex items-baseline">
+          <div className="flex items-center">
             <span
-              className="text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              className="text-lg md:text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide cursor-pointer hover:opacity-80 transition-opacity duration-200"
               onClick={() => navigate('/')}
             >
               InkStage
             </span>
-            <span className="mx-2 items-center text-base text-gray-400">\</span>
-            <span className="text-base items-center font-medium text-gray-800 dark:text-gray-300">
+            <span className="mx-1 md:mx-2 items-center text-sm md:text-base text-gray-400 hidden sm:block">\</span>
+            <span className="text-sm md:text-base items-center font-medium text-gray-800 dark:text-gray-300 hidden sm:block">
               {isEditMode ? '编辑文章' : '写文章'}
             </span>
           </div>
 
           {/* 右侧：操作按钮和用户信息 */}
-          <div className="flex items-center gap-5 ml-auto">
+          <div className="flex items-center gap-2 md:gap-5 ml-auto">
             {/* 主题切换按钮 */}
             <div className="flex items-center gap-2">
               {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
-              <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" />
+              <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" className="hidden sm:block" />
             </div>
-            {/* 操作按钮 */}
-            <Space size="middle">
+            {/* 操作按钮 - 移动端使用图标按钮 */}
+            <div className="flex items-center gap-1 md:gap-2">
               <Button
                 icon={<SwapLeftOutlined />}
                 onClick={() => navigate('/')}
-                className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 !px-2 md:!px-4"
+                size="middle"
               >
-                返回首页
+                <span className="hidden md:inline">返回首页</span>
               </Button>
               <Button
                 color="cyan"
@@ -342,25 +343,27 @@ const CreateArticle: React.FC = () => {
                 icon={<SaveOutlined />}
                 onClick={handleSaveDraft}
                 loading={isSubmitting}
-                className=" hover:bg-blue-600"
+                className="hover:bg-blue-600 !px-2 md:!px-4"
+                size="middle"
               >
-                保存草稿
+                <span className="hidden md:inline">保存草稿</span>
               </Button>
               <Button
                 type="primary"
                 icon={<SendOutlined />}
                 onClick={() => form.submit()}
                 loading={isSubmitting}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 !px-2 md:!px-4"
+                size="middle"
               >
-                发布
+                <span className="hidden md:inline">发布</span>
               </Button>
-            </Space>
+            </div>
 
             {/* 用户信息 */}
             {user && (
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
                   {user.avatar ? (
                     <img
                       src={user.avatar}
@@ -368,10 +371,10 @@ const CreateArticle: React.FC = () => {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    <span className="text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
+                    <span className="text-xs md:text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
                   )}
                 </div>
-                <span className="text-purple-600 font-medium text-sm hidden w-[100px] md:inline-block truncate">
+                <span className="text-purple-600 font-medium text-sm hidden lg:inline-block truncate max-w-[100px]">
                   {user.nickname}
                 </span>
               </div>
@@ -428,10 +431,10 @@ const CreateArticle: React.FC = () => {
                 </div>
               </div>
 
-              {/* 第三层：分类和标签 */}
-              <div className="flex gap-16 mb-6">
-                {/* 左侧：分类 */}
-                <div className="w-1/5 min-w-[120px]">
+              {/* 第三层：分类和标签 - 移动端垂直堆叠 */}
+              <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+                {/* 分类 */}
+                <div className="w-full md:w-1/3">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">分类</label>
                   <Form.Item name="category" rules={[{ required: true, message: '请选择文章分类' }]}>
                     <Select placeholder="请选择分类" className="w-full" loading={loading}>
@@ -444,8 +447,8 @@ const CreateArticle: React.FC = () => {
                   </Form.Item>
                 </div>
 
-                {/* 右侧：标签 */}
-                <div className="flex-2">
+                {/* 标签 */}
+                <div className="w-full md:flex-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">标签</label>
                   <div>
                     <Form.Item name="tags" noStyle>
@@ -459,7 +462,6 @@ const CreateArticle: React.FC = () => {
                         tokenSeparators={[',', ' ']}
                         tagRender={(props) => {
                           const { label, value, closable, onClose } = props;
-                          // 查找标签名称
                           const tag = availableTags.find((t) => t.value === value);
                           const displayLabel = tag ? tag.label : label;
                           return (
@@ -497,33 +499,35 @@ const CreateArticle: React.FC = () => {
                 />
               </div>
 
-              {/* 文章简介和发布设置 */}
-              <div className="flex gap-32 mb-8">
-                {/* 左侧：文章简介 */}
-                <div className="w-2/5">
+              {/* 文章简介和发布设置 - 移动端垂直堆叠 */}
+              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mb-8">
+                {/* 文章简介 */}
+                <div className="w-full lg:w-2/5">
                   <label className="block text-sm font-medium text-gray-700 mb-2">文章简介</label>
                   <Input.TextArea
                     placeholder="请输入文章简介"
                     value={summary}
                     onChange={(e) => setSummary(e.target.value)}
-                    rows={5}
+                    rows={4}
                     maxLength={200}
                     showCount
                     className="resize-none"
                   />
-                  <div className="text-xs text-gray-500 mt-2">内容为空时默认显示文章前200字，您可以手动更改</div>
+                  <div className="text-xs text-gray-500 mt-2">内容为空时默认显示文章前200字</div>
                 </div>
 
-                {/* 右侧：发布设置 */}
-                <div className="w-2/5">
+                {/* 发布设置 */}
+                <div className="w-full lg:w-3/5">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">发布设置</label>
-                  <div className="space-y-5">
+                  <div className="space-y-4">
                     {/* 文章类型 */}
-                    <div className="flex items-center">
-                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">文章类型</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="w-full sm:w-32 text-sm text-[#595959] dark:text-gray-400 font-medium shrink-0">
+                        文章类型
+                      </span>
                       <div className="flex-1 text-[#595959]">
                         <Form.Item name="original" initialValue={ArticleOriginalEnum.ORIGINAL} noStyle>
-                          <Radio.Group>
+                          <Radio.Group className="flex flex-wrap gap-2">
                             <Radio value={ArticleOriginalEnum.ORIGINAL}>原创</Radio>
                             <Radio value={ArticleOriginalEnum.REPRINT}>转载</Radio>
                           </Radio.Group>
@@ -532,11 +536,13 @@ const CreateArticle: React.FC = () => {
                     </div>
 
                     {/* 是否允许评论 */}
-                    <div className="flex items-center">
-                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">允许评论</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="w-full sm:w-32 text-sm text-[#595959] dark:text-gray-400 font-medium shrink-0">
+                        允许评论
+                      </span>
                       <div className="flex-1 text-[#595959]">
                         <Form.Item name="allowComment" initialValue={AllowStatusEnum.ALLOWED} noStyle>
-                          <Radio.Group>
+                          <Radio.Group className="flex flex-wrap gap-2">
                             <Radio value={AllowStatusEnum.ALLOWED}>允许</Radio>
                             <Radio value={AllowStatusEnum.PROHIBITED}>禁止</Radio>
                           </Radio.Group>
@@ -545,11 +551,13 @@ const CreateArticle: React.FC = () => {
                     </div>
 
                     {/* 是否允许转发 */}
-                    <div className="flex items-center">
-                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">允许转发</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="w-full sm:w-32 text-sm text-[#595959] dark:text-gray-400 font-medium shrink-0">
+                        允许转发
+                      </span>
                       <div className="flex-1 text-[#595959]">
                         <Form.Item name="allowForward" initialValue={AllowStatusEnum.ALLOWED} noStyle>
-                          <Radio.Group>
+                          <Radio.Group className="flex flex-wrap gap-2">
                             <Radio value={AllowStatusEnum.ALLOWED}>允许</Radio>
                             <Radio value={AllowStatusEnum.PROHIBITED}>禁止</Radio>
                           </Radio.Group>
@@ -558,11 +566,13 @@ const CreateArticle: React.FC = () => {
                     </div>
 
                     {/* 是否置顶 */}
-                    <div className="flex items-center">
-                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">是否置顶</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="w-full sm:w-32 text-sm text-[#595959] dark:text-gray-400 font-medium shrink-0">
+                        是否置顶
+                      </span>
                       <div className="flex-1 text-[#595959]">
                         <Form.Item name="top" initialValue={AllowTopEnum.NOT_TOP} noStyle>
-                          <Radio.Group>
+                          <Radio.Group className="flex flex-wrap gap-2">
                             <Radio value={AllowTopEnum.TOP}>置顶</Radio>
                             <Radio value={AllowTopEnum.NOT_TOP}>不置顶</Radio>
                           </Radio.Group>
@@ -571,11 +581,13 @@ const CreateArticle: React.FC = () => {
                     </div>
 
                     {/* 是否公开 */}
-                    <div className="flex items-center">
-                      <span className="w-32 text-sm text-[#595959] dark:text-gray-400 font-medium">是否公开</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="w-full sm:w-32 text-sm text-[#595959] dark:text-gray-400 font-medium shrink-0">
+                        是否公开
+                      </span>
                       <div className="flex-1 text-[#595959]">
                         <Form.Item name="visible" initialValue={ArticleVisibleEnum.PUBLIC} noStyle>
-                          <Radio.Group>
+                          <Radio.Group className="flex flex-wrap gap-2">
                             <Radio value={ArticleVisibleEnum.PUBLIC}>公开</Radio>
                             <Radio value={ArticleVisibleEnum.PRIVATE}>不公开</Radio>
                             <Radio value={ArticleVisibleEnum.FOLLOWERS_ONLY}>仅粉丝可见</Radio>
@@ -588,9 +600,15 @@ const CreateArticle: React.FC = () => {
               </div>
 
               {/* 封面图 */}
-              <div className="mb-4 w-[80%]">
-                <label className=" block text-sm font-medium text-gray-700 mb-4">封面图</label>
-                {coverImage ? <img src={coverImage} alt="预览" className="w-[640px] h-[360px] object-cover" /> : null}
+              <div className="mb-4 w-full">
+                <label className="block text-sm font-medium text-gray-700 mb-4">封面图</label>
+                {coverImage ? (
+                  <img
+                    src={coverImage}
+                    alt="预览"
+                    className="w-full max-w-[640px] h-auto aspect-[16/9] object-cover rounded-lg"
+                  />
+                ) : null}
                 <Form.Item valuePropName="coverImage">
                   <ArticleCoverUploader
                     currentCover={coverImage}
@@ -631,23 +649,20 @@ const CreateArticle: React.FC = () => {
               关闭
             </Button>
           ]}
-          width={800}
+          width="95%"
           style={{
             top: 20
           }}
+          className="preview-modal"
         >
           <div className="preview-container">
             {/* 预览标题 */}
-            <h1 className="text-2xl font-bold mb-4">{previewTitle}</h1>
+            <h1 className="text-xl md:text-2xl font-bold mb-4">{previewTitle}</h1>
 
             {/* 预览封面图 */}
             {previewCover && (
               <div className="mb-6">
-                <img
-                  src={previewCover}
-                  alt="文章封面"
-                  className="w-full h-48 object-cover rounded"
-                />
+                <img src={previewCover} alt="文章封面" className="w-full h-48 md:h-64 object-cover rounded" />
               </div>
             )}
 

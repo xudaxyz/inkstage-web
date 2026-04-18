@@ -177,7 +177,7 @@ const Header: React.FC = () => {
                 )}
 
                 {/* 搜索框 */}
-                <div className="hidden md:block w-80 sm:w-96">
+                <div className="hidden md:block w-64 md:w-72 lg:w-80 xl:w-96">
                     <Input
                         placeholder="搜索..."
                         prefix={<SearchOutlined/>}
