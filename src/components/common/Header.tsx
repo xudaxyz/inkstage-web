@@ -157,7 +157,11 @@ const Header: React.FC = () => {
       {user.avatar ? (
         <img src={user.avatar} alt={user.nickname || ''} className="w-full h-full rounded-full object-cover" />
       ) : (
-        <span className="text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
+        <img
+          src="/assets/images/default-avatar.jpg"
+          alt={user.nickname || ''}
+          className="w-full h-full rounded-full object-cover"
+        />
       )}
     </div>
   );

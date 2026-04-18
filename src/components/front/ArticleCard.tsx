@@ -3,6 +3,7 @@ import { Avatar } from 'antd';
 import { CalendarOutlined, EyeOutlined, LikeOutlined, MessageOutlined } from '@ant-design/icons';
 import { formatDateTimeShort } from '../../utils';
 import LazyImage from '../common/LazyImage';
+import { ROUTES } from '../../constants/routes';
 
 interface Article {
   id: number;
@@ -32,7 +33,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           {/* 文章标题 */}
           <div className="text-base md:text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200/90 hover:text-blue-600 leading-tight">
             <a
-              href={`/article/${article.id}`}
+              href={ROUTES.ARTICLE_DETAIL(article.id)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-800 dark:text-gray-200/90 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 no-underline"
@@ -50,10 +51,14 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-500 dark:text-gray-400 flex-wrap mt-auto">
             {/* 用户信息 */}
             <div className="flex items-center gap-1 md:gap-2">
-              <Avatar src={avatar} alt={nickname} className="w-5 h-5 md:w-6 md:h-6" />
+              <Avatar
+                src={avatar || '/assets/images/default-avatar.jpg'}
+                alt={nickname}
+                className="w-5 h-5 md:w-6 md:h-6"
+              />
               {article.userId ? (
                 <a
-                  href={`/user/${article.userId}`}
+                  href={ROUTES.USER_PROFILE(article.userId)}
                   className="font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors truncate max-w-[80px] md:max-w-none"
                 >
                   {nickname}
@@ -92,7 +97,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         {/* 右侧封面图 */}
         {coverImage ? (
           <div className="w-full md:w-56 lg:w-64 aspect-video md:aspect-[9/4] rounded-md overflow-hidden flex-shrink-0">
-            <a href={`/article/${article.id}`} target="_blank" rel="noopener noreferrer">
+            <a href={ROUTES.ARTICLE_DETAIL(article.id)} target="_blank" rel="noopener noreferrer">
               <LazyImage
                 src={coverImage}
                 alt={title}

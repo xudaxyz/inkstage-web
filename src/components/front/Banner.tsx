@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import Carousel, { type CarouselRef } from 'antd/es/carousel';
 import type { BannerArticle } from '../../types/article';
 import LazyImage from '../common/LazyImage';
+import { ROUTES } from '../../constants/routes';
 
 interface BannerProps {
   articles?: BannerArticle[];
@@ -53,7 +54,7 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
             <div className="relative px-4 md:px-[10%] py-6 md:py-10 text-white flex flex-col justify-center h-full">
               <h2 className="text-lg md:text-2xl font-bold mb-2 md:mb-4 max-w-3xl leading-tight line-clamp-2">
                 <a
-                  href={`/article/${article.id}`}
+                  href={ROUTES.ARTICLE_DETAIL(article.id)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-blue-200 transition-colors no-underline"
@@ -67,7 +68,7 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
               </p>
               <div className="mt-3 md:mt-6">
                 <a
-                  href={`/article/${article.id}`}
+                  href={ROUTES.ARTICLE_DETAIL(article.id)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block px-4 md:px-6 py-1.5 md:py-2 bg-white text-blue-600 font-medium rounded-full hover:bg-opacity-90 transition-all duration-300 text-sm md:text-base"

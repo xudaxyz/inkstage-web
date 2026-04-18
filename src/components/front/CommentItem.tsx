@@ -19,6 +19,7 @@ import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
 import commentService from '../../services/commentService';
 import { getRelativeTime } from '../../utils';
+import { ROUTES } from '../../constants/routes';
 
 interface CommentItemProps {
   comment: FrontArticleCommentList;
@@ -155,10 +156,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
     <div key={comment.id} className="border-b border-gray-50 dark:border-b dark:border-gray-700 pb-6 group">
       {/* 用户信息 */}
       <div className="flex items-center gap-2 mb-2">
-        <Avatar src={comment.avatar || undefined} alt={comment.nickname} className="w-8 h-8 shrink-0" />
+        <Avatar
+          src={comment.avatar || '/assets/images/default-avatar.jpg'}
+          alt={comment.nickname}
+          className="w-8 h-8 shrink-0"
+        />
         {comment.userId ? (
           <a
-            href={`/user/${comment.userId}`}
+            href={ROUTES.USER_PROFILE(comment.userId)}
             className="font-bold text-[#373A40] dark:text-gray-200 ml-1 hover:text-blue-600 transition-colors"
           >
             {comment.nickname}

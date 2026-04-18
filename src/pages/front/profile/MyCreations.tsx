@@ -143,7 +143,7 @@ const MyCreations: React.FC = () => {
   };
   // 编辑文章
   const handleEdit = (articleId: number): void => {
-    navigate(ROUTES.UPDATE_ARTICLE(articleId));
+    navigate(ROUTES.EDIT_ARTICLE(articleId));
   };
   // 打开删除确认对话框
   const showDeleteConfirm = (articleId: number, articleStatus: ArticleStatusEnum): void => {

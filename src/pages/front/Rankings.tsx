@@ -17,6 +17,7 @@ import type { HotArticle } from '../../types/article';
 import type { HotUser } from '../../types/user';
 import { formatDateOnly, formatDateTimeShort } from '../../utils';
 import { useTheme } from '../../store';
+import { ROUTES } from '../../constants/routes';
 
 const { Text } = Typography;
 // 类型定义
@@ -133,7 +134,7 @@ const Rankings: React.FC = () => {
                                 </span>
                                 {/* 标题 */}
                                 <a
-                                  href={`/article/${article.id}`}
+                                  href={ROUTES.ARTICLE_DETAIL(article.id)}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-black dark:text-white font-semibold text-xl mb-2 line-clamp-1 transition-colors duration-200 leading-tight tracking-tight cursor-pointer hover:text-blue-600 flex-1 overflow-hidden text-ellipsis ml-1"
@@ -190,7 +191,7 @@ const Rankings: React.FC = () => {
                             {/* 封面图 */}
                             {article.coverImage && (
                               <div className="w-full sm:w-48 aspect-video sm:aspect-9/4 rounded-lg overflow-hidden shrink-0">
-                                <a href={`/article/${article.id}`} target="_blank" rel="noopener noreferrer">
+                                <a href={ROUTES.ARTICLE_DETAIL(article.id)} target="_blank" rel="noopener noreferrer">
                                   <img
                                     src={article.coverImage}
                                     alt={article.title}
@@ -295,7 +296,7 @@ const Rankings: React.FC = () => {
                             <div className="flex-1 min-w-0">
                               {/* 标题 */}
                               <a
-                                href={`/article/${article.id}`}
+                                href={ROUTES.ARTICLE_DETAIL(article.id)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-black dark:text-white font-semibold text-sm mb-2 block line-clamp-2 transition-colors duration-200 leading-tight tracking-tight cursor-pointer hover:text-blue-600 truncate"

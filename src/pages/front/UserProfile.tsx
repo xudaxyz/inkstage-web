@@ -20,6 +20,7 @@ import { GenderEnum } from '../../types/enums';
 import { formatDateOnly, formatDateTimeShort } from '../../utils';
 import LazyImage from '../../components/common/LazyImage';
 import { useUserStore } from '../../store';
+import { ROUTES } from '../../constants/routes';
 
 // 作者信息类型定义
 interface UserInfo {
@@ -244,7 +245,7 @@ const UserProfile: React.FC = () => {
                     <div className="shrink-0">
                       <Avatar
                         size={140}
-                        src={user.avatar}
+                        src={user.avatar || '/assets/images/default-avatar.jpg'}
                         className="border-4 border-white shadow-xl transform transition-transform duration-300 hover:scale-105"
                       >
                         {user.nickname?.charAt(0) || 'U'}
@@ -351,7 +352,7 @@ const UserProfile: React.FC = () => {
                                 {/* 文章标题 */}
                                 <h3 className="text-xl text-gray-800 dark:text-gray-300 font-semibold mb-3 leading-tight">
                                   <a
-                                    href={`/article/${article.id}`}
+                                    href={ROUTES.ARTICLE_DETAIL(article.id)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className=" hover:text-blue-600 transition-colors duration-300 group-hover:translate-x-1"
@@ -412,7 +413,7 @@ const UserProfile: React.FC = () => {
                               {article.coverImage && (
                                 <div className="w-full md:w-56 h-36 rounded-lg overflow-hidden shrink-0 shadow-md transform transition-all duration-300 group-hover:scale-105">
                                   <a
-                                    href={`/article/${article.id}`}
+                                    href={ROUTES.ARTICLE_DETAIL(article.id)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="block"

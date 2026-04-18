@@ -7,6 +7,7 @@ import type { FrontArticleCommentList } from '../../types/comment';
 import CommentInput from './CommentInput';
 import useCommentStore from '../../store/CommentStore';
 import { getRelativeTime } from '../../utils';
+import { ROUTES } from '../../constants/routes';
 
 interface ReplyItemProps {
   reply: FrontArticleCommentList;
@@ -45,12 +46,16 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
       className="pb-4 border-b border-gray-50 dark:border-b dark:border-gray-800 relative group"
     >
       <div className="flex items-start gap-3">
-        <Avatar src={reply.avatar || undefined} alt={reply.nickname} className="w-6 h-6 shrink-0 mt-0.5" />
+        <Avatar
+          src={reply.avatar || '/assets/images/default-avatar.jpg'}
+          alt={reply.nickname}
+          className="w-6 h-6 shrink-0 mt-0.5"
+        />
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-1">
             {reply.userId ? (
               <a
-                href={`/user/${reply.userId}`}
+                href={ROUTES.USER_PROFILE(reply.userId)}
                 className="font-bold text-[#373A40] dark:text-gray-200 text-sm hover:text-blue-600 transition-colors"
               >
                 {reply.nickname}
@@ -67,7 +72,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
                   <span className="text-xs text-gray-500 flex items-end">回复</span>
                   <div className="flex font-medium text-[#373A40] hover:text-blue-600">
                     <a
-                      href={`/user/${reply.repliedUserId}`}
+                      href={ROUTES.USER_PROFILE(reply.repliedUserId)}
                       className="hover:text-blue-600  text-[#373A40] transition-colors pl-2"
                     >
                       {reply.repliedUserName}

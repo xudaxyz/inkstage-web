@@ -10,7 +10,7 @@ export const ROUTES = {
   REGISTER: '/register',
 
   // 用户相关
-  USER_PROFILE: (id: string): string => `/user/${id}`,
+  USER_PROFILE: (id: number): string => `/user/${id}`,
 
   // 用户个人中心
   PROFILE: '/profile',
@@ -24,7 +24,7 @@ export const ROUTES = {
   // 文章相关
   ARTICLE_DETAIL: (id: number): string => `/article/${id}`,
   CREATE_ARTICLE: '/create-article',
-  UPDATE_ARTICLE: (id: number): string => `/edit-article/${id}`,
+  EDIT_ARTICLE: (id: number): string => `/edit-article/${id}`,
 
   // 管理后台
   ADMIN_DASHBOARD: '/admin',

@@ -31,7 +31,7 @@ import articleService from '../../services/articleService';
 import readingHistoryService from '../../services/readingHistoryService';
 import { checkFollowStatus, followUser, unfollowUser } from '../../services/userService';
 import type { FrontTag } from '../../types/tag';
-import { ROUTES } from '../../constants/navigation';
+import { ROUTES } from '../../constants/routes';
 import ReportModal from '../../components/front/ReportModal';
 import { ReportTargetTypeEnum } from '../../types/enums';
 // 标题截断函数
@@ -605,14 +605,14 @@ const ArticleDetail: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <Avatar
                         size={40}
-                        src={article.avatar || undefined}
+                        src={article.avatar || '/assets/images/default-avatar.jpg'}
                         alt={article.nickname}
                         className="border border-gray-100 shadow-sm"
                       />
                       <div className="hover:text-blue-700">
                         {article.userId ? (
                           <a
-                            href={`/user/${article.userId}`}
+                            href={ROUTES.USER_PROFILE(article.userId)}
                             className="font-semibold text-gray-600 hover:text-blue-700 transition-colors"
                           >
                             {article.nickname || '未知作者'}
@@ -784,13 +784,16 @@ const ArticleDetail: React.FC = () => {
                   <div className="text-center">
                     <Avatar
                       size={88}
-                      src={article.avatar || undefined}
+                      src={article.avatar || '/assets/images/default-avatar.jpg'}
                       alt={article.nickname}
                       className="border-2 border-gray-100 shadow-md"
                     />
                     {article.userId ? (
                       <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
-                        <a href={`/user/${article.userId}`} className="font-semibold text-gray-800 transition-colors">
+                        <a
+                          href={ROUTES.USER_PROFILE(article.userId)}
+                          className="font-semibold text-gray-800 transition-colors"
+                        >
                           {article.nickname || '未知作者'}
                         </a>
                       </h3>
@@ -842,7 +845,7 @@ const ArticleDetail: React.FC = () => {
                           <List.Item.Meta
                             title={
                               <a
-                                href={`/article/${item.id}`}
+                                href={ROUTES.ARTICLE_DETAIL(item.id)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-gray-800 hover:text-blue-600 transition-colors"

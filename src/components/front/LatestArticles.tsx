@@ -3,6 +3,7 @@ import { Card } from 'antd';
 import type { LatestArticle } from '../../types/article';
 import { formatDateTimeShort } from '../../utils';
 import { useTheme } from '../../store';
+import { ROUTES } from '../../constants/routes';
 
 interface LatestArticlesProps {
   articles?: LatestArticle[];
@@ -28,7 +29,7 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({ articles = [] }) => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200 hover:text-blue-500 dark:hover:text-gray-200">
                 <a
-                  href={`/article/${article.id}`}
+                  href={ROUTES.ARTICLE_DETAIL(article.id)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[13px] font-medium transition-colors truncate no-underline"
