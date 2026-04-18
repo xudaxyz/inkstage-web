@@ -470,8 +470,8 @@ const ArticleDetail: React.FC = () => {
       const result = await articleService.deleteArticle(Number(id));
       if (result.code === 200) {
         message.success('文章删除成功');
-        // 跳转到我的创作页面
-        navigate('/profile/creations');
+        // 跳转到首页
+        navigate(ROUTES.HOME);
       } else {
         message.error(result.message || '文章删除失败');
       }

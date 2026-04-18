@@ -1,15 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import App from './App.tsx';
+import App from './App';
 import { HelmetProvider } from 'react-helmet-async';
-
 // Sentry初始化
 import * as Sentry from '@sentry/react';
-
 // React Query 配置
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
 // 只有在生产环境才初始化Sentry
 if (import.meta.env.PROD) {
   Sentry.init({

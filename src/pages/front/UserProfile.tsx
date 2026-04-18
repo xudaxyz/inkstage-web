@@ -11,11 +11,11 @@ import {
   MoreOutlined,
   WomanOutlined
 } from '@ant-design/icons';
-import Header from '../../components/common/Header.tsx';
-import Footer from '../../components/common/Footer.tsx';
+import Header from '../../components/common/Header';
+import Footer from '../../components/common/Footer';
 import type { IndexArticleList } from '../../types/article';
-import articleService from '../../services/articleService.ts';
-import { followUser, getUserPublicProfile, unfollowUser } from '../../services/userService.ts';
+import articleService from '../../services/articleService';
+import { followUser, getUserPublicProfile, unfollowUser } from '../../services/userService';
 import { GenderEnum } from '../../types/enums';
 import { formatDateOnly, formatDateTimeShort } from '../../utils';
 import LazyImage from '../../components/common/LazyImage';

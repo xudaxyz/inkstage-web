@@ -1,5 +1,5 @@
 import { API_ENDPOINTS, apiClient } from '../api';
-import type { ApiPageResponse, ApiResponse } from '../types/common.ts';
+import type { ApiPageResponse, ApiResponse } from '../types/common';
 import type {
   AdminArticleDetail,
   AdminArticleList,
@@ -11,7 +11,7 @@ import type {
   MyArticleCollectionList,
   MyArticleList,
   UpdatedAdminArticleFields
-} from '../types/article.ts';
+} from '../types/article';
 import { type AllowTopEnum, ArticleStatusEnum, DefaultStatusEnum } from '../types/enums';
 // 前台首页文章列表响应类型
 export type IndexArticleListResponse<T = IndexArticleList> = ApiPageResponse<T>;

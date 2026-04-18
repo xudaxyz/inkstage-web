@@ -14,8 +14,8 @@ import {
 } from '../../types/enums';
 import { formatDateTime, formatDateTimeShort } from '../../utils';
 import reportService from '../../services/reportService';
-import type { AdminReportVO } from '../../types/report.ts';
-import { ROUTES } from '../../constants/routes.ts';
+import type { AdminReportVO } from '../../types/report';
+import { ROUTES } from '../../constants/routes';
 
 const { Search } = Input;
 

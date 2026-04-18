@@ -1,6 +1,7 @@
 import React, { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import AnimatedCharacter from '../components/common/AnimatedCharacter';
+import { ROUTES } from '../constants/navigation';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -35,7 +36,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, isPasswordGuar
             <div className="w-full max-w-md">
               {/* 品牌标识 */}
               <div className="flex flex-col items-center mb-8">
-                <Link to="/" className="cursor-pointer transition-all duration-300 hover:scale-105">
+                <Link to={ROUTES.HOME} className="cursor-pointer transition-all duration-300 hover:scale-105">
                   <h1 className="text-2xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent mb-2">
                     InkStage
                   </h1>

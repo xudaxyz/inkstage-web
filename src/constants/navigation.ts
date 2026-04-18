@@ -34,7 +34,7 @@ export const ROUTES = {
   ADMIN_TAGS: '/admin/tags',
   ADMIN_COMMENTS: '/admin/comments',
   ADMIN_NOTIFICATIONS: '/admin/notifications',
-  ADMIN_ANALYTICS: '/admin/analytics',
+  ADMIN_REPORTS: '/admin/reports',
   ADMIN_SETTINGS: '/admin/settings'
 };
 
@@ -84,7 +84,7 @@ export const NAVIGATION_STRATEGIES = {
  * @returns 是否为公开页面
  */
 export const isPublicPage = (path: string): boolean => {
-  return PUBLIC_PAGES.some(page => path.startsWith(page));
+  return PUBLIC_PAGES.some((page) => path.startsWith(page));
 };
 
 /**
@@ -93,12 +93,8 @@ export const isPublicPage = (path: string): boolean => {
  * @returns 是否为需要登录的页面
  */
 export const isProtectedPage = (path: string): boolean => {
-  const protectedPaths = [
-    ROUTES.CREATE_ARTICLE,
-    ROUTES.EDIT_ARTICLE,
-    ROUTES.PROFILE
-  ];
-  return protectedPaths.some(page => path.startsWith(page));
+  const protectedPaths = [ROUTES.CREATE_ARTICLE, ROUTES.EDIT_ARTICLE, ROUTES.PROFILE];
+  return protectedPaths.some((page) => path.startsWith(page));
 };
 
 /**

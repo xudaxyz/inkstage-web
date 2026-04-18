@@ -4,10 +4,10 @@
 export * from './date';
 
 // 存储工具
-export * from './storage.ts';
+export * from './storage';
 
 // 验证工具
-export * from './validation.ts';
+export * from './validation';
 
 // 格式化工具
 export * from './format';
@@ -23,4 +23,3 @@ export * from './errorHandler';
 
 // 标签工具
 export * from './tagUtils';
-

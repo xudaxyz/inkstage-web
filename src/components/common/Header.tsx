@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Badge, Button, Drawer, Input, Switch } from 'antd';
+import { Badge, Button, Divider, Drawer, Input, Switch } from 'antd';
 import {
   BellTwoTone,
   EditOutlined,
@@ -25,7 +25,7 @@ import {
   useUserStore
 } from '../../store';
 import websocketService from '../../services/websocketService';
-import { ROUTES } from '../../constants/routes.ts';
+import { ROUTES } from '../../constants/routes';
 
 const Header: React.FC = () => {
   const theme = useTheme();
@@ -169,53 +169,85 @@ const Header: React.FC = () => {
             {renderUserAvatar()}
             <span className="text-lg font-medium text-gray-800 dark:text-white">{user.nickname}</span>
           </div>
-
-          <Link to={ROUTES.CREATE_ARTICLE} onClick={closeMobileDrawer}>
-            <Button type="text" block className="mb-3 rounded-lg">
-              <EditOutlined /> 写文章
-            </Button>
-          </Link>
-
-          <Link to={ROUTES.PROFILE} onClick={closeMobileDrawer}>
-            <Button type="text" block className="mb-3 rounded-lg justify-start">
-              <UserOutlined /> 个人中心
-            </Button>
-          </Link>
-
-          <Link to={ROUTES.NOTIFICATIONS} onClick={closeMobileDrawer}>
-            <Button type="text" block className="mb-3 rounded-lg justify-start">
-              <BellTwoTone /> 通知中心
-            </Button>
-          </Link>
-
-          <div className="mb-3 px-4">
+          <div className="flex justify-start">
+            <Link to={ROUTES.CREATE_ARTICLE} onClick={closeMobileDrawer}>
+              <Button type="text" block className="mb-3 rounded-lg">
+                <EditOutlined /> 写文章
+              </Button>
+            </Link>
+          </div>
+          <div className="flex justify-start">
+            <Link to={ROUTES.PROFILE} onClick={closeMobileDrawer}>
+              <Button type="text" block className="mb-3 rounded-lg">
+                <UserOutlined /> 个人中心
+              </Button>
+            </Link>
+          </div>
+          <div className="flex justify-start">
+            <Link to={ROUTES.NOTIFICATIONS} onClick={closeMobileDrawer}>
+              <Button type="text" block className="mb-3 rounded-lg">
+                <BellTwoTone /> 通知中心
+              </Button>
+            </Link>
+          </div>
+          <div className="flex justify-start mb-3 px-4">
             <div className="flex items-center justify-center">
               <div className="flex items-center gap-3">
                 {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
-                <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" className="md:ml-4 sm:ml-2" />
+                <Switch checked={isDarkMode} onChange={handleThemeToggle} size="default" className="md:ml-4 sm:ml-2" />
               </div>
             </div>
           </div>
-
+          <Divider />
           <Button danger block className="rounded-lg" onClick={handleLogout}>
             <LogoutOutlined /> 退出登录
           </Button>
         </>
       ) : (
         <>
-          <div className="mb-4">{renderSearchBox('middle', 'rounded-lg')}</div>
-
-          <Link to={ROUTES.LOGIN} onClick={closeMobileDrawer}>
-            <Button block className="mb-3 rounded-lg">
+          <Link
+            to={ROUTES.LOGIN}
+            onClick={closeMobileDrawer}
+            className="text-gray-200 mb-3 dark:text-white hover:text-primary-600 font-medium transition-colors duration-200 rounded-lg"
+          >
+            <Button
+              block
+              type="default"
+              className="rounded-lg mb-3"
+              style={{
+                backgroundColor: '#e5e7eb',
+                borderRadius: '20px',
+                color: 'black',
+                fontSize: '16px'
+              }}
+            >
               登录
             </Button>
           </Link>
 
           <Link to={ROUTES.REGISTER} onClick={closeMobileDrawer}>
-            <Button color="danger" block className="rounded-lg">
+            <Button
+              color="danger"
+              block
+              className="rounded-lg"
+              style={{
+                color: 'red',
+                borderRadius: '20px',
+                fontSize: '16px'
+              }}
+            >
               注册
             </Button>
           </Link>
+          {/* 主题切换 */}
+          <div className="mt-4 ">
+            <div className="flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
+                <Switch checked={isDarkMode} onChange={handleThemeToggle} size="default" className="ml-2" />
+              </div>
+            </div>
+          </div>
         </>
       )}
     </Drawer>

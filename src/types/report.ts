@@ -5,7 +5,7 @@ import type {
   ReportTargetTypeEnum,
   ReportTypeEnum
 } from './enums';
-import type { ApiPageResponse } from './common.ts';
+import type { ApiPageResponse } from './common';
 
 // 举报创建DTO
 export interface ReportCreateDTO {

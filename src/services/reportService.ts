@@ -1,6 +1,6 @@
 import { API_ENDPOINTS, apiClient } from '../api';
-import type { ApiResponse } from '../types/common.ts';
-import type { AdminReportResponse, AdminReportVO, ReportCreateDTO } from '../types/report.ts';
+import type { ApiResponse } from '../types/common';
+import type { AdminReportResponse, AdminReportVO, ReportCreateDTO } from '../types/report';
 import type { HandleReportResultEnum, ReportStatusEnum, ReportTargetTypeEnum, ReportTypeEnum } from '../types/enums';
 // 参数验证函数
 const validateReportParams = (report: ReportCreateDTO): boolean => {

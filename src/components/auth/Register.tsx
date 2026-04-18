@@ -5,10 +5,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
-import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
+import SlideCaptchaModal from './captcha/SlideCaptchaModal';
 import { useUserStore } from '../../store';
 import type { AuthTypeEnum } from '../../types/enums';
 import { getRandomCaptchaImage } from '../../utils';
+import { ROUTES } from '../../constants/navigation';
 
 // 注册表单数据类型
 interface RegisterFormData {
@@ -121,7 +122,7 @@ const Register: React.FC = () => {
           // 根据注册类型和账号类型进行不同的跳转
           if (registerType === 'code') {
             // 验证码注册（邮箱+验证码），直接跳转到首页
-            navigate('/');
+            navigate(ROUTES.HOME);
           } else if (registerType === 'password') {
             // 密码注册（用户名+密码），跳转到登录页面并传递用户名参数
             navigate({
@@ -199,7 +200,7 @@ const Register: React.FC = () => {
             </h2>
             <div className="text-sm">
               <span className="text-gray-600">已有账号？</span>
-              <Link to="/login" className="ml-1 hover:underline transition-colors duration-200">
+              <Link to={ROUTES.LOGIN} className="ml-1 hover:underline transition-colors duration-200">
                 <span className="text-blue-600 hover:text-blue-800">点击登录</span>
               </Link>
             </div>

@@ -19,6 +19,7 @@ import {
   UserOutlined
 } from '@ant-design/icons';
 import { useAdminStore } from '../store/adminStore';
+import { ROUTES } from '../constants/navigation';
 
 const { Header, Sider, Content } = Layout;
 
@@ -55,47 +56,47 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     {
       key: 'dashboard',
       icon: <DashboardOutlined />,
-      label: <Link to="/admin">控制台</Link>
+      label: <Link to={ROUTES.ADMIN_DASHBOARD}>控制台</Link>
     },
     {
       key: 'users',
       icon: <UsergroupAddOutlined />,
-      label: <Link to="/admin/users">用户管理</Link>
+      label: <Link to={ROUTES.ADMIN_USERS}>用户管理</Link>
     },
     {
       key: 'articles',
       icon: <FileTextOutlined />,
-      label: <Link to="/admin/articles">文章管理</Link>
+      label: <Link to={ROUTES.ADMIN_ARTICLES}>文章管理</Link>
     },
     {
       key: 'categories',
       icon: <AppstoreOutlined />,
-      label: <Link to="/admin/categories">分类管理</Link>
+      label: <Link to={ROUTES.ADMIN_CATEGORIES}>分类管理</Link>
     },
     {
       key: 'tags',
       icon: <TagOutlined />,
-      label: <Link to="/admin/tags">标签管理</Link>
+      label: <Link to={ROUTES.ADMIN_TAGS}>标签管理</Link>
     },
     {
       key: 'comments',
       icon: <MessageOutlined />,
-      label: <Link to="/admin/comments">评论管理</Link>
+      label: <Link to={ROUTES.ADMIN_COMMENTS}>评论管理</Link>
     },
     {
       key: 'notifications',
       icon: <BellOutlined />,
-      label: <Link to="/admin/notifications">通知管理</Link>
+      label: <Link to={ROUTES.ADMIN_NOTIFICATIONS}>通知管理</Link>
     },
     {
       key: 'reports',
       icon: <ExclamationCircleOutlined />,
-      label: <Link to="/admin/reports">举报管理</Link>
+      label: <Link to={ROUTES.ADMIN_REPORTS}>举报管理</Link>
     },
     {
       key: 'settings',
       icon: <SettingOutlined />,
-      label: <Link to="/admin/settings">系统设置</Link>
+      label: <Link to={ROUTES.ADMIN_SETTINGS}>系统设置</Link>
     }
   ];
 
@@ -108,7 +109,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const handleLogout = async (): Promise<void> => {
     try {
       logout();
-      navigate('/admin/login');
+      navigate(ROUTES.ADMIN_LOGIN);
     } catch (error) {
       console.error('退出登录失败:', error);
     }

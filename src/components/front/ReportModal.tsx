@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Checkbox, Form, Input, message, Modal, Select } from 'antd';
 import { DefaultStatusEnum, ReportTargetTypeEnum, ReportTypeMap } from '../../types/enums';
 import reportService from '../../services/reportService';
-import type { FrontReport } from '../../types/report.ts';
+import type { FrontReport } from '../../types/report';
 
 interface ReportModalProps {
   visible: boolean;

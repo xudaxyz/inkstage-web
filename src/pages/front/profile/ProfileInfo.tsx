@@ -8,7 +8,7 @@ import userService from '../../../services/userService';
 import dayjs, { type Dayjs } from 'dayjs';
 import { GenderEnum, GenderLabel } from '../../../types/enums';
 import AvatarUploader from '../../../components/upload/AvatarUploader';
-import UserCoverUploader from '../../../components/upload/UserCoverUploader.tsx';
+import UserCoverUploader from '../../../components/upload/UserCoverUploader';
 // 表单值类型定义
 type ProfileFormValues = {
   username: string;

@@ -4,10 +4,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
-import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
+import SlideCaptchaModal from './captcha/SlideCaptchaModal';
 import { useAdminStore } from '../../store/adminStore';
 import { AuthTypeEnum } from '../../types/enums';
 import { getRandomCaptchaImage } from '../../utils';
+import { ROUTES } from '../../constants/navigation';
 
 // 登录表单数据类型
 interface AdminLoginFormData {
@@ -77,7 +78,7 @@ const AdminLogin: React.FC = () => {
           const cleanPath = normalizedPath.split(baseUrl)[1] || normalizedPath;
           navigate(cleanPath);
         } else {
-          navigate('/admin');
+          navigate(ROUTES.ADMIN_DASHBOARD);
         }
       } else {
         message.error(response.message || '登录失败，请稍后重试！');
@@ -197,7 +198,7 @@ const AdminLogin: React.FC = () => {
         {/* 返回前台 */}
         <div className="text-center">
           <Link
-            to="/"
+            to={ROUTES.HOME}
             className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200 flex items-center justify-center gap-1"
           >
             <span className="text-gray-700 hover:text-gray-500">返回前台首页</span>

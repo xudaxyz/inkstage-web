@@ -5,10 +5,11 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import AuthLayout from '../../layouts/AuthLayout';
-import SlideCaptchaModal from './captcha/SlideCaptchaModal.tsx';
+import SlideCaptchaModal from './captcha/SlideCaptchaModal';
 import { useAuth } from '../../hooks';
 import { AuthTypeEnum } from '../../types/enums';
 import { getRandomCaptchaImage } from '../../utils';
+import { ROUTES } from '../../constants/navigation';
 
 // 登录表单数据类型
 interface LoginFormData {
@@ -127,7 +128,7 @@ const Login: React.FC = () => {
             </h2>
             <div className="text-sm">
               <span className="text-gray-600">没有账号？</span>
-              <Link to="/register" className="ml-1 hover:underline transition-colors duration-200">
+              <Link to={ROUTES.REGISTER} className="ml-1 hover:underline transition-colors duration-200">
                 <span className="text-blue-500 hover:text-blue-700">点击注册</span>
               </Link>
             </div>

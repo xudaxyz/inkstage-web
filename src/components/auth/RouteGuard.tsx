@@ -4,6 +4,7 @@ import { useUserStore } from '../../store';
 import { useAdminStore } from '../../store/adminStore';
 import { UserRoleEnum } from '../../types/enums';
 import { Button, message } from 'antd';
+import { ROUTES } from '../../constants/navigation';
 // 私有路由组件，需要登录才能访问
 export const PrivateRoute = ({ children }: { children: React.ReactNode }): React.ReactNode => {
   const { isLoggedIn } = useUserStore();
@@ -12,7 +13,7 @@ export const PrivateRoute = ({ children }: { children: React.ReactNode }): React
   if (!isLoggedIn) {
     // 保存当前路径，登录后可以重定向回来
     localStorage.setItem('redirect_after_login', location.pathname + location.search);
-    return <Navigate to="/login" replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
   return children;
@@ -29,14 +30,14 @@ export const PermissionRoute = ({
   const { user, isLoggedIn } = useUserStore();
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
   // 检查用户权限
   const hasPermission = requiredPermissions.some((permission) => user.role === permission);
 
   if (!hasPermission) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={ROUTES.HOME} replace />;
   }
 
   return children;
@@ -111,13 +112,13 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }): React.R
   if (!isAdminLoggedIn) {
     console.error('用户未登录，重定向到登录页面');
     localStorage.setItem('redirect_after_login', location.pathname + location.search);
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to={ROUTES.ADMIN_LOGIN} replace />;
   }
 
   // 权限验证
   const userRole = adminUser.role || UserRoleEnum.ADMIN;
   if (userRole !== UserRoleEnum.ADMIN && userRole !== UserRoleEnum.SUPER_ADMIN) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={ROUTES.HOME} replace />;
   }
   // 验证通过，渲染子组件
   return children;

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store';
 import type { AuthTypeEnum, GenderEnum, UserRoleEnum } from '../types/enums';
+import { ROUTES } from '../constants/navigation';
 
 /**
  * 前台认证相关的自定义Hook
@@ -149,13 +150,13 @@ export const useAuth = (): {
         // 检查是否是后台路径
         if (cleanPath.startsWith('/admin')) {
           // 普通用户不能访问后台，重定向到首页
-          navigate('/');
+          navigate(ROUTES.HOME);
         } else {
           navigate(cleanPath);
         }
       } else {
         // 普通用户登录，默认重定向到前台首页
-        navigate('/');
+        navigate(ROUTES.HOME);
       }
     }
     return result;
@@ -167,7 +168,7 @@ export const useAuth = (): {
   const handleLogout = (): void => {
     logout();
     // 登出后重定向到首页
-    navigate('/');
+    navigate(ROUTES.HOME);
   };
 
   /**

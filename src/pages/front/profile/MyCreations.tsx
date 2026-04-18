@@ -15,7 +15,7 @@ import {
   ShareAltOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import articleService from '../../../services/articleService.ts';
+import articleService from '../../../services/articleService';
 import { type MyArticleList } from '../../../types/article';
 import { ROUTES } from '../../../constants/routes';
 import {
@@ -29,7 +29,7 @@ import {
   ArticleVisibleMap
 } from '../../../types/enums';
 import { formatDateTimeShort } from '../../../utils';
-import type { ApiPageResponse } from '../../../types/common.ts';
+import type { ApiPageResponse } from '../../../types/common';
 
 // 文章类型定义
 interface Article {

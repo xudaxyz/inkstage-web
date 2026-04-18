@@ -1,5 +1,5 @@
 import { NotificationChannel, NotificationType, PriorityEnum, StatusEnum } from './enums';
-import type { ApiPageResponse } from './common.ts';
+import type { ApiPageResponse } from './common';
 
 // 通知模板类型定义
 export interface AdminNotificationTemplate {

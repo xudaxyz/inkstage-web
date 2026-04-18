@@ -1,28 +1,25 @@
-import { Routes, Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import React, { lazy, Suspense } from 'react';
-
 // 导入布局组件
 import ProfileLayout from '../layouts/ProfileLayout';
 import AdminLayout from '../layouts/AdminLayout';
-
 // 导入路由保护组件
-import { PrivateRoute, AdminRoute } from '../components/auth/RouteGuard';
-
+import { AdminRoute, PrivateRoute } from '../components/auth/RouteGuard';
 // 使用 React.lazy 实现代码分割
-const Home = lazy(() => import('../pages/front/Home.tsx'));
-const Profile = lazy(() => import('../pages/front/Profile.tsx'));
-const CreateArticle = lazy(() => import('../pages/front/CreateArticle.tsx'));
-const ArticleDetail = lazy(() => import('../pages/front/ArticleDetail.tsx'));
-const Rankings = lazy(() => import('../pages/front/Rankings.tsx'));
-const UserProfile = lazy(() => import('../pages/front/UserProfile.tsx'));
-const About = lazy(() => import('../pages/front/About.tsx'));
-const Help = lazy(() => import('../pages/front/Help.tsx'));
-const CommunityRules = lazy(() => import('../pages/front/CommunityRules.tsx'));
-const Contact = lazy(() => import('../pages/front/Contact.tsx'));
+const Home = lazy(() => import('../pages/front/Home'));
+const Profile = lazy(() => import('../pages/front/Profile'));
+const CreateArticle = lazy(() => import('../pages/front/CreateArticle'));
+const ArticleDetail = lazy(() => import('../pages/front/ArticleDetail'));
+const Rankings = lazy(() => import('../pages/front/Rankings'));
+const UserProfile = lazy(() => import('../pages/front/UserProfile'));
+const About = lazy(() => import('../pages/front/About'));
+const Help = lazy(() => import('../pages/front/Help'));
+const CommunityRules = lazy(() => import('../pages/front/CommunityRules'));
+const Contact = lazy(() => import('../pages/front/Contact'));
 const ProfileInfo = lazy(() => import('../pages/front/profile/ProfileInfo'));
 const MyCreations = lazy(() => import('../pages/front/profile/MyCreations'));
 const MyCollections = lazy(() => import('../pages/front/profile/MyCollections'));
-const ReadingHistories = lazy(() => import('../pages/front/profile/ReadingHistories.tsx'));
+const ReadingHistories = lazy(() => import('../pages/front/profile/ReadingHistories'));
 const Notifications = lazy(() => import('../pages/front/profile/Notifications'));
 const NotificationSettings = lazy(() => import('../pages/front/profile/NotificationSettings'));
 const AccountSettings = lazy(() => import('../pages/front/profile/AccountSettings'));
@@ -53,9 +50,23 @@ const AppRoutes = (): React.ReactNode => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         {/* 写文章路由 */}
-        <Route path="/create-article" element={<PrivateRoute><CreateArticle /></PrivateRoute>} />
+        <Route
+          path="/create-article"
+          element={
+            <PrivateRoute>
+              <CreateArticle />
+            </PrivateRoute>
+          }
+        />
         {/* 编辑文章路由 */}
-        <Route path="/edit-article/:articleId" element={<PrivateRoute><CreateArticle /></PrivateRoute>} />
+        <Route
+          path="/edit-article/:articleId"
+          element={
+            <PrivateRoute>
+              <CreateArticle />
+            </PrivateRoute>
+          }
+        />
         {/* 文章详情路由 */}
         <Route path="/article/:id" element={<ArticleDetail />} />
         {/* 热门排行榜路由 */}
@@ -69,7 +80,14 @@ const AppRoutes = (): React.ReactNode => {
         <Route path="/community-rules" element={<CommunityRules />} />
         <Route path="/contact" element={<Contact />} />
         {/* 个人中心路由 */}
-        <Route path="/profile" element={<PrivateRoute><ProfileLayout /></PrivateRoute>}>
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <ProfileLayout />
+            </PrivateRoute>
+          }
+        >
           <Route index element={<Profile />} />
           <Route path="info" element={<ProfileInfo />} />
           <Route path="creations" element={<MyCreations />} />
@@ -82,15 +100,96 @@ const AppRoutes = (): React.ReactNode => {
 
         {/* 后台路由 */}
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
-        <Route path="/admin/users" element={<AdminRoute><AdminLayout><AdminUsers /></AdminLayout></AdminRoute>} />
-        <Route path="/admin/articles" element={<AdminRoute><AdminLayout><AdminArticles /></AdminLayout></AdminRoute>} />
-        <Route path="/admin/categories" element={<AdminRoute><AdminLayout><AdminCategories /></AdminLayout></AdminRoute>} />
-        <Route path="/admin/tags" element={<AdminRoute><AdminLayout><AdminTags /></AdminLayout></AdminRoute>} />
-        <Route path="/admin/comments" element={<AdminRoute><AdminLayout><AdminComments /></AdminLayout></AdminRoute>} />
-        <Route path="/admin/notifications" element={<AdminRoute><AdminLayout><AdminNotifications /></AdminLayout></AdminRoute>} />
-        <Route path="/admin/reports" element={<AdminRoute><AdminLayout><AdminReports /></AdminLayout></AdminRoute>} />
-        <Route path="/admin/settings" element={<AdminRoute><AdminLayout><AdminSettings /></AdminLayout></AdminRoute>} />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminDashboard />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminUsers />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/articles"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminArticles />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/categories"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminCategories />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/tags"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminTags />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/comments"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminComments />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/notifications"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminNotifications />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/reports"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminReports />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminSettings />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
       </Routes>
     </Suspense>
   );

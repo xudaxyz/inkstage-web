@@ -27,8 +27,9 @@ import {
 } from '../../types/enums';
 import RichTextEditor from '../../components/editor/RichTextEditor';
 import './CreateArticle.css';
-import Footer from '../../components/common/Footer.tsx';
+import Footer from '../../components/common/Footer';
 import ArticleCoverUploader from '../../components/upload/ArticleCoverUploader';
+import { ROUTES } from '../../constants/navigation';
 
 const { Option } = Select;
 const CreateArticle: React.FC = () => {
@@ -233,8 +234,8 @@ const CreateArticle: React.FC = () => {
         message.error(result.message || (isEditMode ? '文章更新失败！' : '文章发布失败！'));
       } else {
         message.success(result.message || (isEditMode ? '文章更新成功！' : '文章发布成功！'));
-        // 操作成功后导航到我的创作页面
-        navigate('/profile/creations');
+        // 操作成功后回到首页
+        navigate(ROUTES.HOME);
       }
     } catch (error) {
       console.error('提交文章失败:', error);
@@ -310,7 +311,7 @@ const CreateArticle: React.FC = () => {
           <div className="flex items-center">
             <span
               className="text-lg md:text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide cursor-pointer hover:opacity-80 transition-opacity duration-200"
-              onClick={() => navigate('/')}
+              onClick={() => navigate(ROUTES.HOME)}
             >
               InkStage
             </span>
@@ -331,7 +332,7 @@ const CreateArticle: React.FC = () => {
             <div className="flex items-center gap-1 md:gap-2">
               <Button
                 icon={<SwapLeftOutlined />}
-                onClick={() => navigate('/')}
+                onClick={() => navigate(ROUTES.HOME)}
                 className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                 size="middle"
               >

@@ -1,4 +1,4 @@
-import type { FrontTag } from './tag.ts';
+import type { FrontTag } from './tag';
 import {
   AllowStatusEnum,
   AllowTopEnum,

@@ -1,6 +1,6 @@
 import { API_ENDPOINTS, apiClient } from '../api';
 import type { DashboardStatsVO } from '../types/admin';
-import type { ApiResponse } from '../types/common.ts';
+import type { ApiResponse } from '../types/common';
 
 /**
  * 仪表盘服务
