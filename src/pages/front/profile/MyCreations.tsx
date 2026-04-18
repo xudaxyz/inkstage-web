@@ -210,17 +210,23 @@ const MyCreations: React.FC = () => {
         </div>
 
         {/* 状态标签和搜索区域 */}
-        <div className="border-b border-b-gray-200 dark:border-b-gray-700 flex flex-wrap justify-between items-center pb-4 ">
+        <div className="border-b border-b-gray-200 dark:border-b-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
           {/* 状态标签 */}
-          <div className="flex space-x-6 mb-2 md:mb-0">
-            <Button
-              color={currentStatus === ArticleStatusEnum.ALL ? 'cyan' : 'default'}
-              variant={currentStatus === ArticleStatusEnum.ALL ? 'solid' : 'text'}
-              size="large"
-              onClick={() => handleStatusChange(ArticleStatusEnum.ALL)}
-            >
-              全部文章
-            </Button>
+          <div className="flex flex-wrap gap-2 md:gap-4 mb-2 sm:mb-0">
+            {/* 全部文章 - 移动端单独一行 */}
+            <div className="w-full sm:w-auto">
+              <Button
+                color={currentStatus === ArticleStatusEnum.ALL ? 'cyan' : 'default'}
+                variant={currentStatus === ArticleStatusEnum.ALL ? 'solid' : 'text'}
+                size="large"
+                onClick={() => handleStatusChange(ArticleStatusEnum.ALL)}
+                className="sm:inline-block w-full sm:w-auto"
+              >
+                全部文章
+              </Button>
+            </div>
+
+            {/* 其他状态 */}
             <Button
               color={currentStatus === ArticleStatusEnum.PUBLISHED ? 'cyan' : 'default'}
               variant={currentStatus === ArticleStatusEnum.PUBLISHED ? 'solid' : 'text'}
@@ -261,7 +267,7 @@ const MyCreations: React.FC = () => {
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 300, marginRight: 80 }}
+            style={{ width: '100%', maxWidth: 300 }}
           />
         </div>
 
@@ -287,7 +293,7 @@ const MyCreations: React.FC = () => {
                     href={ROUTES.ARTICLE_DETAIL(article.id)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-2xl font-semibold no-underline text-gray-900 dark:text-white transition-colors duration-200 hover:text-primary-600"
+                    className="text-base md:text-xl font-semibold no-underline text-gray-900 dark:text-white transition-colors duration-200 hover:text-primary-600 line-clamp-1"
                     style={{
                       textDecoration: 'none',
                       fontFamily: 'sans-serif',
@@ -305,20 +311,15 @@ const MyCreations: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Tag
                     variant="filled"
-                    color={article.articleStatus === ArticleStatusEnum.PUBLISHED ? 'default' : 'warning'}
+                    className="text-xs px-2 py-0.5"
+                    color={article.articleStatus === ArticleStatusEnum.PUBLISHED ? 'cyan' : 'warning'}
                   >
                     {ArticleStatusMap[article.articleStatus]}
                   </Tag>
-                  {article.reviewStatus && (
+                  {article.reviewStatus && article.reviewStatus != ArticleReviewStatusEnum.APPROVED && (
                     <Tag
                       variant="filled"
-                      color={
-                        article.reviewStatus === ArticleReviewStatusEnum.APPROVED
-                          ? 'green'
-                          : article.reviewStatus === ArticleReviewStatusEnum.REJECTED
-                            ? 'red'
-                            : 'blue'
-                      }
+                      color={article.reviewStatus === ArticleReviewStatusEnum.REJECTED ? 'red' : 'blue'}
                     >
                       {ArticleReviewStatusMap[article.reviewStatus]}
                     </Tag>
@@ -326,10 +327,10 @@ const MyCreations: React.FC = () => {
                 </div>
               </div>
 
-              <div className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">{article.summary}</div>
+              <div className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">{article.summary}</div>
 
-              <div className="flex flex-wrap items-center justify-between ">
-                <div className="flex items-center gap-5 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 md:gap-x-4 gap-y-2">
+                <div className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-2 text-xs md:text-sm text-gray-500 dark:text-gray-400">
                   <Tag variant="solid" color={article.original === ArticleOriginalEnum.ORIGINAL ? 'gold' : 'green'}>
                     {ArticleOriginalMap[article.original] || ArticleOriginalEnum.OTHER}
                   </Tag>

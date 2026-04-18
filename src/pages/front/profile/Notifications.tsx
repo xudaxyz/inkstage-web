@@ -102,11 +102,7 @@ const Notifications: React.FC = () => {
   });
 
   // 解构需要单独使用的变量
-  const {
-    data: notifications,
-    refresh: refreshNotifications,
-    setData: setInfiniteScrollData
-  } = infiniteScroll;
+  const { data: notifications, refresh: refreshNotifications, setData: setInfiniteScrollData } = infiniteScroll;
   // 创建兼容的setData函数
   const setData = useCallback(
     (value: Notification[] | ((prev: Notification[]) => Notification[])): void => {
@@ -302,17 +298,24 @@ const Notifications: React.FC = () => {
           </div>
 
           {/* 右侧：消息类别和全部已读按钮 */}
-          <div className="flex items-center gap-4">
+          <div className="flex md:flex-row md:items-center md:justify-center gap-6">
             <Select
               value={selectedType}
               onChange={setSelectedType}
               options={notificationTypes}
-              style={{ width: 150 }}
+              className="w-full sm:w-36 md:w-48"
               size="middle"
               variant="outlined"
               prefix={<FilterOutlined className="text-gray-300" />}
             />
-            <Button type="primary" variant="text" size="middle" onClick={markAllAsRead} disabled={unreadCount === 0}>
+            <Button
+              type="primary"
+              variant="text"
+              size="middle"
+              onClick={markAllAsRead}
+              disabled={unreadCount === 0}
+              className="w-full sm:w-auto"
+            >
               全部已读
             </Button>
           </div>

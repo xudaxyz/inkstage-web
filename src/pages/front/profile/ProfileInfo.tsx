@@ -202,7 +202,7 @@ const ProfileInfo: React.FC = () => {
             {!user?.coverImage && <div className="w-full h-full flex items-center justify-center text-gray-400"></div>}
 
             {/* 用户信息叠加在封面图片上 */}
-            <div className="absolute bottom-6 left-6 flex items-end gap-4">
+            <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6 flex flex-col md:flex-row items-start md:items-end gap-3 md:gap-4">
               {/* 头像 */}
               <div className="shrink relative">
                 <AvatarUploader
@@ -225,7 +225,7 @@ const ProfileInfo: React.FC = () => {
               {/* 基本信息 */}
               <div className="text-purple-600 text-shadow">
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-xl font-semibold">{user?.nickname}</h2>
+                  <h2 className="text-lg md:text-xl font-semibold">{user?.nickname}</h2>
                   {user?.gender === GenderEnum.MALE && (
                     <span>
                       <ManOutlined style={{ color: 'blue' }} />
@@ -237,14 +237,14 @@ const ProfileInfo: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <p className="text-gray-700 truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px]">
+                <p className="text-gray-700 truncate max-w-[150px] sm:max-w-[200px] md:max-w-[300px] lg:max-w-[400px]">
                   {user?.signature || '暂无简介'}
                 </p>
               </div>
             </div>
 
             {/* 设置封面按钮 */}
-            <div className="absolute bottom-5 right-12">
+            <div className="absolute bottom-4 right-4 md:bottom-5 md:right-12">
               <UserCoverUploader
                 onUploadSuccess={(url) => {
                   if (user) {
@@ -267,8 +267,8 @@ const ProfileInfo: React.FC = () => {
           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-6">个人信息</h3>
 
           <Form form={form} onFinish={handleSubmit} onValuesChange={() => setIsModified(true)} layout="vertical">
-            {/* 第一行：登录账号和昵称 */}
-            <div className="grid grid-cols-2 gap-8 mb-4">
+            {/* 第一行：登录账号和昵称 - 移动端垂直堆叠 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-4">
               <div className="pr-4">
                 <Form.Item name="username" label="登录账号" extra="登录账号一个月仅允许修改一次">
                   <Input
@@ -287,7 +287,7 @@ const ProfileInfo: React.FC = () => {
                 </Form.Item>
               </div>
 
-              <div className="pl-4">
+              <div className="md:pl-4">
                 <Form.Item name="nickname" label="昵称" rules={[{ required: true, message: '请输入昵称' }]}>
                   <Input
                     placeholder="请输入昵称"
@@ -298,14 +298,14 @@ const ProfileInfo: React.FC = () => {
             </div>
 
             {/* 第二行：性别和生日 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-4">
               <div className="pr-4">
                 <Form.Item name="gender" label="性别">
-                  <Radio.Group className="h-12 flex items-center">
-                    <Radio value={GenderEnum.MALE} className="mr-6 flex items-center">
+                  <Radio.Group className="h-12 flex flex-wrap items-center gap-2 md:gap-4">
+                    <Radio value={GenderEnum.MALE} className="mr-0 md:mr-6 flex items-center">
                       <ManOutlined style={{ color: 'blue' }} /> {GenderLabel.MALE}
                     </Radio>
-                    <Radio value={GenderEnum.FEMALE} className="mr-6 flex items-center">
+                    <Radio value={GenderEnum.FEMALE} className="mr-0 md:mr-6 flex items-center">
                       <WomanOutlined style={{ color: 'red' }} /> {GenderLabel.FEMALE}
                     </Radio>
                     <Radio value={GenderEnum.SECRET} className="flex items-center">
@@ -315,7 +315,7 @@ const ProfileInfo: React.FC = () => {
                 </Form.Item>
               </div>
 
-              <div className="pl-4">
+              <div className="md:pl-4">
                 <Form.Item name="birthDate" label="生日">
                   <DatePicker
                     style={{ width: '100%' }}

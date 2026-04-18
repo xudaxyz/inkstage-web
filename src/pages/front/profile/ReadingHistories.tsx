@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, Button, Card, Divider, Empty, Input, message, Popover, Space, Spin, Tag } from 'antd';
+import { Alert, Button, Card, Empty, Input, message, Popover, Space, Spin, Tag } from 'antd';
 import { Helmet } from 'react-helmet-async';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import { ClockCircleOutlined, DeleteOutlined, EyeOutlined, MoreOutlined, SearchOutlined } from '@ant-design/icons';
@@ -121,7 +121,8 @@ const ReadingHistories: React.FC = () => {
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 300 }}
+              className="w-full rounded-lg"
+              style={{ width: '100%' }}
             />
           </div>
 
@@ -199,34 +200,28 @@ const ReadingHistories: React.FC = () => {
 
                           {/* 第三行：阅读信息、作者信息、统计数据 */}
                           <div className="flex flex-wrap items-center justify-between">
-                            <div className="flex items-center gap-3 justify-between text-sm text-secondary-500 dark:text-gray-400">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-secondary-500 dark:text-gray-400">
                               {/* 作者信息 */}
-                              <div className="flex items-center">
+                              <div className="flex items-center gap-2">
                                 <img
-                                  src={history.avatar}
+                                  src={history.avatar || '/default-avatar.png'}
                                   alt={history.nickname}
-                                  className="w-7 h-7 rounded-full object-cover mr-2"
+                                  className="w-5 h-5 rounded-full object-cover"
                                 />
-                                <span>{history.nickname}</span>
-                                <Divider
-                                  orientation="vertical"
-                                  className="bg-gray-300"
-                                  style={{ height: '16px', margin: '0 12px' }}
-                                />
+                                <span className="hover:text-blue-500 cursor-pointer transition-colors">
+                                  {history.nickname}
+                                </span>
                               </div>
-
-                              <div className="flex items-center gap-4">
-                                {/* 阅读时间 */}
-                                <Space size={4}>
+                              {/* 阅读时间和时长 */}
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+                                <span className="flex items-center gap-1">
                                   <ClockCircleOutlined />
-                                  <span>{history.readTime ? formatTimeShort(history.readTime) : ''}</span>
-                                </Space>
-
-                                {/* 阅读时长 */}
-                                <Space size={4}>
+                                  {formatTimeShort(history.readTime)}
+                                </span>
+                                <span className="flex items-center gap-1">
                                   <ClockCircleOutlined />
-                                  <span>{history.duration} 分钟</span>
-                                </Space>
+                                  {history.duration} 分钟
+                                </span>
                               </div>
                             </div>
 
