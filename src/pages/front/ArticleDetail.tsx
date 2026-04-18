@@ -380,11 +380,20 @@ const ArticleDetail: React.FC = () => {
       notification.success({
         title: '收藏成功',
         description: (
-          <div>
+          <div className="flex flex-col gap-2">
             <p>文章已成功收藏到默认收藏夹</p>
-            <Button type="link" onClick={() => openFolderModal(articleId)} style={{ marginLeft: 0, padding: 0 }}>
-              选择其他收藏夹
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="link"
+                onClick={() => navigate(ROUTES.MY_COLLECTIONS)}
+                style={{ marginRight: '5px', padding: 0 }}
+              >
+                点击查看
+              </Button>
+              <Button type="link" onClick={() => openFolderModal(articleId)} style={{ marginLeft: 0, padding: 0 }}>
+                选择其他收藏夹
+              </Button>
+            </div>
           </div>
         ),
         duration: 3,
