@@ -237,7 +237,7 @@ const ProfileInfo: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <p className="text-gray-700 truncate max-w-[150px] sm:max-w-[200px] md:max-w-[300px] lg:max-w-[400px]">
+                <p className="text-gray-700 truncate max-w-37.5 sm:max-w-50 md:max-w-75 lg:max-w-100">
                   {user?.signature || '暂无简介'}
                 </p>
               </div>

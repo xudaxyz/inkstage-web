@@ -242,7 +242,7 @@ const Rankings: React.FC = () => {
                             {/* 头像 */}
                             <Avatar
                               size={40}
-                              src={user.avatar}
+                              src={user.avatar || '/assets/images/default-avatar.jpg'}
                               alt={user.nickname}
                               className="mr-3 hover:scale-105 transition-transform duration-200"
                             />

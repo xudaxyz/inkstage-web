@@ -164,11 +164,9 @@ const Notifications: React.FC = () => {
     [deleteNotificationStore, notifications, setData]
   );
   // 处理通知点击
-  const handleNotificationClick = (notification: Notification): void => {
+  const handleNotificationClick = async (notification: Notification): Promise<void> => {
     if (notification.readStatus === ReadStatus.UNREAD) {
-      (async (): Promise<void> => {
         await markAsRead(notification.id);
-      })();
     }
     if (notification.actionUrl) {
       navigate(notification.actionUrl);

@@ -7,13 +7,13 @@ import { HelmetProvider } from 'react-helmet-async';
 import * as Sentry from '@sentry/react';
 // React Query 配置
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-// 只有在生产环境才初始化Sentry
+// 只有在生产环境才初始化Sentry, 目前无需使用sentry
 if (import.meta.env.PROD) {
-  Sentry.init({
-    dsn: 'https://your-dsn@sentry.io/your-project',
+  // Sentry.init({
+    // dsn: 'https://your-dsn@sentry.io/your-project',
     // 简化Sentry配置，移除需要额外安装的集成
-    tracesSampleRate: 1.0
-  });
+    // tracesSampleRate: 1.0
+  // });
 }
 
 // 创建 QueryClient 实例
