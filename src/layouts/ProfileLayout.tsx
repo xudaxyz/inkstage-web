@@ -108,7 +108,7 @@ const ProfileLayout: React.FC = () => {
                       to={item.path}
                       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                         currentPath === item.path
-                          ? 'bg-blue-50 dark:bg-blue-50 text-blue-600 font-medium'
+                          ? 'bg-blue-200 dark:bg-blue-200 text-blue-600 font-medium'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-400'
                       }`}
                       onClick={handleDrawerClose}
@@ -138,7 +138,7 @@ const ProfileLayout: React.FC = () => {
                           to={item.path}
                           className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                             currentPath === item.path
-                              ? 'bg-blue-50 dark:bg-blue-50 text-blue-600 font-medium'
+                              ? 'bg-blue-200 dark:bg-blue-100 text-blue-600 font-medium'
                               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-400'
                           }`}
                         >
