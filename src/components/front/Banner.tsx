@@ -51,8 +51,8 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
             </div>
 
             {/* 内容 - 响应式调整 */}
-            <div className="relative px-4 md:px-[10%] py-6 md:py-10 text-white flex flex-col justify-center h-full">
-              <h2 className="text-lg md:text-2xl font-bold mb-2 md:mb-4 max-w-3xl leading-tight line-clamp-2">
+            <div className="relative px-4 md:px-[10%] py-2 md:pt-10 md:pb-2 text-white flex flex-col justify-center h-full">
+              <h2 className="text-lg md:text-2xl font-bold mb-2 md:mb-1 max-w-3xl leading-tight line-clamp-2">
                 <a
                   href={ROUTES.ARTICLE_DETAIL(article.id)}
                   target="_blank"
@@ -63,15 +63,15 @@ const Banner: React.FC<BannerProps> = ({ articles = [] }) => {
                   <span className="text-white hover:text-blue-500">{article.title}</span>
                 </a>
               </h2>
-              <p className="hidden sm:block h-12 md:h-20 text-sm md:text-base text-gray-100 max-w-2xl leading-relaxed line-clamp-2 md:line-clamp-3">
+              <p className="hidden sm:block h-12 md:h-12 text-sm md:text-base text-gray-100 max-w-2xl leading-relaxed line-clamp-2 md:line-clamp-3">
                 {article.summary}
               </p>
-              <div className="mt-3 md:mt-6">
+              <div className="mt-3 md:mt-2">
                 <a
                   href={ROUTES.ARTICLE_DETAIL(article.id)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block px-4 md:px-6 py-1.5 md:py-2 bg-white text-blue-600 font-medium rounded-full hover:bg-opacity-90 transition-all duration-300 text-sm md:text-base"
+                  className="inline-block px-4 md:px-4 py-1 md:py-1 bg-white text-blue-600 font-medium rounded-full hover:bg-opacity-90 transition-all duration-300 text-sm md:text-base"
                 >
                   阅读全文
                 </a>
