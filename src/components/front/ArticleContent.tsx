@@ -1,29 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Typography } from 'antd';
 import MarkdownIt from 'markdown-it';
+import { codeToHtml } from 'shiki';
 // 初始化Markdown渲染器
 const md: MarkdownIt = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true
+  html:true,
+  linkify:true,
+  typographer:true
 });
-
 // 为标题添加ID的插件
 md.use((md) => {
   const defaultHeadingOpen =
     md.renderer.rules.heading_open ||
     ((tokens, idx, options, _env, self): string => self.renderToken(tokens, idx, options));
-
   md.renderer.rules.heading_open = (tokens, idx, options, env, self): string => {
     const token = tokens[idx];
     const headingText = tokens[idx + 1].content;
-
     // 生成与目录相同的ID
     let id = headingText
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^\w-]/g, '');
-
     // 确保ID唯一性
     if (env?.existingIds) {
       if (env.existingIds.has(id)) {
@@ -35,23 +32,18 @@ md.use((md) => {
       }
       env.existingIds.add(id);
     }
-
     // 添加ID属性
     token.attrSet('id', id);
     return defaultHeadingOpen(tokens, idx, options, env, self);
   };
 });
-
 // 处理HTML内容，为标题添加ID
 const processHtmlContent = (content: string): string => {
   if (!content) return '';
-
   // 检查内容是否主要是HTML格式
   const isHtml = content.includes('<h') && content.includes('</h');
-
   if (isHtml) {
     const existingIds = new Set<string>();
-
     // 为HTML标题添加ID
     return content.replace(/<h([1-6])([^>]*)>(.*?)<\/h[1-6]>/gi, (_match, level, attributes, text) => {
       // 移除HTML标签，获取纯文本
@@ -61,7 +53,6 @@ const processHtmlContent = (content: string): string => {
         .toLowerCase()
         .replace(/\s+/g, '-')
         .replace(/[^\w-]/g, '');
-
       // 确保ID唯一性
       if (existingIds.has(id)) {
         let count = 1;
@@ -71,7 +62,6 @@ const processHtmlContent = (content: string): string => {
         id = `${id}-${count}`;
       }
       existingIds.add(id);
-
       // 检查是否已有ID属性
       if (attributes.includes('id=')) {
         // 替换现有ID
@@ -82,31 +72,99 @@ const processHtmlContent = (content: string): string => {
       }
     });
   }
-
   return content;
 };
 
-interface ArticleContentProps {
+interface ArticleContentProps{
   content: string;
   className?: string;
 }
 
 const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = '' }) => {
-  // 处理HTML内容，为标题添加ID
-  const processedContent = processHtmlContent(content || '');
-  // 渲染内容
-  const renderedContent = md.render(processedContent, { existingIds: new Set() });
-
+  const [renderedContent, setRenderedContent] = useState('');
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const renderContent = async (): Promise<void> => {
+      try {
+        setLoading(true);
+        // 处理HTML内容，为标题添加ID
+        const processedContent = processHtmlContent(content || '');
+        // 渲染Markdown
+        const mdContent = md.render(processedContent, { existingIds:new Set() });
+        // 匹配代码块
+        const codeBlockRegex = /<pre><code class="language-(\w+)">(.*?)<\/code><\/pre>/gs;
+        const codeBlocks = [];
+        let match;
+        // 收集所有代码块
+        while ((match = codeBlockRegex.exec(mdContent)) !== null) {
+          codeBlocks.push({
+            fullMatch:match[0],
+            lang:match[1],
+            code:match[2]
+          });
+        }
+        // 处理所有代码块
+        if (codeBlocks.length > 0) {
+          const processedBlocks = await Promise.all(
+            codeBlocks.map(async (block) => {
+              try {
+                // 解码HTML实体
+                const decodedCode = block.code
+                  .replace(/&lt;/g, '<')
+                  .replace(/&gt;/g, '>')
+                  .replace(/&amp;/g, '&');
+                // 使用shiki生成高亮HTML
+                const highlightedHtml = await codeToHtml(decodedCode, {
+                  lang:block.lang || 'text',
+                  theme:'github-dark' // 使用黑色主题
+                });
+                return {
+                  original:block.fullMatch,
+                  replacement:highlightedHtml
+                };
+              } catch {
+                return {
+                  original:block.fullMatch,
+                  replacement:block.fullMatch
+                };
+              }
+            })
+          );
+          // 替换所有代码块
+          let finalContent = mdContent;
+          processedBlocks.forEach((block) => {
+            finalContent = finalContent.replace(block.original, block.replacement);
+          });
+          setRenderedContent(finalContent);
+        } else {
+          setRenderedContent(mdContent);
+        }
+      } catch (error) {
+        console.error('渲染内容失败:', error);
+        setRenderedContent(md.render(content || '', { existingIds:new Set() }));
+      } finally {
+        setLoading(false);
+      }
+    };
+    renderContent().then();
+  }, [content]);
+  if (loading) {
+    return (
+      <div className={`article-content mb-12 ${className}`}>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={`article-content mb-12 ${className}`}>
       <Typography
         className="prose max-w-none"
         style={{
-          fontFamily:
-            'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-          lineHeight: 1.65,
-          letterSpacing: 0.5,
-          fontSize: '16px'
+          lineHeight:1.65,
+          letterSpacing:0.5,
+          fontSize:'16px'
         }}
       >
         <div
@@ -125,20 +183,18 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
             prose-img:rounded-lg prose-img:my-8 prose-img:shadow-md prose-img:max-w-full prose-img:h-auto
             prose-blockquote:border-l-4 prose-blockquote:border-blue-200 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:mb-6 prose-blockquote:text-gray-600
             prose-code:bg-idea-bg prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:text-idea-text prose-code:font-mono
-            prose-pre:bg-idea-bg prose-pre:text-idea-text prose-pre:rounded-lg prose-pre:p-4 prose-pre:my-6 prose-pre:shadow-md prose-pre:font-mono
             prose-table:border prose-table:border-gray-200 prose-table:w-full prose-table:my-6 prose-table:shadow-sm
             prose-hr:border-gray-200 prose-hr:my-8
             dark:prose-invert dark:prose-headings:text-gray-100 dark:prose-p:text-gray-300
             dark:prose-strong:text-gray-100 dark:prose-em:text-gray-300
             dark:prose-blockquote:text-gray-400 dark:prose-code:bg-idea-bg dark:prose-code:text-idea-text
-            dark:prose-pre:bg-idea-bg dark:prose-pre:text-idea-text dark:prose-table:border-gray-700
+            dark:prose-table:border-gray-700
             dark:prose-hr:border-gray-700
             "
-          dangerouslySetInnerHTML={{ __html: renderedContent }}
+          dangerouslySetInnerHTML={{ __html:renderedContent }}
         />
       </Typography>
     </div>
   );
 };
-
 export default ArticleContent;

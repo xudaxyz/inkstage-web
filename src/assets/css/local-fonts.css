@@ -30,3 +30,36 @@
   font-display: swap;
   src: url('../fonts/inter/web/Inter-Bold.woff2') format('woff2');
 }
+
+/* JetBrains Mono 字体配置 */
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('../fonts/jetbrains-mono/webfonts/JetBrainsMono-Regular.woff2') format('woff2');
+    font-weight: 400; /* 常规字重 */
+    font-style: normal;
+    font-display: swap; /* 优化字体加载体验 */
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('../fonts/jetbrains-mono/webfonts/JetBrainsMono-Bold.woff2') format('woff2');
+    font-weight: 700; /* 粗体字重 */
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('../fonts/jetbrains-mono/webfonts/JetBrainsMono-Italic.woff2') format('woff2');
+    font-weight: 400;
+    font-style: italic; /* 斜体样式 */
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('../fonts/jetbrains-mono/webfonts/JetBrainsMono-BoldItalic.woff2') format('woff2');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
