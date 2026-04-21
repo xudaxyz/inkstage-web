@@ -92,7 +92,7 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
         // 渲染Markdown
         const mdContent = md.render(processedContent, { existingIds:new Set() });
         // 匹配代码块
-        const codeBlockRegex = /<pre><code class="language-(\w+)">(.*?)<\/code><\/pre>/gs;
+        const codeBlockRegex = /<pre><code(?: class="language-(\w+)")?>(.*?)<\/code><\/pre>/gs;
         const codeBlocks = [];
         let match;
         // 收集所有代码块
@@ -110,6 +110,7 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
               try {
                 // 解码HTML实体
                 const decodedCode = block.code
+                  .replace(/<[^>]*>/g, '')
                   .replace(/&lt;/g, '<')
                   .replace(/&gt;/g, '>')
                   .replace(/&amp;/g, '&');
@@ -183,13 +184,15 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
             prose-img:rounded-lg prose-img:my-8 prose-img:shadow-md prose-img:max-w-full prose-img:h-auto
             prose-blockquote:border-l-4 prose-blockquote:border-blue-200 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:mb-6 prose-blockquote:text-gray-600
             prose-code:bg-idea-bg prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:text-idea-text prose-code:font-mono
-            prose-table:border prose-table:border-gray-200 prose-table:w-full prose-table:my-6 prose-table:shadow-sm
+            prose-table:border prose-table:border-gray-200 prose-th:border prose-th:border-gray-200 prose-td:border prose-td:border-gray-200 prose-table:w-full prose-table:my-6 prose-table:shadow-sm
             prose-hr:border-gray-200 prose-hr:my-8
             dark:prose-invert dark:prose-headings:text-gray-100 dark:prose-p:text-gray-300
             dark:prose-strong:text-gray-100 dark:prose-em:text-gray-300
             dark:prose-blockquote:text-gray-400 dark:prose-code:bg-idea-bg dark:prose-code:text-idea-text
-            dark:prose-table:border-gray-700
+            dark:prose-table:border-gray-700 dark:prose-th:border-gray-700 dark:prose-td:border-gray-700
             dark:prose-hr:border-gray-700
+            table:border table:border-collapse table:border-gray-200 th:border th:border-gray-200 td:border td:border-gray-200
+            dark:table:border-gray-700 dark:th:border-gray-700 dark:td:border-gray-700
             "
           dangerouslySetInnerHTML={{ __html:renderedContent }}
         />
