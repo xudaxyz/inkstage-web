@@ -453,7 +453,7 @@ const ArticleDetail: React.FC = () => {
   };
   // 处理文章编辑
   const handleEdit = (): void => {
-    navigate(`${ROUTES.EDIT_ARTICLE}/${id}`);
+    navigate(ROUTES.EDIT_ARTICLE(Number(id)));
   };
   // 处理文章删除
   const handleDelete = (): void => {
@@ -878,7 +878,7 @@ const ArticleDetail: React.FC = () => {
                       }}
                     >
                       <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">文章目录</h3>
-                      <div className="text-sm max-h-[400px] overflow-y-auto pr-2">
+                      <div className="text-sm max-h-100 overflow-y-auto pr-2">
                         {toc.map((item, index) => (
                           <div
                             key={index}
