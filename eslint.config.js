@@ -23,7 +23,7 @@ export default defineConfig([
     rules: {
       // 代码风格规则
       'semi': ['error', 'always'],
-      'quotes': ['error', 'single'],
+      'quotes': ['error', 'single', { 'avoidEscape': true }],
       'comma-dangle': ['error', {
         'arrays': 'never',
         'objects': 'never',
