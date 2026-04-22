@@ -290,6 +290,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           props: {
             handlePaste: (view, event): boolean => {
               const text = event.clipboardData?.getData('text/plain');
+              const html = event.clipboardData?.getData('text/html');
+
+              // 检查是否是从编辑器内部复制的内容
+              if (html && (html.includes('code-block') || html.includes('language-'))) {
+                // 如果是从编辑器内部复制的内容，让编辑器默认处理
+                return false;
+              }
+
               if (!text) return false;
               // 检测是否包含 Markdown 语法
               const isMarkdown = /^#{1,6}\s|^\*|^-|^\d+\.|^>|`{3}|\*\*|\[.*]\(.*\)/m.test(text);

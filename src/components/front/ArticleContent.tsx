@@ -4,10 +4,10 @@ import MarkdownIt from 'markdown-it';
 import { codeToHtml } from 'shiki';
 // 初始化Markdown渲染器
 const md: MarkdownIt = new MarkdownIt({
-  html:true,
-  linkify:true,
-  typographer:true,
-  breaks:true
+  html: true,
+  linkify: true,
+  typographer: true,
+  breaks: true
 });
 // 启用表格插件
 md.enable(['table']);
@@ -46,41 +46,47 @@ const processHtmlContent = (content: string): string => {
   let processedContent = content;
   // 为HTML标题添加ID
   const existingIds = new Set<string>();
-  processedContent = processedContent.replace(/<h([1-6])([^>]*)>(.*?)<\/h[1-6]>/gi, (_match, level, attributes, text) => {
-    // 移除HTML标签，获取纯文本
-    const cleanText = text.replace(/<[^>]*>/g, '').trim();
-    // 生成与目录相同的ID
-    let id = cleanText
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]/g, '');
-    // 确保ID唯一性
-    if (existingIds.has(id)) {
-      let count = 1;
-      while (existingIds.has(`${id}-${count}`)) {
-        count++;
+  processedContent = processedContent.replace(
+    /<h([1-6])([^>]*)>(.*?)<\/h[1-6]>/gi,
+    (_match, level, attributes, text) => {
+      // 移除HTML标签，获取纯文本
+      const cleanText = text.replace(/<[^>]*>/g, '').trim();
+      // 生成与目录相同的ID
+      let id = cleanText
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]/g, '');
+      // 确保ID唯一性
+      if (existingIds.has(id)) {
+        let count = 1;
+        while (existingIds.has(`${id}-${count}`)) {
+          count++;
+        }
+        id = `${id}-${count}`;
       }
-      id = `${id}-${count}`;
+      existingIds.add(id);
+      // 检查是否已有ID属性
+      if (attributes.includes('id=')) {
+        // 替换现有ID
+        return `<h${level}${attributes.replace(/id="[^"]*"/, `id="${id}"`)}>${text}</h${level}>`;
+      } else {
+        // 添加新ID
+        return `<h${level}${attributes} id="${id}">${text}</h${level}>`;
+      }
     }
-    existingIds.add(id);
-    // 检查是否已有ID属性
-    if (attributes.includes('id=')) {
-      // 替换现有ID
-      return `<h${level}${attributes.replace(/id="[^"]*"/, `id="${id}"`)}>${text}</h${level}>`;
-    } else {
-      // 添加新ID
-      return `<h${level}${attributes} id="${id}">${text}</h${level}>`;
-    }
-  });
+  );
   // 为表格添加边框样式
   processedContent = processedContent
-    .replace(/<table([^>]*)>/gi, '<table$1 class="border border-collapse border-gray-200 dark:border-gray-700 w-full my-6 shadow-sm">')
+    .replace(
+      /<table([^>]*)>/gi,
+      '<table$1 class="border border-collapse border-gray-200 dark:border-gray-700 w-full my-6 shadow-sm">'
+    )
     .replace(/<th([^>]*)>/gi, '<th$1 class="border border-gray-200 dark:border-gray-700 p-3">')
     .replace(/<td([^>]*)>/gi, '<td$1 class="border border-gray-200 dark:border-gray-700 p-3">');
   return processedContent;
 };
 
-interface ArticleContentProps{
+interface ArticleContentProps {
   content: string;
   className?: string;
 }
@@ -95,17 +101,22 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
         // 处理HTML内容，为标题添加ID
         const processedContent = processHtmlContent(content || '');
         // 渲染Markdown
-        const mdContent = md.render(processedContent, { existingIds:new Set() });
+        const mdContent = md.render(processedContent, { existingIds: new Set() });
         // 匹配代码块
         const codeBlockRegex = /<pre><code(?: class="language-(\w+)")?>(.*?)<\/code><\/pre>/gs;
         const codeBlocks = [];
         let match;
         // 收集所有代码块
         while ((match = codeBlockRegex.exec(mdContent)) !== null) {
+          // 清理代码内容，移除可能的嵌套HTML标签
+          const codeContent = match[2]
+            .replace(/<pre><code[^>]*>/g, '')
+            .replace(/<\/code><\/pre>/g, '')
+            .replace(/<p><\/p>/g, '');
           codeBlocks.push({
-            fullMatch:match[0],
-            lang:match[1],
-            code:match[2]
+            fullMatch: match[0],
+            lang: match[1],
+            code: codeContent
           });
         }
         // 处理所有代码块
@@ -114,27 +125,38 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
             codeBlocks.map(async (block) => {
               try {
                 // 解码HTML实体
-                const decodedCode = block.code
+                let decodedCode = block.code
                   .replace(/<[^>]*>/g, '')
                   .replace(/&lt;/g, '<')
                   .replace(/&gt;/g, '>')
                   .replace(/&amp;/g, '&')
                   .replace(/&quot;/g, '"')
-                  .replace(/&#39;/g, '\'')
+                  .replace(/&#39;/g, "'")
                   .replace(/&nbsp;/g, ' ');
+                // 再次解码，确保处理双重转义
+                decodedCode = decodedCode.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                // 清理可能的剩余HTML标签和实体
+                decodedCode = decodedCode
+                  .replace(/<pre[^>]*>/gi, '')
+                  .replace(/<\/pre>/gi, '')
+                  .replace(/<code[^>]*>/gi, '')
+                  .replace(/<\/code>/gi, '')
+                  .replace(/<p[^>]*>/gi, '')
+                  .replace(/<\/p>/gi, '')
+                  .trim();
                 // 使用shiki生成高亮HTML
                 const highlightedHtml = await codeToHtml(decodedCode, {
-                  lang:block.lang || 'text',
-                  theme:'github-dark' // 使用黑色主题
+                  lang: block.lang || 'text',
+                  theme: 'github-dark' // 使用黑色主题
                 });
                 return {
-                  original:block.fullMatch,
-                  replacement:highlightedHtml
+                  original: block.fullMatch,
+                  replacement: highlightedHtml
                 };
               } catch {
                 return {
-                  original:block.fullMatch,
-                  replacement:block.fullMatch
+                  original: block.fullMatch,
+                  replacement: block.fullMatch
                 };
               }
             })
@@ -150,7 +172,7 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
         }
       } catch (error) {
         console.error('渲染内容失败:', error);
-        setRenderedContent(md.render(content || '', { existingIds:new Set() }));
+        setRenderedContent(md.render(content || '', { existingIds: new Set() }));
       } finally {
         setLoading(false);
       }
@@ -171,9 +193,9 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
       <Typography
         className="prose max-w-none"
         style={{
-          lineHeight:1.65,
-          letterSpacing:0.5,
-          fontSize:'16px'
+          lineHeight: 1.65,
+          letterSpacing: 0.5,
+          fontSize: '16px'
         }}
       >
         <div
@@ -200,7 +222,7 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content, className = ''
             dark:prose-table:border-gray-700 dark:prose-th:border-gray-700 dark:prose-td:border-gray-700
             dark:prose-hr:border-gray-700
             "
-          dangerouslySetInnerHTML={{ __html:renderedContent }}
+          dangerouslySetInnerHTML={{ __html: renderedContent }}
         />
       </Typography>
     </div>
