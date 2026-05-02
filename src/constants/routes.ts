@@ -34,6 +34,10 @@ export const ROUTES = {
   ADMIN_TAGS: '/admin/tags',
   ADMIN_CATEGORIES: '/admin/categories',
 
+  // 专栏相关
+  COLUMN_LIST: '/columns',
+  COLUMN_DETAIL: (id: number): string => `/column/${id}`,
+
   // 其他
   SEARCH: '/search'
 };

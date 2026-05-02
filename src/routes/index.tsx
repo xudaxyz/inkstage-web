@@ -5,8 +5,10 @@ import ProfileLayout from '../layouts/ProfileLayout';
 import AdminLayout from '../layouts/AdminLayout';
 // 导入路由保护组件
 import { AdminRoute, PrivateRoute } from '../components/auth/RouteGuard';
-// 使用 React.lazy 实现代码分割
+// 导入前台页面
 const Home = lazy(() => import('../pages/front/Home'));
+const ColumnList = lazy(() => import('../pages/front/ColumnList'));
+const ColumnDetail = lazy(() => import('../pages/front/ColumnDetail'));
 const Profile = lazy(() => import('../pages/front/Profile'));
 const CreateArticle = lazy(() => import('../pages/front/CreateArticle'));
 const ArticleDetail = lazy(() => import('../pages/front/ArticleDetail'));
@@ -46,6 +48,9 @@ const AppRoutes = (): React.ReactNode => {
       <Routes>
         {/* 首页路由 */}
         <Route path="/" element={<Home />} />
+        {/* 专栏路由 */}
+        <Route path="/columns" element={<ColumnList />} />
+        <Route path="/column/:id" element={<ColumnDetail />} />
         {/* 登录注册路由 */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

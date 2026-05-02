@@ -50,12 +50,14 @@ const Header: React.FC = () => {
     const path = location.pathname;
     if (path === '/' || path === '/recommend') return 'recommend';
     if (path === '/rankings') return 'rankings';
+    if (path === '/columns') return 'columns';
     return 'recommend';
   }, [location.pathname]);
 
   const navItems = [
     { key: 'recommend', label: '推荐', path: '/' },
-    { key: 'rankings', label: '热门', path: '/rankings' }
+    { key: 'rankings', label: '热门', path: '/rankings' },
+    { key: 'columns', label: '专栏', path: '/columns' }
   ];
 
   // Handlers
