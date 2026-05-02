@@ -37,6 +37,9 @@ export const ROUTES = {
   // 专栏相关
   COLUMN_LIST: '/columns',
   COLUMN_DETAIL: (id: number): string => `/column/${id}`,
+  CREATE_COLUMN: '/create-column',
+  EDIT_COLUMN: (id: number): string => `/edit-column/${id}`,
+  MY_COLUMNS: '/profile/columns',
 
   // 其他
   SEARCH: '/search'

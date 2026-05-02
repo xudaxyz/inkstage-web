@@ -7,7 +7,8 @@ import {
   MenuOutlined,
   SettingOutlined,
   StarOutlined,
-  UserOutlined
+  UserOutlined,
+  BookOutlined
 } from '@ant-design/icons';
 import { Button, Drawer } from 'antd';
 import Header from '../components/common/Header';
@@ -38,6 +39,12 @@ const ProfileLayout: React.FC = () => {
       icon: <FileTextOutlined />,
       label: '我的创作',
       path: '/profile/creations'
+    },
+    {
+      key: '/profile/columns',
+      icon: <BookOutlined />,
+      label: '我的专栏',
+      path: '/profile/columns'
     },
     {
       key: '/profile/collections',

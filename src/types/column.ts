@@ -36,31 +36,3 @@ export interface ColumnArticle {
   publishTime: string;
   isLiked?: boolean;
 }
-
-export interface ColumnDetail extends Column {
-  articles: ColumnArticle[];
-  recentArticles: ColumnArticle[];
-}
-
-export interface ColumnListResponse {
-  record: Column[];
-  total: number;
-  pageNum: number;
-  pageSize: number;
-  pages: number;
-  isFirstPage: boolean;
-  isLastPage: boolean;
-  prePage: number;
-  nextPage: number;
-}
-
-export interface ColumnDetailResponse {
-  column: Column;
-  articles: ColumnArticle[];
-  recentArticles: ColumnArticle[];
-}
-
-export interface ColumnSubscribeRequest {
-  columnId: number;
-  subscribe: boolean;
-}

@@ -9,6 +9,7 @@ import { AdminRoute, PrivateRoute } from '../components/auth/RouteGuard';
 const Home = lazy(() => import('../pages/front/Home'));
 const ColumnList = lazy(() => import('../pages/front/ColumnList'));
 const ColumnDetail = lazy(() => import('../pages/front/ColumnDetail'));
+const CreateColumn = lazy(() => import('../pages/front/CreateColumn'));
 const Profile = lazy(() => import('../pages/front/Profile'));
 const CreateArticle = lazy(() => import('../pages/front/CreateArticle'));
 const ArticleDetail = lazy(() => import('../pages/front/ArticleDetail'));
@@ -20,6 +21,7 @@ const CommunityRules = lazy(() => import('../pages/front/CommunityRules'));
 const Contact = lazy(() => import('../pages/front/Contact'));
 const ProfileInfo = lazy(() => import('../pages/front/profile/ProfileInfo'));
 const MyCreations = lazy(() => import('../pages/front/profile/MyCreations'));
+const MyColumns = lazy(() => import('../pages/front/profile/MyColumns'));
 const MyCollections = lazy(() => import('../pages/front/profile/MyCollections'));
 const ReadingHistories = lazy(() => import('../pages/front/profile/ReadingHistories'));
 const Notifications = lazy(() => import('../pages/front/profile/Notifications'));
@@ -51,6 +53,24 @@ const AppRoutes = (): React.ReactNode => {
         {/* 专栏路由 */}
         <Route path="/columns" element={<ColumnList />} />
         <Route path="/column/:id" element={<ColumnDetail />} />
+        {/* 创建专栏路由 */}
+        <Route
+          path="/create-column"
+          element={
+            <PrivateRoute>
+              <CreateColumn />
+            </PrivateRoute>
+          }
+        />
+        {/* 编辑专栏路由 */}
+        <Route
+          path="/edit-column/:columnId"
+          element={
+            <PrivateRoute>
+              <CreateColumn />
+            </PrivateRoute>
+          }
+        />
         {/* 登录注册路由 */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -96,6 +116,7 @@ const AppRoutes = (): React.ReactNode => {
           <Route index element={<Profile />} />
           <Route path="info" element={<ProfileInfo />} />
           <Route path="creations" element={<MyCreations />} />
+          <Route path="columns" element={<MyColumns />} />
           <Route path="collections" element={<MyCollections />} />
           <Route path="histories" element={<ReadingHistories />} />
           <Route path="notifications" element={<Notifications />} />

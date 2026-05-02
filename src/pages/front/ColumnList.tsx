@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Select, Spin, Input } from 'antd';
-import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
+import { Select, Spin, Input, Button } from 'antd';
+import { SearchOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import ColumnCard from '../../components/front/ColumnCard';
 import type { Column } from '../../types/column';
+import { ROUTES } from '../../constants/routes';
 
 const mockColumns: Column[] = [
   {
@@ -132,6 +134,7 @@ const allTags = [
 ];
 
 const ColumnListPage: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedTag, setSelectedTag] = useState('全部');
   const [isLoading] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
@@ -211,6 +214,9 @@ const ColumnListPage: React.FC = () => {
                   className="w-32"
                   options={allTags.map((tag) => ({ value: tag, label: tag }))}
                 />
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate(ROUTES.CREATE_COLUMN)}>
+                  创建专栏
+                </Button>
               </div>
             </div>
 
