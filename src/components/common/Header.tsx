@@ -135,7 +135,7 @@ const Header: React.FC = () => {
             {item.label}
           </Link>
           {!isMobile && activeNavItem === item.key && (
-            <div className="bottom-[-4px] left-0 right-0 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+            <div className="-bottom-1 left-0 right-0 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
           )}
         </div>
       ))}
@@ -270,7 +270,7 @@ const Header: React.FC = () => {
       </Link>
 
       {/* 导航项 - 桌面端 */}
-      <nav className="hidden md:flex items-center gap-10 whitespace-nowrap ml-8">{renderNavItems(false)}</nav>
+      <nav className="hidden md:flex items-center gap-10 whitespace-nowrap ml-8 mr-8">{renderNavItems(false)}</nav>
 
       {/* 导航项 - 移动端 */}
       <div className="flex items-center md:hidden ml-4">{renderNavItems(true)}</div>
@@ -278,10 +278,12 @@ const Header: React.FC = () => {
       {/* 右侧区域 - 移动端 */}
       <div className="flex items-center gap-2 sm:gap-2 ml-auto md:hidden overflow-x-auto">
         {/* 搜索框 */}
-        <div className="flex-1 min-w-0 max-w-[120px] sm:max-w-[200px]">{renderSearchBox('middle', 'rounded-full')}</div>
+        <div className="flex-1 min-w-0 max-w-25 md:max-w-25 sm:max-w-50">
+          {renderSearchBox('middle', 'rounded-full')}
+        </div>
         {/* 菜单按钮 */}
         <button
-          className="flex items-center text-gray-700 dark:text-white shrink-0 ml-2"
+          className="flex items-center text-gray-700 dark:text-white shrink-0 ml-2 mr-2"
           onClick={openMobileDrawer}
           aria-label="菜单"
         >
@@ -292,7 +294,7 @@ const Header: React.FC = () => {
       {/* 右侧区域 - 桌面端 */}
       <div className="hidden md:flex items-center gap-6 ml-auto">
         {/* 搜索框 */}
-        <div className="w-64 md:w-72 lg:w-80 xl:w-96">
+        <div className="w-36 md:w-60 lg:w-80 xl:w-96">
           <Input
             placeholder="搜索..."
             prefix={<SearchOutlined />}
@@ -357,7 +359,7 @@ const Header: React.FC = () => {
               onClick={toggleDropdown}
             >
               {renderUserAvatar()}
-              <span className="text-purple-600 dark:text-white font-medium inline-block max-w-[100px] truncate">
+              <span className="text-purple-600 dark:text-white font-medium inline-block max-w-25 truncate">
                 {user.nickname}
               </span>
             </div>
