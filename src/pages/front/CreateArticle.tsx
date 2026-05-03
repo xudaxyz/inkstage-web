@@ -13,6 +13,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import articleService from '../../services/articleService';
 import tagService from '../../services/tagService';
+import columnService from '../../services/columnService';
 import { type FrontTag } from '../../types/tag';
 import categoryService from '../../services/categoryService';
 import { useAppStore, useTheme, useUserStore } from '../../store';
@@ -27,9 +28,9 @@ import {
 } from '../../types/enums';
 import RichTextEditor from '../../components/editor/RichTextEditor';
 import './CreateArticle.css';
-import Footer from '../../components/common/Footer';
 import ArticleCoverUploader from '../../components/upload/ArticleCoverUploader';
 import { ROUTES } from '../../constants/navigation';
+import { type MyColumnVO } from '../../types/column';
 
 const { Option } = Select;
 const CreateArticle: React.FC = () => {
@@ -47,6 +48,7 @@ const CreateArticle: React.FC = () => {
   const [summary, setSummary] = useState('');
   const [editorContent, setEditorContent] = useState('');
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+  const [myColumns, setMyColumns] = useState<MyColumnVO[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -67,16 +69,20 @@ const CreateArticle: React.FC = () => {
       try {
         setLoading(true);
         setError('');
-        // 并行加载分类和标签数据
-        const [categoryRes, tagRes] = await Promise.all([
+        // 并行加载分类、标签和专栏数据
+        const [categoryRes, tagRes, columnRes] = await Promise.all([
           categoryService.getActiveCategories(),
-          tagService.getActiveTags()
+          tagService.getActiveTags(),
+          columnService.getMyColumns()
         ]);
         if (categoryRes.code != 200) {
           message.error(categoryRes.message || '获取分类列表失败');
         }
         if (tagRes.code != 200) {
           message.error(tagRes.message || '获取标签列表失败');
+        }
+        if (columnRes.code === 200) {
+          setMyColumns(columnRes.data || []);
         }
         // 转换分类数据格式
         const formattedCategories = categoryRes.data.map((category) => ({
@@ -110,6 +116,7 @@ const CreateArticle: React.FC = () => {
           form.setFieldsValue({
             title: article.title,
             category: article.categoryId.toString(),
+            column: article.columnId?.toString(),
             tags: article.tags.map((tag: FrontTag) => tag.id?.toString()),
             allowComment: article.allowComment,
             allowForward: article.allowForward,
@@ -155,6 +162,7 @@ const CreateArticle: React.FC = () => {
   const handleSubmit = async (values: {
     title: string;
     category: string;
+    column?: string;
     tags: string[];
     visible: string;
     allowComment: string;
@@ -214,6 +222,7 @@ const CreateArticle: React.FC = () => {
         contentHtml: editorContent,
         summary: summary,
         categoryId: parseInt(values.category),
+        columnId: values.column ? parseInt(values.column) : undefined,
         tags: tags,
         coverImage: coverImageUrl || coverImage,
         status: ArticleStatusEnum.PUBLISHED,
@@ -306,7 +315,8 @@ const CreateArticle: React.FC = () => {
       </Helmet>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
         {/* 顶部导航栏 */}
-        <header className="h-14 md:h-16 bg-white dark:bg-gray-800 border-b dark:border-b border-gray-200 dark:border-gray-700 flex items-center px-3 md:px-[5%] sticky top-0 z-30 shadow-sm">
+        <header
+          className="h-14 md:h-16 bg-white dark:bg-gray-800 border-b dark:border-b border-gray-200 dark:border-gray-700 flex items-center px-3 md:px-[5%] sticky top-0 z-30 shadow-sm">
           {/* 左侧：Logo和标题 */}
           <div className="flex items-center">
             <span
@@ -316,7 +326,8 @@ const CreateArticle: React.FC = () => {
               InkStage
             </span>
             <span className="mx-1 md:mx-2 items-center text-sm md:text-base text-gray-400 hidden sm:block">\</span>
-            <span className="text-sm md:text-base items-center font-medium text-gray-800 dark:text-gray-300 hidden sm:block">
+            <span
+              className="text-sm md:text-base items-center font-medium text-gray-800 dark:text-gray-300 hidden sm:block">
               {isEditMode ? '编辑文章' : '写文章'}
             </span>
           </div>
@@ -325,13 +336,13 @@ const CreateArticle: React.FC = () => {
           <div className="flex items-center gap-2 md:gap-5 ml-auto">
             {/* 主题切换按钮 */}
             <div className="flex items-center gap-2">
-              {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
-              <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" className="hidden sm:block" />
+              {isDarkMode ? <MoonOutlined/> : <SunOutlined/>}
+              <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" className="hidden sm:block"/>
             </div>
             {/* 操作按钮 - 移动端使用图标按钮 */}
             <div className="flex items-center gap-1 md:gap-2">
               <Button
-                icon={<SwapLeftOutlined />}
+                icon={<SwapLeftOutlined/>}
                 onClick={() => navigate(ROUTES.HOME)}
                 className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                 size="middle"
@@ -341,7 +352,7 @@ const CreateArticle: React.FC = () => {
               <Button
                 color="cyan"
                 variant="solid"
-                icon={<SaveOutlined />}
+                icon={<SaveOutlined/>}
                 onClick={handleSaveDraft}
                 loading={isSubmitting}
                 className="hover:bg-blue-600"
@@ -351,7 +362,7 @@ const CreateArticle: React.FC = () => {
               </Button>
               <Button
                 type="primary"
-                icon={<SendOutlined />}
+                icon={<SendOutlined/>}
                 onClick={() => form.submit()}
                 loading={isSubmitting}
                 className="bg-green-600 hover:bg-green-700"
@@ -364,7 +375,8 @@ const CreateArticle: React.FC = () => {
             {/* 用户信息 */}
             {user && (
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
+                <div
+                  className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
                   {user.avatar ? (
                     <img
                       src={user.avatar}
@@ -375,7 +387,7 @@ const CreateArticle: React.FC = () => {
                     <span className="text-xs md:text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
                   )}
                 </div>
-                <span className="text-purple-600 font-medium text-sm hidden lg:inline-block truncate max-w-[100px]">
+                <span className="text-purple-600 font-medium text-sm hidden lg:inline-block truncate max-w-25">
                   {user.nickname}
                 </span>
               </div>
@@ -423,7 +435,7 @@ const CreateArticle: React.FC = () => {
                     </Form.Item>
                   </div>
                   <Button
-                    icon={<EyeOutlined />}
+                    icon={<EyeOutlined/>}
                     onClick={handlePreview}
                     className=" bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 whitespace-nowrap mt-1 transition-all duration-200 shadow-sm"
                   >
@@ -432,12 +444,12 @@ const CreateArticle: React.FC = () => {
                 </div>
               </div>
 
-              {/* 第三层：分类和标签 - 移动端垂直堆叠 */}
-              <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
-                {/* 分类 */}
-                <div className="w-full md:w-1/3">
+              {/* 第三层：分类、标签和专栏 - 移动端垂直堆叠 */}
+              <div className="flex flex-col md:flex-row gap-4 md:gap-8 mb-4">
+                {/* 分类 - 2列 */}
+                <div className="w-full md:w-2/12">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">分类</label>
-                  <Form.Item name="category" rules={[{ required: true, message: '请选择文章分类' }]}>
+                  <Form.Item name="category" noStyle rules={[{ required: true, message: '请选择文章分类' }]}>
                     <Select placeholder="请选择分类" className="w-full" loading={loading}>
                       {categories.map((category) => (
                         <Option key={category.value} value={category.value}>
@@ -448,8 +460,8 @@ const CreateArticle: React.FC = () => {
                   </Form.Item>
                 </div>
 
-                {/* 标签 */}
-                <div className="w-full md:flex-1">
+                {/* 标签 - 8列 */}
+                <div className="w-full md:w-8/12">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">标签</label>
                   <div>
                     <Form.Item name="tags" noStyle>
@@ -484,6 +496,27 @@ const CreateArticle: React.FC = () => {
                         ))}
                       </Select>
                     </Form.Item>
+                  </div>
+                </div>
+
+                {/* 专栏 - 2列 */}
+                <div className="w-full md:w-2/12">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">专栏（可选）</label>
+                  <Form.Item name="column" noStyle>
+                    <Select
+                      placeholder="选择专栏"
+                      allowClear
+                      className="w-full"
+                    >
+                      {myColumns.map((col) => (
+                        <Option key={col.id} value={col.id.toString()}>
+                          {col.name}
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {myColumns.length === 0 ? '您还没有创建专栏，专栏可整理同系列文章' : '选择专栏可整理同系列文章'}
                   </div>
                 </div>
               </div>
@@ -607,7 +640,7 @@ const CreateArticle: React.FC = () => {
                   <img
                     src={coverImage}
                     alt="预览"
-                    className="w-full max-w-[640px] h-auto aspect-[16/9] object-cover rounded-lg"
+                    className="w-full max-w-160 h-auto aspect-video object-cover rounded-lg"
                   />
                 ) : null}
                 <Form.Item valuePropName="coverImage">
@@ -637,9 +670,6 @@ const CreateArticle: React.FC = () => {
             </Form>
           </Card>
         </div>
-        {/* 页脚信息 */}
-        <Footer />
-
         {/* 预览模态框 */}
         <Modal
           title="文章预览"
@@ -663,7 +693,7 @@ const CreateArticle: React.FC = () => {
             {/* 预览封面图 */}
             {previewCover && (
               <div className="mb-6">
-                <img src={previewCover} alt="文章封面" className="w-full h-48 md:h-64 object-cover rounded" />
+                <img src={previewCover} alt="文章封面" className="w-full h-48 md:h-64 object-cover rounded"/>
               </div>
             )}
 

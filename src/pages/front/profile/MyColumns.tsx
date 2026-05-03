@@ -111,26 +111,35 @@ const MyColumns: React.FC = () => {
     message.success('删除文章功能开发中').then();
   };
 
+  const doDeleteColumn = async (columnId: number): Promise<void> => {
+    try {
+      const response = await columnService.deleteColumn(columnId);
+      if (response.code === 200 && response.data) {
+        message.success('专栏删除成功！');
+        await loadColumns();
+      } else {
+        message.error(response.message || '删除专栏失败');
+      }
+    } catch {
+      message.error('删除专栏失败，请重试');
+    }
+  };
+
   const handleDeleteColumn = async (columnId: number): Promise<void> => {
     Modal.confirm({
       title: '确认删除',
-      content: '确定要删除这个专栏吗？删除后无法恢复。',
+      content: '确定要删除这个专栏吗？删除后将无法恢复！',
       okText: '确认',
       cancelText: '取消',
       onOk: async () => {
-        try {
-          const response = await columnService.deleteColumn(columnId);
-          if (response.code === 200 && response.data) {
-            message.success('专栏删除成功！');
-            await loadColumns();
-          } else {
-            message.error(response.message || '删除专栏失败');
-          }
-        } catch {
-          message.error('删除专栏失败，请重试');
-        }
+        await doDeleteColumn(columnId);
       }
     });
+  };
+
+  const handleDeleteColumnDirect = async (columnId: number): Promise<void> => {
+    await doDeleteColumn(columnId);
+    setSelectedColumn(null);
   };
 
   return (
@@ -197,8 +206,8 @@ const MyColumns: React.FC = () => {
                   style={{ maxWidth: '180px', width: '150px' }}
                 />
                 <Button
-                  variant="filled"
-                  color="danger"
+                  variant="solid"
+                  color="gold"
                   icon={<ArrowLeftOutlined/>}
                   onClick={handleBackToColumns}
                   className="shrink-0"
@@ -247,6 +256,7 @@ const MyColumns: React.FC = () => {
               })}
               onEditColumn={() => handleEditColumn(selectedColumn.id)}
               onCreateArticle={handleCreateArticle}
+              onDeleteColumn={() => handleDeleteColumnDirect(selectedColumn.id)}
               onViewArticle={handleViewArticle}
               onEditArticle={handleEditArticle}
               onDeleteArticle={handleDeleteArticle}
@@ -279,11 +289,18 @@ const MyColumns: React.FC = () => {
                 >
                   <div className="aspect-video overflow-hidden cursor-pointer"
                        onClick={() => handleViewColumn(column)}>
-                    <LazyImage
-                      src={column.coverImage || ''}
-                      alt={column.name}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
+                    {column.coverImage ? (
+                      <LazyImage
+                        src={column.coverImage}
+                        alt={column.name}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div
+                        className="w-full h-full bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
+                        <span className="text-white text-4xl font-bold px-4 text-center">{column.name}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-4">

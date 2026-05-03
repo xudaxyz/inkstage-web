@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dropdown, message, Popover, Space } from 'antd';
+import { Button, Dropdown, message, Modal, Popover, Space } from 'antd';
 import {
   BookOutlined,
   CalendarOutlined,
@@ -22,6 +22,7 @@ interface ColumnDetailSectionProps {
   articles: ColumnArticleListVO[];
   onEditColumn: () => void;
   onCreateArticle: () => void;
+  onDeleteColumn: () => void;
   onViewArticle: (articleId: number) => void;
   onEditArticle: (articleId: number) => void;
   onDeleteArticle: (articleId: number) => void;
@@ -32,12 +33,26 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
                                                                    articles,
                                                                    onEditColumn,
                                                                    onCreateArticle,
+                                                                   onDeleteColumn,
                                                                    onViewArticle,
                                                                    onEditArticle,
                                                                    onDeleteArticle
                                                                  }) => {
   const handleDeleteColumn = (): void => {
-    void message.success('删除专栏功能开发中');
+    Modal.confirm({
+      title: '确认删除',
+      content: (
+        <>
+          <p className="text-red-500 font-medium mb-2">此操作不可撤销！</p>
+          <p>专栏将被永久移除，但您的文章会<span className="text-green-500 font-bold">安全保留</span>，不会被删除。</p>
+        </>
+      ),
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        onDeleteColumn();
+      }
+    });
   };
 
   const handleSetInvisible = (): void => {
@@ -47,12 +62,13 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg">
       {/* 封面图区域 */}
-      <div className="relative">
-        <div className="h-48 md:h-64 lg:h-72 overflow-hidden rounded-t-lg">
-          <LazyImage src={column.coverImage} alt={column.name} className="w-full h-full object-cover"/>
-          <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"/>
+      {column.coverImage && (
+        <div className="relative">
+          <div className="h-48 md:h-64 lg:h-72 overflow-hidden rounded-t-lg">
+            <LazyImage src={column.coverImage} alt={column.name} className="w-full h-full object-cover"/>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 信息卡片 */}
       <div className="mx-auto relative ">
@@ -225,4 +241,4 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
   );
 };
 
-export default React.memo(ColumnDetailSection);
+export default ColumnDetailSection;

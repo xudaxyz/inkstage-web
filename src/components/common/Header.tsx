@@ -50,7 +50,7 @@ const Header: React.FC = () => {
     const path = location.pathname;
     if (path === '/' || path === '/recommend') return 'recommend';
     if (path === '/rankings') return 'rankings';
-    if (path === '/columns') return 'columns';
+    if (path.startsWith('/column') || path === '/columns') return 'columns';
     return 'recommend';
   }, [location.pathname]);
 
@@ -88,7 +88,6 @@ const Header: React.FC = () => {
     }
   };
 
-  // Effects
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent): void => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

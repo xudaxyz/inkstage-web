@@ -19,6 +19,7 @@ export interface Article {
   summary: string;
   contentHtml: string;
   categoryId: number;
+  columnId?: number;
   tags?: FrontTag[];
   coverImage?: string;
   status: ArticleStatusEnum;
@@ -139,6 +140,7 @@ export interface ArticleDetailInfo {
   contentHtml: string;
   summary: string;
   coverImage: string;
+  columnId?: number;
   allowComment: AllowStatusEnum;
   allowForward: AllowStatusEnum;
   visible: ArticleVisibleEnum;

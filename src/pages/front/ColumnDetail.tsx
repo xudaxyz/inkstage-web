@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { Avatar, Button, message, Radio, Spin } from 'antd';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Avatar, Button, message, Select, Spin } from 'antd';
 import {
   BookOutlined,
   CalendarOutlined,
   EyeOutlined,
   LikeOutlined,
   MessageOutlined,
+  PlusOutlined,
   ShareAltOutlined,
   StarOutlined,
   UserOutlined
@@ -21,15 +22,19 @@ import type { ColumnDetailVO, ColumnListVO } from '../../types/column';
 import type { ColumnArticleListVO } from '../../types/article';
 import columnService from '../../services/columnService';
 import { getRelativeTime } from '../../utils';
+import { useUserStore } from '../../store';
 
 const ColumnDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useUserStore();
   const [columnDetail, setColumnDetail] = useState<ColumnDetailVO | null>(null);
   const [articles, setArticles] = useState<ColumnArticleListVO[]>([]);
   const [hotColumns, setHotColumns] = useState<ColumnListVO[]>([]);
   const [loading, setLoading] = useState(false);
-  const [sortType, setSortType] = useState<'latest' | 'hottest'>('latest');
+  const [sortType, setSortType] = useState<'latest' | 'earliest' | 'hottest' | 'title'>('latest');
   const [isSubscribed, setIsSubscribed] = useState(false);
+
+  const navigate = useNavigate();
 
   // 加载专栏详情
   const loadColumnDetail = useCallback(async (): Promise<void> => {
@@ -72,19 +77,35 @@ const ColumnDetailPage: React.FC = () => {
   }, [id, loadColumnDetail, loadHotColumns]);
 
   // 排序文章
-  const sortedArticles =
-    sortType === 'latest'
-      ? [...articles].sort((a, b) => new Date(b.publishTime).getTime() - new Date(a.publishTime).getTime())
-      : [...articles].sort((a, b) => b.readCount - a.readCount);
+  const sortedArticles = [...articles].sort((a, b) => {
+    switch (sortType) {
+      case 'latest':
+        return new Date(b.publishTime).getTime() - new Date(a.publishTime).getTime();
+      case 'earliest':
+        return new Date(a.publishTime).getTime() - new Date(b.publishTime).getTime();
+      case 'hottest':
+        return b.readCount - a.readCount;
+      case 'title':
+        return a.title.localeCompare(b.title, 'zh-CN');
+      default:
+        return 0;
+    }
+  });
 
   const handleSubscribe = (): void => {
     setIsSubscribed(!isSubscribed);
-    message.success(isSubscribed ? '已取消订阅' : '订阅成功');
+    message.success(isSubscribed ? '已取消订阅' : '订阅成功').then();
   };
 
   const handleShare = (): void => {
-    message.success('分享链接已复制');
+    message.success('分享链接已复制').then();
   };
+
+  const handleCreateArticle = (): void => {
+    navigate(ROUTES.CREATE_ARTICLE);
+  };
+
+  const isColumnOwner = user?.id === columnDetail?.userId;
 
   if (loading) {
     return (
@@ -113,7 +134,13 @@ const ColumnDetailPage: React.FC = () => {
         <main className="flex-1 bg-white dark:bg-gray-800">
           <div className="relative">
             <div className="h-48 md:h-64 lg:h-80 overflow-hidden">
-              <LazyImage src={columnDetail.coverImage} alt={columnDetail.name} className="w-full h-full object-cover"/>
+              {columnDetail.coverImage ? (
+                <LazyImage src={columnDetail.coverImage} alt={columnDetail.name}
+                           className="w-full h-full object-cover"/>
+              ) : (
+                <div
+                  className="w-full h-full bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800"/>
+              )}
               <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"/>
             </div>
           </div>
@@ -152,17 +179,25 @@ const ColumnDetailPage: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <Button
-                      type={isSubscribed ? 'default' : 'primary'}
-                      icon={<StarOutlined/>}
-                      onClick={handleSubscribe}
-                    >
-                      {isSubscribed ? '已订阅' : '订阅专栏'}
-                    </Button>
-                    <Button icon={<ShareAltOutlined/>} onClick={handleShare}>
-                      分享
-                    </Button>
+                  <div
+                    className="flex justify-between items-center gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex gap-3">
+                      <Button
+                        type={isSubscribed ? 'default' : 'primary'}
+                        icon={<StarOutlined/>}
+                        onClick={handleSubscribe}
+                      >
+                        {isSubscribed ? '已订阅' : '订阅专栏'}
+                      </Button>
+                      <Button icon={<ShareAltOutlined/>} onClick={handleShare}>
+                        分享
+                      </Button>
+                    </div>
+                    {isColumnOwner && (
+                      <Button variant="outlined" color="blue" icon={<PlusOutlined/>} onClick={handleCreateArticle}>
+                        新建专栏文章
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -171,10 +206,17 @@ const ColumnDetailPage: React.FC = () => {
                     <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                       专栏文章 ({columnDetail.articleCount})
                     </h2>
-                    <Radio.Group value={sortType} onChange={(e) => setSortType(e.target.value)}>
-                      <Radio.Button value="latest">最新文章</Radio.Button>
-                      <Radio.Button value="hottest">最热文章</Radio.Button>
-                    </Radio.Group>
+                    <Select
+                      value={sortType}
+                      onChange={setSortType}
+                      className="w-28"
+                      options={[
+                        { value: 'latest', label: '最新' },
+                        { value: 'earliest', label: '最早' },
+                        { value: 'hottest', label: '最热' },
+                        { value: 'title', label: '标题' }
+                      ]}
+                    />
                   </div>
 
                   {sortedArticles.length === 0 ? (
@@ -258,7 +300,8 @@ const ColumnDetailPage: React.FC = () => {
                   {columnDetail.signature && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{columnDetail.signature}</p>
                   )}
-                  <Button type="default" className="w-full">
+                  <Button type="default" className="w-full"
+                          onClick={() => navigate(ROUTES.USER_PROFILE(columnDetail.userId))}>
                     查看主页
                   </Button>
                 </div>

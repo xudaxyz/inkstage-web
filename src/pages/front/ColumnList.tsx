@@ -102,7 +102,8 @@ const ColumnListPage: React.FC = () => {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <Button type="primary" icon={<PlusOutlined/>} onClick={() => navigate(ROUTES.CREATE_COLUMN)}>
+                <Button variant="solid" color="cyan" icon={<PlusOutlined/>}
+                        onClick={() => navigate(ROUTES.CREATE_COLUMN)}>
                   创建专栏
                 </Button>
               </div>
