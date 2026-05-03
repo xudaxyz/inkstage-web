@@ -95,6 +95,27 @@ export interface MyArticleCollectionList {
   folderName: string;
 }
 
+// 专栏文章列表类型
+export interface ColumnArticleListVO {
+  id: number;
+  title: string;
+  summary: string;
+  coverImage?: string;
+  articleStatus?: ArticleStatusEnum;
+  visible?: ArticleVisibleEnum;
+  publishTime: string;
+  lastEditTime?: string;
+  readCount: number;
+  likeCount: number;
+  commentCount: number;
+  userId: number;
+  categoryId?: number;
+  avatar: string;
+  nickname: string;
+  categoryName?: string;
+  sortOrder?: number;
+}
+
 // 轮播图文章类型
 export interface BannerArticle {
   id: number;

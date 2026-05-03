@@ -1,21 +1,22 @@
 import React from 'react';
 import { Avatar } from 'antd';
-import { UserOutlined, BookOutlined, StarOutlined } from '@ant-design/icons';
+import { BookOutlined, StarOutlined, UserOutlined } from '@ant-design/icons';
 import LazyImage from '../common/LazyImage';
 import { ROUTES } from '../../constants/routes';
-import type { Column } from '../../types/column';
+import type { ColumnListVO } from '../../types/column';
 
 interface ColumnCardProps {
-  column: Column;
+  column: ColumnListVO;
   layout?: 'vertical' | 'horizontal';
 }
 
 const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) => {
-  const { id, name, description, coverImage, author, articleCount, subscriberCount } = column;
+  const { id, name, description, coverImage, articleCount, nickname, avatar, readCount } = column;
 
   if (layout === 'horizontal') {
     return (
-      <div className="flex gap-3 p-2 bg-white dark:bg-gray-800 rounded-lg border-b border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+      <div
+        className="flex gap-3 p-2 bg-white dark:bg-gray-800 rounded-lg border-b border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
         <div className="w-20 h-12 aspect-auto rounded-md overflow-hidden">
           <a href={ROUTES.COLUMN_DETAIL(id)} target="_blank" rel="noopener noreferrer">
             <LazyImage
@@ -26,7 +27,8 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
           </a>
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 line-clamp-1 mb-2">
+          <h3
+            className="text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 line-clamp-1 mb-2">
             <a
               href={ROUTES.COLUMN_DETAIL(id)}
               target="_blank"
@@ -37,16 +39,18 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
             </a>
           </h3>
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
-            <Avatar src={author.avatar} size={14} icon={<UserOutlined />} className="shrink-0" />
-            <span className="truncate max-w-15 shrink-0">{author.nickname}</span>
+            <Avatar src={avatar} size={14} icon={<UserOutlined/>} className="shrink-0"/>
+            <span className="truncate max-w-15 shrink-0">{nickname}</span>
             <span className="flex items-center gap-1 shrink-0">
-              <BookOutlined />
+              <BookOutlined/>
               {articleCount}
             </span>
-            <span className="flex items-center gap-1 shrink-0">
-              <StarOutlined />
-              {subscriberCount}
-            </span>
+            {readCount > 0 && (
+              <span className="flex items-center gap-1 shrink-0">
+                <StarOutlined/>
+                {readCount}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -54,7 +58,8 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+    <div
+      className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <div className="aspect-video overflow-hidden">
         <a href={ROUTES.COLUMN_DETAIL(id)} target="_blank" rel="noopener noreferrer">
           <LazyImage
@@ -78,21 +83,24 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">{description}</p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Avatar src={author.avatar} size={32} icon={<UserOutlined />} />
+            <Avatar src={avatar} size={32} icon={<UserOutlined/>}/>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{author.nickname}</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{nickname}</span>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+        <div
+          className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
           <span className="flex items-center gap-1">
-            <BookOutlined />
+            <BookOutlined/>
             {articleCount}篇
           </span>
-          <span className="flex items-center gap-1">
-            <StarOutlined />
-            {subscriberCount}订阅
-          </span>
+          {readCount > 0 && (
+            <span className="flex items-center gap-1">
+              <StarOutlined/>
+              {readCount}阅读
+            </span>
+          )}
         </div>
       </div>
     </div>
