@@ -22,6 +22,7 @@ const Contact = lazy(() => import('../pages/front/Contact'));
 const ProfileInfo = lazy(() => import('../pages/front/profile/ProfileInfo'));
 const MyCreations = lazy(() => import('../pages/front/profile/MyCreations'));
 const MyColumns = lazy(() => import('../pages/front/profile/MyColumns'));
+const MySubscriptions = lazy(() => import('../pages/front/profile/MySubscriptions'));
 const MyCollections = lazy(() => import('../pages/front/profile/MyCollections'));
 const ReadingHistories = lazy(() => import('../pages/front/profile/ReadingHistories'));
 const Notifications = lazy(() => import('../pages/front/profile/Notifications'));
@@ -117,6 +118,7 @@ const AppRoutes = (): React.ReactNode => {
           <Route path="info" element={<ProfileInfo />} />
           <Route path="creations" element={<MyCreations />} />
           <Route path="columns" element={<MyColumns />} />
+          <Route path="subscriptions" element={<MySubscriptions />} />
           <Route path="collections" element={<MyCollections />} />
           <Route path="histories" element={<ReadingHistories />} />
           <Route path="notifications" element={<Notifications />} />

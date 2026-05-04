@@ -142,7 +142,13 @@ export const API_ENDPOINTS = {
       ARTICLE_REMOVE: '/front/column/article/remove', // 从专栏移除文章
       ARTICLE_SORT: '/front/column/article/sort', // 更新文章排序
       ARTICLE_CHECK: '/front/column/article/check', // 检查文章是否在专栏中
-      ARTICLE_INFO: '/front/column/article/info' // 获取文章所属的专栏信息
+      ARTICLE_INFO: '/front/column/article/info', // 获取文章所属的专栏信息
+      // 订阅相关
+      SUBSCRIBE: (id: number): string => `/front/column/subscribe/${id}`, // 订阅专栏
+      UNSUBSCRIBE: (id: number): string => `/front/column/unsubscribe/${id}`, // 取消订阅
+      SUBSCRIBE_STATUS: (id: number): string => `/front/column/subscribe/status/${id}`, // 检查订阅状态
+      MY_SUBSCRIPTIONS: '/front/column/subscribe/list', // 获取我的订阅专栏列表
+      SUBSCRIBER_COUNT: (id: number): string => `/front/column/subscribe/count/${id}` // 获取专栏订阅数
     }
   },
 

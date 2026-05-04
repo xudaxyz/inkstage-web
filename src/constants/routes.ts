@@ -20,6 +20,8 @@ export const ROUTES = {
   READING_HISTORY: '/profile/histories',
   NOTIFICATIONS: '/profile/notifications',
   ACCOUNT_SETTINGS: '/profile/settings',
+  MY_COLUMNS: '/profile/columns',
+  MY_SUBSCRIPTIONS: '/profile/subscriptions',
 
   // 文章相关
   ARTICLE_DETAIL: (id: number): string => `/article/${id}`,
@@ -39,7 +41,6 @@ export const ROUTES = {
   COLUMN_DETAIL: (id: number): string => `/column/${id}`,
   CREATE_COLUMN: '/create-column',
   EDIT_COLUMN: (id: number): string => `/edit-column/${id}`,
-  MY_COLUMNS: '/profile/columns',
 
   // 其他
   SEARCH: '/search'

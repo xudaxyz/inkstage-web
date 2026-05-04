@@ -3,6 +3,9 @@ export const NotificationType = {
   ALL: 'ALL', // 所有通知
   SYSTEM: 'SYSTEM', // 系统通知
   ARTICLE_PUBLISH: 'ARTICLE_PUBLISH', // 文章发布通知
+  COLUMN_ARTICLE_PUBLISH: 'COLUMN_ARTICLE_PUBLISH', // 专栏文章发布通知
+  COLUMN_DISABLED: 'COLUMN_DISABLED', // 专栏下线通知
+  COLUMN_RESTORED: 'COLUMN_RESTORED', // 专栏恢复通知
   ARTICLE_LIKE: 'ARTICLE_LIKE', // 文章点赞通知
   ARTICLE_COLLECTION: 'ARTICLE_COLLECTION', // 文章收藏通知
   ARTICLE_COMMENT: 'ARTICLE_COMMENT', // 文章评论通知
@@ -20,6 +23,9 @@ export const NotificationTypeMap: Record<NotificationType, string> = {
   [NotificationType.ALL]: '所有通知',
   [NotificationType.SYSTEM]: '系统通知',
   [NotificationType.ARTICLE_PUBLISH]: '文章发布通知',
+  [NotificationType.COLUMN_ARTICLE_PUBLISH]: '专栏文章发布通知',
+  [NotificationType.COLUMN_DISABLED]: '专栏下线通知',
+  [NotificationType.COLUMN_RESTORED]: '专栏恢复通知',
   [NotificationType.ARTICLE_LIKE]: '文章点赞通知',
   [NotificationType.ARTICLE_COLLECTION]: '文章收藏通知',
   [NotificationType.ARTICLE_COMMENT]: '文章评论通知',

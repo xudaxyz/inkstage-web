@@ -11,7 +11,7 @@ interface ColumnCardProps {
 }
 
 const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) => {
-  const { id, name, description, coverImage, articleCount, nickname, avatar, readCount } = column;
+  const { id, name, description, coverImage, articleCount, nickname, avatar, readCount, subscriptionCount } = column;
 
   if (layout === 'horizontal') {
     return (
@@ -58,6 +58,10 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
                 {readCount}
               </span>
             )}
+            <span className="flex items-center gap-1 shrink-0">
+              <StarOutlined/>
+              {subscriptionCount}
+            </span>
           </div>
         </div>
       </div>
@@ -115,7 +119,7 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
           </span>
           <span className="flex items-center gap-1">
             <StarOutlined/>
-            {readCount}订阅
+            {subscriptionCount}订阅
           </span>
         </div>
       </div>

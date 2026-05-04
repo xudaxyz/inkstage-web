@@ -9,6 +9,7 @@ export interface ColumnListVO {
   description: string;
   coverImage: string;
   articleCount: number;
+  subscriptionCount: number;
   readCount: number;
   sortOrder?: number;
   status: StatusEnum;
@@ -27,6 +28,7 @@ export interface ColumnDetailVO {
   description: string;
   coverImage: string;
   articleCount: number;
+  subscriptionCount: number;
   readCount: number;
   sortOrder?: number;
   status: StatusEnum;
@@ -47,11 +49,29 @@ export interface MyColumnVO {
   description: string;
   coverImage: string;
   articleCount: number;
+  subscriptionCount: number;
   readCount: number;
   sortOrder?: number;
   status: StatusEnum;
   createTime: string;
   updateTime: string;
+}
+
+// 我的订阅专栏VO
+export interface MyColumnSubscriptionVO {
+  id: number;
+  name: string;
+  slug?: string;
+  description: string;
+  coverImage: string;
+  articleCount: number;
+  subscriptionCount: number;
+  readCount: number;
+  sortOrder?: number;
+  status: StatusEnum;
+  nickname: string;
+  avatar: string;
+  subscriptionTime: string;
 }
 
 // 创建/更新专栏DTO

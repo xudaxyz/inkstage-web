@@ -36,6 +36,15 @@ const ColumnDetailPage: React.FC = () => {
 
   const navigate = useNavigate();
 
+  // 加载订阅状态
+  const loadSubscribeStatus = useCallback(async (): Promise<void> => {
+    if (!id || !user) return;
+    const response = await columnService.checkSubscribeStatus(Number(id));
+    if (response.code === 200 && response.data !== undefined) {
+      setIsSubscribed(response.data);
+    }
+  }, [id, user]);
+
   // 加载专栏详情
   const loadColumnDetail = useCallback(async (): Promise<void> => {
     if (!id) return;
@@ -48,8 +57,7 @@ const ColumnDetailPage: React.FC = () => {
       } else {
         message.error(response.message || '获取专栏详情失败');
       }
-    } catch (error) {
-      console.error('获取专栏详情失败:', error);
+    } catch {
       message.error('获取专栏详情失败，请稍后重试');
     } finally {
       setLoading(false);
@@ -58,13 +66,9 @@ const ColumnDetailPage: React.FC = () => {
 
   // 加载热门专栏
   const loadHotColumns = useCallback(async (): Promise<void> => {
-    try {
-      const response = await columnService.getHotColumns(3);
-      if (response.code === 200 && response.data) {
-        setHotColumns(response.data);
-      }
-    } catch (error) {
-      console.error('获取热门专栏失败:', error);
+    const response = await columnService.getHotColumns(3);
+    if (response.code === 200 && response.data) {
+      setHotColumns(response.data);
     }
   }, []);
 
@@ -73,8 +77,9 @@ const ColumnDetailPage: React.FC = () => {
     if (id) {
       loadColumnDetail().then();
       loadHotColumns().then();
+      loadSubscribeStatus().then();
     }
-  }, [id, loadColumnDetail, loadHotColumns]);
+  }, [id, loadColumnDetail, loadHotColumns, loadSubscribeStatus]);
 
   // 排序文章
   const sortedArticles = [...articles].sort((a, b) => {
@@ -92,9 +97,21 @@ const ColumnDetailPage: React.FC = () => {
     }
   });
 
-  const handleSubscribe = (): void => {
-    setIsSubscribed(!isSubscribed);
-    message.success(isSubscribed ? '已取消订阅' : '订阅成功').then();
+  const handleSubscribe = async (): Promise<void> => {
+    if (!id) return;
+    try {
+      const response = isSubscribed
+        ? await columnService.unsubscribeColumn(Number(id))
+        : await columnService.subscribeColumn(Number(id));
+      if (response.code === 200) {
+        setIsSubscribed(!isSubscribed);
+        message.success(isSubscribed ? '已取消订阅' : '订阅成功');
+      } else {
+        message.error(response.message || (isSubscribed ? '取消订阅失败' : '订阅失败'));
+      }
+    } catch {
+      message.error('操作失败，请稍后重试');
+    }
   };
 
   const handleShare = (): void => {
@@ -176,6 +193,10 @@ const ColumnDetailPage: React.FC = () => {
                       <span className="flex items-center gap-1">
                         <EyeOutlined/>
                         {columnDetail.readCount}阅读
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <StarOutlined/>
+                        {columnDetail.subscriptionCount}订阅
                       </span>
                     </div>
                   </div>

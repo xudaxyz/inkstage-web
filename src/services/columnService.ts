@@ -8,7 +8,8 @@ import type {
   ColumnQueryDTO,
   AddArticleToColumnDTO,
   UpdateColumnArticleSortDTO,
-  ArticleColumn
+  ArticleColumn,
+  MyColumnSubscriptionVO
 } from '../types/column';
 import type { ApiResponse } from '../types/common';
 import type { PageResult } from '../types/user';
@@ -117,6 +118,41 @@ const columnService = {
    */
   async incrementColumnReadCount(id: number): Promise<void> {
     await apiClient.post(API_ENDPOINTS.FRONT.COLUMN.DETAIL(id));
+  },
+
+  /**
+   * 订阅专栏
+   */
+  async subscribeColumn(id: number): Promise<ApiResponse<boolean>> {
+    return await apiClient.post(API_ENDPOINTS.FRONT.COLUMN.SUBSCRIBE(id));
+  },
+
+  /**
+   * 取消订阅专栏
+   */
+  async unsubscribeColumn(id: number): Promise<ApiResponse<boolean>> {
+    return await apiClient.delete(API_ENDPOINTS.FRONT.COLUMN.UNSUBSCRIBE(id));
+  },
+
+  /**
+   * 检查订阅状态
+   */
+  async checkSubscribeStatus(id: number): Promise<ApiResponse<boolean>> {
+    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.SUBSCRIBE_STATUS(id));
+  },
+
+  /**
+   * 获取我的订阅专栏列表
+   */
+  async getMySubscriptions(offset: number = 0, limit: number = 20): Promise<ApiResponse<MyColumnSubscriptionVO[]>> {
+    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.MY_SUBSCRIPTIONS, { params: { offset, limit } });
+  },
+
+  /**
+   * 获取专栏订阅数
+   */
+  async getSubscriberCount(id: number): Promise<ApiResponse<number>> {
+    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.SUBSCRIBER_COUNT(id));
   }
 };
 

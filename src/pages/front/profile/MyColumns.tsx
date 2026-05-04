@@ -9,6 +9,7 @@ import {
   EllipsisOutlined,
   EyeOutlined,
   BookOutlined,
+  StarOutlined,
   PlusOutlined,
   SearchOutlined,
   ArrowLeftOutlined
@@ -79,6 +80,7 @@ const MyColumns: React.FC = () => {
   });
 
   const totalArticles = columns.reduce((sum, col) => sum + (col.articleCount || 0), 0);
+  const totalSubscriptions = columns.reduce((sum, col) => sum + (col.subscriptionCount || 0), 0);
 
   const handleViewColumn = (column: MyColumnVO): void => {
     loadColumnDetail(column).then();
@@ -165,7 +167,7 @@ const MyColumns: React.FC = () => {
                   </div>
                   <div
                     className="flex items-center gap-1 px-2 py-0.5 md:px-3 md:py-1 bg-purple-50 text-purple-600 rounded-full dark:bg-purple-900/30 dark:text-purple-400 whitespace-nowrap">
-                    <span className="font-bold">0</span>
+                    <span className="font-bold">{selectedColumn.subscriptionCount}</span>
                     <span>订阅</span>
                   </div>
                 </div>
@@ -187,7 +189,7 @@ const MyColumns: React.FC = () => {
                   </div>
                   <div
                     className="flex items-center gap-1 px-2 py-0.5 md:px-3 md:py-1 bg-purple-50 text-purple-600 rounded-full dark:bg-purple-900/30 dark:text-purple-400 whitespace-nowrap">
-                    <span className="font-bold">0</span>
+                    <span className="font-bold">{totalSubscriptions}</span>
                     <span>订阅</span>
                   </div>
                 </div>
@@ -320,6 +322,10 @@ const MyColumns: React.FC = () => {
                         <span className="flex items-center gap-1">
                           <BookOutlined className="w-3 h-3"/>
                           {column.articleCount}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <StarOutlined className="w-3 h-3"/>
+                          {column.subscriptionCount}
                         </span>
                       </div>
 

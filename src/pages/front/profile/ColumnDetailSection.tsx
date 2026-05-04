@@ -93,6 +93,10 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
                 {column.readCount}
               </span>
               <span className="flex items-center gap-1">
+                <StarOutlined/>
+                {column.subscriptionCount}
+              </span>
+              <span className="flex items-center gap-1">
                 <CalendarOutlined/>
                 <span className="hidden sm:inline">{getRelativeTime(column.createTime)}</span>
                 <span className="sm:hidden">{column.createTime.slice(0, 7)}</span>

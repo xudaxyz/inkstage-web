@@ -6,7 +6,7 @@
 export interface NotificationTemplateVariable {
   key: string;
   description: string;
-  category: 'user' | 'article' | 'comment' | 'system' | 'general' | 'notification' | 'report';
+  category: 'user' | 'article' | 'column' | 'comment' | 'system' | 'general' | 'notification' | 'report';
 }
 
 // 用户相关变量
@@ -24,6 +24,16 @@ export const ARTICLE_VARIABLES: NotificationTemplateVariable[] = [
   { key: 'articleContent', description: '文章内容', category: 'article' },
   { key: 'articleAuthor', description: '文章作者', category: 'article' },
   { key: 'articleUrl', description: '文章链接', category: 'article' }
+];
+
+// 专栏相关变量
+export const COLUMN_VARIABLES: NotificationTemplateVariable[] = [
+  { key: 'columnId', description: '专栏ID', category: 'column' },
+  { key: 'columnName', description: '专栏名称', category: 'column' },
+  { key: 'columnDescription', description: '专栏描述', category: 'column' },
+  { key: 'columnUrl', description: '专栏链接', category: 'column' },
+  { key: 'columnCreatorName', description: '专栏创建者名称', category: 'column' },
+  { key: 'columnStatus', description: '专栏状态', category: 'column' }
 ];
 
 // 评论相关变量
@@ -67,6 +77,7 @@ export const NOTIFICATION_VARIABLES: NotificationTemplateVariable[] = [
 export const ALL_TEMPLATE_VARIABLES: NotificationTemplateVariable[] = [
   ...USER_VARIABLES,
   ...ARTICLE_VARIABLES,
+  ...COLUMN_VARIABLES,
   ...COMMENT_VARIABLES,
   ...REPORT_VARIABLES,
   ...SYSTEM_VARIABLES,
