@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Dropdown, Input, message, Modal, Spin } from 'antd';
 import { Helmet } from 'react-helmet-async';
 import LazyImage from '../../../components/common/LazyImage';
@@ -19,6 +19,7 @@ import { ROUTES } from '../../../constants/routes';
 import columnService from '../../../services/columnService';
 import type { MyColumnVO } from '../../../types/column';
 import type { ColumnArticleListVO } from '../../../types/article';
+import type { VisibleStatus } from '../../../types/enums';
 
 const MyColumns: React.FC = () => {
   const navigate = useNavigate();
@@ -29,8 +30,9 @@ const MyColumns: React.FC = () => {
   const [columnArticles, setColumnArticles] = useState<ColumnArticleListVO[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [searchArticleText, setSearchArticleText] = useState('');
+  const [operationLoading, setOperationLoading] = useState(false);
 
-  const loadColumns = async (): Promise<void> => {
+  const loadColumns = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       const response = await columnService.getMyColumns();
@@ -45,15 +47,14 @@ const MyColumns: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadColumnDetail = async (column: MyColumnVO): Promise<void> => {
+  const loadColumnDetail = useCallback(async (column: MyColumnVO): Promise<void> => {
     try {
       setDetailLoading(true);
       setSelectedColumn(column);
       const response = await columnService.getColumnDetail(column.id);
       if (response.code === 200 && response.data) {
-        // 使用返回的文章列表
         setColumnArticles(response.data.articles || []);
       } else {
         setColumnArticles([]);
@@ -65,11 +66,17 @@ const MyColumns: React.FC = () => {
     } finally {
       setDetailLoading(false);
     }
-  };
+  }, []);
+
+  const refreshCurrentColumn = useCallback(async (): Promise<void> => {
+    if (selectedColumn) {
+      await loadColumnDetail(selectedColumn);
+    }
+  }, [selectedColumn, loadColumnDetail]);
 
   useEffect(() => {
     loadColumns().then();
-  }, []);
+  }, [loadColumns]);
 
   const filteredColumns = columns.filter((column) => {
     if (!searchText) return true;
@@ -82,38 +89,71 @@ const MyColumns: React.FC = () => {
   const totalArticles = columns.reduce((sum, col) => sum + (col.articleCount || 0), 0);
   const totalSubscriptions = columns.reduce((sum, col) => sum + (col.subscriptionCount || 0), 0);
 
-  const handleViewColumn = (column: MyColumnVO): void => {
+  const handleViewColumn = useCallback((column: MyColumnVO): void => {
     loadColumnDetail(column).then();
-  };
+  }, [loadColumnDetail]);
 
-  const handleBackToColumns = (): void => {
+  const handleBackToColumns = useCallback((): void => {
     setSelectedColumn(null);
     setColumnArticles([]);
-  };
+  }, []);
 
-  const handleEditColumn = (columnId: number): void => {
+  const handleEditColumn = useCallback((columnId: number): void => {
     navigate(`${ROUTES.EDIT_COLUMN(columnId)}?from=my`);
-  };
+  }, [navigate]);
 
-  const handleCreateArticle = (): void => {
-    // 可以跳转到创建文章页面，并预选择专栏
+  const handleCreateArticle = useCallback((): void => {
     navigate(ROUTES.CREATE_ARTICLE);
-  };
+  }, [navigate]);
 
-  const handleViewArticle = (articleId: number): void => {
+  const handleViewArticle = useCallback((articleId: number): void => {
     navigate(ROUTES.ARTICLE_DETAIL(articleId));
-  };
+  }, [navigate]);
 
-  const handleEditArticle = (articleId: number): void => {
+  const handleEditArticle = useCallback((articleId: number): void => {
     navigate(ROUTES.EDIT_ARTICLE(articleId));
-  };
+  }, [navigate]);
 
-  const handleDeleteArticle = (articleId: number): void => {
-    console.log(articleId);
-    message.success('删除文章功能开发中').then();
-  };
+  const handleRemoveArticleFromColumn = useCallback(async (articleId: number): Promise<void> => {
+    if (!selectedColumn) return;
+    setOperationLoading(true);
+    try {
+      const response = await columnService.removeArticleFromColumn(selectedColumn.id, articleId);
+      if (response.code !== 200 || !response.data) {
+        throw new Error(response.message || '移出文章失败');
+      }
+    } finally {
+      setOperationLoading(false);
+    }
+  }, [selectedColumn]);
 
-  const doDeleteColumn = async (columnId: number): Promise<void> => {
+  const handleMoveArticleToColumn = useCallback(async (articleId: number, targetColumnId: number): Promise<void> => {
+    setOperationLoading(true);
+    try {
+      const response = await columnService.moveArticleToColumn(articleId, targetColumnId);
+      if (response.code !== 200 || !response.data) {
+        throw new Error(response.message || '移动文章失败');
+      }
+    } finally {
+      setOperationLoading(false);
+    }
+  }, []);
+
+  const handleToggleVisibility = useCallback(async (visible: VisibleStatus): Promise<void> => {
+    if (!selectedColumn) return;
+    setOperationLoading(true);
+    try {
+      const response = await columnService.updateColumnVisible(selectedColumn.id, visible);
+      if (response.code !== 200 || !response.data) {
+        throw new Error(response.message || '更新可见性失败');
+      }
+      await loadColumns();
+    } finally {
+      setOperationLoading(false);
+    }
+  }, [selectedColumn, loadColumns]);
+
+  const doDeleteColumn = useCallback(async (columnId: number): Promise<void> => {
     try {
       const response = await columnService.deleteColumn(columnId);
       if (response.code === 200 && response.data) {
@@ -125,9 +165,9 @@ const MyColumns: React.FC = () => {
     } catch {
       message.error('删除专栏失败，请重试');
     }
-  };
+  }, [loadColumns]);
 
-  const handleDeleteColumn = async (columnId: number): Promise<void> => {
+  const handleDeleteColumn = useCallback(async (columnId: number): Promise<void> => {
     Modal.confirm({
       title: '确认删除',
       content: '确定要删除这个专栏吗？删除后将无法恢复！',
@@ -137,12 +177,7 @@ const MyColumns: React.FC = () => {
         await doDeleteColumn(columnId);
       }
     });
-  };
-
-  const handleDeleteColumnDirect = async (columnId: number): Promise<void> => {
-    await doDeleteColumn(columnId);
-    setSelectedColumn(null);
-  };
+  }, [doDeleteColumn]);
 
   return (
     <>
@@ -241,8 +276,7 @@ const MyColumns: React.FC = () => {
         </div>
 
         {selectedColumn ? (
-          // 显示专栏详情
-          detailLoading ? (
+          detailLoading || operationLoading ? (
             <div className="flex justify-center items-center py-20">
               <Spin size="large"/>
             </div>
@@ -256,16 +290,18 @@ const MyColumns: React.FC = () => {
                   (article.summary && article.summary.includes(searchArticleText))
                 );
               })}
+              allColumns={columns}
               onEditColumn={() => handleEditColumn(selectedColumn.id)}
               onCreateArticle={handleCreateArticle}
-              onDeleteColumn={() => handleDeleteColumnDirect(selectedColumn.id)}
               onViewArticle={handleViewArticle}
               onEditArticle={handleEditArticle}
-              onDeleteArticle={handleDeleteArticle}
+              onRemoveArticleFromColumn={handleRemoveArticleFromColumn}
+              onMoveArticleToColumn={handleMoveArticleToColumn}
+              onToggleVisibility={handleToggleVisibility}
+              onRefresh={refreshCurrentColumn}
             />
           )
         ) : (
-          // 显示专栏列表
           loading ? (
             <div className="flex justify-center items-center py-20">
               <Spin size="large"/>

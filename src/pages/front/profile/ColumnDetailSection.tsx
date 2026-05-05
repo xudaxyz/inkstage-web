@@ -1,63 +1,191 @@
-import React from 'react';
-import { Button, Dropdown, message, Modal, Popover, Space } from 'antd';
+import React, { useCallback, useMemo } from 'react';
+import { Button, Dropdown, List, message, Modal } from 'antd';
 import {
   BookOutlined,
   CalendarOutlined,
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
-  EyeOutlined as ViewIcon,
   LikeOutlined,
   MessageOutlined,
   MoreOutlined,
-  PlusOutlined
+  PlusOutlined, StarOutlined,
+  SwapOutlined
 } from '@ant-design/icons';
 import LazyImage from '../../../components/common/LazyImage';
 import { getRelativeTime } from '../../../utils';
 import type { MyColumnVO } from '../../../types/column';
 import type { ColumnArticleListVO } from '../../../types/article';
+import { VisibleStatus } from '../../../types/enums';
 
 interface ColumnDetailSectionProps {
   column: MyColumnVO;
   articles: ColumnArticleListVO[];
+  allColumns: MyColumnVO[];
   onEditColumn: () => void;
   onCreateArticle: () => void;
-  onDeleteColumn: () => void;
   onViewArticle: (articleId: number) => void;
   onEditArticle: (articleId: number) => void;
-  onDeleteArticle: (articleId: number) => void;
+  onRemoveArticleFromColumn: (articleId: number) => Promise<void>;
+  onMoveArticleToColumn: (articleId: number, targetColumnId: number) => Promise<void>;
+  onToggleVisibility: (visible: VisibleStatus) => Promise<void>;
+  onRefresh: () => void;
 }
 
 const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
                                                                    column,
                                                                    articles,
+                                                                   allColumns,
                                                                    onEditColumn,
                                                                    onCreateArticle,
-                                                                   onDeleteColumn,
                                                                    onViewArticle,
                                                                    onEditArticle,
-                                                                   onDeleteArticle
+                                                                   onRemoveArticleFromColumn,
+                                                                   onMoveArticleToColumn,
+                                                                   onToggleVisibility,
+                                                                   onRefresh
                                                                  }) => {
-  const handleDeleteColumn = (): void => {
+  const otherColumns = useMemo(() => {
+    return allColumns.filter(col => col.id !== column.id);
+  }, [allColumns, column.id]);
+
+  const handleToggleVisibility = useCallback((visible: VisibleStatus): void => {
+    const actionText = visible === VisibleStatus.PRIVATE ? '设为私有' : visible === VisibleStatus.PUBLIC ? '设为公开' : '设为仅粉丝可见';
     Modal.confirm({
-      title: '确认删除',
+      title: `确认${actionText}`,
+      content: `确定要将专栏「${column.name}」${actionText}吗？`,
+      okText: '确认',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          await onToggleVisibility(visible);
+          message.success(`${actionText}成功`);
+        } catch {
+          message.error(`${actionText}失败`);
+        }
+      }
+    });
+  }, [column.name, onToggleVisibility]);
+
+  const handleRemoveArticle = useCallback((articleId: number, articleTitle: string): void => {
+    Modal.confirm({
+      title: '确认移出文章',
       content: (
         <>
-          <p className="text-red-500 font-medium mb-2">此操作不可撤销！</p>
-          <p>专栏将被永久移除，但您的文章会<span className="text-green-500 font-bold">安全保留</span>，不会被删除。</p>
+          <p>确定要将文章「{articleTitle}」从专栏「{column.name}」中移出吗？</p>
+          <p className="text-gray-500 mt-2">文章不会被删除，只是从本专栏移除。</p>
         </>
       ),
       okText: '确认',
       cancelText: '取消',
-      onOk: () => {
-        onDeleteColumn();
+      onOk: async () => {
+        try {
+          await onRemoveArticleFromColumn(articleId);
+          message.success('文章已移出专栏');
+          onRefresh();
+        } catch {
+          message.error('移出文章失败');
+        }
       }
     });
-  };
+  }, [column.name, onRemoveArticleFromColumn, onRefresh]);
 
-  const handleSetInvisible = (): void => {
-    void message.success('设置不可见功能开发中');
-  };
+  const handleMoveArticle = useCallback((articleId: number, targetColumnId: number, articleTitle: string): void => {
+    const targetColumn = allColumns.find(col => col.id === targetColumnId);
+    if (!targetColumn) return;
+
+    Modal.confirm({
+      title: '确认移动文章',
+      content: (
+        <>
+          <p>确定要将文章「{articleTitle}」移动到专栏「{targetColumn.name}」吗？</p>
+        </>
+      ),
+      okText: '确认',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          await onMoveArticleToColumn(articleId, targetColumnId);
+          message.success('文章已移动到「' + targetColumn.name + '」');
+          onRefresh();
+        } catch {
+          message.error('移动文章失败');
+        }
+      }
+    });
+  }, [allColumns, onMoveArticleToColumn, onRefresh]);
+
+  const renderVisibilityMenu = useCallback(() => {
+    const items = [
+      {
+        key: 'public',
+        label: '设为公开',
+        icon: <EyeOutlined />,
+        onClick: () :void => handleToggleVisibility(VisibleStatus.PUBLIC)
+      },
+      {
+        key: 'private',
+        label: '设为私有',
+        icon: <EyeOutlined style={{ opacity: 0.5 }} />,
+        onClick: () :void => handleToggleVisibility(VisibleStatus.PRIVATE)
+      },
+      {
+        key: 'followers',
+        label: '仅粉丝可见',
+        icon: <BookOutlined />,
+        onClick: () :void => handleToggleVisibility(VisibleStatus.FOLLOWERS_ONLY)
+      }
+    ];
+    return { items };
+  }, [handleToggleVisibility]);
+
+  const getArticleActionsMenu = useCallback((article: ColumnArticleListVO) => {
+    const moveMenuItems = otherColumns.length > 0
+      ? otherColumns.map(col => ({
+          key: `move-to-${col.id}`,
+          label: col.name,
+          icon: <BookOutlined />,
+          onClick: () :void => handleMoveArticle(article.id, col.id, article.title)
+        }))
+      : [
+          {
+            key: 'no-columns',
+            label: '暂无其他专栏',
+            disabled: true
+          }
+        ];
+
+    return {
+      items: [
+        {
+          key: 'view',
+          label: '查看',
+          icon: <EyeOutlined />,
+          onClick: () :void => onViewArticle(article.id)
+        },
+        {
+          key: 'edit',
+          label: '编辑',
+          icon: <EditOutlined />,
+          onClick: () :void => onEditArticle(article.id)
+        },
+        { type: 'divider' as const },
+        {
+          key: 'move',
+          label: '移动到',
+          icon: <SwapOutlined />,
+          children: moveMenuItems
+        },
+        {
+          key: 'remove',
+          label: '从专栏移出',
+          icon: <DeleteOutlined />,
+          danger: true,
+          onClick: () :void => handleRemoveArticle(article.id, article.title)
+        }
+      ]
+    };
+  }, [otherColumns, onViewArticle, onEditArticle, handleMoveArticle, handleRemoveArticle]);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg">
@@ -109,23 +237,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
                 编辑
               </Button>
               <Dropdown
-                menu={{
-                  items: [
-                    {
-                      key: 'delete',
-                      label: '删除专栏',
-                      icon: <DeleteOutlined/>,
-                      danger: true,
-                      onClick: handleDeleteColumn
-                    },
-                    {
-                      key: 'invisible',
-                      label: '设置不可见',
-                      icon: <EyeOutlined/>,
-                      onClick: handleSetInvisible
-                    }
-                  ]
-                }}
+                menu={renderVisibilityMenu()}
                 trigger={['click']}
               >
                 <Button type={'text'} icon={<MoreOutlined/>}></Button>
@@ -136,23 +248,42 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
 
         {/* 文章列表 */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-base font-medium text-gray-800 dark:text-gray-200">专栏文章 ({articles.length})</h3>
+          <div className="flex items-center border-b border-gray-100 justify-between pb-6">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">专栏文章 ({articles.length})</h3>
             <Button variant="outlined" color="blue" icon={<PlusOutlined/>} onClick={onCreateArticle}>
               新建专栏文章
             </Button>
           </div>
 
-          <div className="space-y-6">
-            {articles.map((article) => (
-              <div
+          <List
+            itemLayout="horizontal"
+            dataSource={articles}
+            locale={{ emptyText: '暂无文章，试试新建一篇吧' }}
+            renderItem={(article) => (
+              <List.Item
                 key={article.id}
-                className="border-b border-gray-200 dark:border-gray-700 last:border-0 pb-6 last:pb-0"
+                className="border-b border-gray-200 dark:border-gray-700 last:border-0 py-4"
+                style={{ alignItems: 'flex-end' }}
+                actions={[
+                  <Dropdown
+                    key="more"
+                    menu={getArticleActionsMenu(article)}
+                    trigger={['click']}
+                  >
+                    <Button
+                      icon={<MoreOutlined/>}
+                      size="small"
+                      type="text"
+                    >
+                    </Button>
+                  </Dropdown>
+                ]}
               >
-                <div className="flex gap-4">
+                <div className="flex items-start gap-4 w-full">
+                  {/* 封面图 */}
                   {article.coverImage && (
                     <div
-                      className="w-48 h-32 rounded-md overflow-hidden shrink-0 hidden sm:block cursor-pointer"
+                      className="w-40 h-24 rounded overflow-hidden cursor-pointer shrink-0"
                       onClick={() => onViewArticle(article.id)}
                     >
                       <LazyImage
@@ -162,83 +293,48 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
                       />
                     </div>
                   )}
-                  <div className="flex-1 min-w-0 flex flex-col justify-between">
-                    {/* 上半部分：标题 + 简介 */}
-                    <div>
-                      <h4
-                        className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-1 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
-                        onClick={() => onViewArticle(article.id)}
-                      >
-                        {article.title}
-                      </h4>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{article.summary}</p>
-                    </div>
 
-                    {/* 下半部分：元数据 + 操作按钮 */}
-                    <div className="flex items-center justify-between gap-4 mt-3">
-                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="flex items-center gap-1">
-                          <EyeOutlined/>
-                          {article.readCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <LikeOutlined/>
-                          {article.likeCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MessageOutlined/>
-                          {article.commentCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <CalendarOutlined/>
-                          {getRelativeTime(article.publishTime)}
-                        </span>
-                      </div>
-                      <Popover
-                        placement="bottom"
-                        content={
-                          <Space orientation="vertical">
-                            <Button
-                              icon={<ViewIcon/>}
-                              size="small"
-                              type="text"
-                              onClick={() => onViewArticle(article.id)}
-                            >
-                              查看
-                            </Button>
-                            <Button
-                              icon={<EditOutlined/>}
-                              size="small"
-                              type="text"
-                              onClick={() => onEditArticle(article.id)}
-                            >
-                              编辑
-                            </Button>
-                            <Button
-                              icon={<DeleteOutlined/>}
-                              size="small"
-                              type="text"
-                              danger
-                              onClick={() => onDeleteArticle(article.id)}
-                            >
-                              删除
-                            </Button>
-                          </Space>
-                        }
-                        trigger="click"
-                      >
-                        <Button icon={<MoreOutlined/>} size="small" type="text"/>
-                      </Popover>
+                  {/* 内容区域 */}
+                  <div className="flex-1 min-w-0 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    {/* 标题 */}
+                    <h3
+                      className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400 truncate"
+                      onClick={() => onViewArticle(article.id)}
+                    >
+                      {article.title}
+                    </h3>
+
+                    {/* 简介 */}
+                    {article.summary && (
+                      <p className="text-[15px] text-gray-500 dark:text-gray-400 mb-2 line-clamp-2 leading-relaxed">
+                        {article.summary}
+                      </p>
+                    )}
+
+                    {/* 元数据 */}
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <EyeOutlined className="w-4 h-4"/>
+                        {article.readCount}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <LikeOutlined className="w-4 h-4"/>
+                        {article.likeCount}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageOutlined className="w-4 h-4"/>
+                        {article.commentCount}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <CalendarOutlined className="w-4 h-4"/>
+                        {getRelativeTime(article.publishTime)}
+                      </span>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {articles.length === 0 && (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">暂无文章，试试新建一篇吧</div>
-          )}
+              </List.Item>
+            )}
+          />
         </div>
       </div>
     </div>

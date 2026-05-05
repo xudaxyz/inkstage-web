@@ -1,5 +1,5 @@
 import type { ColumnArticleListVO } from './article';
-import type { StatusEnum } from './enums';
+import type { StatusEnum, VisibleStatus } from './enums';
 
 // 专栏列表VO
 export interface ColumnListVO {
@@ -13,6 +13,7 @@ export interface ColumnListVO {
   readCount: number;
   sortOrder?: number;
   status: StatusEnum;
+  visible?: VisibleStatus;
   userId: number;
   nickname: string;
   avatar: string;
@@ -32,6 +33,7 @@ export interface ColumnDetailVO {
   readCount: number;
   sortOrder?: number;
   status: StatusEnum;
+  visible?: VisibleStatus;
   userId: number;
   nickname: string;
   avatar: string;
@@ -53,6 +55,7 @@ export interface MyColumnVO {
   readCount: number;
   sortOrder?: number;
   status: StatusEnum;
+  visible?: VisibleStatus;
   createTime: string;
   updateTime: string;
 }
@@ -69,6 +72,7 @@ export interface MyColumnSubscriptionVO {
   readCount: number;
   sortOrder?: number;
   status: StatusEnum;
+  visible?: VisibleStatus;
   nickname: string;
   avatar: string;
   subscriptionTime: string;

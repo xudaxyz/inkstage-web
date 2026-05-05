@@ -133,6 +133,7 @@ export const API_ENDPOINTS = {
     COLUMN: {
       CREATE: '/front/column/create', // 创建专栏
       UPDATE: (id: number): string => `/front/column/update/${id}`, // 更新专栏
+      UPDATE_VISIBLE: (id: number): string => `/front/column/update/visible/${id}`, // 更新专栏可见性
       DELETE: (id: number): string => `/front/column/delete/${id}`, // 删除专栏
       LIST: '/front/column/list', // 获取专栏列表
       DETAIL: (id: number): string => `/front/column/${id}`, // 获取专栏详情
@@ -141,6 +142,7 @@ export const API_ENDPOINTS = {
       ARTICLE_ADD: '/front/column/article/add', // 添加文章到专栏
       ARTICLE_REMOVE: '/front/column/article/remove', // 从专栏移除文章
       ARTICLE_SORT: '/front/column/article/sort', // 更新文章排序
+      ARTICLE_MOVE: '/front/column/article/move', // 移动文章到另一个专栏
       ARTICLE_CHECK: '/front/column/article/check', // 检查文章是否在专栏中
       ARTICLE_INFO: '/front/column/article/info', // 获取文章所属的专栏信息
       // 订阅相关

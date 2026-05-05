@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Button, message, Select, Spin } from 'antd';
+import { Avatar, Button, Dropdown, message, Select, Spin } from 'antd';
 import {
   BookOutlined,
   CalendarOutlined,
+  CopyOutlined,
   EyeOutlined,
   LikeOutlined,
   MessageOutlined,
@@ -114,9 +115,27 @@ const ColumnDetailPage: React.FC = () => {
     }
   };
 
-  const handleShare = (): void => {
-    message.success('分享链接已复制').then();
-  };
+  const columnUrl = useMemo(() => {
+    return columnDetail ? `${window.location.origin}/column/${columnDetail.id}` : '';
+  }, [columnDetail]);
+
+  const handleCopyLink = useCallback(async (): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(columnUrl);
+      message.success('分享链接已复制到剪贴板');
+    } catch {
+      message.error('复制失败，请手动复制');
+    }
+  }, [columnUrl]);
+
+  const shareMenuItems = useMemo(() => [
+    {
+      key: 'copy',
+      label: '复制链接',
+      icon: <CopyOutlined />,
+      onClick: handleCopyLink
+    }
+  ], [handleCopyLink]);
 
   const handleCreateArticle = (): void => {
     navigate(ROUTES.CREATE_ARTICLE);
@@ -210,9 +229,11 @@ const ColumnDetailPage: React.FC = () => {
                       >
                         {isSubscribed ? '已订阅' : '订阅专栏'}
                       </Button>
-                      <Button icon={<ShareAltOutlined/>} onClick={handleShare}>
-                        分享
-                      </Button>
+                      <Dropdown menu={{ items: shareMenuItems }} trigger={['click']}>
+                        <Button icon={<ShareAltOutlined/>}>
+                          分享
+                        </Button>
+                      </Dropdown>
                     </div>
                     {isColumnOwner && (
                       <Button variant="outlined" color="blue" icon={<PlusOutlined/>} onClick={handleCreateArticle}>

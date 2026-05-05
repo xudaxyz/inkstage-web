@@ -7,7 +7,6 @@ import {
   BookOutlined,
   EyeOutlined,
   CalendarOutlined,
-  ArrowLeftOutlined,
   UserOutlined,
   StarOutlined
 } from '@ant-design/icons';
@@ -92,15 +91,6 @@ const MySubscriptions: React.FC = () => {
               className="flex md:flex-initial"
               style={{ maxWidth: '180px', width: '150px' }}
             />
-            <Button
-              variant="solid"
-              color="gold"
-              icon={<ArrowLeftOutlined/>}
-              onClick={() => navigate(ROUTES.PROFILE)}
-              className="shrink-0"
-            >
-              返回
-            </Button>
           </div>
         </div>
 

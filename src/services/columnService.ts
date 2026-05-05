@@ -13,6 +13,7 @@ import type {
 } from '../types/column';
 import type { ApiResponse } from '../types/common';
 import type { PageResult } from '../types/user';
+import type { VisibleStatus } from '../types/enums';
 
 // 专栏服务类
 const columnService = {
@@ -84,6 +85,24 @@ const columnService = {
    */
   async updateArticleSort(data: UpdateColumnArticleSortDTO): Promise<ApiResponse<boolean>> {
     return await apiClient.put(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_SORT, data);
+  },
+
+  /**
+   * 移动文章到另一个专栏
+   */
+  async moveArticleToColumn(articleId: number, newColumnId: number, sortOrder?: number): Promise<ApiResponse<boolean>> {
+    return await apiClient.put(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_MOVE, null, {
+      params: { articleId, newColumnId, sortOrder }
+    });
+  },
+
+  /**
+   * 更新专栏可见性
+   */
+  async updateColumnVisible(id: number, visible: VisibleStatus): Promise<ApiResponse<boolean>> {
+    return await apiClient.put(API_ENDPOINTS.FRONT.COLUMN.UPDATE_VISIBLE(id), null, {
+      params: { visible }
+    });
   },
 
   /**

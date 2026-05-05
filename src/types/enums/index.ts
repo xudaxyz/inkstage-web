@@ -12,6 +12,7 @@ export * from './AuthOperationTypeEnum';
 export * from './CommentEnum';
 export * from './PriorityEnum';
 export * from './ReportEnum';
+export * from './VisibleStatusEnum';
 
 // 通用枚举工具类型
 export type EnumLike = Record<string, string | number>;
