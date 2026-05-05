@@ -157,6 +157,16 @@ export const SystemNotificationParam = {
   SYSTEM_TIME: 'systemTime'
 } as const;
 
+export interface AllNotificationParam {
+  messageContent: string;
+  systemTime: string;
+}
+
+export const AllNotificationParam = {
+  MESSAGE_CONTENT: 'messageContent',
+  SYSTEM_TIME: 'systemTime'
+} as const;
+
 // ==================== 不可关闭的通知参数 ====================
 
 // [用户状态]
@@ -374,6 +384,7 @@ export type NotificationParamMap = {
   [NotificationType.REPORT_RESULT]: ReportResultParam;
   [NotificationType.FEEDBACK]: FeedbackParam;
   [NotificationType.SYSTEM]: SystemNotificationParam;
+  [NotificationType.ALL]: AllNotificationParam;
 
   // 不可关闭 - 用户状态
   [NotificationType.USER_STATUS_CHANGE]: UserStatusChangeParam;
@@ -419,6 +430,7 @@ export type NotificationParam =
   | ReportResultParam
   | FeedbackParam
   | SystemNotificationParam
+  | AllNotificationParam
   | UserStatusChangeParam
   | ArticleReviewApproveParam
   | ArticleReviewRejectParam
@@ -615,6 +627,19 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     variables: [
       { key: SystemNotificationParam.MESSAGE_CONTENT, description: '消息内容' },
       { key: SystemNotificationParam.SYSTEM_TIME, description: '系统时间' }
+    ],
+    defaultTitleTemplate: '系统通知',
+    defaultContentTemplate: '${messageContent}',
+    defaultActionUrlTemplate: ''
+  },
+
+  [NotificationType.ALL]: {
+    type: NotificationType.ALL,
+    name: '所有通知',
+    description: '所有通知',
+    variables: [
+      { key: AllNotificationParam.MESSAGE_CONTENT, description: '消息内容' },
+      { key: AllNotificationParam.SYSTEM_TIME, description: '系统时间' }
     ],
     defaultTitleTemplate: '系统通知',
     defaultContentTemplate: '${messageContent}',

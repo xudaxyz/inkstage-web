@@ -20,6 +20,7 @@ export const NotificationType = {
   REPORT_RESULT: 'REPORT_RESULT', // 举报处理通知
   FEEDBACK: 'FEEDBACK', // 反馈处理通知
   SYSTEM: 'SYSTEM', // 系统通知
+  ALL: 'ALL', // 所有通知
 
   // ==================== 不可关闭的通知（系统强制发送） ====================
   // 【用户状态】
@@ -72,6 +73,7 @@ export const NotificationTypeMap: Record<NotificationType, string> = {
   [NotificationType.REPORT_RESULT]: '举报处理通知',
   [NotificationType.FEEDBACK]: '反馈处理通知',
   [NotificationType.SYSTEM]: '系统通知',
+  [NotificationType.ALL]: '所有通知',
 
   // 不可关闭 - 用户状态
   [NotificationType.USER_STATUS_CHANGE]: '用户状态变更通知',
