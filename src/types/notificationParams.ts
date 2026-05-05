@@ -768,7 +768,7 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
       { key: ColumnSubscriptionParam.ARTICLE_URL, description: '文章链接' }
     ],
     defaultTitleTemplate: '${columnName}更新啦',
-    defaultContentTemplate: '《${articleTitle}》已发布，快来围观吧~',
+    defaultContentTemplate: '您订阅的专栏《${columnName}》发布了新内容：《${articleTitle}》，快来围观吧~',
     defaultActionUrlTemplate: '/article/${articleId}'
   },
 
