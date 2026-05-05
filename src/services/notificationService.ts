@@ -2,6 +2,7 @@ import { API_ENDPOINTS, apiClient } from '../api';
 import type { ApiResponse } from '../types/common';
 import { NotificationType } from '../types/enums';
 import type { NotificationListResponse, NotificationSetting } from '../types/notification';
+
 // 参数验证函数
 const validateIdParam = (id: number): void => {
   if (id == null || id <= 0) {
@@ -22,27 +23,6 @@ const validateNotificationSetting = (setting: NotificationSetting): void => {
   if (setting.userId == null || setting.userId <= 0) {
     throw new Error('用户ID必须是正整数');
   }
-  // 验证布尔类型字段
-  const booleanFields = [
-    'articlePublish',
-    'articleLike',
-    'articleCollection',
-    'articleComment',
-    'commentReply',
-    'commentLike',
-    'follow',
-    'message',
-    'report',
-    'feedback',
-    'system',
-    'emailNotification',
-    'siteNotification'
-  ];
-  booleanFields.forEach((field) => {
-    if (typeof setting[field as keyof NotificationSetting] !== 'boolean') {
-      throw new Error(`${field}必须是布尔值`);
-    }
-  });
 };
 
 // 通知服务
