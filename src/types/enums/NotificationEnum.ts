@@ -41,6 +41,7 @@ export const NotificationType = {
 
   // 【专栏管理】
   COLUMN_SUBSCRIPTION: 'COLUMN_SUBSCRIPTION', // 专栏订阅通知
+  COLUMN_ARTICLE_PUBLISH: 'COLUMN_ARTICLE_PUBLISH', // 专栏文章发布通知
   COLUMN_DISABLED: 'COLUMN_DISABLED', // 专栏下线通知
   COLUMN_RESTORED: 'COLUMN_RESTORED', // 专栏恢复通知
 
@@ -91,6 +92,7 @@ export const NotificationTypeMap: Record<NotificationType, string> = {
 
   // 不可关闭 - 专栏管理
   [NotificationType.COLUMN_SUBSCRIPTION]: '专栏订阅通知',
+  [NotificationType.COLUMN_ARTICLE_PUBLISH]: '专栏文章发布通知',
   [NotificationType.COLUMN_DISABLED]: '专栏下线通知',
   [NotificationType.COLUMN_RESTORED]: '专栏恢复通知',
 
@@ -136,7 +138,7 @@ export const NotificationTypeCategory = {
   COMMENT_AUDIT: [NotificationType.COMMENT_REVIEW_REJECT, NotificationType.COMMENT_TOP],
 
   // 不可关闭 - 专栏管理
-  COLUMN_MANAGEMENT: [NotificationType.COLUMN_SUBSCRIPTION, NotificationType.COLUMN_DISABLED, NotificationType.COLUMN_RESTORED],
+  COLUMN_MANAGEMENT: [NotificationType.COLUMN_SUBSCRIPTION, NotificationType.COLUMN_ARTICLE_PUBLISH, NotificationType.COLUMN_DISABLED, NotificationType.COLUMN_RESTORED],
 
   // 不可关闭 - 系统管理
   SYSTEM_MANAGEMENT: [NotificationType.TAG_DELETE]

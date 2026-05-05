@@ -14,7 +14,7 @@ export interface TemplateVariable {
 
 // ==================== 可关闭的通知参数 ====================
 
-// 【文章互动】
+// [文章互动]
 export interface ArticlePublishParam {
   username: string;
   articleTitle: string;
@@ -73,7 +73,7 @@ export const ArticleCommentParam = {
   ARTICLE_URL: 'articleUrl'
 } as const;
 
-// 【评论互动】
+// [评论互动]
 export interface CommentReplyParam {
   username: string;
   commentContent: string;
@@ -100,7 +100,7 @@ export const CommentLikeParam = {
   ARTICLE_URL: 'articleUrl'
 } as const;
 
-// 【社交互动】
+// [社交互动]
 export interface FollowParam {
   username: string;
 }
@@ -118,7 +118,7 @@ export const MessageParam = {
   MESSAGE_CONTENT: 'messageContent'
 } as const;
 
-// 【系统通知】
+// [系统通知]
 export interface ReportParam {
   reportedContent: string;
   relatedId: number;
@@ -159,7 +159,7 @@ export const SystemNotificationParam = {
 
 // ==================== 不可关闭的通知参数 ====================
 
-// 【用户状态】
+// [用户状态]
 export interface UserStatusChangeParam {
   reason: string;
 }
@@ -168,7 +168,7 @@ export const UserStatusChangeParam = {
   REASON: 'reason'
 } as const;
 
-// 【文章审核】
+// [文章审核]
 export interface ArticleReviewApproveParam {
   articleTitle: string;
   articleId: number;
@@ -263,7 +263,7 @@ export const ArticleDeleteParam = {
   REASON: 'reason'
 } as const;
 
-// 【评论审核】
+// [评论审核]
 export interface CommentReviewRejectParam {
   reason: string;
   articleId: number;
@@ -284,8 +284,24 @@ export const CommentTopParam = {
   ARTICLE_URL: 'articleUrl'
 } as const;
 
-// 【专栏管理】
+// [专栏管理]
 export interface ColumnSubscriptionParam {
+  columnId: number;
+  columnName: string;
+  subscriberId: number;
+  subscriberName: string;
+  actionUrl: string;
+}
+
+export const ColumnSubscriptionParam = {
+  COLUMN_ID: 'columnId',
+  COLUMN_NAME: 'columnName',
+  SUBSCRIBER_ID: 'subscriberId',
+  SUBSCRIBER_NAME: 'subscriberName',
+  ACTION_URL: 'actionUrl'
+} as const;
+
+export interface ColumnArticlePublishParam {
   columnId: number;
   columnName: string;
   articleTitle: string;
@@ -293,7 +309,7 @@ export interface ColumnSubscriptionParam {
   articleUrl: string;
 }
 
-export const ColumnSubscriptionParam = {
+export const ColumnArticlePublishParam = {
   COLUMN_ID: 'columnId',
   COLUMN_NAME: 'columnName',
   ARTICLE_TITLE: 'articleTitle',
@@ -325,7 +341,7 @@ export const ColumnRestoredParam = {
   ACTION_URL: 'actionUrl'
 } as const;
 
-// 【系统管理】
+// [系统管理]
 export interface TagDeleteParam {
   tagName: string;
   tagId: number;
@@ -378,6 +394,7 @@ export type NotificationParamMap = {
 
   // 不可关闭 - 专栏管理
   [NotificationType.COLUMN_SUBSCRIPTION]: ColumnSubscriptionParam;
+  [NotificationType.COLUMN_ARTICLE_PUBLISH]: ColumnArticlePublishParam;
   [NotificationType.COLUMN_DISABLED]: ColumnDisabledParam;
   [NotificationType.COLUMN_RESTORED]: ColumnRestoredParam;
 
@@ -414,6 +431,7 @@ export type NotificationParam =
   | CommentReviewRejectParam
   | CommentTopParam
   | ColumnSubscriptionParam
+  | ColumnArticlePublishParam
   | ColumnDisabledParam
   | ColumnRestoredParam
   | TagDeleteParam;
@@ -440,7 +458,7 @@ export interface NotificationTypeConfig {
 export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTypeConfig> = {
   // ==================== 可关闭的通知 ====================
 
-  // 【文章互动】
+  // [文章互动]
   [NotificationType.ARTICLE_PUBLISH]: {
     type: NotificationType.ARTICLE_PUBLISH,
     name: '文章发布通知',
@@ -502,7 +520,7 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     defaultActionUrlTemplate: '/article/${articleId}#comment'
   },
 
-  // 【评论互动】
+  // [评论互动]
   [NotificationType.COMMENT_REPLY]: {
     type: NotificationType.COMMENT_REPLY,
     name: '评论回复通知',
@@ -532,7 +550,7 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     defaultActionUrlTemplate: '/article/${articleId}#comment'
   },
 
-  // 【社交互动】
+  // [社交互动]
   [NotificationType.FOLLOW]: {
     type: NotificationType.FOLLOW,
     name: '关注通知',
@@ -553,7 +571,7 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     defaultActionUrlTemplate: '/message'
   },
 
-  // 【系统通知】
+  // [系统通知]
   [NotificationType.REPORT]: {
     type: NotificationType.REPORT,
     name: '举报通知',
@@ -605,7 +623,7 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
 
   // ==================== 不可关闭的通知 ====================
 
-  // 【用户状态】
+  // [用户状态]
   [NotificationType.USER_STATUS_CHANGE]: {
     type: NotificationType.USER_STATUS_CHANGE,
     name: '用户状态变更通知',
@@ -616,7 +634,7 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     defaultActionUrlTemplate: '/settings/account'
   },
 
-  // 【文章审核】
+  // [文章审核]
   [NotificationType.ARTICLE_REVIEW_APPROVE]: {
     type: NotificationType.ARTICLE_REVIEW_APPROVE,
     name: '文章审核通过通知',
@@ -728,7 +746,7 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     defaultActionUrlTemplate: ''
   },
 
-  // 【评论审核】
+  // [评论审核]
   [NotificationType.COMMENT_REVIEW_REJECT]: {
     type: NotificationType.COMMENT_REVIEW_REJECT,
     name: '评论审核拒绝通知',
@@ -755,17 +773,32 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     defaultActionUrlTemplate: '/article/${articleId}#comment'
   },
 
-  // 【专栏管理】
+  // [专栏管理]
   [NotificationType.COLUMN_SUBSCRIPTION]: {
     type: NotificationType.COLUMN_SUBSCRIPTION,
     name: '专栏订阅通知',
-    description: '专栏有新文章发布时发送',
+    description: '新用户订阅专栏时发送',
     variables: [
       { key: ColumnSubscriptionParam.COLUMN_ID, description: '专栏ID' },
       { key: ColumnSubscriptionParam.COLUMN_NAME, description: '专栏名称' },
-      { key: ColumnSubscriptionParam.ARTICLE_TITLE, description: '文章标题' },
-      { key: ColumnSubscriptionParam.ARTICLE_ID, description: '文章ID' },
-      { key: ColumnSubscriptionParam.ARTICLE_URL, description: '文章链接' }
+      { key: ColumnSubscriptionParam.SUBSCRIBER_ID, description: '订阅者ID' },
+      { key: ColumnSubscriptionParam.SUBSCRIBER_NAME, description: '订阅者名称' },
+      { key: ColumnSubscriptionParam.ACTION_URL, description: '专栏链接' }
+    ],
+    defaultTitleTemplate: '专栏订阅通知',
+    defaultContentTemplate: '${subscriberName}订阅了您的专栏《${columnName}》 ',
+    defaultActionUrlTemplate: '/column/${columnId}'
+  },
+  [NotificationType.COLUMN_ARTICLE_PUBLISH]: {
+    type: NotificationType.COLUMN_ARTICLE_PUBLISH,
+    name: '专栏文章发布通知',
+    description: '专栏有新文章发布时发送',
+    variables: [
+      { key: ColumnArticlePublishParam.COLUMN_ID, description: '专栏ID' },
+      { key: ColumnArticlePublishParam.COLUMN_NAME, description: '专栏名称' },
+      { key: ColumnArticlePublishParam.ARTICLE_TITLE, description: '文章标题' },
+      { key: ColumnArticlePublishParam.ARTICLE_ID, description: '文章ID' },
+      { key: ColumnArticlePublishParam.ARTICLE_URL, description: '文章链接' }
     ],
     defaultTitleTemplate: '[${columnName}]更新啦',
     defaultContentTemplate: '您订阅的专栏[《${columnName}》]发布了新内容：《${articleTitle}》，快来围观吧~',
@@ -800,7 +833,7 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     defaultActionUrlTemplate: '/column/${columnId}'
   },
 
-  // 【系统管理】
+  // [系统管理]
   [NotificationType.TAG_DELETE]: {
     type: NotificationType.TAG_DELETE,
     name: '标签删除通知',
