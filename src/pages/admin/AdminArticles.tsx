@@ -26,6 +26,7 @@ import {
   CloseCircleOutlined,
   CommentOutlined,
   DeleteOutlined,
+  DeleteFilled,
   DislikeOutlined,
   DownOutlined,
   EditOutlined,
@@ -102,6 +103,8 @@ const AdminArticles: React.FC = () => {
   const [selectedTop, setSelectedTop] = useState<AllowTopEnum | undefined>();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
+  const [isPermanentDeleteModalVisible, setIsPermanentDeleteModalVisible] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<number | null>(null);
   const [currentArticle, setCurrentArticle] = useState<AdminArticleDetail | null>(null);
   const [rejectForm] = Form.useForm();
   const [pagination, setPagination] = useState({
@@ -155,8 +158,7 @@ const AdminArticles: React.FC = () => {
         } else {
           message.error('获取文章列表失败');
         }
-      } catch (error) {
-        console.error('获取文章列表失败:', error);
+      } catch {
         message.error('获取文章列表失败');
       } finally {
         setLoading(false);
@@ -194,8 +196,7 @@ const AdminArticles: React.FC = () => {
       } else {
         message.error('获取分类列表失败');
       }
-    } catch (error) {
-      console.error('获取分类列表失败:', error);
+    } catch {
       message.error('获取分类列表失败');
     }
   }, []);
@@ -212,8 +213,7 @@ const AdminArticles: React.FC = () => {
       } else {
         message.error('获取标签列表失败');
       }
-    } catch (error) {
-      console.error('获取标签列表失败:', error);
+    } catch {
       message.error('获取标签列表失败');
     }
   }, []);
@@ -252,8 +252,7 @@ const AdminArticles: React.FC = () => {
           message.error('获取文章详情失败');
         }
       }, 100);
-    } catch (error) {
-      console.error('获取文章详情失败:', error);
+    } catch {
       message.error('获取文章详情失败');
     }
   };
@@ -267,8 +266,7 @@ const AdminArticles: React.FC = () => {
       } else {
         message.error('获取文章详情失败');
       }
-    } catch (error) {
-      console.error('获取文章详情失败:', error);
+    } catch {
       message.error('获取文章详情失败');
     }
   };
@@ -282,9 +280,32 @@ const AdminArticles: React.FC = () => {
       } else {
         message.error('删除文章失败');
       }
-    } catch (error) {
-      console.error('删除文章失败:', error);
+    } catch {
       message.error('删除文章失败');
+    }
+  };
+  // 关闭彻底删除确认弹窗
+  const handleCancelPermanentDelete = (): void => {
+    setIsPermanentDeleteModalVisible(false);
+    setArticleToDelete(null);
+  };
+
+  // 确认彻底删除文章
+  const handlePermanentDeleteArticle = async (): Promise<void> => {
+    if (!articleToDelete) return;
+    try {
+      const response = await articleService.admin.deleteArticlePermanently(articleToDelete);
+      if (response.code === 200) {
+        message.success(response.message || '文章彻底删除成功');
+        await fetchArticles(pagination.pageNum, pagination.pageSize);
+      } else {
+        message.error(response.message || '彻底删除文章失败');
+      }
+    } catch {
+      message.error('删除文章失败');
+    } finally {
+      setIsPermanentDeleteModalVisible(false);
+      setArticleToDelete(null);
     }
   };
   // 保存文章后的回调
@@ -318,8 +339,7 @@ const AdminArticles: React.FC = () => {
       } else {
         message.error('审核操作失败');
       }
-    } catch (error) {
-      console.error('审核操作失败:', error);
+    } catch {
       message.error('审核操作失败');
     } finally {
       setReviewLoading(false);
@@ -327,14 +347,10 @@ const AdminArticles: React.FC = () => {
   };
   // 处理审核拒绝
   const handleRejectArticle = async (): Promise<void> => {
-    try {
-      const values = await rejectForm.validateFields();
-      await handleReviewArticle('reject', values.rejectReason);
-      setRejectModalVisible(false);
-      rejectForm.resetFields();
-    } catch (error) {
-      console.error('验证失败:', error);
-    }
+    const values = await rejectForm.validateFields();
+    await handleReviewArticle('reject', values.rejectReason);
+    setRejectModalVisible(false);
+    rejectForm.resetFields();
   };
   // 处理下架/上架文章
   const handleOfflineArticle = async (id: number, currentStatus: ArticleStatusEnum): Promise<void> => {
@@ -352,8 +368,7 @@ const AdminArticles: React.FC = () => {
           response.message || (currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败' : '下架文章失败')
         );
       }
-    } catch (error) {
-      console.error(currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败:' : '下架文章失败:', error);
+    } catch {
       message.error(currentStatus === ArticleStatusEnum.OFFLINE ? '上架文章失败' : '下架文章失败');
     }
   };
@@ -370,8 +385,7 @@ const AdminArticles: React.FC = () => {
       } else {
         message.error(response.message || (currentTopStatus === AllowTopEnum.TOP ? '取消置顶失败' : '置顶文章失败'));
       }
-    } catch (error) {
-      console.error(currentTopStatus === AllowTopEnum.TOP ? '取消置顶失败:' : '置顶文章失败:', error);
+    } catch {
       message.error(currentTopStatus === AllowTopEnum.TOP ? '取消置顶失败' : '置顶文章失败');
     }
   };
@@ -392,8 +406,7 @@ const AdminArticles: React.FC = () => {
           response.message || (currentRecommendStatus === RecommendedEnum.RECOMMENDED ? '取消推荐失败' : '文章推荐失败')
         );
       }
-    } catch (error) {
-      console.error(currentRecommendStatus === RecommendedEnum.RECOMMENDED ? '取消推荐失败:' : '推荐文章失败:', error);
+    } catch {
       message.error(currentRecommendStatus === RecommendedEnum.RECOMMENDED ? '取消推荐失败' : '推荐文章失败');
     }
   };
@@ -554,26 +567,9 @@ const AdminArticles: React.FC = () => {
             key: 'edit',
             label: (
               <span onClick={() => handleEditArticle(record)} className="flex items-center cursor-pointer">
-                <EditOutlined className="mr-2" />
+                <EditOutlined className="mr-2"/>
                 编辑
               </span>
-            )
-          },
-          {
-            key: 'delete',
-            label: (
-              <Popconfirm
-                title="确定要删除这篇文章吗？"
-                description="删除后将无法恢复"
-                onConfirm={() => handleDeleteArticle(record.id)}
-                okText="确定"
-                cancelText="取消"
-              >
-                <span className="flex items-center cursor-pointer">
-                  <DeleteOutlined className="mr-2 text-red-500" />
-                  删除
-                </span>
-              </Popconfirm>
             )
           },
           {
@@ -584,9 +580,9 @@ const AdminArticles: React.FC = () => {
                 className="flex items-center cursor-pointer"
               >
                 {record.articleStatus === ArticleStatusEnum.OFFLINE ? (
-                  <UpOutlined className="mr-2" />
+                  <UpOutlined className="mr-2"/>
                 ) : (
-                  <DownOutlined className="mr-2" />
+                  <DownOutlined className="mr-2"/>
                 )}
                 {record.articleStatus === ArticleStatusEnum.OFFLINE ? '上架' : '下架'}
               </span>
@@ -600,9 +596,9 @@ const AdminArticles: React.FC = () => {
                 className="flex items-center cursor-pointer"
               >
                 {record.top === AllowTopEnum.TOP ? (
-                  <PushpinTwoTone className="mr-2" />
+                  <PushpinTwoTone className="mr-2"/>
                 ) : (
-                  <PushpinOutlined className="mr-2" />
+                  <PushpinOutlined className="mr-2"/>
                 )}
                 {record.top === AllowTopEnum.TOP ? '取消置顶' : '置顶'}
               </span>
@@ -616,11 +612,43 @@ const AdminArticles: React.FC = () => {
                 className="flex items-center cursor-pointer"
               >
                 {record.recommended === RecommendedEnum.RECOMMENDED ? (
-                  <DislikeOutlined className="mr-2" />
+                  <DislikeOutlined className="mr-2"/>
                 ) : (
-                  <LikeOutlined className="mr-2" />
+                  <LikeOutlined className="mr-2"/>
                 )}
                 {record.recommended === RecommendedEnum.RECOMMENDED ? '取消推荐' : '推荐'}
+              </span>
+            )
+          },
+          {
+            key: 'delete',
+            label: (
+              <Popconfirm
+                title="确定要删除这篇文章吗？"
+                description="删除后该文章将被移至该用户的回收站！"
+                onConfirm={() => handleDeleteArticle(record.id)}
+                okText="确定"
+                cancelText="取消"
+              >
+                <span className="flex items-center cursor-pointer text-red-400">
+                  <DeleteOutlined className="mr-2 text-red-500"/>
+                  删除
+                </span>
+              </Popconfirm>
+            )
+          },
+          {
+            key: 'permanentDelete',
+            label: (
+              <span
+                className="flex items-center cursor-pointer text-red-600"
+                onClick={() => {
+                  setArticleToDelete(record.id);
+                  setIsPermanentDeleteModalVisible(true);
+                }}
+              >
+                <DeleteFilled className="mr-2 text-red-500"/>
+                彻底删除
               </span>
             )
           }
@@ -630,7 +658,7 @@ const AdminArticles: React.FC = () => {
             <Button
               variant={'filled'}
               color={'blue'}
-              icon={<EyeOutlined />}
+              icon={<EyeOutlined/>}
               onClick={() => handleViewArticle(record)}
               className="text-blue-500"
             >
@@ -639,7 +667,7 @@ const AdminArticles: React.FC = () => {
             <Button
               variant={'filled'}
               color={record.reviewStatus === 'APPROVED' ? 'default' : 'green'}
-              icon={<AuditOutlined />}
+              icon={<AuditOutlined/>}
               onClick={() => handleViewArticle(record)}
               className={record.reviewStatus === 'APPROVED' ? 'w-24 text-gray-500' : 'w-24 text-green-500'}
             >
@@ -665,7 +693,7 @@ const AdminArticles: React.FC = () => {
           <Search
             placeholder="搜索标题或作者"
             allowClear
-            enterButton={<SearchOutlined />}
+            enterButton={<SearchOutlined/>}
             onSearch={handleSearch}
             style={{ width: 300 }}
           />
@@ -750,7 +778,7 @@ const AdminArticles: React.FC = () => {
             key="approve"
             color="green"
             variant="filled"
-            icon={<CheckCircleOutlined />}
+            icon={<CheckCircleOutlined/>}
             onClick={() => handleReviewArticle('approve')}
             loading={reviewLoading}
             disabled={currentArticle?.reviewStatus === ArticleReviewStatusEnum.APPROVED}
@@ -762,7 +790,7 @@ const AdminArticles: React.FC = () => {
             key="reject"
             color="red"
             variant="filled"
-            icon={<CloseCircleOutlined />}
+            icon={<CloseCircleOutlined/>}
             onClick={() => setRejectModalVisible(true)}
             loading={reviewLoading}
             disabled={currentArticle?.reviewStatus === ArticleReviewStatusEnum.REJECTED}
@@ -774,7 +802,7 @@ const AdminArticles: React.FC = () => {
             key="reprocess"
             color="cyan"
             variant="filled"
-            icon={<CheckCircleOutlined />}
+            icon={<CheckCircleOutlined/>}
             onClick={() => handleReviewArticle('reprocess')}
             loading={reviewLoading}
             className="px-6 py-2 mr-10"
@@ -818,34 +846,34 @@ const AdminArticles: React.FC = () => {
               <Title level={3}>{currentArticle.title}</Title>
               <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
                 <span className="flex items-center gap-1">
-                  <UserOutlined /> {currentArticle.nickname}
+                  <UserOutlined/> {currentArticle.nickname}
                 </span>
                 <span className="flex items-center gap-1">
-                  <CalendarOutlined />{' '}
+                  <CalendarOutlined/>{' '}
                   {currentArticle.publishTime ? formatDateTimeShort(currentArticle.publishTime) : ''}
                 </span>
                 <span className="flex items-center gap-1">
-                  <EyeOutlined /> {currentArticle.readCount} 浏览
+                  <EyeOutlined/> {currentArticle.readCount} 浏览
                 </span>
                 <span className="flex items-center gap-1">
-                  <CommentOutlined /> {currentArticle.commentCount} 评论
+                  <CommentOutlined/> {currentArticle.commentCount} 评论
                 </span>
                 <span className="flex items-center gap-1">
-                  <LikeOutlined /> {currentArticle.likeCount} 点赞
+                  <LikeOutlined/> {currentArticle.likeCount} 点赞
                 </span>
                 <span className="flex items-center gap-1">
-                  <StarOutlined />
+                  <StarOutlined/>
                   {currentArticle.collectionCount} 收藏
                 </span>
                 <span className="flex items-center gap-1">
-                  <ShareAltOutlined />
+                  <ShareAltOutlined/>
                   {currentArticle.shareCount} 分享
                 </span>
                 <span className="flex items-center gap-1">
                   {currentArticle.top === AllowTopEnum.TOP ? (
-                    <PushpinTwoTone />
+                    <PushpinTwoTone/>
                   ) : (
-                    <PushpinOutlined className="text-gray-400" />
+                    <PushpinOutlined className="text-gray-400"/>
                   )}
                   {AllowTopMap[currentArticle.top as keyof typeof AllowTopMap] || currentArticle.top}
                 </span>
@@ -867,7 +895,7 @@ const AdminArticles: React.FC = () => {
             <Tabs defaultActiveKey="basic" className="mt-4">
               {/* 基本信息 */}
               <TabPane tab="基本信息" key="basic">
-                <div className="h-[500px] overflow-y-auto">
+                <div className="h-125 overflow-y-auto">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* 左侧信息 */}
                     <Space orientation="vertical" size={32}>
@@ -902,13 +930,13 @@ const AdminArticles: React.FC = () => {
                           <Descriptions.Item label="可见性">
                             <span className="flex items-center gap-1">
                               {currentArticle.visible === ArticleVisibleEnum.PUBLIC && (
-                                <GlobalOutlined style={{ color: 'green' }} />
+                                <GlobalOutlined style={{ color: 'green' }}/>
                               )}
                               {currentArticle.visible === ArticleVisibleEnum.PRIVATE && (
-                                <LockOutlined style={{ color: 'blue' }} />
+                                <LockOutlined style={{ color: 'blue' }}/>
                               )}
                               {currentArticle.visible === ArticleVisibleEnum.FOLLOWERS_ONLY && (
-                                <UserOutlined style={{ color: 'chocolate' }} />
+                                <UserOutlined style={{ color: 'chocolate' }}/>
                               )}
                               {visibleOptions.find((opt) => opt.value === currentArticle.visible)?.label}
                             </span>
@@ -924,7 +952,7 @@ const AdminArticles: React.FC = () => {
                                     rel="noopener noreferrer"
                                     className="ml-2 text-blue-500 hover:underline"
                                   >
-                                    <LinkOutlined /> 来源链接
+                                    <LinkOutlined/> 来源链接
                                   </a>
                                 )}
                             </span>
@@ -1008,7 +1036,7 @@ const AdminArticles: React.FC = () => {
 
               {/* 文章内容 */}
               <TabPane tab="文章内容" key="content">
-                <div className="h-[500px] overflow-y-auto px-2">
+                <div className="h-125 overflow-y-auto px-2">
                   <Card>
                     {currentArticle.coverImage && (
                       <div className="mb-6">
@@ -1023,7 +1051,7 @@ const AdminArticles: React.FC = () => {
                       <span className="text-base font-semibold mr-2">摘要:</span>
                       <Text className="text-gray-600 text-xs font-serif">{currentArticle.summary || '无摘要'}</Text>
                     </div>
-                    <Divider />
+                    <Divider/>
                     <div>
                       <div className="text-base font-semibold mb-2">正文:</div>
                       <div
@@ -1070,9 +1098,29 @@ const AdminArticles: React.FC = () => {
               }
             ]}
           >
-            <Input.TextArea rows={4} placeholder="请详细说明拒绝原因，以便作者改进" className="resize-none" />
+            <Input.TextArea rows={4} placeholder="请详细说明拒绝原因，以便作者改进" className="resize-none"/>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 彻底删除确认模态框 */}
+      <Modal
+        title="彻底删除文章"
+        open={isPermanentDeleteModalVisible}
+        onOk={handlePermanentDeleteArticle}
+        onCancel={handleCancelPermanentDelete}
+        width={450}
+        okText="确定"
+        cancelText="取消"
+        okButtonProps={{ danger: true }}
+        style={{
+          borderRadius: '12px',
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)'
+        }}
+      >
+        <div className="text-center py-4">
+          <p className="text-lg font-medium text-gray-800 mb-2">确定要彻底删除这篇文章吗？删除后将无法恢复！</p>
+        </div>
       </Modal>
     </div>
   );

@@ -183,6 +183,7 @@ export const API_ENDPOINTS = {
       LIST_PAGE: '/admin/article/list', // 分页获取文章
       GET: (id: number): string => `/admin/article/detail/${id}`, // 获取文章详情
       DELETE: (id: number): string => `/admin/article/delete/${id}`, // 删除文章
+      PERMANENT_DELETE: (id: number): string => `/admin/article/permanent-delete/${id}`, // 彻底删除文章
       UPDATE: (id: number): string => `/admin/article/update/${id}`, // 更新文章
       UPDATE_STATUS: (id: number): string => `/admin/article/update/article-status/${id}`, // 更新文章状态
       APPROVE: (id: number): string => `/admin/article/approve/${id}`, // 审核通过文章

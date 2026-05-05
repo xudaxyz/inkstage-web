@@ -388,6 +388,11 @@ const articleService = {
       validateIdParam(id);
       return await apiClient.delete(API_ENDPOINTS.ADMIN.ARTICLE.DELETE(id));
     },
+    // 彻底删除文章
+    deleteArticlePermanently: async (id: number): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.delete(API_ENDPOINTS.ADMIN.ARTICLE.PERMANENT_DELETE(id));
+    },
     // 更新文章状态
     updateArticleStatus: async (id: number, articleStatus: ArticleStatusEnum): Promise<ApiResponse<Article>> => {
       validateIdParam(id);
