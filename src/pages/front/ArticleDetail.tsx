@@ -20,7 +20,7 @@ import {
   StarOutlined,
   StarTwoTone,
   UpOutlined,
-  BookOutlined
+  BookTwoTone
 } from '@ant-design/icons';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
@@ -748,52 +748,103 @@ const ArticleDetail: React.FC = () => {
 
                 {/* 专栏信息及上下篇导航 */}
                 {columnNeighbor && (
-                  <div
-                    className="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <BookOutlined className="text-blue-500"/>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                  <div className="mb-8">
+                    {/* 大屏幕布局：单行左右分布 */}
+                    <div className="hidden sm:flex sm:items-center sm:justify-between gap-4">
+                      {/* 左侧：本文收录于xxx专栏 */}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <BookTwoTone style={{ color: 'blue' }} />
+                        <span className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
                           本文收录于{' '}
                           <a
                             href={ROUTES.COLUMN_DETAIL(columnNeighbor.columnId)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                            className="font-semibold text-gray-700 dark:text-gray-200 hover:text-cyan-500 transition-colors"
                           >
                             {columnNeighbor.columnName}
                           </a>{' '}
                           专栏
                         </span>
                       </div>
+
+                      {/* 右侧：上下篇导航 */}
+                      <div className="flex items-center justify-end gap-6">
+                        {columnNeighbor.prev ? (
+                          <button
+                            onClick={() => columnNeighbor.prev?.id && navigate(ROUTES.ARTICLE_DETAIL(columnNeighbor.prev.id))}
+                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-cyan-400 transition-colors min-w-0"
+                          >
+                            <ArrowLeftOutlined className="shrink-0"/>
+                            <span className="truncate max-w-48">{columnNeighbor.prev.title}</span>
+                          </button>
+                        ) : (
+                          <div className="text-sm text-gray-400 whitespace-nowrap">已是第一篇</div>
+                        )}
+
+                        <span className="text-gray-200 text-[12px] dark:text-gray-600 select-none">|</span>
+
+                        {columnNeighbor.next ? (
+                          <button
+                            onClick={() => columnNeighbor.next?.id && navigate(ROUTES.ARTICLE_DETAIL(columnNeighbor.next.id))}
+                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-cyan-400 transition-colors min-w-0"
+                          >
+                            <span className="truncate max-w-48">{columnNeighbor.next.title}</span>
+                            <ArrowRightOutlined className="shrink-0"/>
+                          </button>
+                        ) : (
+                          <div className="text-sm text-gray-400 whitespace-nowrap">已是最后一篇</div>
+                        )}
+                      </div>
                     </div>
 
-                    {/* 上下篇导航 */}
-                    <div
-                      className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                      {columnNeighbor.prev ? (
-                        <button
-                          onClick={() => columnNeighbor.prev?.id && navigate(ROUTES.ARTICLE_DETAIL(columnNeighbor.prev.id))}
-                          className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
-                        >
-                          <ArrowLeftOutlined/>
-                          <span className="max-w-48 truncate">{columnNeighbor.prev.title}</span>
-                        </button>
-                      ) : (
-                        <div className="text-sm text-gray-400">已是第一篇</div>
-                      )}
+                    {/* 小屏幕布局：分两行，第二行左右分布 */}
+                    <div className="flex flex-col gap-4 sm:hidden">
+                      {/* 第一行：专栏信息 */}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <BookTwoTone style={{ color: 'blue' }} />
+                        <span className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap hover:text-cyan-500">
+                          本文收录于{' '}
+                          <a
+                            href={ROUTES.COLUMN_DETAIL(columnNeighbor.columnId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-gray-700 dark:text-gray-200 transition-colors"
+                          >
+                            {columnNeighbor.columnName}
+                          </a>{' '}
+                          专栏
+                        </span>
+                      </div>
 
-                      {columnNeighbor.next ? (
-                        <button
-                          onClick={() => columnNeighbor.next?.id && navigate(ROUTES.ARTICLE_DETAIL(columnNeighbor.next.id))}
-                          className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
-                        >
-                          <span className="max-w-48 truncate">{columnNeighbor.next.title}</span>
-                          <ArrowRightOutlined/>
-                        </button>
-                      ) : (
-                        <div className="text-sm text-gray-400">已是最后一篇</div>
-                      )}
+                      {/* 第二行：上下篇导航 - 左右分布 */}
+                      <div className="flex items-center justify-between gap-4">
+                        {columnNeighbor.prev ? (
+                          <button
+                            onClick={() => columnNeighbor.prev?.id && navigate(ROUTES.ARTICLE_DETAIL(columnNeighbor.prev.id))}
+                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-cyan-400 transition-colors min-w-0"
+                          >
+                            <ArrowLeftOutlined className="shrink-0"/>
+                            <span className="truncate max-w-36">{columnNeighbor.prev.title}</span>
+                          </button>
+                        ) : (
+                          <div className="text-sm text-gray-400 whitespace-nowrap">已是第一篇</div>
+                        )}
+
+                        <span className="text-gray-200 text-[12px] dark:text-gray-600 select-none">|</span>
+
+                        {columnNeighbor.next ? (
+                          <button
+                            onClick={() => columnNeighbor.next?.id && navigate(ROUTES.ARTICLE_DETAIL(columnNeighbor.next.id))}
+                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-cyan-400 transition-colors min-w-0"
+                          >
+                            <span className="truncate max-w-36">{columnNeighbor.next.title}</span>
+                            <ArrowRightOutlined className="shrink-0"/>
+                          </button>
+                        ) : (
+                          <div className="text-sm text-gray-400 whitespace-nowrap">已是最后一篇</div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
