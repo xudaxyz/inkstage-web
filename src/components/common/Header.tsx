@@ -134,7 +134,7 @@ const Header: React.FC = () => {
             {item.label}
           </Link>
           {!isMobile && activeNavItem === item.key && (
-            <div className="-bottom-1 left-0 right-0 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-10"></div>
+            <div className="-bottom-1 left-0 right-0 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-50"></div>
           )}
         </div>
       ))}
@@ -260,7 +260,7 @@ const Header: React.FC = () => {
   );
 
   return (
-    <header className="h-18 bg-white/80 dark:bg-gray-800 backdrop-blur-sm border-b border-gray-200 dark:border-b dark:border-gray-700 dark:shadow-sm flex items-center px-4 sm:px-6 lg:px-[5%] sticky top-0 z-10 shadow-sm">
+    <header className="h-18 bg-white/80 dark:bg-gray-800 backdrop-blur-sm border-b border-gray-200 dark:border-b dark:border-gray-700 dark:shadow-sm flex items-center px-4 sm:px-6 lg:px-[5%] sticky top-0 z-50 shadow-sm">
       {/* Logo */}
       <Link to={ROUTES.HOME} className="flex items-center transition-colors duration-200 shrink-0">
         <span className="text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide">
