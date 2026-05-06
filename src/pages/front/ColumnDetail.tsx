@@ -35,7 +35,7 @@ const ColumnDetailPage: React.FC = () => {
   const [columnDetail, setColumnDetail] = useState<ColumnDetailVO | null>(null);
   const [hotColumns, setHotColumns] = useState<ColumnListVO[]>([]);
   const [loading, setLoading] = useState(false);
-  const [sortType, setSortType] = useState<'latest' | 'earliest'>('latest');
+  const [sortType, setSortType] = useState<'ASC' | 'DESC'>('ASC');
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   const navigate = useNavigate();
@@ -288,8 +288,8 @@ const ColumnDetailPage: React.FC = () => {
                       onChange={setSortType}
                       className="w-28"
                       options={[
-                        { value: 'latest', label: '最新' },
-                        { value: 'earliest', label: '最早' }
+                        { value: 'ASC', label: '正序' },
+                        { value: 'DESC', label: '倒序' }
                       ]}
                     />
                   </div>

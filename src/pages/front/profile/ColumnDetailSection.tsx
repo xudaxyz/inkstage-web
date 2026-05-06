@@ -1,22 +1,27 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState, useRef } from 'react';
 import { Button, Dropdown, message, Modal } from 'antd';
 import {
   BookOutlined,
   CalendarOutlined,
+  CheckOutlined,
+  CloseOutlined,
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
   LikeOutlined,
   MessageOutlined,
   MoreOutlined,
-  PlusOutlined, StarOutlined,
-  SwapOutlined
+  PlusOutlined,
+  StarOutlined,
+  SwapOutlined,
+  UnorderedListOutlined
 } from '@ant-design/icons';
 import LazyImage from '../../../components/common/LazyImage';
 import { getRelativeTime } from '../../../utils';
 import type { MyColumnVO } from '../../../types/column';
 import type { ColumnArticleListVO } from '../../../types/article';
 import { VisibleStatus } from '../../../types/enums';
+import columnService from '../../../services/columnService';
 
 interface ColumnDetailSectionProps {
   column: MyColumnVO;
@@ -45,6 +50,92 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
                                                                    onToggleVisibility,
                                                                    onRefresh
                                                                  }) => {
+  const [isSortMode, setIsSortMode] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [localArticles, setLocalArticles] = useState<ColumnArticleListVO[]>(articles);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const originalArticlesRef = useRef<ColumnArticleListVO[]>(articles);
+
+  // 同步外部articles变化到本地状态（非排序模式下）
+  React.useEffect(() => {
+    if (!isSortMode) {
+      setLocalArticles(articles);
+      originalArticlesRef.current = articles;
+    }
+  }, [articles, isSortMode]);
+
+  // 进入排序模式
+  const handleEnterSortMode = useCallback(() => {
+    originalArticlesRef.current = [...articles];
+    setLocalArticles([...articles]);
+    setIsSortMode(true);
+  }, [articles]);
+
+  // 取消排序
+  const handleCancelSort = useCallback(() => {
+    setLocalArticles([...originalArticlesRef.current]);
+    setIsSortMode(false);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  }, []);
+
+  // 确认排序并保存
+  const handleConfirmSort = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const articleIds = localArticles.map(a => a.id);
+      const response = await columnService.batchUpdateColumnArticleSort(column.id, articleIds);
+      if (response.code === 200 && response.data) {
+        message.success('排序已保存');
+        setIsSortMode(false);
+        onRefresh();
+      } else {
+        message.error('排序保存失败');
+      }
+    } catch {
+      message.error('排序保存失败');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [localArticles, column.id, onRefresh]);
+
+  const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  }, [draggedIndex]);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverIndex(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newArticles = [...localArticles];
+    const [draggedItem] = newArticles.splice(draggedIndex, 1);
+    newArticles.splice(targetIndex, 0, draggedItem);
+    setLocalArticles(newArticles);
+
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  }, [draggedIndex, localArticles]);
+
   const otherColumns = useMemo(() => {
     return allColumns.filter(col => col.id !== column.id);
   }, [allColumns, column.id]);
@@ -118,6 +209,12 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
   const renderVisibilityMenu = useCallback(() => {
     const items = [
       {
+        key: 'sort',
+        label: '文章排序',
+        icon: <UnorderedListOutlined/>,
+        onClick: (): void => handleEnterSortMode()
+      },
+      {
         key: 'public',
         label: '设为公开',
         icon: <EyeOutlined/>,
@@ -137,7 +234,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
       }
     ];
     return { items };
-  }, [handleToggleVisibility]);
+  }, [handleToggleVisibility, handleEnterSortMode]);
 
   const getArticleActionsMenu = useCallback((article: ColumnArticleListVO) => {
     const moveMenuItems = otherColumns.length > 0
@@ -249,35 +346,83 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
         {/* 文章列表 */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
           <div className="flex items-center border-b border-gray-100 justify-between pb-6">
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">专栏文章 ({articles.length})</h3>
-            <Button variant="outlined" color="blue" icon={<PlusOutlined/>} onClick={onCreateArticle}>
-              新建专栏文章
-            </Button>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+              {isSortMode ? '拖拽排序中' : `专栏文章 (${articles.length})`}
+            </h3>
+            {isSortMode ? (
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outlined"
+                  color="default"
+                  icon={<CloseOutlined/>}
+                  onClick={handleCancelSort}
+                  disabled={isSaving}
+                >
+                  取消
+                </Button>
+                <Button
+                  variant="solid"
+                  color="cyan"
+                  icon={<CheckOutlined/>}
+                  onClick={handleConfirmSort}
+                  loading={isSaving}
+                >
+                  确认
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outlined" color="blue" icon={<PlusOutlined/>} onClick={onCreateArticle}>
+                新建专栏文章
+              </Button>
+            )}
           </div>
 
           <div className="space-y-0">
-            {articles.map((article) => (
+            {localArticles.map((article, index) => (
               <div
                 key={article.id}
-                className="relative pl-8 pb-6 group cursor-pointer"
+                className={`relative pb-6 group transition-all duration-300 ${
+                  isSortMode ? 'pl-8 cursor-grab active:cursor-grabbing' : 'pl-8'
+                } ${
+                  draggedIndex === index ? 'opacity-50 scale-95' : ''
+                } ${dragOverIndex === index ? 'border-t-4 border-purple-500 -mt-4 pt-4' : ''}`}
+                draggable={isSortMode}
+                onDragStart={isSortMode ? (e): void => handleDragStart(e, index) : undefined}
+                onDragOver={isSortMode ? (e): void => handleDragOver(e, index) : undefined}
+                onDragLeave={isSortMode ? handleDragLeave : undefined}
+                onDrop={isSortMode ? (e): void => handleDrop(e, index) : undefined}
               >
                 {/* 时间轴圆点 */}
                 <div
-                  className="absolute left-0 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full -translate-x-2 group-hover:bg-purple-500 group-hover:scale-125 transition-all duration-300 shadow-sm"/>
+                  className={`absolute left-0 top-0 w-4 h-4 rounded-full -translate-x-2 transition-all duration-300 shadow-sm ${
+                    isSortMode
+                      ? 'bg-purple-500'
+                      : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-purple-500 group-hover:scale-125'
+                  }`}/>
                 {/* 时间轴线 */}
                 <div
-                  className="absolute left-0 top-4 w-0.5 h-full bg-gray-300 dark:bg-gray-600 group-hover:bg-purple-500 dark:group-hover:bg-purple-500 transition-colors duration-300"/>
+                  className={`absolute left-0 top-4 w-0.5 h-full transition-colors duration-300 ${
+                    isSortMode
+                      ? 'bg-purple-500'
+                      : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-purple-500 dark:group-hover:bg-purple-500'
+                  }`}/>
 
                 <div
                   className="flex items-start justify-between gap-4 group-hover:-translate-x-1 transition-transform duration-300">
                   <div className="flex-1 min-w-0">
-                    {/* 标题 */}
-                    <h3
-                      className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors duration-300 cursor-pointer"
-                      onClick={() => onViewArticle(article.id)}
-                    >
-                      {article.title}
-                    </h3>
+                    {/* 标题行 - 包含拖拽手柄和标题 */}
+                    <div className="flex items-center gap-2 mb-2">
+                      {/* 拖拽手柄 - 仅排序模式显示在标题左侧 */}
+                      {isSortMode && (
+                        <UnorderedListOutlined className="text-gray-400 text-lg cursor-grab shrink-0"/>
+                      )}
+                      <h3
+                        className="text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors duration-300 cursor-pointer"
+                        onClick={() => onViewArticle(article.id)}
+                      >
+                        {article.title}
+                      </h3>
+                    </div>
 
                     {/* 简介 */}
                     {article.summary && (
@@ -328,17 +473,17 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
 
                     {/* 操作按钮 */}
                     <div className="self-end">
-                    <Dropdown
-                      key="more"
-                      menu={getArticleActionsMenu(article)}
-                      trigger={['click']}
-                    >
-                      <Button
-                        icon={<MoreOutlined/>}
-                        size="small"
-                        type="text"
-                      />
-                    </Dropdown>
+                      <Dropdown
+                        key="more"
+                        menu={getArticleActionsMenu(article)}
+                        trigger={['click']}
+                      >
+                        <Button
+                          icon={<MoreOutlined/>}
+                          size="small"
+                          type="text"
+                        />
+                      </Dropdown>
                     </div>
                   </div>
                 </div>

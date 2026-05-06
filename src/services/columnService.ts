@@ -9,7 +9,8 @@ import type {
   AddArticleToColumnDTO,
   UpdateColumnArticleSortDTO,
   ArticleColumn,
-  MyColumnSubscriptionVO
+  MyColumnSubscriptionVO,
+  ColumnNeighborVO
 } from '../types/column';
 import type { ColumnArticleListVO } from '../types/article';
 import type { ApiResponse } from '../types/common';
@@ -58,11 +59,11 @@ const columnService = {
    * @param id 专栏ID
    * @param pageNum 页码
    * @param pageSize 每页数量
-   * @param sortBy 排序方式：latest（最新）、earliest（最早）、readCount（阅读量）、commentCount（评论数）
+   * @param sortBy 排序方式：ASC/DESC
    */
   async getColumnArticles(id: number, pageNum: number, pageSize: number, sortBy?: string): Promise<ApiResponse<PageResult<ColumnArticleListVO>>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.DETAIL_ARTICLES(id), {
-      params: { pageNum, pageSize, sortBy: sortBy || 'latest' }
+      params: { pageNum, pageSize, sortBy: sortBy || 'ASC' }
     });
   },
 
@@ -157,6 +158,23 @@ const columnService = {
    */
   async getArticleColumn(articleId: number): Promise<ApiResponse<ArticleColumn>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_INFO, { params: { articleId } });
+  },
+
+  /**
+   * 获取文章在专栏中的上下篇文章信息
+   * @param articleId 文章ID
+   */
+  async getColumnNeighborArticles(articleId: number): Promise<ApiResponse<ColumnNeighborVO | null>> {
+    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_NEIGHBOR, { params: { articleId } });
+  },
+
+  /**
+   * 批量更新专栏文章排序
+   * @param columnId 专栏ID
+   * @param articleIds 按新顺序排列的文章ID列表
+   */
+  async batchUpdateColumnArticleSort(columnId: number, articleIds: number[]): Promise<ApiResponse<boolean>> {
+    return await apiClient.put(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_SORT_BATCH, articleIds, { params: { columnId } });
   },
 
   /**

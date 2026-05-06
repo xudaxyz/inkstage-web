@@ -116,3 +116,17 @@ export interface ArticleColumn {
   createTime: string;
   updateTime: string;
 }
+
+// 专栏内文章上下篇VO
+export interface NeighborArticleVO {
+  id: number;
+  title: string;
+}
+
+// 专栏文章上下篇结果VO
+export interface ColumnNeighborVO {
+  columnId: number;
+  columnName: string;
+  prev: NeighborArticleVO | null;
+  next: NeighborArticleVO | null;
+}

@@ -145,9 +145,11 @@ export const API_ENDPOINTS = {
       ARTICLE_ADD: '/front/column/article/add', // 添加文章到专栏
       ARTICLE_REMOVE: '/front/column/article/remove', // 从专栏移除文章
       ARTICLE_SORT: '/front/column/article/sort', // 更新文章排序
+      ARTICLE_SORT_BATCH: '/front/column/article/sort/batch', // 批量更新文章排序
       ARTICLE_MOVE: '/front/column/article/move', // 移动文章到另一个专栏
       ARTICLE_CHECK: '/front/column/article/check', // 检查文章是否在专栏中
       ARTICLE_INFO: '/front/column/article/info', // 获取文章所属的专栏信息
+      ARTICLE_NEIGHBOR: '/front/column/article/neighbor', // 获取文章在专栏中的上下篇文章
       // 订阅相关
       SUBSCRIBE: (id: number): string => `/front/column/subscribe/${id}`, // 订阅专栏
       UNSUBSCRIBE: (id: number): string => `/front/column/unsubscribe/${id}`, // 取消订阅
