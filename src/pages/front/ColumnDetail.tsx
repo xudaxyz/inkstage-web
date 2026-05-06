@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useEffectEvent, useCallback, useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Button, Dropdown, message, Select, Spin } from 'antd';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   BookOutlined,
   ClockCircleOutlined,
@@ -56,7 +57,7 @@ const ColumnDetailPage: React.FC = () => {
       };
     }
 
-    const response = await columnService.getColumnArticles(Number(id), pageNum, pageSize);
+    const response = await columnService.getColumnArticles(Number(id), pageNum, pageSize, sortType);
     if (response.code === 200 && response.data) {
       const data = response.data;
       return {
@@ -72,7 +73,7 @@ const ColumnDetailPage: React.FC = () => {
       };
     }
     throw new Error(response.message || '获取专栏文章失败');
-  }, [id]);
+  }, [id, sortType]);
 
   const articlesInfiniteScroll = useInfiniteScroll<ColumnArticleListVO>(articlesFetcher, {
     pageSize: articlesPageSize,
@@ -127,7 +128,7 @@ const ColumnDetailPage: React.FC = () => {
     if (id) {
       onRefreshArticles();
     }
-  }, [id]);
+  }, [id, sortType]);
 
   const handleSubscribe = async (): Promise<void> => {
     if (!id) return;
@@ -293,84 +294,94 @@ const ColumnDetailPage: React.FC = () => {
                     />
                   </div>
 
-                  <InfiniteScrollContainer
-                    infiniteScroll={articlesInfiniteScroll}
-                    renderItem={(article) => (
-                      <div
-                        key={article.id}
-                        className="relative pl-8 pb-6 group cursor-pointer"
-                      >
-                        <div className="absolute left-0 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full -translate-x-2 group-hover:bg-cyan-500 group-hover:scale-125 transition-all duration-300 shadow-sm" />
-                        <div className="absolute left-0 top-4 w-0.5 h-full bg-gray-300 dark:bg-gray-600 group-hover:bg-cyan-500 dark:group-hover:bg-cyan-500 transition-colors duration-300" />
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={sortType}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    >
+                      <InfiniteScrollContainer
+                        infiniteScroll={articlesInfiniteScroll}
+                        renderItem={(article) => (
+                          <div
+                            key={article.id}
+                            className="relative pl-8 pb-6 group cursor-pointer"
+                          >
+                            <div className="absolute left-0 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full -translate-x-2 group-hover:bg-cyan-500 group-hover:scale-125 transition-all duration-300 shadow-sm" />
+                            <div className="absolute left-0 top-4 w-0.5 h-full bg-gray-300 dark:bg-gray-600 group-hover:bg-cyan-500 dark:group-hover:bg-cyan-500 transition-colors duration-300" />
 
-                        <div
-                          className="flex items-start justify-between gap-4 group-hover:-translate-x-1 transition-transform duration-300">
-                          <div className="flex-1 min-w-0">
-                            <h3
-                              className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors duration-300">
-                              <a
-                                href={ROUTES.ARTICLE_DETAIL(article.id)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                {article.title}
-                              </a>
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-                              {article.summary}
-                            </p>
-                            <div className="flex items-center gap-5 text-xs text-gray-400">
-                              <span
-                                className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
-                                <EyeOutlined size={14}/>
-                                {article.readCount}
-                              </span>
-                              <span
-                                className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
-                                <MessageOutlined size={14}/>
-                                {article.commentCount}
-                              </span>
-                              <span
-                                className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
-                                <LikeOutlined size={14}/>
-                                {article.likeCount}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <ClockCircleOutlined size={14}/>
-                                {getRelativeTime(article.publishTime)}
-                              </span>
+                            <div
+                              className="flex items-start justify-between gap-4 group-hover:-translate-x-1 transition-transform duration-300">
+                              <div className="flex-1 min-w-0">
+                                <h3
+                                  className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors duration-300">
+                                  <a
+                                    href={ROUTES.ARTICLE_DETAIL(article.id)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {article.title}
+                                  </a>
+                                </h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+                                  {article.summary}
+                                </p>
+                                <div className="flex items-center gap-5 text-xs text-gray-400">
+                                  <span
+                                    className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
+                                    <EyeOutlined size={14}/>
+                                    {article.readCount}
+                                  </span>
+                                  <span
+                                    className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
+                                    <MessageOutlined size={14}/>
+                                    {article.commentCount}
+                                  </span>
+                                  <span
+                                    className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
+                                    <LikeOutlined size={14}/>
+                                    {article.likeCount}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <ClockCircleOutlined size={14}/>
+                                    {getRelativeTime(article.publishTime)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {article.coverImage && (
+                                <div
+                                  className="w-48 h-24 rounded-lg overflow-hidden shrink-0 hidden sm:block group-hover:shadow-[0_4px_15px_rgba(6,182,212,0.3)] transition-shadow duration-300">
+                                  <a href={ROUTES.ARTICLE_DETAIL(article.id)} target="_blank" rel="noopener noreferrer">
+                                    <LazyImage
+                                      src={article.coverImage}
+                                      alt={article.title}
+                                      className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-95 transition-all duration-500"
+                                    />
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           </div>
-
-                          {article.coverImage && (
-                            <div
-                              className="w-48 h-24 rounded-lg overflow-hidden shrink-0 hidden sm:block group-hover:shadow-[0_4px_15px_rgba(6,182,212,0.3)] transition-shadow duration-300">
-                              <a href={ROUTES.ARTICLE_DETAIL(article.id)} target="_blank" rel="noopener noreferrer">
-                                <LazyImage
-                                  src={article.coverImage}
-                                  alt={article.title}
-                                  className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-95 transition-all duration-500"
-                                />
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    emptyContent={
-                      <div className="text-center py-10">
-                        <p className="text-gray-500 dark:text-gray-400">暂无文章</p>
-                      </div>
-                    }
-                    loadingContent={
-                      <div className="flex justify-center items-center py-10">
-                        <Spin size="default"/>
-                      </div>
-                    }
-                    className="space-y-6"
-                    itemGap="0"
-                    noMoreText="已经到底啦 ~"
-                  />
+                        )}
+                        emptyContent={
+                          <div className="text-center py-10">
+                            <p className="text-gray-500 dark:text-gray-400">暂无文章</p>
+                          </div>
+                        }
+                        loadingContent={
+                          <div className="flex justify-center items-center py-10">
+                            <Spin size="default"/>
+                          </div>
+                        }
+                        className="space-y-6"
+                        itemGap="0"
+                        noMoreText="已经到底啦 ~"
+                      />
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
               </div>
 
