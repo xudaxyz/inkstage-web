@@ -88,12 +88,12 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
         </a>
       </div>
       <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-1">
+        <h3 className="text-lg font-semibold hover:text-cyan-500 text-gray-800 dark:text-gray-200 mb-2 line-clamp-1">
           <a
             href={ROUTES.COLUMN_DETAIL(id)}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="hover:text-cyan-500 dark:hover:text-cyan-500 transition-colors"
           >
             {name}
           </a>
@@ -111,15 +111,18 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
           className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
           <span className="flex items-center gap-1">
             <BookOutlined/>
-            {articleCount}篇
+            {articleCount}
+            <span>篇</span>
           </span>
           <span className="flex items-center gap-1">
               <EyeOutlined/>
-            {readCount}阅读
+            {readCount}
+            <span>阅读</span>
           </span>
           <span className="flex items-center gap-1">
             <StarOutlined/>
-            {subscriptionCount}订阅
+            {subscriptionCount}
+            <span>订阅</span>
           </span>
         </div>
       </div>

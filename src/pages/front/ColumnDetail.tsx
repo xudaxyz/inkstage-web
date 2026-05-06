@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Button, Dropdown, message, Select, Spin } from 'antd';
 import {
   BookOutlined,
-  CalendarOutlined,
+  ClockCircleOutlined,
   CopyOutlined,
   EyeOutlined,
   LikeOutlined,
@@ -238,15 +238,18 @@ const ColumnDetailPage: React.FC = () => {
                     <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 ml-auto">
                       <span className="flex items-center gap-1">
                         <BookOutlined/>
-                        {columnDetail.articleCount}篇
+                        {columnDetail.articleCount}
+                        <span>篇</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <EyeOutlined/>
-                        {columnDetail.readCount}阅读
+                        {columnDetail.readCount}
+                        <span>阅读</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <StarOutlined/>
-                        {columnDetail.subscriptionCount}订阅
+                        {columnDetail.subscriptionCount}
+                        <span>订阅</span>
                       </span>
                     </div>
                   </div>
@@ -295,53 +298,62 @@ const ColumnDetailPage: React.FC = () => {
                     renderItem={(article) => (
                       <div
                         key={article.id}
-                        className="border-b border-gray-200 dark:border-gray-700 last:border-0 pb-4 last:pb-0"
+                        className="relative pl-8 pb-6 group cursor-pointer"
                       >
-                        <div className="flex gap-4">
-                          {article.coverImage && (
-                            <div className="w-48 h-32 rounded-md overflow-hidden shrink-0 hidden sm:block">
-                              <a href={ROUTES.ARTICLE_DETAIL(article.id)} target="_blank" rel="noopener noreferrer">
-                                <LazyImage
-                                  src={article.coverImage}
-                                  alt={article.title}
-                                  className="w-full h-full object-cover hover:opacity-90 transition-opacity"
-                                />
-                              </a>
-                            </div>
-                          )}
+                        <div className="absolute left-0 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full -translate-x-2 group-hover:bg-cyan-500 group-hover:scale-125 transition-all duration-300 shadow-sm" />
+                        <div className="absolute left-0 top-4 w-0.5 h-full bg-gray-300 dark:bg-gray-600 group-hover:bg-cyan-500 dark:group-hover:bg-cyan-500 transition-colors duration-300" />
+
+                        <div
+                          className="flex items-start justify-between gap-4 group-hover:-translate-x-1 transition-transform duration-300">
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 line-clamp-2">
+                            <h3
+                              className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors duration-300">
                               <a
                                 href={ROUTES.ARTICLE_DETAIL(article.id)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                               >
                                 {article.title}
                               </a>
                             </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
                               {article.summary}
                             </p>
-                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                              <span className="flex items-center gap-1">
-                                <LikeOutlined/>
+                            <div className="flex items-center gap-5 text-xs text-gray-400">
+                              <span
+                                className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
+                                <EyeOutlined size={14}/>
+                                {article.readCount}
+                              </span>
+                              <span
+                                className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
+                                <MessageOutlined size={14}/>
+                                {article.commentCount}
+                              </span>
+                              <span
+                                className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
+                                <LikeOutlined size={14}/>
                                 {article.likeCount}
                               </span>
                               <span className="flex items-center gap-1">
-                                <EyeOutlined/>
-                                {article.readCount}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <MessageOutlined/>
-                                {article.commentCount}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <CalendarOutlined/>
+                                <ClockCircleOutlined size={14}/>
                                 {getRelativeTime(article.publishTime)}
                               </span>
                             </div>
                           </div>
+
+                          {article.coverImage && (
+                            <div
+                              className="w-48 h-24 rounded-lg overflow-hidden shrink-0 hidden sm:block group-hover:shadow-[0_4px_15px_rgba(6,182,212,0.3)] transition-shadow duration-300">
+                              <a href={ROUTES.ARTICLE_DETAIL(article.id)} target="_blank" rel="noopener noreferrer">
+                                <LazyImage
+                                  src={article.coverImage}
+                                  alt={article.title}
+                                  className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-95 transition-all duration-500"
+                                />
+                              </a>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -357,6 +369,7 @@ const ColumnDetailPage: React.FC = () => {
                     }
                     className="space-y-6"
                     itemGap="0"
+                    noMoreText="已经到底啦 ~"
                   />
                 </div>
               </div>

@@ -138,8 +138,10 @@ export const API_ENDPOINTS = {
       LIST: '/front/column/list', // 获取专栏列表
       DETAIL: (id: number): string => `/front/column/${id}`, // 获取专栏详情
       DETAIL_ARTICLES: (id: number): string => `/front/column/${id}/articles`, // 获取专栏详情（分页文章列表）
+      ARTICLE_SEARCH: (id: number): string => `/front/column/${id}/articles/search`, // 搜索专栏内文章
       HOT: '/front/column/hot', // 获取热门专栏
       MY: '/front/column/my', // 获取我的专栏
+      MY_OPTIONS: '/front/column/my/options', // 获取我的专栏选项（仅ID和名称）
       ARTICLE_ADD: '/front/column/article/add', // 添加文章到专栏
       ARTICLE_REMOVE: '/front/column/article/remove', // 从专栏移除文章
       ARTICLE_SORT: '/front/column/article/sort', // 更新文章排序

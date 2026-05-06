@@ -47,7 +47,7 @@ const CreateColumn: React.FC = () => {
         // 先使用我的专栏列表获取，找到对应的专栏
         const response = await columnService.getMyColumns();
         if (response.code === 200 && response.data) {
-          const column = response.data.find((c: MyColumnVO) => c.id === id);
+          const column = response.data.record.find((c: MyColumnVO) => c.id === id);
           if (column) {
             form.setFieldsValue({
               name: column.name,

@@ -39,7 +39,7 @@ export function InfiniteScrollContainer<T>({
   itemGap = '16px',
   showLoadMoreButton = false,
   loadMoreText = '加载更多',
-  noMoreText = '没有更多数据了'
+  noMoreText = ''
 }: InfiniteScrollContainerProps<T>): React.ReactNode {
   const { data, isLoading, isLoadingMore, isError, error, hasMore, loadMoreRef, refresh } = infiniteScroll;
 
@@ -89,7 +89,7 @@ export function InfiniteScrollContainer<T>({
       <div ref={loadMoreRef} className="mt-4">
         {isLoadingMore && (loadingMoreContent || defaultLoadingMoreContent)}
 
-        {!isLoadingMore && !hasMore && data.length > 0 && (
+        {!isLoadingMore && !hasMore && data.length > 0 && noMoreText && (
           <div className="py-4 text-center text-gray-400 text-sm">{noMoreText}</div>
         )}
 

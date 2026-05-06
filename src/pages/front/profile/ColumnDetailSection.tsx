@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Button, Dropdown, List, message, Modal } from 'antd';
+import { Button, Dropdown, message, Modal } from 'antd';
 import {
   BookOutlined,
   CalendarOutlined,
@@ -120,20 +120,20 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
       {
         key: 'public',
         label: '设为公开',
-        icon: <EyeOutlined />,
-        onClick: () :void => handleToggleVisibility(VisibleStatus.PUBLIC)
+        icon: <EyeOutlined/>,
+        onClick: (): void => handleToggleVisibility(VisibleStatus.PUBLIC)
       },
       {
         key: 'private',
         label: '设为私有',
-        icon: <EyeOutlined style={{ opacity: 0.5 }} />,
-        onClick: () :void => handleToggleVisibility(VisibleStatus.PRIVATE)
+        icon: <EyeOutlined style={{ opacity: 0.5 }}/>,
+        onClick: (): void => handleToggleVisibility(VisibleStatus.PRIVATE)
       },
       {
         key: 'followers',
         label: '仅粉丝可见',
-        icon: <BookOutlined />,
-        onClick: () :void => handleToggleVisibility(VisibleStatus.FOLLOWERS_ONLY)
+        icon: <BookOutlined/>,
+        onClick: (): void => handleToggleVisibility(VisibleStatus.FOLLOWERS_ONLY)
       }
     ];
     return { items };
@@ -142,46 +142,46 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
   const getArticleActionsMenu = useCallback((article: ColumnArticleListVO) => {
     const moveMenuItems = otherColumns.length > 0
       ? otherColumns.map(col => ({
-          key: `move-to-${col.id}`,
-          label: col.name,
-          icon: <BookOutlined />,
-          onClick: () :void => handleMoveArticle(article.id, col.id, article.title)
-        }))
+        key: `move-to-${col.id}`,
+        label: col.name,
+        icon: <BookOutlined/>,
+        onClick: (): void => handleMoveArticle(article.id, col.id, article.title)
+      }))
       : [
-          {
-            key: 'no-columns',
-            label: '暂无其他专栏',
-            disabled: true
-          }
-        ];
+        {
+          key: 'no-columns',
+          label: '暂无其他专栏',
+          disabled: true
+        }
+      ];
 
     return {
       items: [
         {
           key: 'view',
           label: '查看',
-          icon: <EyeOutlined />,
-          onClick: () :void => onViewArticle(article.id)
+          icon: <EyeOutlined/>,
+          onClick: (): void => onViewArticle(article.id)
         },
         {
           key: 'edit',
           label: '编辑',
-          icon: <EditOutlined />,
-          onClick: () :void => onEditArticle(article.id)
+          icon: <EditOutlined/>,
+          onClick: (): void => onEditArticle(article.id)
         },
         { type: 'divider' as const },
         {
           key: 'move',
           label: '移动到',
-          icon: <SwapOutlined />,
+          icon: <SwapOutlined/>,
           children: moveMenuItems
         },
         {
           key: 'remove',
           label: '从专栏移出',
-          icon: <DeleteOutlined />,
+          icon: <DeleteOutlined/>,
           danger: true,
-          onClick: () :void => handleRemoveArticle(article.id, article.title)
+          onClick: (): void => handleRemoveArticle(article.id, article.title)
         }
       ]
     };
@@ -255,50 +255,25 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
             </Button>
           </div>
 
-          <List
-            itemLayout="horizontal"
-            dataSource={articles}
-            locale={{ emptyText: '暂无文章，试试新建一篇吧' }}
-            renderItem={(article) => (
-              <List.Item
+          <div className="space-y-0">
+            {articles.map((article) => (
+              <div
                 key={article.id}
-                className="border-b border-gray-200 dark:border-gray-700 last:border-0 py-4"
-                style={{ alignItems: 'flex-end' }}
-                actions={[
-                  <Dropdown
-                    key="more"
-                    menu={getArticleActionsMenu(article)}
-                    trigger={['click']}
-                  >
-                    <Button
-                      icon={<MoreOutlined/>}
-                      size="small"
-                      type="text"
-                    >
-                    </Button>
-                  </Dropdown>
-                ]}
+                className="relative pl-8 pb-6 group cursor-pointer"
               >
-                <div className="flex items-start gap-4 w-full">
-                  {/* 封面图 */}
-                  {article.coverImage && (
-                    <div
-                      className="w-40 h-24 rounded overflow-hidden cursor-pointer shrink-0"
-                      onClick={() => onViewArticle(article.id)}
-                    >
-                      <LazyImage
-                        src={article.coverImage}
-                        alt={article.title}
-                        className="w-full h-full object-cover hover:opacity-90 transition-opacity"
-                      />
-                    </div>
-                  )}
+                {/* 时间轴圆点 */}
+                <div
+                  className="absolute left-0 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full -translate-x-2 group-hover:bg-purple-500 group-hover:scale-125 transition-all duration-300 shadow-sm"/>
+                {/* 时间轴线 */}
+                <div
+                  className="absolute left-0 top-4 w-0.5 h-full bg-gray-300 dark:bg-gray-600 group-hover:bg-purple-500 dark:group-hover:bg-purple-500 transition-colors duration-300"/>
 
-                  {/* 内容区域 */}
-                  <div className="flex-1 min-w-0 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <div
+                  className="flex items-start justify-between gap-4 group-hover:-translate-x-1 transition-transform duration-300">
+                  <div className="flex-1 min-w-0">
                     {/* 标题 */}
                     <h3
-                      className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400 truncate"
+                      className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors duration-300 cursor-pointer"
                       onClick={() => onViewArticle(article.id)}
                     >
                       {article.title}
@@ -306,35 +281,77 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
 
                     {/* 简介 */}
                     {article.summary && (
-                      <p className="text-[15px] text-gray-500 dark:text-gray-400 mb-2 line-clamp-2 leading-relaxed">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
                         {article.summary}
                       </p>
                     )}
 
                     {/* 元数据 */}
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-                      <span className="flex items-center gap-1">
-                        <EyeOutlined className="w-4 h-4"/>
+                    <div className="flex items-center gap-5 text-xs text-gray-400">
+                      <span
+                        className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
+                        <EyeOutlined size={14}/>
                         {article.readCount}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <LikeOutlined className="w-4 h-4"/>
+                      <span
+                        className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
+                        <MessageOutlined size={14}/>
+                        {article.commentCount}
+                      </span>
+                      <span
+                        className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
+                        <LikeOutlined size={14}/>
                         {article.likeCount}
                       </span>
                       <span className="flex items-center gap-1">
-                        <MessageOutlined className="w-4 h-4"/>
-                        {article.commentCount}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CalendarOutlined className="w-4 h-4"/>
+                        <CalendarOutlined size={14}/>
                         {getRelativeTime(article.publishTime)}
                       </span>
                     </div>
                   </div>
+
+                  {/* 右侧：封面图和操作按钮 */}
+                  <div className="flex items-center gap-3">
+                    {/* 封面图 */}
+                    {article.coverImage && (
+                      <div
+                        className="w-40 h-24 rounded-lg overflow-hidden shrink-0 hidden sm:block group-hover:shadow-[0_4px_15px_rgba(139,92,246,0.3)] transition-shadow duration-300 cursor-pointer"
+                        onClick={() => onViewArticle(article.id)}
+                      >
+                        <LazyImage
+                          src={article.coverImage}
+                          alt={article.title}
+                          className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-95 transition-all duration-500"
+                        />
+                      </div>
+                    )}
+
+                    {/* 操作按钮 */}
+                    <div className="self-end">
+                    <Dropdown
+                      key="more"
+                      menu={getArticleActionsMenu(article)}
+                      trigger={['click']}
+                    >
+                      <Button
+                        icon={<MoreOutlined/>}
+                        size="small"
+                        type="text"
+                      />
+                    </Dropdown>
+                    </div>
+                  </div>
                 </div>
-              </List.Item>
+              </div>
+            ))}
+
+            {/* 空状态 */}
+            {articles.length === 0 && (
+              <div className="text-center py-10">
+                <p className="text-gray-500 dark:text-gray-400">暂无文章，试试新建一篇吧</p>
+              </div>
             )}
-          />
+          </div>
         </div>
       </div>
     </div>

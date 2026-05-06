@@ -55,10 +55,27 @@ const columnService = {
 
   /**
    * 获取专栏文章分页列表
+   * @param id 专栏ID
+   * @param pageNum 页码
+   * @param pageSize 每页数量
+   * @param sortBy 排序方式：latest（最新）、earliest（最早）、readCount（阅读量）、commentCount（评论数）
    */
-  async getColumnArticles(id: number, pageNum: number, pageSize: number): Promise<ApiResponse<PageResult<ColumnArticleListVO>>> {
+  async getColumnArticles(id: number, pageNum: number, pageSize: number, sortBy?: string): Promise<ApiResponse<PageResult<ColumnArticleListVO>>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.DETAIL_ARTICLES(id), {
-      params: { pageNum, pageSize }
+      params: { pageNum, pageSize, sortBy: sortBy || 'latest' }
+    });
+  },
+
+  /**
+   * 搜索专栏内的文章
+   * @param id 专栏ID
+   * @param keyword 搜索关键词
+   * @param pageNum 页码
+   * @param pageSize 每页数量
+   */
+  async searchColumnArticles(id: number, keyword: string, pageNum: number, pageSize: number): Promise<ApiResponse<PageResult<ColumnArticleListVO>>> {
+    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_SEARCH(id), {
+      params: { keyword, pageNum, pageSize }
     });
   },
 
@@ -70,16 +87,23 @@ const columnService = {
   },
 
   /**
-   * 获取我的专栏
+   * 获取我的专栏（分页）
    * @param keyword 搜索关键词（可选）
+   * @param pageNum 页码（默认1）
+   * @param pageSize 每页数量（默认10）
    */
-  async getMyColumns(keyword?: string): Promise<ApiResponse<MyColumnVO[]>> {
-    if (keyword && keyword.trim()) {
-      return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.LIST, {
-        params: { keyword, pageNum: 1, pageSize: 10 }
-      });
-    }
-    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.MY);
+  async getMyColumns(keyword?: string, pageNum?: number, pageSize?: number): Promise<ApiResponse<PageResult<MyColumnVO>>> {
+    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.MY, {
+      params: { keyword, pageNum: pageNum || 1, pageSize: pageSize || 10 }
+    });
+  },
+
+  /**
+   * 获取当前用户的专栏选项（仅ID和名称）
+   * 用于创建文章时选择专栏
+   */
+  async getMyColumnOptions(): Promise<ApiResponse<{ id: number; name: string }[]>> {
+    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.MY_OPTIONS);
   },
 
   /**

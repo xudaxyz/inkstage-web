@@ -30,7 +30,7 @@ import RichTextEditor from '../../components/editor/RichTextEditor';
 import './CreateArticle.css';
 import ArticleCoverUploader from '../../components/upload/ArticleCoverUploader';
 import { ROUTES } from '../../constants/navigation';
-import { type MyColumnVO } from '../../types/column';
+
 
 const { Option } = Select;
 const CreateArticle: React.FC = () => {
@@ -48,7 +48,7 @@ const CreateArticle: React.FC = () => {
   const [summary, setSummary] = useState('');
   const [editorContent, setEditorContent] = useState('');
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
-  const [myColumns, setMyColumns] = useState<MyColumnVO[]>([]);
+  const [myColumns, setMyColumns] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -73,7 +73,7 @@ const CreateArticle: React.FC = () => {
         const [categoryRes, tagRes, columnRes] = await Promise.all([
           categoryService.getActiveCategories(),
           tagService.getActiveTags(),
-          columnService.getMyColumns()
+          columnService.getMyColumnOptions()
         ]);
         if (categoryRes.code != 200) {
           message.error(categoryRes.message || '获取分类列表失败');

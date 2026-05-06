@@ -53,23 +53,19 @@ const MyColumns: React.FC = () => {
   const articlesPageSize = 10;
 
   const columnsFetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<MyColumnVO>> => {
-    const response = await columnService.getMyColumns(searchRef.current);
-    if (response.code === 200 && response.data) {
+    const response = await columnService.getMyColumns(searchRef.current, pageNum, pageSize);
+    if (response.code === 200) {
       const data = response.data;
-      const total = data.length;
-      const start = (pageNum - 1) * pageSize;
-      const end = start + pageSize;
-      const record = data.slice(start, end);
       return {
-        record,
-        total,
-        pageNum,
-        pageSize,
-        pages: Math.ceil(total / pageSize),
-        isFirstPage: pageNum === 1,
-        isLastPage: end >= total,
-        prePage: pageNum > 1 ? pageNum - 1 : 1,
-        nextPage: end < total ? pageNum + 1 : pageNum
+        record: data.record || [],
+        total: data.total || 0,
+        pageNum: data.pageNum || pageNum,
+        pageSize: data.pageSize || pageSize,
+        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
+        isFirstPage: data.isFirstPage ?? (data.pageNum === 1),
+        isLastPage: data.isLastPage ?? ((data.pageNum || 1) >= (data.pages || 1)),
+        prePage: data.prePage || 1,
+        nextPage: data.nextPage || ((data.pageNum || 1) + 1)
       };
     }
     throw new Error(response.message || '获取专栏列表失败');
@@ -96,14 +92,14 @@ const MyColumns: React.FC = () => {
     }
 
     const response = await columnService.getColumnArticles(columnIdRef.current, pageNum, pageSize);
-    if (response.code === 200 && response.data) {
+    if (response.code === 200) {
       const data = response.data;
       return {
-        record: data.record || [],
         total: data.total || 0,
+        record: data.record || [],
+        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
         pageNum: data.pageNum || pageNum,
         pageSize: data.pageSize || pageSize,
-        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
         isFirstPage: data.isFirstPage ?? (data.pageNum === 1),
         isLastPage: data.isLastPage ?? ((data.pageNum || 1) >= (data.pages || 1)),
         prePage: data.prePage || 1,
