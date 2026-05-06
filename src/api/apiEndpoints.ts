@@ -137,6 +137,7 @@ export const API_ENDPOINTS = {
       DELETE: (id: number): string => `/front/column/delete/${id}`, // 删除专栏
       LIST: '/front/column/list', // 获取专栏列表
       DETAIL: (id: number): string => `/front/column/${id}`, // 获取专栏详情
+      DETAIL_ARTICLES: (id: number): string => `/front/column/${id}/articles`, // 获取专栏详情（分页文章列表）
       HOT: '/front/column/hot', // 获取热门专栏
       MY: '/front/column/my', // 获取我的专栏
       ARTICLE_ADD: '/front/column/article/add', // 添加文章到专栏

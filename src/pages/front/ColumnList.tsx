@@ -1,49 +1,72 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Input, message, Spin } from 'antd';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Button, Input, Spin } from 'antd';
 import { CloseOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import ColumnCard from '../../components/front/ColumnCard';
+import InfiniteScrollContainer from '../../components/common/InfiniteScrollContainer';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import type { ColumnListVO } from '../../types/column';
+import type { ApiPageResponse } from '../../types/common';
 import { ROUTES } from '../../constants/routes';
 import columnService from '../../services/columnService';
 
 const ColumnListPage: React.FC = () => {
   const navigate = useNavigate();
-  const [columns, setColumns] = useState<ColumnListVO[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [debouncedKeyword, setDebouncedKeyword] = useState('');
+  const searchRef = useRef(debouncedKeyword);
 
-  // 加载专栏列表
-  const loadColumns = async (keyword?: string): Promise<void> => {
-    try {
-      setIsLoading(true);
-      const response = await columnService.getColumns({ keyword });
-      if (response.code === 200 && response.data) {
-        setColumns(response.data.record || []);
-      } else {
-        message.error(response.message || '获取专栏列表失败');
-      }
-    } catch (error) {
-      console.error('获取专栏列表失败:', error);
-      message.error('获取专栏列表失败，请稍后重试');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const pageSize = 20;
 
-  // 组件加载时调用
   useEffect(() => {
-    loadColumns().then();
+    const timer = setTimeout(() => {
+      setDebouncedKeyword(searchKeyword);
+    }, 300);
+    return () :void => clearTimeout(timer);
+  }, [searchKeyword]);
+
+  useEffect(() => {
+    searchRef.current = debouncedKeyword;
+  }, [debouncedKeyword]);
+
+  const fetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<ColumnListVO>> => {
+    const response = await columnService.getColumns({
+      keyword: searchRef.current,
+      pageNum,
+      pageSize
+    });
+
+    if (response.code === 200 && response.data) {
+      const data = response.data;
+      return {
+        record: data.record || [],
+        total: data.total || 0,
+        pageNum: data.pageNum || pageNum,
+        pageSize: data.pageSize || pageSize,
+        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
+        isFirstPage: (data.pageNum || pageNum) === 1,
+        isLastPage: data.isLastPage || ((data.pageNum || pageNum) * (data.pageSize || pageSize) >= (data.total || 0)),
+        prePage: (data.pageNum || pageNum) > 1 ? (data.pageNum || pageNum) - 1 : 1,
+        nextPage: data.nextPage || ((data.pageNum || pageNum) + 1)
+      };
+    }
+    throw new Error(response.message || '获取专栏列表失败');
   }, []);
 
-  // 搜索时重新加载
+  const infiniteScroll = useInfiniteScroll<ColumnListVO>(fetcher, {
+    pageSize,
+    threshold: 0.1
+  });
+
+  const { refresh } = infiniteScroll;
+
   useEffect(() => {
-    loadColumns(searchKeyword).then();
-  }, [searchKeyword]);
+    refresh();
+  }, [debouncedKeyword, refresh]);
 
   const toggleSearch = (): void => {
     setIsSearchVisible(!isSearchVisible);
@@ -109,22 +132,23 @@ const ColumnListPage: React.FC = () => {
               </div>
             </div>
 
-            {isLoading ? (
-              <div className="flex justify-center items-center py-20">
-                <Spin size="large"/>
-              </div>
-            ) : columns.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-gray-500 dark:text-gray-400 text-lg">暂无相关专栏</p>
-                <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">试试其他关键词或分类</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-10">
-                {columns.map((column) => (
-                  <ColumnCard key={column.id} column={column}/>
-                ))}
-              </div>
-            )}
+            <InfiniteScrollContainer
+              infiniteScroll={infiniteScroll}
+              renderItem={(column) => <ColumnCard key={column.id} column={column}/>}
+              emptyContent={
+                <div className="text-center py-20">
+                  <p className="text-gray-500 dark:text-gray-400 text-lg">暂无相关专栏</p>
+                  <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">试试其他关键词或分类</p>
+                </div>
+              }
+              loadingContent={
+                <div className="flex justify-center items-center py-20">
+                  <Spin size="large"/>
+                </div>
+              }
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-10"
+              itemGap="0"
+            />
           </div>
         </main>
 

@@ -1,4 +1,3 @@
-import type { ColumnArticleListVO } from './article';
 import type { StatusEnum, VisibleStatus } from './enums';
 
 // 专栏列表VO
@@ -38,7 +37,6 @@ export interface ColumnDetailVO {
   nickname: string;
   avatar: string;
   signature?: string;
-  articles: ColumnArticleListVO[];
   createTime: string;
   updateTime: string;
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useEffectEvent, useCallback, useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Button, Dropdown, message, Select, Spin } from 'antd';
 import {
@@ -18,9 +18,12 @@ import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import LazyImage from '../../components/common/LazyImage';
 import ColumnCard from '../../components/front/ColumnCard';
+import InfiniteScrollContainer from '../../components/common/InfiniteScrollContainer';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { ROUTES } from '../../constants/routes';
 import type { ColumnDetailVO, ColumnListVO } from '../../types/column';
 import type { ColumnArticleListVO } from '../../types/article';
+import type { ApiPageResponse } from '../../types/common';
 import columnService from '../../services/columnService';
 import { getRelativeTime } from '../../utils';
 import { useUserStore } from '../../store';
@@ -29,74 +32,102 @@ const ColumnDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useUserStore();
   const [columnDetail, setColumnDetail] = useState<ColumnDetailVO | null>(null);
-  const [articles, setArticles] = useState<ColumnArticleListVO[]>([]);
   const [hotColumns, setHotColumns] = useState<ColumnListVO[]>([]);
   const [loading, setLoading] = useState(false);
-  const [sortType, setSortType] = useState<'latest' | 'earliest' | 'hottest' | 'title'>('latest');
+  const [sortType, setSortType] = useState<'latest' | 'earliest'>('latest');
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   const navigate = useNavigate();
 
-  // 加载订阅状态
-  const loadSubscribeStatus = useCallback(async (): Promise<void> => {
-    if (!id || !user) return;
-    const response = await columnService.checkSubscribeStatus(Number(id));
-    if (response.code === 200 && response.data !== undefined) {
-      setIsSubscribed(response.data);
-    }
-  }, [id, user]);
+  const articlesPageSize = 10;
 
-  // 加载专栏详情
-  const loadColumnDetail = useCallback(async (): Promise<void> => {
-    if (!id) return;
-    try {
-      setLoading(true);
-      const response = await columnService.getColumnDetail(Number(id));
-      if (response.code === 200 && response.data) {
-        setColumnDetail(response.data);
-        setArticles(response.data.articles || []);
-      } else {
-        message.error(response.message || '获取专栏详情失败');
-      }
-    } catch {
-      message.error('获取专栏详情失败，请稍后重试');
-    } finally {
-      setLoading(false);
+  const articlesFetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<ColumnArticleListVO>> => {
+    if (!id) {
+      return {
+        record: [],
+        total: 0,
+        pageNum: 1,
+        pageSize,
+        pages: 0,
+        isFirstPage: true,
+        isLastPage: true,
+        prePage: 1,
+        nextPage: 1
+      };
     }
+
+    const response = await columnService.getColumnArticles(Number(id), pageNum, pageSize);
+    if (response.code === 200 && response.data) {
+      const data = response.data;
+      return {
+        total: data.total || 0,
+        record: data.record || [],
+        pageNum: data.pageNum || pageNum,
+        pageSize: data.pageSize || pageSize,
+        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
+        isFirstPage: data.isFirstPage ?? (data.pageNum === 1),
+        isLastPage: data.isLastPage ?? ((data.pageNum || 1) >= (data.pages || 1)),
+        prePage: data.prePage || 1,
+        nextPage: data.nextPage || ((data.pageNum || 1) + 1)
+      };
+    }
+    throw new Error(response.message || '获取专栏文章失败');
   }, [id]);
 
-  // 加载热门专栏
-  const loadHotColumns = useCallback(async (): Promise<void> => {
-    const response = await columnService.getHotColumns(3);
-    if (response.code === 200 && response.data) {
-      setHotColumns(response.data);
-    }
-  }, []);
+  const articlesInfiniteScroll = useInfiniteScroll<ColumnArticleListVO>(articlesFetcher, {
+    pageSize: articlesPageSize,
+    threshold: 0.1
+  });
 
-  // 组件加载时调用
+  const onRefreshArticles = useEffectEvent(() => {
+    articlesInfiniteScroll.refresh();
+  });
+
+  useEffect(() => {
+    if (!id) return;
+
+    setLoading(true);
+
+    Promise.all([
+      columnService.getColumnDetail(Number(id)),
+      columnService.getHotColumns(3)
+    ]).then(([detailRes, hotRes]) => {
+      if (detailRes.code === 200 && detailRes.data) {
+        setColumnDetail(detailRes.data);
+      } else {
+        message.error(detailRes.message || '获取专栏详情失败').then();
+      }
+      if (hotRes.code === 200 && hotRes.data) {
+        setHotColumns(hotRes.data);
+      }
+    }).catch(() => {
+      message.error('加载数据失败，请稍后重试').then();
+    }).finally(() => {
+      setLoading(false);
+    });
+
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    if (user) {
+      columnService.checkSubscribeStatus(Number(id)).then((response) => {
+        if (response.code === 200 && response.data !== undefined) {
+          setIsSubscribed(response.data);
+        }
+      });
+    } else {
+      setIsSubscribed(false);
+    }
+
+  }, [id, user]);
+
   useEffect(() => {
     if (id) {
-      loadColumnDetail().then();
-      loadHotColumns().then();
-      loadSubscribeStatus().then();
+      onRefreshArticles();
     }
-  }, [id, loadColumnDetail, loadHotColumns, loadSubscribeStatus]);
-
-  // 排序文章
-  const sortedArticles = [...articles].sort((a, b) => {
-    switch (sortType) {
-      case 'latest':
-        return new Date(b.publishTime).getTime() - new Date(a.publishTime).getTime();
-      case 'earliest':
-        return new Date(a.publishTime).getTime() - new Date(b.publishTime).getTime();
-      case 'hottest':
-        return b.readCount - a.readCount;
-      case 'title':
-        return a.title.localeCompare(b.title, 'zh-CN');
-      default:
-        return 0;
-    }
-  });
+  }, [id]);
 
   const handleSubscribe = async (): Promise<void> => {
     if (!id) return;
@@ -132,7 +163,7 @@ const ColumnDetailPage: React.FC = () => {
     {
       key: 'copy',
       label: '复制链接',
-      icon: <CopyOutlined />,
+      icon: <CopyOutlined/>,
       onClick: handleCopyLink
     }
   ], [handleCopyLink]);
@@ -254,74 +285,79 @@ const ColumnDetailPage: React.FC = () => {
                       className="w-28"
                       options={[
                         { value: 'latest', label: '最新' },
-                        { value: 'earliest', label: '最早' },
-                        { value: 'hottest', label: '最热' },
-                        { value: 'title', label: '标题' }
+                        { value: 'earliest', label: '最早' }
                       ]}
                     />
                   </div>
 
-                  {sortedArticles.length === 0 ? (
-                    <div className="text-center py-10">
-                      <p className="text-gray-500 dark:text-gray-400">暂无文章</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {sortedArticles.map((article) => (
-                        <div
-                          key={article.id}
-                          className="border-b border-gray-200 dark:border-gray-700 last:border-0 pb-4 last:pb-0"
-                        >
-                          <div className="flex gap-4">
-                            {article.coverImage && (
-                              <div className="w-48 h-32 rounded-md overflow-hidden shrink-0 hidden sm:block">
-                                <a href={ROUTES.ARTICLE_DETAIL(article.id)} target="_blank" rel="noopener noreferrer">
-                                  <LazyImage
-                                    src={article.coverImage}
-                                    alt={article.title}
-                                    className="w-full h-full object-cover hover:opacity-90 transition-opacity"
-                                  />
-                                </a>
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 line-clamp-2">
-                                <a
-                                  href={ROUTES.ARTICLE_DETAIL(article.id)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                >
-                                  {article.title}
-                                </a>
-                              </h3>
-                              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
-                                {article.summary}
-                              </p>
-                              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                <span className="flex items-center gap-1">
-                                  <LikeOutlined/>
-                                  {article.likeCount}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <EyeOutlined/>
-                                  {article.readCount}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <MessageOutlined/>
-                                  {article.commentCount}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <CalendarOutlined/>
-                                  {getRelativeTime(article.publishTime)}
-                                </span>
-                              </div>
+                  <InfiniteScrollContainer
+                    infiniteScroll={articlesInfiniteScroll}
+                    renderItem={(article) => (
+                      <div
+                        key={article.id}
+                        className="border-b border-gray-200 dark:border-gray-700 last:border-0 pb-4 last:pb-0"
+                      >
+                        <div className="flex gap-4">
+                          {article.coverImage && (
+                            <div className="w-48 h-32 rounded-md overflow-hidden shrink-0 hidden sm:block">
+                              <a href={ROUTES.ARTICLE_DETAIL(article.id)} target="_blank" rel="noopener noreferrer">
+                                <LazyImage
+                                  src={article.coverImage}
+                                  alt={article.title}
+                                  className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                                />
+                              </a>
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 line-clamp-2">
+                              <a
+                                href={ROUTES.ARTICLE_DETAIL(article.id)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                              >
+                                {article.title}
+                              </a>
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
+                              {article.summary}
+                            </p>
+                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                              <span className="flex items-center gap-1">
+                                <LikeOutlined/>
+                                {article.likeCount}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <EyeOutlined/>
+                                {article.readCount}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MessageOutlined/>
+                                {article.commentCount}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <CalendarOutlined/>
+                                {getRelativeTime(article.publishTime)}
+                              </span>
                             </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    )}
+                    emptyContent={
+                      <div className="text-center py-10">
+                        <p className="text-gray-500 dark:text-gray-400">暂无文章</p>
+                      </div>
+                    }
+                    loadingContent={
+                      <div className="flex justify-center items-center py-10">
+                        <Spin size="default"/>
+                      </div>
+                    }
+                    className="space-y-6"
+                    itemGap="0"
+                  />
                 </div>
               </div>
 

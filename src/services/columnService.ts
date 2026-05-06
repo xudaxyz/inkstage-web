@@ -11,6 +11,7 @@ import type {
   ArticleColumn,
   MyColumnSubscriptionVO
 } from '../types/column';
+import type { ColumnArticleListVO } from '../types/article';
 import type { ApiResponse } from '../types/common';
 import type { PageResult } from '../types/user';
 import type { VisibleStatus } from '../types/enums';
@@ -53,6 +54,15 @@ const columnService = {
   },
 
   /**
+   * 获取专栏文章分页列表
+   */
+  async getColumnArticles(id: number, pageNum: number, pageSize: number): Promise<ApiResponse<PageResult<ColumnArticleListVO>>> {
+    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.DETAIL_ARTICLES(id), {
+      params: { pageNum, pageSize }
+    });
+  },
+
+  /**
    * 获取热门专栏
    */
   async getHotColumns(limit: number = 10): Promise<ApiResponse<ColumnListVO[]>> {
@@ -61,8 +71,14 @@ const columnService = {
 
   /**
    * 获取我的专栏
+   * @param keyword 搜索关键词（可选）
    */
-  async getMyColumns(): Promise<ApiResponse<MyColumnVO[]>> {
+  async getMyColumns(keyword?: string): Promise<ApiResponse<MyColumnVO[]>> {
+    if (keyword && keyword.trim()) {
+      return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.LIST, {
+        params: { keyword, pageNum: 1, pageSize: 10 }
+      });
+    }
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.MY);
   },
 
