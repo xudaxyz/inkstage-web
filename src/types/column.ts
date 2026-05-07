@@ -1,4 +1,5 @@
 import type { StatusEnum, VisibleStatus } from './enums';
+import type { ApiPageResponse } from './common';
 
 // 专栏列表VO
 export interface ColumnListVO {
@@ -130,3 +131,6 @@ export interface ColumnNeighborVO {
   prev: NeighborArticleVO | null;
   next: NeighborArticleVO | null;
 }
+
+// 我的专栏订阅分页响应接口
+export type MyColumnSubscriptionPageResponse = ApiPageResponse<MyColumnSubscriptionVO>;

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Button, Dropdown, message, Modal } from 'antd';
 import {
   BookOutlined,
@@ -32,6 +32,7 @@ interface ColumnDetailSectionProps {
   onViewArticle: (articleId: number) => void;
   onEditArticle: (articleId: number) => void;
   onRemoveArticleFromColumn: (articleId: number) => Promise<void>;
+  onDeleteArticle: (articleId: number) => Promise<void>;
   onMoveArticleToColumn: (articleId: number, targetColumnId: number) => Promise<void>;
   onToggleVisibility: (visible: VisibleStatus) => Promise<void>;
   onRefresh: () => void;
@@ -46,6 +47,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
                                                                    onViewArticle,
                                                                    onEditArticle,
                                                                    onRemoveArticleFromColumn,
+                                                                   onDeleteArticle,
                                                                    onMoveArticleToColumn,
                                                                    onToggleVisibility,
                                                                    onRefresh
@@ -181,6 +183,28 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
     });
   }, [column.name, onRemoveArticleFromColumn, onRefresh]);
 
+  const handleDeleteArticle = useCallback((articleId: number): void => {
+    Modal.confirm({
+      title: '删除该文章？',
+      content: (
+        <>
+          <p>确定要将该文章移至回收站吗？</p>
+        </>
+      ),
+      okText: '确认',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          await onDeleteArticle(articleId);
+          message.success('文章已移至回收站');
+          onRefresh();
+        } catch {
+          message.error('删除文章失败');
+        }
+      }
+    });
+  }, [onDeleteArticle, onRefresh]);
+
   const handleMoveArticle = useCallback((articleId: number, targetColumnId: number, articleTitle: string): void => {
     const targetColumn = allColumns.find(col => col.id === targetColumnId);
     if (!targetColumn) return;
@@ -277,12 +301,18 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
           key: 'remove',
           label: '从专栏移出',
           icon: <DeleteOutlined/>,
-          danger: true,
           onClick: (): void => handleRemoveArticle(article.id, article.title)
+        },
+        {
+          key: 'delete',
+          label: '删除',
+          icon: <DeleteOutlined color="red"/>,
+          danger: true,
+          onClick: (): void => handleDeleteArticle(article.id)
         }
       ]
     };
-  }, [otherColumns, onViewArticle, onEditArticle, handleMoveArticle, handleRemoveArticle]);
+  }, [otherColumns, onViewArticle, onEditArticle, handleMoveArticle, handleRemoveArticle, handleDeleteArticle]);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg">

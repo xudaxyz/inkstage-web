@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Dropdown, Input, message, Modal, Spin } from 'antd';
 import { Helmet } from 'react-helmet-async';
 import LazyImage from '../../../components/common/LazyImage';
@@ -6,20 +6,20 @@ import ColumnDetailSection from './ColumnDetailSection';
 import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import {
+  ArrowLeftOutlined,
+  BookOutlined,
   DeleteOutlined,
   EditOutlined,
   EllipsisOutlined,
   EyeOutlined,
-  BookOutlined,
-  StarOutlined,
   PlusOutlined,
   SearchOutlined,
-  ArrowLeftOutlined
+  StarOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../../constants/routes';
 import columnService from '../../../services/columnService';
-import type { MyColumnVO, ColumnDetailVO } from '../../../types/column';
+import type { ColumnDetailVO, MyColumnVO } from '../../../types/column';
 import type { ColumnArticleListVO } from '../../../types/article';
 import type { VisibleStatus } from '../../../types/enums';
 import type { ApiPageResponse } from '../../../types/common';
@@ -203,6 +203,20 @@ const MyColumns: React.FC = () => {
     }
   }, [selectedColumn, refreshCurrentColumn]);
 
+  const handleDeleteArticle = useCallback(async (articleId: number): Promise<void> => {
+    if (!selectedColumn) return;
+    setOperationLoading(true);
+    try {
+      const response = await columnService.deleteArticle(selectedColumn.id, articleId);
+      if (response.code !== 200) {
+        throw new Error(response.message || '删除文章失败');
+      }
+      await refreshCurrentColumn();
+    } finally {
+      setOperationLoading(false);
+    }
+  }, [selectedColumn, refreshCurrentColumn]);
+
   const handleMoveArticleToColumn = useCallback(async (articleId: number, targetColumnId: number): Promise<void> => {
     setOperationLoading(true);
     try {
@@ -378,6 +392,7 @@ const MyColumns: React.FC = () => {
               onViewArticle={handleViewArticle}
               onEditArticle={handleEditArticle}
               onRemoveArticleFromColumn={handleRemoveArticleFromColumn}
+              onDeleteArticle={handleDeleteArticle}
               onMoveArticleToColumn={handleMoveArticleToColumn}
               onToggleVisibility={handleToggleVisibility}
               onRefresh={refreshCurrentColumn}

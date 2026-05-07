@@ -9,8 +9,8 @@ import type {
   AddArticleToColumnDTO,
   UpdateColumnArticleSortDTO,
   ArticleColumn,
-  MyColumnSubscriptionVO,
-  ColumnNeighborVO
+  ColumnNeighborVO,
+  MyColumnSubscriptionPageResponse
 } from '../types/column';
 import type { ColumnArticleListVO } from '../types/article';
 import type { ApiResponse } from '../types/common';
@@ -122,6 +122,13 @@ const columnService = {
   },
 
   /**
+   * 删除专栏中的文章(移除并将文章移至回收站)
+   */
+  async deleteArticle(columnId: number, articleId: number): Promise<ApiResponse<boolean>> {
+    return await apiClient.delete(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_DELETE, { params: { columnId, articleId } });
+  },
+
+  /**
    * 更新专栏中文章的排序
    */
   async updateArticleSort(data: UpdateColumnArticleSortDTO): Promise<ApiResponse<boolean>> {
@@ -219,10 +226,15 @@ const columnService = {
   },
 
   /**
-   * 获取我的订阅专栏列表
+   * 获取我的订阅专栏列表（分页+搜索）
+   * @param pageNum 页码（默认1）
+   * @param pageSize 每页数量（默认20）
+   * @param keyword 搜索关键词（可选）
    */
-  async getMySubscriptions(offset: number = 0, limit: number = 20): Promise<ApiResponse<MyColumnSubscriptionVO[]>> {
-    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.MY_SUBSCRIPTIONS, { params: { offset, limit } });
+  async getMySubscriptions(pageNum?: number, pageSize?: number, keyword?: string): Promise<ApiResponse<MyColumnSubscriptionPageResponse>> {
+    return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.MY_SUBSCRIPTIONS, {
+      params: { pageNum: pageNum || 1, pageSize: pageSize || 20, keyword }
+    });
   },
 
   /**

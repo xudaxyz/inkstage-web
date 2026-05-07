@@ -1,70 +1,75 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Input, message, Spin } from 'antd';
 import { Helmet } from 'react-helmet-async';
 import LazyImage from '../../../components/common/LazyImage';
-import {
-  SearchOutlined,
-  BookOutlined,
-  EyeOutlined,
-  CalendarOutlined,
-  UserOutlined,
-  StarOutlined
-} from '@ant-design/icons';
+import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
+import { BookOutlined, CalendarOutlined, EyeOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../../constants/routes';
 import columnService from '../../../services/columnService';
 import type { MyColumnSubscriptionVO } from '../../../types/column';
+import type { ApiPageResponse } from '../../../types/common';
 import { getRelativeTime } from '../../../utils';
 
 const MySubscriptions: React.FC = () => {
   const navigate = useNavigate();
-  const [subscriptions, setSubscriptions] = useState<MyColumnSubscriptionVO[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
-
-  const loadSubscriptions = async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const response = await columnService.getMySubscriptions(0, 100);
-      if (response.code === 200 && response.data) {
-        setSubscriptions(response.data);
-      } else {
-        message.error(response.message || '获取订阅列表失败');
-      }
-    } catch {
-      message.error('获取订阅列表失败，请重试');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const searchRef = useRef(searchText);
 
   useEffect(() => {
-    loadSubscriptions().then();
+    searchRef.current = searchText;
+  }, [searchText]);
+
+  const pageSize = 20;
+
+  const subscriptionFetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<MyColumnSubscriptionVO>> => {
+    const response = await columnService.getMySubscriptions(pageNum, pageSize, searchRef.current);
+    if (response.code === 200) {
+      const data = response.data || [];
+      return {
+        record: data.record || [],
+        total: data.total || 0,
+        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
+        pageNum: data.pageNum || pageNum,
+        pageSize: data.pageSize || pageSize,
+        isFirstPage: data.isFirstPage ?? (data.pageNum === 1),
+        isLastPage: data.isLastPage ?? ((data.pageNum || 1) >= (data.pages || 1)),
+        prePage: data.prePage || 1,
+        nextPage: data.nextPage || ((data.pageNum || 1) + 1)
+      };
+    }
+    throw new Error(response.message || '获取订阅列表失败');
   }, []);
 
-  const filteredSubscriptions = subscriptions.filter((sub) => {
-    if (!searchText) return true;
-    return (
-      sub.name.includes(searchText) ||
-      (sub.description && sub.description.includes(searchText)) ||
-      (sub.nickname && sub.nickname.includes(searchText))
-    );
+  const subscriptionInfiniteScroll = useInfiniteScroll<MyColumnSubscriptionVO>(subscriptionFetcher, {
+    pageSize,
+    threshold: 0.1
   });
+
+  const subscriptionScrollRef = useRef(subscriptionInfiniteScroll);
+
+  useEffect(() => {
+    subscriptionScrollRef.current = subscriptionInfiniteScroll;
+  }, [subscriptionInfiniteScroll]);
+
+  useEffect(() => {
+    subscriptionScrollRef.current.refresh();
+  }, [searchText]);
 
   const handleViewColumn = (columnId: number): void => {
     navigate(ROUTES.COLUMN_DETAIL(columnId));
   };
 
-  const handleUnsubscribe = async (columnId: number, e: React.MouseEvent): Promise<void> => {
-    e.stopPropagation();
+  const handleUnsubscribe = useCallback(async (columnId: number): Promise<void> => {
     const response = await columnService.unsubscribeColumn(columnId);
     if (response.code === 200 && response.data) {
       message.success('已取消订阅');
-      await loadSubscriptions();
+      subscriptionScrollRef.current.refresh();
     } else {
       message.error(response.message || '取消订阅失败');
     }
-  };
+  }, []);
 
   return (
     <>
@@ -78,7 +83,7 @@ const MySubscriptions: React.FC = () => {
             <h1 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white whitespace-nowrap">
               我的订阅
               <span className="text-gray-500 dark:text-gray-300 text-base md:text-lg ml-2">
-                ({subscriptions.length})
+                ({subscriptionInfiniteScroll.total})
               </span>
             </h1>
           </div>
@@ -94,24 +99,25 @@ const MySubscriptions: React.FC = () => {
           </div>
         </div>
 
-        {loading ? (
+        {subscriptionInfiniteScroll.isLoading ? (
           <div className="flex justify-center items-center py-20">
             <Spin size="large"/>
           </div>
-        ) : filteredSubscriptions.length === 0 ? (
+        ) : subscriptionInfiniteScroll.data.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 dark:text-gray-400 text-lg">
               {searchText ? '没有找到相关订阅' : '还没有订阅任何专栏'}
             </p>
             {!searchText && (
-              <Button type="primary" className="mt-4" onClick={() => navigate(ROUTES.MY_COLUMNS)}>
+              <Button type="primary" className="mt-4" onClick={() => navigate(ROUTES.COLUMN_LIST)}>
                 浏览专栏
               </Button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredSubscriptions.map((sub) => (
+          <InfiniteScrollContainer
+            infiniteScroll={subscriptionInfiniteScroll}
+            renderItem={(sub) => (
               <div
                 key={sub.id}
                 className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
@@ -161,21 +167,17 @@ const MySubscriptions: React.FC = () => {
                       className="flex items-center gap-2 md:gap-3 text-xs text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <BookOutlined className="w-3 h-3"/>
-                        {sub.articleCount}篇
+                        {sub.articleCount}
                       </span>
                       <span className="flex items-center gap-1">
                         <EyeOutlined className="w-3 h-3"/>
                         {sub.readCount}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <StarOutlined className="w-3 h-3"/>
-                        {sub.subscriptionCount}
-                      </span>
                     </div>
                     <Button
                       type="text"
                       danger
-                      onClick={(e) => handleUnsubscribe(sub.id, e)}
+                      onClick={() => handleUnsubscribe(sub.id)}
                       className="p-1 text-sm"
                     >
                       取消订阅
@@ -183,8 +185,10 @@ const MySubscriptions: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            itemGap="0"
+          />
         )}
       </div>
     </>

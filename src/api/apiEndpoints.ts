@@ -144,6 +144,7 @@ export const API_ENDPOINTS = {
       MY_OPTIONS: '/front/column/my/options', // 获取我的专栏选项（仅ID和名称）
       ARTICLE_ADD: '/front/column/article/add', // 添加文章到专栏
       ARTICLE_REMOVE: '/front/column/article/remove', // 从专栏移除文章
+      ARTICLE_DELETE: '/front/column/article/delete', // 从专栏删除文章
       ARTICLE_SORT: '/front/column/article/sort', // 更新文章排序
       ARTICLE_SORT_BATCH: '/front/column/article/sort/batch', // 批量更新文章排序
       ARTICLE_MOVE: '/front/column/article/move', // 移动文章到另一个专栏

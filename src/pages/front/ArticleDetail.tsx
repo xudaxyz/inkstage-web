@@ -753,7 +753,7 @@ const ArticleDetail: React.FC = () => {
                     <div className="hidden sm:flex sm:items-center sm:justify-between gap-4">
                       {/* 左侧：本文收录于xxx专栏 */}
                       <div className="flex items-center gap-2 min-w-0">
-                        <BookTwoTone style={{ color: 'blue' }} />
+                        <BookTwoTone style={{ color: 'blue' }}/>
                         <span className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
                           本文收录于{' '}
                           <a
@@ -802,8 +802,9 @@ const ArticleDetail: React.FC = () => {
                     <div className="flex flex-col gap-4 sm:hidden">
                       {/* 第一行：专栏信息 */}
                       <div className="flex items-center gap-2 min-w-0">
-                        <BookTwoTone style={{ color: 'blue' }} />
-                        <span className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap hover:text-cyan-500">
+                        <BookTwoTone style={{ color: 'blue' }}/>
+                        <span
+                          className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap hover:text-cyan-500">
                           本文收录于{' '}
                           <a
                             href={ROUTES.COLUMN_DETAIL(columnNeighbor.columnId)}
@@ -904,9 +905,11 @@ const ArticleDetail: React.FC = () => {
               <div className="relative">
                 {/* 作者信息 */}
                 <Card
+                  hoverable
                   style={{
                     marginBottom: '32px',
-                    backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`
+                    backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`,
+                    border: '1px solid transparent'
                   }}
                 >
                   <div className="text-center">
@@ -914,7 +917,7 @@ const ArticleDetail: React.FC = () => {
                       size={88}
                       src={article.avatar || '/assets/images/default-avatar.jpg'}
                       alt={article.nickname}
-                      className="border-2 border-gray-100 shadow-md"
+                      className="border border-gray-200 shadow-md"
                     />
                     {article.userId ? (
                       <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
@@ -955,10 +958,13 @@ const ArticleDetail: React.FC = () => {
                 {/* 作者相关文章 */}
                 <Card
                   style={{
-                    backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`
+                    backgroundColor: `${isDarkMode ? '#4a5565' : 'white'}`,
+                    border: '1px solid transparent',
+                    borderColor: `${isDarkMode ? '#1e2939' : '#e5e7eb'}`
                   }}
-                  className="mb-8 border border-gray-100 rounded-lg shadow-sm"
+                  className="mb-8 rounded-lg border-gray-800 shadow-sm"
                   title="作者相关文章"
+                  hoverable
                 >
                   {relatedArticlesLoading ? (
                     <div className="text-center py-4">
