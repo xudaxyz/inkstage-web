@@ -3,6 +3,7 @@ import { Button, Form, Input, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
+import { Helmet } from 'react-helmet-async';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal';
 import { useAdminStore } from '../../store/adminStore';
@@ -97,7 +98,11 @@ const AdminLogin: React.FC = () => {
     }
   };
   return (
-    <AuthLayout title="管理员登录" isPasswordGuardMode={passwordFocused} isTyping={isTyping}>
+    <>
+      <Helmet>
+        <title>后台管理员登录 - InkStage</title>
+      </Helmet>
+      <AuthLayout title="管理员登录" isPasswordGuardMode={passwordFocused} isTyping={isTyping}>
       {/* 登录表单 */}
       <Form form={form} onFinish={handleFormSubmit} layout="vertical" className="w-full">
         {/* 左侧登录，右侧注册链接 */}
@@ -206,6 +211,7 @@ const AdminLogin: React.FC = () => {
         </div>
       </Form>
     </AuthLayout>
+    </>
   );
 };
 export default AdminLogin;

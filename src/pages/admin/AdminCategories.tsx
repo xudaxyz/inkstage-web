@@ -23,6 +23,7 @@ import {
   PlusOutlined,
   SearchOutlined
 } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import categoryService from '../../services/categoryService';
 import { type AdminCategory } from '../../types/category';
 import { StatusEnum, StatusEnumLabel } from '../../types/enums';
@@ -138,9 +139,9 @@ const AdminCategories: React.FC = () => {
       const updatedCategories = categories.map((category) =>
         category.id === id
           ? {
-              ...category,
-              status: status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED
-            }
+            ...category,
+            status: status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED
+          }
           : category
       );
       setCategories(updatedCategories);
@@ -296,165 +297,170 @@ const AdminCategories: React.FC = () => {
   ];
 
   return (
-    <div className="mb-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-800">分类管理</h2>
-      </div>
-
-      {/* 搜索和筛选 */}
-      <Card variant="borderless" className="border-b border-gray-100">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-          <Search
-            placeholder="搜索分类名称或别名"
-            allowClear
-            enterButton={<SearchOutlined />}
-            onSearch={handleSearch}
-            style={{ width: 300 }}
-          />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setIsEditing(false);
-              setCurrentCategory(null);
-              form.resetFields();
-              setIsModalVisible(true);
-            }}
-          >
-            新增分类
-          </Button>
+    <>
+      <Helmet>
+        <title>后台分类管理 - InkStage</title>
+      </Helmet>
+      <div className="mb-6">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-800">分类管理</h2>
         </div>
-      </Card>
 
-      {/* 分类列表 */}
-      <Card variant="borderless">
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <Spin size="large" />
+        {/* 搜索和筛选 */}
+        <Card variant="borderless" className="border-b border-gray-100">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+            <Search
+              placeholder="搜索分类名称或别名"
+              allowClear
+              enterButton={<SearchOutlined />}
+              onSearch={handleSearch}
+              style={{ width: 300 }}
+            />
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setIsEditing(false);
+                setCurrentCategory(null);
+                form.resetFields();
+                setIsModalVisible(true);
+              }}
+            >
+              新增分类
+            </Button>
           </div>
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredCategories}
-            rowKey="id"
-            onChange={handleTableChange}
-            pagination={{
-              current: pagination.pageNum,
-              pageSize: pagination.pageSize,
-              total: pagination.total,
-              showSizeChanger: true,
-              placement: ['bottomCenter'],
-              pageSizeOptions: ['5', '10', '20', '50'],
-              showTotal: (total) => `共 ${total} 个分类`
-            }}
-          />
-        )}
-      </Card>
+        </Card>
 
-      {/* 添加/编辑分类模态框 */}
-      <Modal
-        title={isEditing ? '编辑分类' : '添加分类'}
-        open={isModalVisible}
-        onOk={handleSaveCategory}
-        onCancel={() => setIsModalVisible(false)}
-        width={500}
-        okText="保存"
-        cancelText="取消"
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            status: true
-          }}
+        {/* 分类列表 */}
+        <Card variant="borderless">
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <Spin size="large" />
+            </div>
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={filteredCategories}
+              rowKey="id"
+              onChange={handleTableChange}
+              pagination={{
+                current: pagination.pageNum,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                showSizeChanger: true,
+                placement: ['bottomCenter'],
+                pageSizeOptions: ['5', '10', '20', '50'],
+                showTotal: (total) => `共 ${total} 个分类`
+              }}
+            />
+          )}
+        </Card>
+
+        {/* 添加/编辑分类模态框 */}
+        <Modal
+          title={isEditing ? '编辑分类' : '添加分类'}
+          open={isModalVisible}
+          onOk={handleSaveCategory}
+          onCancel={() => setIsModalVisible(false)}
+          width={500}
+          okText="保存"
+          cancelText="取消"
         >
-          <Form.Item
-            name="name"
-            label="分类名称"
-            rules={[
-              { required: true, message: '请输入分类名称' },
-              { min: 2, max: 50, message: '分类名称长度应在2-50个字符之间' }
-            ]}
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{
+              status: true
+            }}
           >
-            <Input placeholder="请输入分类名称" />
-          </Form.Item>
+            <Form.Item
+              name="name"
+              label="分类名称"
+              rules={[
+                { required: true, message: '请输入分类名称' },
+                { min: 2, max: 50, message: '分类名称长度应在2-50个字符之间' }
+              ]}
+            >
+              <Input placeholder="请输入分类名称" />
+            </Form.Item>
 
-          <Form.Item
-            name="slug"
-            label="别名"
-            rules={[
-              { required: true, message: '请输入别名' },
-              { min: 2, max: 50, message: '别名长度应在2-50个字符之间' }
-            ]}
-          >
-            <Input placeholder="请输入别名，用于URL" />
-          </Form.Item>
+            <Form.Item
+              name="slug"
+              label="别名"
+              rules={[
+                { required: true, message: '请输入别名' },
+                { min: 2, max: 50, message: '别名长度应在2-50个字符之间' }
+              ]}
+            >
+              <Input placeholder="请输入别名，用于URL" />
+            </Form.Item>
 
-          <Form.Item name="description" label="描述" rules={[{ max: 200, message: '描述长度不能超过200个字符' }]}>
-            <Input.TextArea rows={3} placeholder="请输入分类描述" />
-          </Form.Item>
+            <Form.Item name="description" label="描述" rules={[{ max: 200, message: '描述长度不能超过200个字符' }]}>
+              <Input.TextArea rows={3} placeholder="请输入分类描述" />
+            </Form.Item>
 
-          <Form.Item name="status" label="状态" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </Form>
-      </Modal>
+            <Form.Item name="status" label="状态" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+          </Form>
+        </Modal>
 
-      {/* 查看分类模态框 */}
-      <Modal
-        title="分类详情"
-        open={isViewModalVisible}
-        onCancel={() => setIsViewModalVisible(false)}
-        width={500}
-        footer={[
-          <Button key="close" onClick={() => setIsViewModalVisible(false)}>
-            关闭
-          </Button>
-        ]}
-      >
-        {currentCategory && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <AppstoreOutlined className="text-gray-500" />
-              <span className="font-medium">分类名称:</span>
-              <span>{currentCategory.name}</span>
+        {/* 查看分类模态框 */}
+        <Modal
+          title="分类详情"
+          open={isViewModalVisible}
+          onCancel={() => setIsViewModalVisible(false)}
+          width={500}
+          footer={[
+            <Button key="close" onClick={() => setIsViewModalVisible(false)}>
+              关闭
+            </Button>
+          ]}
+        >
+          {currentCategory && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <AppstoreOutlined className="text-gray-500" />
+                <span className="font-medium">分类名称:</span>
+                <span>{currentCategory.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <AppstoreOutlined className="text-gray-500" />
+                <span className="font-medium">别名:</span>
+                <span>{currentCategory.slug}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <AppstoreOutlined className="text-gray-500 mt-1" />
+                <span className="font-medium">描述:</span>
+                <span>{currentCategory.description}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <AppstoreOutlined className="text-gray-500" />
+                <span className="font-medium">文章数量:</span>
+                <span>{currentCategory.articleCount || 0}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <AppstoreOutlined className="text-gray-500" />
+                <span className="font-medium">状态:</span>
+                <Tag color={currentCategory.status === StatusEnum.ENABLED ? 'green' : 'orange'}>
+                  {StatusEnumLabel[currentCategory.status]}
+                </Tag>
+              </div>
+              <div className="flex items-center gap-2">
+                <CalendarOutlined className="text-gray-500" />
+                <span className="font-medium">创建时间:</span>
+                <span>{formatDateTime(currentCategory.createTime || '')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CalendarOutlined className="text-gray-500" />
+                <span className="font-medium">更新时间:</span>
+                <span>{formatDateTime(currentCategory.updateTime || '')}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <AppstoreOutlined className="text-gray-500" />
-              <span className="font-medium">别名:</span>
-              <span>{currentCategory.slug}</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <AppstoreOutlined className="text-gray-500 mt-1" />
-              <span className="font-medium">描述:</span>
-              <span>{currentCategory.description}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <AppstoreOutlined className="text-gray-500" />
-              <span className="font-medium">文章数量:</span>
-              <span>{currentCategory.articleCount || 0}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <AppstoreOutlined className="text-gray-500" />
-              <span className="font-medium">状态:</span>
-              <Tag color={currentCategory.status === StatusEnum.ENABLED ? 'green' : 'orange'}>
-                {StatusEnumLabel[currentCategory.status]}
-              </Tag>
-            </div>
-            <div className="flex items-center gap-2">
-              <CalendarOutlined className="text-gray-500" />
-              <span className="font-medium">创建时间:</span>
-              <span>{formatDateTime(currentCategory.createTime || '')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CalendarOutlined className="text-gray-500" />
-              <span className="font-medium">更新时间:</span>
-              <span>{formatDateTime(currentCategory.updateTime || '')}</span>
-            </div>
-          </div>
-        )}
-      </Modal>
-    </div>
+          )}
+        </Modal>
+      </div>
+    </>
   );
 };
 

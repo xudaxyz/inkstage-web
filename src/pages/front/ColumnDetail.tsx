@@ -164,7 +164,7 @@ const ColumnDetailPage: React.FC = () => {
     {
       key: 'copy',
       label: '复制链接',
-      icon: <CopyOutlined/>,
+      icon: <CopyOutlined />,
       onClick: handleCopyLink
     }
   ], [handleCopyLink]);
@@ -178,7 +178,7 @@ const ColumnDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-gray-800">
-        <Spin size="large"/>
+        <Spin size="large" />
       </div>
     );
   }
@@ -194,22 +194,22 @@ const ColumnDetailPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{columnDetail.name} - InkStage</title>
+        <title>{columnDetail?.name || '专栏详情'} - InkStage</title>
       </Helmet>
       <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800 font-sans">
-        <Header/>
+        <Header />
 
         <main className="flex-1 bg-white dark:bg-gray-800">
           <div className="relative">
             <div className="h-48 md:h-64 lg:h-80 overflow-hidden">
               {columnDetail.coverImage ? (
                 <LazyImage src={columnDetail.coverImage} alt={columnDetail.name}
-                           className="w-full h-full object-cover"/>
+                           className="w-full h-full object-cover" />
               ) : (
                 <div
-                  className="w-full h-full bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800"/>
+                  className="w-full h-full bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800" />
               )}
-              <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"/>
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
             </div>
           </div>
 
@@ -223,7 +223,7 @@ const ColumnDetailPage: React.FC = () => {
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">{columnDetail.description}</p>
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <Avatar src={columnDetail.avatar} size={48} icon={<UserOutlined/>}/>
+                      <Avatar src={columnDetail.avatar} size={48} icon={<UserOutlined />} />
                       <div>
                         <Link
                           to={ROUTES.USER_PROFILE(columnDetail.userId)}
@@ -238,17 +238,17 @@ const ColumnDetailPage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 ml-auto">
                       <span className="flex items-center gap-1">
-                        <BookOutlined/>
+                        <BookOutlined />
                         {columnDetail.articleCount}
                         <span>篇</span>
                       </span>
                       <span className="flex items-center gap-1">
-                        <EyeOutlined/>
+                        <EyeOutlined />
                         {columnDetail.readCount}
                         <span>阅读</span>
                       </span>
                       <span className="flex items-center gap-1">
-                        <StarOutlined/>
+                        <StarOutlined />
                         {columnDetail.subscriptionCount}
                         <span>订阅</span>
                       </span>
@@ -259,19 +259,19 @@ const ColumnDetailPage: React.FC = () => {
                     <div className="flex gap-3">
                       <Button
                         type={isSubscribed ? 'default' : 'primary'}
-                        icon={<StarOutlined/>}
+                        icon={<StarOutlined />}
                         onClick={handleSubscribe}
                       >
                         {isSubscribed ? '已订阅' : '订阅专栏'}
                       </Button>
                       <Dropdown menu={{ items: shareMenuItems }} trigger={['click']}>
-                        <Button icon={<ShareAltOutlined/>}>
+                        <Button icon={<ShareAltOutlined />}>
                           分享
                         </Button>
                       </Dropdown>
                     </div>
                     {isColumnOwner && (
-                      <Button variant="outlined" color="blue" icon={<PlusOutlined/>} onClick={handleCreateArticle}>
+                      <Button variant="outlined" color="blue" icon={<PlusOutlined />} onClick={handleCreateArticle}>
                         新建专栏文章
                       </Button>
                     )}
@@ -309,8 +309,10 @@ const ColumnDetailPage: React.FC = () => {
                             key={article.id}
                             className="relative pl-8 pb-6 group cursor-pointer"
                           >
-                            <div className="absolute left-0 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full -translate-x-2 group-hover:bg-cyan-500 group-hover:scale-125 transition-all duration-300 shadow-sm" />
-                            <div className="absolute left-0 top-4 w-0.5 h-full bg-gray-300 dark:bg-gray-600 group-hover:bg-cyan-500 dark:group-hover:bg-cyan-500 transition-colors duration-300" />
+                            <div
+                              className="absolute left-0 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full -translate-x-2 group-hover:bg-cyan-500 group-hover:scale-125 transition-all duration-300 shadow-sm" />
+                            <div
+                              className="absolute left-0 top-4 w-0.5 h-full bg-gray-300 dark:bg-gray-600 group-hover:bg-cyan-500 dark:group-hover:bg-cyan-500 transition-colors duration-300" />
 
                             <div
                               className="flex items-start justify-between gap-4 group-hover:-translate-x-1 transition-transform duration-300">
@@ -331,21 +333,21 @@ const ColumnDetailPage: React.FC = () => {
                                 <div className="flex items-center gap-5 text-xs text-gray-400">
                                   <span
                                     className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
-                                    <EyeOutlined size={14}/>
+                                    <EyeOutlined size={14} />
                                     {article.readCount}
                                   </span>
                                   <span
                                     className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
-                                    <MessageOutlined size={14}/>
+                                    <MessageOutlined size={14} />
                                     {article.commentCount}
                                   </span>
                                   <span
                                     className="flex items-center gap-1 group-hover:text-cyan-500 transition-colors duration-300">
-                                    <LikeOutlined size={14}/>
+                                    <LikeOutlined size={14} />
                                     {article.likeCount}
                                   </span>
                                   <span className="flex items-center gap-1">
-                                    <ClockCircleOutlined size={14}/>
+                                    <ClockCircleOutlined size={14} />
                                     {getRelativeTime(article.publishTime)}
                                   </span>
                                 </div>
@@ -373,7 +375,7 @@ const ColumnDetailPage: React.FC = () => {
                         }
                         loadingContent={
                           <div className="flex justify-center items-center py-10">
-                            <Spin size="default"/>
+                            <Spin size="default" />
                           </div>
                         }
                         className="space-y-6"
@@ -389,7 +391,7 @@ const ColumnDetailPage: React.FC = () => {
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6 lg:top-20">
                   <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4">关于作者</h3>
                   <div className="flex items-center gap-3 mb-4">
-                    <Avatar src={columnDetail.avatar} size={56} icon={<UserOutlined/>}/>
+                    <Avatar src={columnDetail.avatar} size={56} icon={<UserOutlined />} />
                     <div>
                       <Link
                         to={ROUTES.USER_PROFILE(columnDetail.userId)}
@@ -413,7 +415,7 @@ const ColumnDetailPage: React.FC = () => {
                     <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4">热门专栏</h3>
                     <div className="flex flex-col gap-4">
                       {hotColumns.map((relatedColumn) => (
-                        <ColumnCard key={relatedColumn.id} column={relatedColumn} layout="horizontal"/>
+                        <ColumnCard key={relatedColumn.id} column={relatedColumn} layout="horizontal" />
                       ))}
                     </div>
                   </div>
@@ -423,7 +425,7 @@ const ColumnDetailPage: React.FC = () => {
           </div>
         </main>
 
-        <Footer/>
+        <Footer />
       </div>
     </>
   );

@@ -28,6 +28,7 @@ import {
   SendOutlined,
   UserOutlined
 } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import notificationTemplateService from '../../services/notificationTemplateService';
 import type {
   AdminNotificationTemplate,
@@ -47,7 +48,7 @@ import {
 } from '../../types/enums';
 import TemplateVariableSelector from '../../components/admin/TemplateVariableSelector';
 // 自定义防抖 hook
-const useDebounceValue = <T,>(value: T, delay: number): T => {
+const useDebounceValue = <T, >(value: T, delay: number): T => {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -485,407 +486,413 @@ const AdminNotifications: React.FC = () => {
     }
   ];
   return (
-    <div className="mb-6">
+    <>
+      <Helmet>
+        <title>后台通知管理 - InkStage</title>
+      </Helmet>
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">通知管理</h2>
-      </div>
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">通知管理</h2>
+        </div>
 
-      <Tabs defaultActiveKey="templates">
-        {/* 通知模板管理 */}
-        <TabPane tab="通知模板管理" key="templates">
-          {/* 搜索和筛选 */}
-          <Card className="mb-6 border border-gray-100 shadow-sm">
-            <div className="flex flex-col md:flex-row gap-4 items-start justify-between">
-              <div className="flex flex-wrap gap-4">
-                <Search
-                  placeholder="搜索模板编码、名称或描述"
-                  allowClear
-                  enterButton={<SearchOutlined />}
-                  onSearch={handleSearch}
-                  style={{ width: 300 }}
-                />
-                <Select placeholder="按类型筛选" allowClear style={{ width: 150 }} onChange={handleTypeChange}>
-                  {Object.entries(NotificationTypeMap).map(([label, value]) => (
-                    <Select.Option key={label} value={label}>
-                      {value}
-                    </Select.Option>
-                  ))}
-                </Select>
-                <Select placeholder="按状态筛选" allowClear style={{ width: 120 }} onChange={handleStatusChange}>
-                  <Select.Option value={StatusEnum.ENABLED}>启用</Select.Option>
-                  <Select.Option value={StatusEnum.DISABLED}>禁用</Select.Option>
-                </Select>
+        <Tabs defaultActiveKey="templates">
+          {/* 通知模板管理 */}
+          <TabPane tab="通知模板管理" key="templates">
+            {/* 搜索和筛选 */}
+            <Card className="mb-6 border border-gray-100 shadow-sm">
+              <div className="flex flex-col md:flex-row gap-4 items-start justify-between">
+                <div className="flex flex-wrap gap-4">
+                  <Search
+                    placeholder="搜索模板编码、名称或描述"
+                    allowClear
+                    enterButton={<SearchOutlined />}
+                    onSearch={handleSearch}
+                    style={{ width: 300 }}
+                  />
+                  <Select placeholder="按类型筛选" allowClear style={{ width: 150 }} onChange={handleTypeChange}>
+                    {Object.entries(NotificationTypeMap).map(([label, value]) => (
+                      <Select.Option key={label} value={label}>
+                        {value}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  <Select placeholder="按状态筛选" allowClear style={{ width: 120 }} onChange={handleStatusChange}>
+                    <Select.Option value={StatusEnum.ENABLED}>启用</Select.Option>
+                    <Select.Option value={StatusEnum.DISABLED}>禁用</Select.Option>
+                  </Select>
+                </div>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setIsEditing(false);
+                    setCurrentTemplate(null);
+                    setIsModalVisible(true);
+                  }}
+                >
+                  新增模板
+                </Button>
               </div>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setIsEditing(false);
-                  setCurrentTemplate(null);
-                  setIsModalVisible(true);
-                }}
-              >
-                新增模板
-              </Button>
-            </div>
-          </Card>
+            </Card>
 
-          {/* 模板列表 */}
-          <Card className="border border-gray-100 shadow-sm">
-            <Table
-              columns={columns}
-              dataSource={templates}
-              rowKey="id"
-              loading={loading}
-              pagination={pagination}
-              onChange={handleTableChange}
-            />
-          </Card>
-        </TabPane>
-
-        {/* 手动发送通知 */}
-        <TabPane tab="手动发送通知" key="send">
-          <Card className="mb-4 border border-gray-100 shadow-sm">
-            <div className="p-4">
-              <Alert
-                title="发送通知须知"
-                description="请选择合适的模板并填写正确的变量值，确保通知能够正确发送给目标用户。"
-                type="info"
-                showIcon
-                className="mb-6"
+            {/* 模板列表 */}
+            <Card className="border border-gray-100 shadow-sm">
+              <Table
+                columns={columns}
+                dataSource={templates}
+                rowKey="id"
+                loading={loading}
+                pagination={pagination}
+                onChange={handleTableChange}
               />
+            </Card>
+          </TabPane>
 
-              <Form
-                form={sendForm}
-                layout="vertical"
-                initialValues={{
-                  userType: 'all'
-                }}
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  {/* 模板信息区域 */}
-                  <div className="bg-gray-50 rounded-lg p-5 space-y-4 shadow-sm border border-gray-100">
-                    <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-3">模板信息</h4>
-                    <Form.Item
-                      name="templateCode"
-                      label={<span className="font-medium">模板编码</span>}
-                      rules={[{ required: true, message: '请输入模板编码' }]}
-                    >
-                      <Input placeholder="请输入模板编码" size="large" />
-                    </Form.Item>
+          {/* 手动发送通知 */}
+          <TabPane tab="手动发送通知" key="send">
+            <Card className="mb-4 border border-gray-100 shadow-sm">
+              <div className="p-4">
+                <Alert
+                  title="发送通知须知"
+                  description="请选择合适的模板并填写正确的变量值，确保通知能够正确发送给目标用户。"
+                  type="info"
+                  showIcon
+                  className="mb-6"
+                />
+
+                <Form
+                  form={sendForm}
+                  layout="vertical"
+                  initialValues={{
+                    userType: 'all'
+                  }}
+                >
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    {/* 模板信息区域 */}
+                    <div className="bg-gray-50 rounded-lg p-5 space-y-4 shadow-sm border border-gray-100">
+                      <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-3">模板信息</h4>
+                      <Form.Item
+                        name="templateCode"
+                        label={<span className="font-medium">模板编码</span>}
+                        rules={[{ required: true, message: '请输入模板编码' }]}
+                      >
+                        <Input placeholder="请输入模板编码" size="large" />
+                      </Form.Item>
+                    </div>
+
+                    {/* 接收用户区域 */}
+                    <div className="bg-gray-50 rounded-lg p-5 space-y-4 shadow-sm border border-gray-100">
+                      <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-3">接收用户</h4>
+                      <Form.Item
+                        name="userType"
+                        label={<span className="font-medium">接收用户类型</span>}
+                        rules={[{ required: true, message: '请选择接收用户类型' }]}
+                      >
+                        <Select placeholder="请选择接收用户类型" size="large">
+                          <Select.Option value="all">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                              所有用户
+                            </div>
+                          </Select.Option>
+                          <Select.Option value="specific">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                              指定用户
+                            </div>
+                          </Select.Option>
+                          <Select.Option value="role">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                              指定角色
+                            </div>
+                          </Select.Option>
+                        </Select>
+                      </Form.Item>
+
+                      <Form.Item
+                        noStyle
+                        shouldUpdate={(prevValues, currentValues) => prevValues.userType !== currentValues.userType}
+                      >
+                        {({ getFieldValue }) => {
+                          const userType = getFieldValue('userType');
+                          return (
+                            <>
+                              {userType === 'specific' && (
+                                <Form.Item
+                                  name="userIds"
+                                  label={<span className="font-medium">用户ID</span>}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: '请输入用户ID，多个ID用逗号分隔'
+                                    }
+                                  ]}
+                                >
+                                  <Input placeholder="请输入用户ID，多个ID用逗号分隔" size="large" />
+                                </Form.Item>
+                              )}
+                              {userType === 'role' && (
+                                <Form.Item
+                                  name="roleCode"
+                                  label={<span className="font-medium">角色编码</span>}
+                                  rules={[{ required: true, message: '请输入角色编码' }]}
+                                >
+                                  <Input placeholder="请输入角色编码" size="large" />
+                                </Form.Item>
+                              )}
+                            </>
+                          );
+                        }}
+                      </Form.Item>
+
+                      <Form.Item name="relatedId" label={<span className="font-medium">关联ID</span>}>
+                        <Input placeholder="请输入关联ID（可选）" size="large" />
+                      </Form.Item>
+                    </div>
                   </div>
 
-                  {/* 接收用户区域 */}
-                  <div className="bg-gray-50 rounded-lg p-5 space-y-4 shadow-sm border border-gray-100">
-                    <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-3">接收用户</h4>
-                    <Form.Item
-                      name="userType"
-                      label={<span className="font-medium">接收用户类型</span>}
-                      rules={[{ required: true, message: '请选择接收用户类型' }]}
+                  <div className="flex justify-between items-center">
+                    <Button
+                      variant="filled"
+                      color="cyan"
+                      icon={<EyeOutlined />}
+                      onClick={() => handlePreviewTemplate(true)}
+                      loading={loading}
+                      size="large"
+                      className="h-12 text-base px-8"
                     >
-                      <Select placeholder="请选择接收用户类型" size="large">
-                        <Select.Option value="all">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                            所有用户
-                          </div>
-                        </Select.Option>
-                        <Select.Option value="specific">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                            指定用户
-                          </div>
-                        </Select.Option>
-                        <Select.Option value="role">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                            指定角色
-                          </div>
-                        </Select.Option>
-                      </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                      noStyle
-                      shouldUpdate={(prevValues, currentValues) => prevValues.userType !== currentValues.userType}
+                      预览模板
+                    </Button>
+                    <Button
+                      type="primary"
+                      icon={<SendOutlined />}
+                      onClick={handleSendNotification}
+                      loading={loading}
+                      size="large"
+                      className="h-12 text-base px-8"
                     >
-                      {({ getFieldValue }) => {
-                        const userType = getFieldValue('userType');
-                        return (
-                          <>
-                            {userType === 'specific' && (
-                              <Form.Item
-                                name="userIds"
-                                label={<span className="font-medium">用户ID</span>}
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: '请输入用户ID，多个ID用逗号分隔'
-                                  }
-                                ]}
-                              >
-                                <Input placeholder="请输入用户ID，多个ID用逗号分隔" size="large" />
-                              </Form.Item>
-                            )}
-                            {userType === 'role' && (
-                              <Form.Item
-                                name="roleCode"
-                                label={<span className="font-medium">角色编码</span>}
-                                rules={[{ required: true, message: '请输入角色编码' }]}
-                              >
-                                <Input placeholder="请输入角色编码" size="large" />
-                              </Form.Item>
-                            )}
-                          </>
-                        );
-                      }}
-                    </Form.Item>
-
-                    <Form.Item name="relatedId" label={<span className="font-medium">关联ID</span>}>
-                      <Input placeholder="请输入关联ID（可选）" size="large" />
-                    </Form.Item>
+                      发送通知
+                    </Button>
                   </div>
-                </div>
+                </Form>
+              </div>
+            </Card>
+          </TabPane>
 
-                <div className="flex justify-between items-center">
-                  <Button
-                    variant="filled"
-                    color="cyan"
-                    icon={<EyeOutlined />}
-                    onClick={() => handlePreviewTemplate(true)}
-                    loading={loading}
-                    size="large"
-                    className="h-12 text-base px-8"
-                  >
-                    预览模板
-                  </Button>
-                  <Button
-                    type="primary"
-                    icon={<SendOutlined />}
-                    onClick={handleSendNotification}
-                    loading={loading}
-                    size="large"
-                    className="h-12 text-base px-8"
-                  >
-                    发送通知
-                  </Button>
-                </div>
-              </Form>
-            </div>
-          </Card>
-        </TabPane>
+          {/* 模板预览 */}
+          <TabPane tab="模板预览" key="preview">
+            <Card className="mb-6 border border-gray-100 shadow-sm">
+              <div className="space-y-6">
+                <Form form={previewForm} layout="vertical">
+                  <Form.Item name="templateCode" label="模板编码"
+                             rules={[{ required: true, message: '请输入模板编码' }]}>
+                    <Input placeholder="请输入模板编码" />
+                  </Form.Item>
 
-        {/* 模板预览 */}
-        <TabPane tab="模板预览" key="preview">
-          <Card className="mb-6 border border-gray-100 shadow-sm">
-            <div className="space-y-6">
-              <Form form={previewForm} layout="vertical">
-                <Form.Item name="templateCode" label="模板编码" rules={[{ required: true, message: '请输入模板编码' }]}>
-                  <Input placeholder="请输入模板编码" />
-                </Form.Item>
+                  <Form.Item name="variables" label="模板变量">
+                    <TemplateVariableSelector placeholder="点击可用变量插入到模板" multiline rows={4} />
+                  </Form.Item>
 
-                <Form.Item name="variables" label="模板变量">
-                  <TemplateVariableSelector placeholder="点击可用变量插入到模板" multiline rows={4} />
-                </Form.Item>
-
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    icon={<EyeOutlined />}
-                    onClick={() => handlePreviewTemplate(true)}
-                    loading={loading}
-                  >
-                    预览模板
-                  </Button>
-                </Form.Item>
-              </Form>
-            </div>
-          </Card>
-        </TabPane>
-      </Tabs>
-
-      {/* 添加/编辑模板编辑器 */}
-      <AdminNotificationTemplateEditor
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        onSave={handleSaveTemplate}
-        isEditing={isEditing}
-        initialValues={currentTemplate as AdminNotificationTemplate}
-        loading={loading}
-      />
-
-      {/* 查看模板模态框 */}
-      <Modal
-        title="模板详情"
-        open={isViewModalVisible}
-        onCancel={() => setIsViewModalVisible(false)}
-        width={800}
-        footer={[
-          <Button key="close" onClick={() => setIsViewModalVisible(false)}>
-            关闭
-          </Button>
-        ]}
-      >
-        {currentTemplate && (
-          <div className="max-h-[70vh] overflow-y-auto pr-2">
-            {/* 统一容器 */}
-            <div className="bg-white rounded-t-lg rounded-b-lg border border-gray-100 overflow-hidden">
-              <Descriptions bordered column={2} size="small" className="m-0">
-                {/* 基本信息 - 两列布局 */}
-                <Descriptions.Item
-                  label="模板编码"
-                  children={<Text copyable>{currentTemplate.code}</Text>}
-                ></Descriptions.Item>
-                <Descriptions.Item label="模板名称" children={currentTemplate.templateName}></Descriptions.Item>
-                <Descriptions.Item
-                  label="通知类型"
-                  children={
-                    <Tag color={getTypeColor(currentTemplate.notificationType)}>
-                      {NotificationTypeMap[currentTemplate.notificationType]}
-                    </Tag>
-                  }
-                ></Descriptions.Item>
-                <Descriptions.Item
-                  label="通知渠道"
-                  children={<Tag color="blue">{NotificationChannelMap[currentTemplate.notificationChannel]}</Tag>}
-                ></Descriptions.Item>
-                <Descriptions.Item
-                  label="优先级"
-                  children={
-                    <Tag
-                      color={
-                        currentTemplate.priority === PriorityEnum.HIGH ||
-                        currentTemplate.priority === PriorityEnum.URGENT
-                          ? 'red'
-                          : 'orange'
-                      }
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      icon={<EyeOutlined />}
+                      onClick={() => handlePreviewTemplate(true)}
+                      loading={loading}
                     >
-                      {PriorityMap[currentTemplate.priority]}
-                    </Tag>
-                  }
-                ></Descriptions.Item>
-                <Descriptions.Item
-                  label="状态"
-                  children={
-                    <Tag color={currentTemplate.status === StatusEnum.ENABLED ? 'success' : 'default'}>
-                      {StatusEnumLabel[currentTemplate.status]}
-                    </Tag>
-                  }
-                ></Descriptions.Item>
-                <Descriptions.Item
-                  label="标题模板"
-                  span={2}
-                  children={
-                    <div className="bg-blue-50 p-3 font-mono text-sm border border-blue-100">
-                      {currentTemplate.titleTemplate}
-                    </div>
-                  }
-                ></Descriptions.Item>
-                <Descriptions.Item
-                  label="内容模板"
-                  span={2}
-                  children={
-                    <div className="bg-blue-50 p-3 font-mono text-sm whitespace-pre-wrap border border-blue-100">
-                      {currentTemplate.contentTemplate}
-                    </div>
-                  }
-                ></Descriptions.Item>
-                <Descriptions.Item label="操作URL模板" span={2}>
-                  {currentTemplate.actionUrlTemplate ? (
-                    <div className="bg-green-50 p-3 font-mono text-sm border border-green-100">
-                      {currentTemplate.actionUrlTemplate}
-                    </div>
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
-                </Descriptions.Item>
+                      预览模板
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </div>
+            </Card>
+          </TabPane>
+        </Tabs>
 
-                <Descriptions.Item label="模板描述" span={2}>
-                  <div className="bg-gray-50 p-3 rounded text-gray-700 leading-relaxed">
-                    {currentTemplate.description || '暂无描述'}
-                  </div>
-                </Descriptions.Item>
-                {/* 元信息 - 保持不变 */}
-                <Descriptions.Item
-                  label={
-                    <span className="flex items-center gap-1">
+        {/* 添加/编辑模板编辑器 */}
+        <AdminNotificationTemplateEditor
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          onSave={handleSaveTemplate}
+          isEditing={isEditing}
+          initialValues={currentTemplate as AdminNotificationTemplate}
+          loading={loading}
+        />
+
+        {/* 查看模板模态框 */}
+        <Modal
+          title="模板详情"
+          open={isViewModalVisible}
+          onCancel={() => setIsViewModalVisible(false)}
+          width={800}
+          footer={[
+            <Button key="close" onClick={() => setIsViewModalVisible(false)}>
+              关闭
+            </Button>
+          ]}
+        >
+          {currentTemplate && (
+            <div className="max-h-[70vh] overflow-y-auto pr-2">
+              {/* 统一容器 */}
+              <div className="bg-white rounded-t-lg rounded-b-lg border border-gray-100 overflow-hidden">
+                <Descriptions bordered column={2} size="small" className="m-0">
+                  {/* 基本信息 - 两列布局 */}
+                  <Descriptions.Item
+                    label="模板编码"
+                    children={<Text copyable>{currentTemplate.code}</Text>}
+                  ></Descriptions.Item>
+                  <Descriptions.Item label="模板名称" children={currentTemplate.templateName}></Descriptions.Item>
+                  <Descriptions.Item
+                    label="通知类型"
+                    children={
+                      <Tag color={getTypeColor(currentTemplate.notificationType)}>
+                        {NotificationTypeMap[currentTemplate.notificationType]}
+                      </Tag>
+                    }
+                  ></Descriptions.Item>
+                  <Descriptions.Item
+                    label="通知渠道"
+                    children={<Tag color="blue">{NotificationChannelMap[currentTemplate.notificationChannel]}</Tag>}
+                  ></Descriptions.Item>
+                  <Descriptions.Item
+                    label="优先级"
+                    children={
+                      <Tag
+                        color={
+                          currentTemplate.priority === PriorityEnum.HIGH ||
+                          currentTemplate.priority === PriorityEnum.URGENT
+                            ? 'red'
+                            : 'orange'
+                        }
+                      >
+                        {PriorityMap[currentTemplate.priority]}
+                      </Tag>
+                    }
+                  ></Descriptions.Item>
+                  <Descriptions.Item
+                    label="状态"
+                    children={
+                      <Tag color={currentTemplate.status === StatusEnum.ENABLED ? 'success' : 'default'}>
+                        {StatusEnumLabel[currentTemplate.status]}
+                      </Tag>
+                    }
+                  ></Descriptions.Item>
+                  <Descriptions.Item
+                    label="标题模板"
+                    span={2}
+                    children={
+                      <div className="bg-blue-50 p-3 font-mono text-sm border border-blue-100">
+                        {currentTemplate.titleTemplate}
+                      </div>
+                    }
+                  ></Descriptions.Item>
+                  <Descriptions.Item
+                    label="内容模板"
+                    span={2}
+                    children={
+                      <div className="bg-blue-50 p-3 font-mono text-sm whitespace-pre-wrap border border-blue-100">
+                        {currentTemplate.contentTemplate}
+                      </div>
+                    }
+                  ></Descriptions.Item>
+                  <Descriptions.Item label="操作URL模板" span={2}>
+                    {currentTemplate.actionUrlTemplate ? (
+                      <div className="bg-green-50 p-3 font-mono text-sm border border-green-100">
+                        {currentTemplate.actionUrlTemplate}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="模板描述" span={2}>
+                    <div className="bg-gray-50 p-3 rounded text-gray-700 leading-relaxed">
+                      {currentTemplate.description || '暂无描述'}
+                    </div>
+                  </Descriptions.Item>
+                  {/* 元信息 - 保持不变 */}
+                  <Descriptions.Item
+                    label={
+                      <span className="flex items-center gap-1">
                       <UserOutlined />
                       创建人
                     </span>
-                  }
-                >
-                  {currentTemplate.createUsername}
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span className="flex items-center gap-1">
+                    }
+                  >
+                    {currentTemplate.createUsername}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span className="flex items-center gap-1">
                       <UserOutlined />
                       更新人
                     </span>
-                  }
-                >
-                  {currentTemplate.updateUsername}
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span className="flex items-center gap-1">
+                    }
+                  >
+                    {currentTemplate.updateUsername}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span className="flex items-center gap-1">
                       <CalendarOutlined />
                       创建时间
                     </span>
-                  }
-                >
-                  {new Date(currentTemplate.createTime).toLocaleString()}
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span className="flex items-center gap-1">
+                    }
+                  >
+                    {new Date(currentTemplate.createTime).toLocaleString()}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span className="flex items-center gap-1">
                       <CalendarOutlined />
                       更新时间
                     </span>
-                  }
-                >
-                  {new Date(currentTemplate.updateTime).toLocaleString()}
-                </Descriptions.Item>
-              </Descriptions>
+                    }
+                  >
+                    {new Date(currentTemplate.updateTime).toLocaleString()}
+                  </Descriptions.Item>
+                </Descriptions>
+              </div>
             </div>
-          </div>
-        )}
-      </Modal>
+          )}
+        </Modal>
 
-      {/* 预览结果模态框 */}
-      <Modal
-        title="模板预览结果"
-        open={isPreviewModalVisible}
-        onCancel={() => setIsPreviewModalVisible(false)}
-        width={600}
-        footer={[
-          <Button key="close" onClick={() => setIsPreviewModalVisible(false)}>
-            关闭
-          </Button>
-        ]}
-      >
-        {previewResult && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-medium mb-2">渲染后标题</h3>
-              <div className="bg-gray-50 p-4 rounded-md">{previewResult.title}</div>
+        {/* 预览结果模态框 */}
+        <Modal
+          title="模板预览结果"
+          open={isPreviewModalVisible}
+          onCancel={() => setIsPreviewModalVisible(false)}
+          width={600}
+          footer={[
+            <Button key="close" onClick={() => setIsPreviewModalVisible(false)}>
+              关闭
+            </Button>
+          ]}
+        >
+          {previewResult && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-medium mb-2">渲染后标题</h3>
+                <div className="bg-gray-50 p-4 rounded-md">{previewResult.title}</div>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2">渲染后内容</h3>
+                <div className="bg-gray-50 p-4 rounded-md">{previewResult.content}</div>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2">通知类型</h3>
+                <div className="bg-gray-50 p-4 rounded-md">{NotificationTypeMap[previewResult.notificationType]}</div>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2">操作URL</h3>
+                <div className="bg-gray-50 p-4 rounded-md">{previewResult.actionUrl || '-'}</div>
+              </div>
             </div>
-            <div>
-              <h3 className="font-medium mb-2">渲染后内容</h3>
-              <div className="bg-gray-50 p-4 rounded-md">{previewResult.content}</div>
-            </div>
-            <div>
-              <h3 className="font-medium mb-2">通知类型</h3>
-              <div className="bg-gray-50 p-4 rounded-md">{NotificationTypeMap[previewResult.notificationType]}</div>
-            </div>
-            <div>
-              <h3 className="font-medium mb-2">操作URL</h3>
-              <div className="bg-gray-50 p-4 rounded-md">{previewResult.actionUrl || '-'}</div>
-            </div>
-          </div>
-        )}
-      </Modal>
-    </div>
+          )}
+        </Modal>
+      </div>
+    </>
   );
 };
 export default AdminNotifications;

@@ -24,6 +24,7 @@ import {
   SearchOutlined,
   TagOutlined
 } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import tagService from '../../services/tagService';
 import { type AdminTag } from '../../types/tag';
 import { StatusEnum, StatusEnumLabel } from '../../types/enums';
@@ -136,9 +137,9 @@ const AdminTags: React.FC = () => {
       const updatedTags = tags.map((tag) =>
         tag.id === id
           ? {
-              ...tag,
-              status: status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED
-            }
+            ...tag,
+            status: status === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED
+          }
           : tag
       );
       setTags(updatedTags);
@@ -312,170 +313,175 @@ const AdminTags: React.FC = () => {
   ];
 
   return (
-    <div className="mb-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-800">标签管理</h2>
-      </div>
-
-      {/* 搜索和筛选 */}
-      <Card variant="borderless" className="border-b border-gray-100">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-          <Search
-            placeholder="搜索标签名称或别名"
-            allowClear
-            enterButton={<SearchOutlined />}
-            onSearch={handleSearch}
-            style={{ width: 300 }}
-          />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setIsEditing(false);
-              setCurrentTag(null);
-              form.resetFields();
-              setIsModalVisible(true);
-            }}
-          >
-            新增标签
-          </Button>
+    <>
+      <Helmet>
+        <title>后台标签管理 - InkStage</title>
+      </Helmet>
+      <div className="mb-6">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-800">标签管理</h2>
         </div>
-      </Card>
 
-      {/* 标签列表 */}
-      <Card variant="borderless">
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <Spin size="large" />
+        {/* 搜索和筛选 */}
+        <Card variant="borderless" className="border-b border-gray-100">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+            <Search
+              placeholder="搜索标签名称或别名"
+              allowClear
+              enterButton={<SearchOutlined />}
+              onSearch={handleSearch}
+              style={{ width: 300 }}
+            />
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setIsEditing(false);
+                setCurrentTag(null);
+                form.resetFields();
+                setIsModalVisible(true);
+              }}
+            >
+              新增标签
+            </Button>
           </div>
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredTags}
-            rowKey="id"
-            onChange={handleTableChange}
-            pagination={{
-              current: pagination.current,
-              pageSize: pagination.pageSize,
-              total: pagination.total,
-              showSizeChanger: true,
-              placement: ['bottomCenter'],
-              pageSizeOptions: ['10', '20', '50'],
-              showTotal: (total) => `共 ${total} 个标签`
-            }}
-          />
-        )}
-      </Card>
+        </Card>
 
-      {/* 添加/编辑标签模态框 */}
-      <Modal
-        title={isEditing ? '编辑标签' : '添加标签'}
-        open={isModalVisible}
-        onOk={handleSaveTag}
-        onCancel={() => setIsModalVisible(false)}
-        width={500}
-        okText="保存"
-        cancelText="取消"
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            status: true
-          }}
+        {/* 标签列表 */}
+        <Card variant="borderless">
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <Spin size="large" />
+            </div>
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={filteredTags}
+              rowKey="id"
+              onChange={handleTableChange}
+              pagination={{
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                showSizeChanger: true,
+                placement: ['bottomCenter'],
+                pageSizeOptions: ['10', '20', '50'],
+                showTotal: (total) => `共 ${total} 个标签`
+              }}
+            />
+          )}
+        </Card>
+
+        {/* 添加/编辑标签模态框 */}
+        <Modal
+          title={isEditing ? '编辑标签' : '添加标签'}
+          open={isModalVisible}
+          onOk={handleSaveTag}
+          onCancel={() => setIsModalVisible(false)}
+          width={500}
+          okText="保存"
+          cancelText="取消"
         >
-          <Form.Item
-            name="name"
-            label="标签名称"
-            rules={[
-              { required: true, message: '请输入标签名称' },
-              { min: 1, max: 30, message: '标签名称长度应在1-30个字符之间' }
-            ]}
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{
+              status: true
+            }}
           >
-            <Input placeholder="请输入标签名称" />
-          </Form.Item>
+            <Form.Item
+              name="name"
+              label="标签名称"
+              rules={[
+                { required: true, message: '请输入标签名称' },
+                { min: 1, max: 30, message: '标签名称长度应在1-30个字符之间' }
+              ]}
+            >
+              <Input placeholder="请输入标签名称" />
+            </Form.Item>
 
-          <Form.Item
-            name="slug"
-            label="别名"
-            rules={[
-              { required: true, message: '请输入别名' },
-              { min: 1, max: 50, message: '别名长度应在1-50个字符之间' }
-            ]}
-          >
-            <Input placeholder="请输入别名，用于URL" />
-          </Form.Item>
+            <Form.Item
+              name="slug"
+              label="别名"
+              rules={[
+                { required: true, message: '请输入别名' },
+                { min: 1, max: 50, message: '别名长度应在1-50个字符之间' }
+              ]}
+            >
+              <Input placeholder="请输入别名，用于URL" />
+            </Form.Item>
 
-          <Form.Item name="description" label="描述" rules={[{ max: 200, message: '描述长度不能超过200个字符' }]}>
-            <Input.TextArea rows={3} placeholder="请输入标签描述" />
-          </Form.Item>
+            <Form.Item name="description" label="描述" rules={[{ max: 200, message: '描述长度不能超过200个字符' }]}>
+              <Input.TextArea rows={3} placeholder="请输入标签描述" />
+            </Form.Item>
 
-          <Form.Item name="status" label="状态" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </Form>
-      </Modal>
+            <Form.Item name="status" label="状态" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+          </Form>
+        </Modal>
 
-      {/* 查看标签模态框 */}
-      <Modal
-        title="标签详情"
-        open={isViewModalVisible}
-        onCancel={() => setIsViewModalVisible(false)}
-        width={500}
-        footer={[
-          <Button key="close" onClick={() => setIsViewModalVisible(false)}>
-            关闭
-          </Button>
-        ]}
-      >
-        {currentTag && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500" />
-              <span className="font-medium">标签名称:</span>
-              <span>{currentTag.name}</span>
+        {/* 查看标签模态框 */}
+        <Modal
+          title="标签详情"
+          open={isViewModalVisible}
+          onCancel={() => setIsViewModalVisible(false)}
+          width={500}
+          footer={[
+            <Button key="close" onClick={() => setIsViewModalVisible(false)}>
+              关闭
+            </Button>
+          ]}
+        >
+          {currentTag && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <TagOutlined className="text-gray-500" />
+                <span className="font-medium">标签名称:</span>
+                <span>{currentTag.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TagOutlined className="text-gray-500" />
+                <span className="font-medium">别名:</span>
+                <span>{currentTag.slug}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <TagOutlined className="text-gray-500 mt-1" />
+                <span className="font-medium">描述:</span>
+                <span>{currentTag.description}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TagOutlined className="text-gray-500" />
+                <span className="font-medium">文章数量:</span>
+                <span>{currentTag.articleCount || 0}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TagOutlined className="text-gray-500" />
+                <span className="font-medium">使用次数:</span>
+                <span>{currentTag.usageCount || 0}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TagOutlined className="text-gray-500" />
+                <span className="font-medium">状态:</span>
+                <Tag color={currentTag.status === StatusEnum.ENABLED ? 'green' : 'orange'}>
+                  {StatusEnumLabel[currentTag.status]}
+                </Tag>
+              </div>
+              <div className="flex items-center gap-2">
+                <CalendarOutlined className="text-gray-500" />
+                <span className="font-medium">创建时间:</span>
+                <span>{formatDateTime(currentTag.createTime || '')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CalendarOutlined className="text-gray-500" />
+                <span className="font-medium">更新时间:</span>
+                <span>{formatDateTime(currentTag.updateTime || '')}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500" />
-              <span className="font-medium">别名:</span>
-              <span>{currentTag.slug}</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <TagOutlined className="text-gray-500 mt-1" />
-              <span className="font-medium">描述:</span>
-              <span>{currentTag.description}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500" />
-              <span className="font-medium">文章数量:</span>
-              <span>{currentTag.articleCount || 0}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500" />
-              <span className="font-medium">使用次数:</span>
-              <span>{currentTag.usageCount || 0}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TagOutlined className="text-gray-500" />
-              <span className="font-medium">状态:</span>
-              <Tag color={currentTag.status === StatusEnum.ENABLED ? 'green' : 'orange'}>
-                {StatusEnumLabel[currentTag.status]}
-              </Tag>
-            </div>
-            <div className="flex items-center gap-2">
-              <CalendarOutlined className="text-gray-500" />
-              <span className="font-medium">创建时间:</span>
-              <span>{formatDateTime(currentTag.createTime || '')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CalendarOutlined className="text-gray-500" />
-              <span className="font-medium">更新时间:</span>
-              <span>{formatDateTime(currentTag.updateTime || '')}</span>
-            </div>
-          </div>
-        )}
-      </Modal>
-    </div>
+          )}
+        </Modal>
+      </div>
+    </>
   );
 };
 

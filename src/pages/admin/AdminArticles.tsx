@@ -43,6 +43,7 @@ import {
   UpOutlined,
   UserOutlined
 } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import articleService from '../../services/articleService';
 import categoryService from '../../services/categoryService';
 import tagService from '../../services/tagService';
@@ -567,7 +568,7 @@ const AdminArticles: React.FC = () => {
             key: 'edit',
             label: (
               <span onClick={() => handleEditArticle(record)} className="flex items-center cursor-pointer">
-                <EditOutlined className="mr-2"/>
+                <EditOutlined className="mr-2" />
                 编辑
               </span>
             )
@@ -580,9 +581,9 @@ const AdminArticles: React.FC = () => {
                 className="flex items-center cursor-pointer"
               >
                 {record.articleStatus === ArticleStatusEnum.OFFLINE ? (
-                  <UpOutlined className="mr-2"/>
+                  <UpOutlined className="mr-2" />
                 ) : (
-                  <DownOutlined className="mr-2"/>
+                  <DownOutlined className="mr-2" />
                 )}
                 {record.articleStatus === ArticleStatusEnum.OFFLINE ? '上架' : '下架'}
               </span>
@@ -596,9 +597,9 @@ const AdminArticles: React.FC = () => {
                 className="flex items-center cursor-pointer"
               >
                 {record.top === AllowTopEnum.TOP ? (
-                  <PushpinTwoTone className="mr-2"/>
+                  <PushpinTwoTone className="mr-2" />
                 ) : (
-                  <PushpinOutlined className="mr-2"/>
+                  <PushpinOutlined className="mr-2" />
                 )}
                 {record.top === AllowTopEnum.TOP ? '取消置顶' : '置顶'}
               </span>
@@ -612,9 +613,9 @@ const AdminArticles: React.FC = () => {
                 className="flex items-center cursor-pointer"
               >
                 {record.recommended === RecommendedEnum.RECOMMENDED ? (
-                  <DislikeOutlined className="mr-2"/>
+                  <DislikeOutlined className="mr-2" />
                 ) : (
-                  <LikeOutlined className="mr-2"/>
+                  <LikeOutlined className="mr-2" />
                 )}
                 {record.recommended === RecommendedEnum.RECOMMENDED ? '取消推荐' : '推荐'}
               </span>
@@ -631,7 +632,7 @@ const AdminArticles: React.FC = () => {
                 cancelText="取消"
               >
                 <span className="flex items-center cursor-pointer text-red-400">
-                  <DeleteOutlined className="mr-2 text-red-500"/>
+                  <DeleteOutlined className="mr-2 text-red-500" />
                   删除
                 </span>
               </Popconfirm>
@@ -647,7 +648,7 @@ const AdminArticles: React.FC = () => {
                   setIsPermanentDeleteModalVisible(true);
                 }}
               >
-                <DeleteFilled className="mr-2 text-red-500"/>
+                <DeleteFilled className="mr-2 text-red-500" />
                 彻底删除
               </span>
             )
@@ -658,7 +659,7 @@ const AdminArticles: React.FC = () => {
             <Button
               variant={'filled'}
               color={'blue'}
-              icon={<EyeOutlined/>}
+              icon={<EyeOutlined />}
               onClick={() => handleViewArticle(record)}
               className="text-blue-500"
             >
@@ -667,7 +668,7 @@ const AdminArticles: React.FC = () => {
             <Button
               variant={'filled'}
               color={record.reviewStatus === 'APPROVED' ? 'default' : 'green'}
-              icon={<AuditOutlined/>}
+              icon={<AuditOutlined />}
               onClick={() => handleViewArticle(record)}
               className={record.reviewStatus === 'APPROVED' ? 'w-24 text-gray-500' : 'w-24 text-green-500'}
             >
@@ -684,264 +685,268 @@ const AdminArticles: React.FC = () => {
     }
   ];
   return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">文章管理</h2>
+    <>
+      <Helmet>
+        <title>后台文章管理 - InkStage</title>
+      </Helmet>
+      <div>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">文章管理</h2>
 
-      {/* 搜索和筛选 */}
-      <Card variant={'borderless'} className="border-b border-gray-100 mb-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <Search
-            placeholder="搜索标题或作者"
-            allowClear
-            enterButton={<SearchOutlined/>}
-            onSearch={handleSearch}
-            style={{ width: 300 }}
+        {/* 搜索和筛选 */}
+        <Card variant={'borderless'} className="border-b border-gray-100 mb-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <Search
+              placeholder="搜索标题或作者"
+              allowClear
+              enterButton={<SearchOutlined />}
+              onSearch={handleSearch}
+              style={{ width: 300 }}
+            />
+            <Select placeholder="按状态筛选" allowClear style={{ width: 150 }} onChange={handleStatusChange}>
+              {statusOptions.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+            <Select placeholder="按分类筛选" allowClear style={{ width: 150 }} onChange={handleCategoryChange}>
+              {categories.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+            <Select placeholder="是否置顶" allowClear style={{ width: 120 }} onChange={handleTopChange}>
+              {topOptions.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+          </div>
+        </Card>
+
+        {/* 文章列表 */}
+        <Card variant={'borderless'}>
+          <Table
+            columns={columns}
+            dataSource={articles}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              showSizeChanger: true,
+              placement: ['bottomCenter'],
+              pageSizeOptions: ['10', '20', '50'],
+              pageSize: pagination.pageSize,
+              current: pagination.pageNum,
+              total: pagination.total,
+              showTotal: (total) => `共 ${total} 篇文章`,
+              onChange: (pageNum, pageSize) => {
+                setPagination((prev) => ({
+                  ...prev,
+                  pageNum: pageNum,
+                  pageSize: pageSize
+                }));
+                void fetchArticles(pageNum, pageSize);
+              }
+            }}
           />
-          <Select placeholder="按状态筛选" allowClear style={{ width: 150 }} onChange={handleStatusChange}>
-            {statusOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-          <Select placeholder="按分类筛选" allowClear style={{ width: 150 }} onChange={handleCategoryChange}>
-            {categories.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-          <Select placeholder="是否置顶" allowClear style={{ width: 120 }} onChange={handleTopChange}>
-            {topOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-        </div>
-      </Card>
+        </Card>
 
-      {/* 文章列表 */}
-      <Card variant={'borderless'}>
-        <Table
-          columns={columns}
-          dataSource={articles}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            showSizeChanger: true,
-            placement: ['bottomCenter'],
-            pageSizeOptions: ['10', '20', '50'],
-            pageSize: pagination.pageSize,
-            current: pagination.pageNum,
-            total: pagination.total,
-            showTotal: (total) => `共 ${total} 篇文章`,
-            onChange: (pageNum, pageSize) => {
-              setPagination((prev) => ({
-                ...prev,
-                pageNum: pageNum,
-                pageSize: pageSize
-              }));
-              void fetchArticles(pageNum, pageSize);
+        {/* 编辑文章组件 */}
+        <AdminArticleEditor
+          visible={isModalVisible}
+          article={currentArticle}
+          categories={categories}
+          tags={tags}
+          onClose={() => setIsModalVisible(false)}
+          onSave={handleSaveSuccess}
+        />
+
+        {/* 查看文章模态框 */}
+        <Modal
+          title="文章详情"
+          open={isViewModalVisible}
+          onCancel={() => setIsViewModalVisible(false)}
+          width={1000}
+          height={800}
+          footer={[
+            <div key="status" className="flex mr-60">
+              <span className="font-medium mr-1">当前审核状态:</span>
+              {currentArticle && (
+                <Tag color={getReviewStatusColor(currentArticle.reviewStatus || 'PENDING')} className="text-lg">
+                  {ArticleReviewStatusMap[currentArticle.reviewStatus || 'PENDING']}
+                </Tag>
+              )}
+            </div>,
+            <Button
+              key="approve"
+              color="green"
+              variant="filled"
+              icon={<CheckCircleOutlined />}
+              onClick={() => handleReviewArticle('approve')}
+              loading={reviewLoading}
+              disabled={currentArticle?.reviewStatus === ArticleReviewStatusEnum.APPROVED}
+              className="px-6 py-2 mr-10"
+            >
+              审核通过
+            </Button>,
+            <Button
+              key="reject"
+              color="red"
+              variant="filled"
+              icon={<CloseCircleOutlined />}
+              onClick={() => setRejectModalVisible(true)}
+              loading={reviewLoading}
+              disabled={currentArticle?.reviewStatus === ArticleReviewStatusEnum.REJECTED}
+              className="px-6 py-2 mr-10"
+            >
+              审核拒绝
+            </Button>,
+            <Button
+              key="reprocess"
+              color="cyan"
+              variant="filled"
+              icon={<CheckCircleOutlined />}
+              onClick={() => handleReviewArticle('reprocess')}
+              loading={reviewLoading}
+              className="px-6 py-2 mr-10"
+            >
+              重新审核
+            </Button>,
+            <Button
+              color="default"
+              variant="filled"
+              key="close"
+              onClick={() => setIsViewModalVisible(false)}
+              className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all duration-200 mr-2"
+            >
+              取消
+            </Button>
+          ]}
+          styles={{
+            body: {
+              padding: 0,
+              height: '100%',
+              maxHeight: 700,
+              overflow: 'hidden',
+              alignItems: 'start'
+            },
+            footer: {
+              display: 'flex',
+              alignItems: 'center',
+              justifyItems: 'start'
             }
           }}
-        />
-      </Card>
-
-      {/* 编辑文章组件 */}
-      <AdminArticleEditor
-        visible={isModalVisible}
-        article={currentArticle}
-        categories={categories}
-        tags={tags}
-        onClose={() => setIsModalVisible(false)}
-        onSave={handleSaveSuccess}
-      />
-
-      {/* 查看文章模态框 */}
-      <Modal
-        title="文章详情"
-        open={isViewModalVisible}
-        onCancel={() => setIsViewModalVisible(false)}
-        width={1000}
-        height={800}
-        footer={[
-          <div key="status" className="flex mr-60">
-            <span className="font-medium mr-1">当前审核状态:</span>
-            {currentArticle && (
-              <Tag color={getReviewStatusColor(currentArticle.reviewStatus || 'PENDING')} className="text-lg">
-                {ArticleReviewStatusMap[currentArticle.reviewStatus || 'PENDING']}
-              </Tag>
-            )}
-          </div>,
-          <Button
-            key="approve"
-            color="green"
-            variant="filled"
-            icon={<CheckCircleOutlined/>}
-            onClick={() => handleReviewArticle('approve')}
-            loading={reviewLoading}
-            disabled={currentArticle?.reviewStatus === ArticleReviewStatusEnum.APPROVED}
-            className="px-6 py-2 mr-10"
-          >
-            审核通过
-          </Button>,
-          <Button
-            key="reject"
-            color="red"
-            variant="filled"
-            icon={<CloseCircleOutlined/>}
-            onClick={() => setRejectModalVisible(true)}
-            loading={reviewLoading}
-            disabled={currentArticle?.reviewStatus === ArticleReviewStatusEnum.REJECTED}
-            className="px-6 py-2 mr-10"
-          >
-            审核拒绝
-          </Button>,
-          <Button
-            key="reprocess"
-            color="cyan"
-            variant="filled"
-            icon={<CheckCircleOutlined/>}
-            onClick={() => handleReviewArticle('reprocess')}
-            loading={reviewLoading}
-            className="px-6 py-2 mr-10"
-          >
-            重新审核
-          </Button>,
-          <Button
-            color="default"
-            variant="filled"
-            key="close"
-            onClick={() => setIsViewModalVisible(false)}
-            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all duration-200 mr-2"
-          >
-            取消
-          </Button>
-        ]}
-        styles={{
-          body: {
-            padding: 0,
-            height: '100%',
-            maxHeight: 700,
-            overflow: 'hidden',
-            alignItems: 'start'
-          },
-          footer: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyItems: 'start'
-          }
-        }}
-        style={{
-          borderRadius: '12px',
-          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
-          overflow: 'hidden'
-        }}
-      >
-        {currentArticle && (
-          <div className="space-y-6">
-            {/* 文章标题和基本信息 */}
-            <div>
-              <Title level={3}>{currentArticle.title}</Title>
-              <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
+          style={{
+            borderRadius: '12px',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+            overflow: 'hidden'
+          }}
+        >
+          {currentArticle && (
+            <div className="space-y-6">
+              {/* 文章标题和基本信息 */}
+              <div>
+                <Title level={3}>{currentArticle.title}</Title>
+                <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
                 <span className="flex items-center gap-1">
-                  <UserOutlined/> {currentArticle.nickname}
+                  <UserOutlined /> {currentArticle.nickname}
                 </span>
-                <span className="flex items-center gap-1">
-                  <CalendarOutlined/>{' '}
-                  {currentArticle.publishTime ? formatDateTimeShort(currentArticle.publishTime) : ''}
-                </span>
-                <span className="flex items-center gap-1">
-                  <EyeOutlined/> {currentArticle.readCount} 浏览
-                </span>
-                <span className="flex items-center gap-1">
-                  <CommentOutlined/> {currentArticle.commentCount} 评论
-                </span>
-                <span className="flex items-center gap-1">
-                  <LikeOutlined/> {currentArticle.likeCount} 点赞
-                </span>
-                <span className="flex items-center gap-1">
-                  <StarOutlined/>
-                  {currentArticle.collectionCount} 收藏
-                </span>
-                <span className="flex items-center gap-1">
-                  <ShareAltOutlined/>
-                  {currentArticle.shareCount} 分享
-                </span>
-                <span className="flex items-center gap-1">
-                  {currentArticle.top === AllowTopEnum.TOP ? (
-                    <PushpinTwoTone/>
-                  ) : (
-                    <PushpinOutlined className="text-gray-400"/>
-                  )}
-                  {AllowTopMap[currentArticle.top as keyof typeof AllowTopMap] || currentArticle.top}
-                </span>
-                {currentArticle.recommended === RecommendedEnum.RECOMMENDED && (
                   <span className="flex items-center gap-1">
+                  <CalendarOutlined />{' '}
+                    {currentArticle.publishTime ? formatDateTimeShort(currentArticle.publishTime) : ''}
+                </span>
+                  <span className="flex items-center gap-1">
+                  <EyeOutlined /> {currentArticle.readCount} 浏览
+                </span>
+                  <span className="flex items-center gap-1">
+                  <CommentOutlined /> {currentArticle.commentCount} 评论
+                </span>
+                  <span className="flex items-center gap-1">
+                  <LikeOutlined /> {currentArticle.likeCount} 点赞
+                </span>
+                  <span className="flex items-center gap-1">
+                  <StarOutlined />
+                    {currentArticle.collectionCount} 收藏
+                </span>
+                  <span className="flex items-center gap-1">
+                  <ShareAltOutlined />
+                    {currentArticle.shareCount} 分享
+                </span>
+                  <span className="flex items-center gap-1">
+                  {currentArticle.top === AllowTopEnum.TOP ? (
+                    <PushpinTwoTone />
+                  ) : (
+                    <PushpinOutlined className="text-gray-400" />
+                  )}
+                    {AllowTopMap[currentArticle.top as keyof typeof AllowTopMap] || currentArticle.top}
+                </span>
+                  {currentArticle.recommended === RecommendedEnum.RECOMMENDED && (
+                    <span className="flex items-center gap-1">
                     <Tag color={'red'}>
                       {RecommendedMap[currentArticle.recommended as keyof typeof RecommendedMap] ||
                         currentArticle.recommended}
                     </Tag>
                   </span>
-                )}
-                <Tag color={getStatusColor(currentArticle.articleStatus)}>
-                  {ArticleStatusMap[currentArticle.articleStatus as keyof typeof ArticleStatusMap] ||
-                    currentArticle.articleStatus}
-                </Tag>
+                  )}
+                  <Tag color={getStatusColor(currentArticle.articleStatus)}>
+                    {ArticleStatusMap[currentArticle.articleStatus as keyof typeof ArticleStatusMap] ||
+                      currentArticle.articleStatus}
+                  </Tag>
+                </div>
               </div>
-            </div>
 
-            <Tabs defaultActiveKey="basic" className="mt-4">
-              {/* 基本信息 */}
-              <TabPane tab="基本信息" key="basic">
-                <div className="h-125 overflow-y-auto">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* 左侧信息 */}
-                    <Space orientation="vertical" size={32}>
-                      {/* 分类和标签 */}
-                      <Card size="small" title="分类和标签" hoverable={true} type={'inner'}>
-                        <div className="space-y-3">
-                          <div>
-                            <span className="font-medium">分类: </span>
-                            <Tag>{currentArticle.categoryName}</Tag>
+              <Tabs defaultActiveKey="basic" className="mt-4">
+                {/* 基本信息 */}
+                <TabPane tab="基本信息" key="basic">
+                  <div className="h-125 overflow-y-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* 左侧信息 */}
+                      <Space orientation="vertical" size={32}>
+                        {/* 分类和标签 */}
+                        <Card size="small" title="分类和标签" hoverable={true} type={'inner'}>
+                          <div className="space-y-3">
+                            <div>
+                              <span className="font-medium">分类: </span>
+                              <Tag>{currentArticle.categoryName}</Tag>
+                            </div>
+                            <div>
+                              <span className="font-medium">标签: </span>
+                              <Space wrap>
+                                {currentArticle.tags?.map((tag) => <Tag key={tag.id}>{tag.name}</Tag>) || (
+                                  <Text className="font-light pl-1" style={{ fontSize: '12px' }} type="warning">
+                                    暂无标签
+                                  </Text>
+                                )}
+                              </Space>
+                            </div>
                           </div>
-                          <div>
-                            <span className="font-medium">标签: </span>
-                            <Space wrap>
-                              {currentArticle.tags?.map((tag) => <Tag key={tag.id}>{tag.name}</Tag>) || (
-                                <Text className="font-light pl-1" style={{ fontSize: '12px' }} type="warning">
-                                  暂无标签
-                                </Text>
-                              )}
-                            </Space>
-                          </div>
-                        </div>
-                      </Card>
-                      {/* 状态信息 */}
-                      <Card size="small" title="状态信息" hoverable={true} type={'inner'}>
-                        <Descriptions size="small" column={1}>
-                          <Descriptions.Item label="文章状态">
-                            <Tag color={getStatusColor(currentArticle.articleStatus)}>
-                              {ArticleStatusMap[currentArticle.articleStatus as keyof typeof ArticleStatusMap] ||
-                                currentArticle.articleStatus}
-                            </Tag>
-                          </Descriptions.Item>
-                          <Descriptions.Item label="可见性">
+                        </Card>
+                        {/* 状态信息 */}
+                        <Card size="small" title="状态信息" hoverable={true} type={'inner'}>
+                          <Descriptions size="small" column={1}>
+                            <Descriptions.Item label="文章状态">
+                              <Tag color={getStatusColor(currentArticle.articleStatus)}>
+                                {ArticleStatusMap[currentArticle.articleStatus as keyof typeof ArticleStatusMap] ||
+                                  currentArticle.articleStatus}
+                              </Tag>
+                            </Descriptions.Item>
+                            <Descriptions.Item label="可见性">
                             <span className="flex items-center gap-1">
                               {currentArticle.visible === ArticleVisibleEnum.PUBLIC && (
-                                <GlobalOutlined style={{ color: 'green' }}/>
+                                <GlobalOutlined style={{ color: 'green' }} />
                               )}
                               {currentArticle.visible === ArticleVisibleEnum.PRIVATE && (
-                                <LockOutlined style={{ color: 'blue' }}/>
+                                <LockOutlined style={{ color: 'blue' }} />
                               )}
                               {currentArticle.visible === ArticleVisibleEnum.FOLLOWERS_ONLY && (
-                                <UserOutlined style={{ color: 'chocolate' }}/>
+                                <UserOutlined style={{ color: 'chocolate' }} />
                               )}
                               {visibleOptions.find((opt) => opt.value === currentArticle.visible)?.label}
                             </span>
-                          </Descriptions.Item>
-                          <Descriptions.Item label="是否原创">
+                            </Descriptions.Item>
+                            <Descriptions.Item label="是否原创">
                             <span>
                               {originalOptions.find((opt) => opt.value === currentArticle.original)?.label}
                               {currentArticle.original === ArticleOriginalEnum.REPRINT &&
@@ -952,177 +957,178 @@ const AdminArticles: React.FC = () => {
                                     rel="noopener noreferrer"
                                     className="ml-2 text-blue-500 hover:underline"
                                   >
-                                    <LinkOutlined/> 来源链接
+                                    <LinkOutlined /> 来源链接
                                   </a>
                                 )}
                             </span>
-                          </Descriptions.Item>
-                        </Descriptions>
-                      </Card>
-                      {/* 权限设置 */}
-                      <Card size="small" title="权限设置" hoverable={true} type={'inner'}>
-                        <Descriptions size="small" column={1}>
-                          <Descriptions.Item label="允许评论">
-                            <Badge
-                              status={currentArticle.allowComment === AllowStatusEnum.ALLOWED ? 'success' : 'default'}
-                              text={allowOptions.find((opt) => opt.value === currentArticle.allowComment)?.label}
-                            />
-                          </Descriptions.Item>
-                          <Descriptions.Item label="允许转发">
-                            <Badge
-                              status={currentArticle.allowForward === AllowStatusEnum.ALLOWED ? 'success' : 'default'}
-                              text={allowOptions.find((opt) => opt.value === currentArticle.allowForward)?.label}
-                            />
-                          </Descriptions.Item>
-                        </Descriptions>
-                      </Card>
-                    </Space>
+                            </Descriptions.Item>
+                          </Descriptions>
+                        </Card>
+                        {/* 权限设置 */}
+                        <Card size="small" title="权限设置" hoverable={true} type={'inner'}>
+                          <Descriptions size="small" column={1}>
+                            <Descriptions.Item label="允许评论">
+                              <Badge
+                                status={currentArticle.allowComment === AllowStatusEnum.ALLOWED ? 'success' : 'default'}
+                                text={allowOptions.find((opt) => opt.value === currentArticle.allowComment)?.label}
+                              />
+                            </Descriptions.Item>
+                            <Descriptions.Item label="允许转发">
+                              <Badge
+                                status={currentArticle.allowForward === AllowStatusEnum.ALLOWED ? 'success' : 'default'}
+                                text={allowOptions.find((opt) => opt.value === currentArticle.allowForward)?.label}
+                              />
+                            </Descriptions.Item>
+                          </Descriptions>
+                        </Card>
+                      </Space>
 
-                    {/* 右侧信息 */}
-                    <Space orientation="vertical" size={24}>
-                      {/* 时间信息 */}
-                      <Card size="small" title="时间信息" hoverable={true} type={'inner'}>
-                        <Descriptions size="small" column={1}>
-                          <Descriptions.Item label="创建时间">
-                            {currentArticle.createTime ? formatDateTime(currentArticle.createTime) : '未知'}
-                          </Descriptions.Item>
-                          <Descriptions.Item label="发布时间">
-                            {currentArticle.publishTime ? formatDateTime(currentArticle.publishTime) : '未发布'}
-                          </Descriptions.Item>
-                          <Descriptions.Item label="最后编辑时间">
-                            {currentArticle.lastEditTime ? formatDateTime(currentArticle.lastEditTime) : '无'}
-                          </Descriptions.Item>
-                        </Descriptions>
-                      </Card>
+                      {/* 右侧信息 */}
+                      <Space orientation="vertical" size={24}>
+                        {/* 时间信息 */}
+                        <Card size="small" title="时间信息" hoverable={true} type={'inner'}>
+                          <Descriptions size="small" column={1}>
+                            <Descriptions.Item label="创建时间">
+                              {currentArticle.createTime ? formatDateTime(currentArticle.createTime) : '未知'}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="发布时间">
+                              {currentArticle.publishTime ? formatDateTime(currentArticle.publishTime) : '未发布'}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="最后编辑时间">
+                              {currentArticle.lastEditTime ? formatDateTime(currentArticle.lastEditTime) : '无'}
+                            </Descriptions.Item>
+                          </Descriptions>
+                        </Card>
 
-                      {/* SEO信息 */}
-                      <Card size="small" title="SEO信息" hoverable={true} type={'inner'}>
-                        <div className="space-y-3">
-                          <div>
-                            <span className="font-medium">SEO标题: </span>
-                            <Text ellipsis={{ tooltip: currentArticle.metaTitle }}>
-                              {currentArticle.metaTitle || '未设置'}
-                            </Text>
+                        {/* SEO信息 */}
+                        <Card size="small" title="SEO信息" hoverable={true} type={'inner'}>
+                          <div className="space-y-3">
+                            <div>
+                              <span className="font-medium">SEO标题: </span>
+                              <Text ellipsis={{ tooltip: currentArticle.metaTitle }}>
+                                {currentArticle.metaTitle || '未设置'}
+                              </Text>
+                            </div>
+                            <div>
+                              <span className="font-medium">SEO描述: </span>
+                              <Text ellipsis={{ tooltip: currentArticle.metaDescription }}>
+                                {currentArticle.metaDescription || '未设置'}
+                              </Text>
+                            </div>
+                            <div>
+                              <span className="font-medium">SEO关键词: </span>
+                              <Text ellipsis={{ tooltip: currentArticle.metaKeywords }}>
+                                {currentArticle.metaKeywords || '未设置'}
+                              </Text>
+                            </div>
                           </div>
-                          <div>
-                            <span className="font-medium">SEO描述: </span>
-                            <Text ellipsis={{ tooltip: currentArticle.metaDescription }}>
-                              {currentArticle.metaDescription || '未设置'}
-                            </Text>
-                          </div>
-                          <div>
-                            <span className="font-medium">SEO关键词: </span>
-                            <Text ellipsis={{ tooltip: currentArticle.metaKeywords }}>
-                              {currentArticle.metaKeywords || '未设置'}
-                            </Text>
-                          </div>
-                        </div>
-                      </Card>
+                        </Card>
 
-                      {/* 统计信息 */}
-                      <Card size="small" title="统计信息" hoverable={true} type={'inner'}>
-                        <Descriptions size="small" column={2}>
-                          <Descriptions.Item label="阅读量">{currentArticle.readCount}</Descriptions.Item>
-                          <Descriptions.Item label="点赞数">{currentArticle.likeCount}</Descriptions.Item>
-                          <Descriptions.Item label="评论数">{currentArticle.commentCount}</Descriptions.Item>
-                          <Descriptions.Item label="收藏数">{currentArticle.collectionCount}</Descriptions.Item>
-                          <Descriptions.Item label="分享数">{currentArticle.shareCount}</Descriptions.Item>
-                        </Descriptions>
-                      </Card>
-                    </Space>
+                        {/* 统计信息 */}
+                        <Card size="small" title="统计信息" hoverable={true} type={'inner'}>
+                          <Descriptions size="small" column={2}>
+                            <Descriptions.Item label="阅读量">{currentArticle.readCount}</Descriptions.Item>
+                            <Descriptions.Item label="点赞数">{currentArticle.likeCount}</Descriptions.Item>
+                            <Descriptions.Item label="评论数">{currentArticle.commentCount}</Descriptions.Item>
+                            <Descriptions.Item label="收藏数">{currentArticle.collectionCount}</Descriptions.Item>
+                            <Descriptions.Item label="分享数">{currentArticle.shareCount}</Descriptions.Item>
+                          </Descriptions>
+                        </Card>
+                      </Space>
+                    </div>
                   </div>
-                </div>
-              </TabPane>
+                </TabPane>
 
-              {/* 文章内容 */}
-              <TabPane tab="文章内容" key="content">
-                <div className="h-125 overflow-y-auto px-2">
-                  <Card>
-                    {currentArticle.coverImage && (
+                {/* 文章内容 */}
+                <TabPane tab="文章内容" key="content">
+                  <div className="h-125 overflow-y-auto px-2">
+                    <Card>
+                      {currentArticle.coverImage && (
+                        <div className="mb-6">
+                          <img
+                            src={currentArticle.coverImage}
+                            alt="封面图"
+                            className="w-full h-auto max-h-64 object-cover rounded"
+                          />
+                        </div>
+                      )}
                       <div className="mb-6">
-                        <img
-                          src={currentArticle.coverImage}
-                          alt="封面图"
-                          className="w-full h-auto max-h-64 object-cover rounded"
+                        <span className="text-base font-semibold mr-2">摘要:</span>
+                        <Text className="text-gray-600 text-xs font-serif">{currentArticle.summary || '无摘要'}</Text>
+                      </div>
+                      <Divider />
+                      <div>
+                        <div className="text-base font-semibold mb-2">正文:</div>
+                        <div
+                          className="prose max-w-none"
+                          dangerouslySetInnerHTML={{
+                            __html: currentArticle.content || currentArticle.contentHtml || '<p>无内容</p>'
+                          }}
                         />
                       </div>
-                    )}
-                    <div className="mb-6">
-                      <span className="text-base font-semibold mr-2">摘要:</span>
-                      <Text className="text-gray-600 text-xs font-serif">{currentArticle.summary || '无摘要'}</Text>
-                    </div>
-                    <Divider/>
-                    <div>
-                      <div className="text-base font-semibold mb-2">正文:</div>
-                      <div
-                        className="prose max-w-none"
-                        dangerouslySetInnerHTML={{
-                          __html: currentArticle.content || currentArticle.contentHtml || '<p>无内容</p>'
-                        }}
-                      />
-                    </div>
-                  </Card>
-                </div>
-              </TabPane>
-            </Tabs>
+                    </Card>
+                  </div>
+                </TabPane>
+              </Tabs>
+            </div>
+          )}
+        </Modal>
+
+        {/* 审核拒绝模态框 */}
+        <Modal
+          title="审核拒绝"
+          open={rejectModalVisible}
+          onOk={handleRejectArticle}
+          onCancel={() => {
+            setRejectModalVisible(false);
+            rejectForm.resetFields();
+          }}
+          width={500}
+          okText="确定拒绝"
+          cancelText="取消"
+          style={{
+            borderRadius: '12px',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)'
+          }}
+        >
+          <Form form={rejectForm} layout="vertical">
+            <Form.Item
+              name="rejectReason"
+              label="拒绝原因"
+              rules={[
+                { required: true, message: '请输入拒绝原因' },
+                {
+                  min: 5,
+                  message: '拒绝原因至少5个字符'
+                }
+              ]}
+            >
+              <Input.TextArea rows={4} placeholder="请详细说明拒绝原因，以便作者改进" className="resize-none" />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* 彻底删除确认模态框 */}
+        <Modal
+          title="彻底删除文章"
+          open={isPermanentDeleteModalVisible}
+          onOk={handlePermanentDeleteArticle}
+          onCancel={handleCancelPermanentDelete}
+          width={450}
+          okText="确定"
+          cancelText="取消"
+          okButtonProps={{ danger: true }}
+          style={{
+            borderRadius: '12px',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)'
+          }}
+        >
+          <div className="text-center py-4">
+            <p className="text-lg font-medium text-gray-800 mb-2">确定要彻底删除这篇文章吗？删除后将无法恢复！</p>
           </div>
-        )}
-      </Modal>
-
-      {/* 审核拒绝模态框 */}
-      <Modal
-        title="审核拒绝"
-        open={rejectModalVisible}
-        onOk={handleRejectArticle}
-        onCancel={() => {
-          setRejectModalVisible(false);
-          rejectForm.resetFields();
-        }}
-        width={500}
-        okText="确定拒绝"
-        cancelText="取消"
-        style={{
-          borderRadius: '12px',
-          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)'
-        }}
-      >
-        <Form form={rejectForm} layout="vertical">
-          <Form.Item
-            name="rejectReason"
-            label="拒绝原因"
-            rules={[
-              { required: true, message: '请输入拒绝原因' },
-              {
-                min: 5,
-                message: '拒绝原因至少5个字符'
-              }
-            ]}
-          >
-            <Input.TextArea rows={4} placeholder="请详细说明拒绝原因，以便作者改进" className="resize-none"/>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* 彻底删除确认模态框 */}
-      <Modal
-        title="彻底删除文章"
-        open={isPermanentDeleteModalVisible}
-        onOk={handlePermanentDeleteArticle}
-        onCancel={handleCancelPermanentDelete}
-        width={450}
-        okText="确定"
-        cancelText="取消"
-        okButtonProps={{ danger: true }}
-        style={{
-          borderRadius: '12px',
-          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)'
-        }}
-      >
-        <div className="text-center py-4">
-          <p className="text-lg font-medium text-gray-800 mb-2">确定要彻底删除这篇文章吗？删除后将无法恢复！</p>
-        </div>
-      </Modal>
-    </div>
+        </Modal>
+      </div>
+    </>
   );
 };
 export default AdminArticles;

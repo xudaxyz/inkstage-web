@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Collapse } from 'antd';
+import { Helmet } from 'react-helmet-async';
 
 const { Panel } = Collapse;
 
@@ -43,64 +44,69 @@ const Help: React.FC = () => {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800 font-sans">
-      <main className="flex-1 py-16 px-[5%]">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mx-auto"
-        >
-          <h1 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">使用指南</h1>
+    <>
+      <Helmet>
+        <title>使用指南 - InkStage</title>
+      </Helmet>
+      <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800 font-sans">
+        <main className="flex-1 py-16 px-[5%]">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mx-auto"
+          >
+            <h1 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">使用指南</h1>
 
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 mb-8">
-            <h2 className="text-xl font-semibold mb-6 text-gray-800 dark:text-white">常见问题</h2>
-            <Collapse
-              activeKey={activeKey}
-              onChange={(key) => setActiveKey(key as string[])}
-              className="dark:bg-gray-800"
-            >
-              {faqs.map((faq) => (
-                <Panel
-                  header={<span className="text-gray-800 dark:text-white">{faq.title}</span>}
-                  key={faq.key}
-                  className="dark:bg-gray-800 dark:border-gray-700"
-                >
-                  <p className="text-gray-600 dark:text-gray-300">{faq.content}</p>
-                </Panel>
-              ))}
-            </Collapse>
-          </div>
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 mb-8">
+              <h2 className="text-xl font-semibold mb-6 text-gray-800 dark:text-white">常见问题</h2>
+              <Collapse
+                activeKey={activeKey}
+                onChange={(key) => setActiveKey(key as string[])}
+                className="dark:bg-gray-800"
+              >
+                {faqs.map((faq) => (
+                  <Panel
+                    header={<span className="text-gray-800 dark:text-white">{faq.title}</span>}
+                    key={faq.key}
+                    className="dark:bg-gray-800 dark:border-gray-700"
+                  >
+                    <p className="text-gray-600 dark:text-gray-300">{faq.content}</p>
+                  </Panel>
+                ))}
+              </Collapse>
+            </div>
 
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-8">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">使用指南</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-medium mb-2 text-gray-800 dark:text-white">文章创作</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  我们的富文本编辑器支持多种格式和功能，包括文字格式化、图片插入、代码块、表格等。
-                  您可以使用编辑器工具栏上的按钮来调整文本格式，或者直接使用键盘快捷键。
-                </p>
-              </div>
-              <div>
-                <h3 className="font-medium mb-2 text-gray-800 dark:text-white">社区互动</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  您可以在文章下方发表评论，与我和其他读者交流。您也可以对文章和评论进行点赞，
-                  表达您的支持和认可。同时，您可以关注其他创作者，及时获取他们的最新动态。
-                </p>
-              </div>
-              <div>
-                <h3 className="font-medium mb-2 text-gray-800 dark:text-white">内容管理</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  您可以在"我的创作"中查看和管理您发布的所有文章，包括编辑、删除和统计数据。
-                  在"我的收藏"中，您可以查看和管理您收藏的文章，创建自定义收藏夹。
-                </p>
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-8">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">使用指南</h2>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-medium mb-2 text-gray-800 dark:text-white">文章创作</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    我们的富文本编辑器支持多种格式和功能，包括文字格式化、图片插入、代码块、表格等。
+                    您可以使用编辑器工具栏上的按钮来调整文本格式，或者直接使用键盘快捷键。
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-medium mb-2 text-gray-800 dark:text-white">社区互动</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    您可以在文章下方发表评论，与我和其他读者交流。您也可以对文章和评论进行点赞，
+                    表达您的支持和认可。同时，您可以关注其他创作者，及时获取他们的最新动态。
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-medium mb-2 text-gray-800 dark:text-white">内容管理</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    您可以在"我的创作"中查看和管理您发布的所有文章，包括编辑、删除和统计数据。
+                    在"我的收藏"中，您可以查看和管理您收藏的文章，创建自定义收藏夹。
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      </main>
-    </div>
+          </motion.div>
+        </main>
+      </div>
+    </>
   );
 };
 

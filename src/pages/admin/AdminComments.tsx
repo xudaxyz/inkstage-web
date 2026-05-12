@@ -12,6 +12,7 @@ import {
   SearchOutlined,
   UserOutlined
 } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import commentService from '../../services/commentService';
 import {
   AllowTopEnum,
@@ -435,194 +436,200 @@ const AdminComments: React.FC = () => {
     }
   ];
   return (
-    <div className="mb-6">
+    <>
+      <Helmet>
+        <title>后台评论管理 - InkStage</title>
+      </Helmet>
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">评论管理</h2>
-      </div>
-
-      {/* 搜索和筛选 */}
-      <Card className="mb-6 border border-gray-100 shadow-sm">
-        <div className="flex flex-col md:flex-row gap-4">
-          <Search
-            placeholder="搜索评论内容或作者"
-            allowClear
-            enterButton={<SearchOutlined />}
-            onSearch={handleSearch}
-            style={{ width: 300 }}
-          />
-          <Select placeholder="按状态筛选" allowClear style={{ width: 150 }} onChange={handleStatusChange}>
-            {statusOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-          <Select placeholder="按文章筛选" allowClear style={{ width: 150 }} onChange={handleArticleChange}>
-            {/* 这里可以动态加载文章列表，暂时留空 */}
-          </Select>
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">评论管理</h2>
         </div>
-      </Card>
 
-      {/* 评论列表 */}
-      <Card className="border border-gray-100 shadow-sm">
-        <Table
-          columns={columns}
-          dataSource={comments}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            showSizeChanger: true,
-            placement: ['bottomCenter'],
-            pageSizeOptions: ['10', '20', '50'],
-            pageSize: pagination.pageSize,
-            current: pagination.pageNum,
-            total: pagination.total,
-            showTotal: (total) => `共 ${total} 条评论`,
-            onChange: (pageNum, pageSize) => {
-              setPagination((prev) => ({
-                ...prev,
-                pageNum: pageNum,
-                pageSize: pageSize
-              }));
-              void fetchComments(pageNum, pageSize);
-            }
-          }}
-        />
-      </Card>
-
-      {/* 添加/编辑评论模态框 */}
-      <Modal
-        title={isEditing ? '编辑评论' : '添加评论'}
-        open={isModalVisible}
-        onOk={handleSaveComment}
-        onCancel={() => setIsModalVisible(false)}
-        width={600}
-        okText="保存"
-        cancelText="取消"
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            reviewStatus: ArticleReviewStatusEnum.APPROVED,
-            top: AllowTopEnum.NOT_TOP
-          }}
-        >
-          <Form.Item
-            name="content"
-            label="评论内容"
-            rules={[
-              { required: true, message: '请输入评论内容' },
-              { min: 1, max: 500, message: '评论内容长度应在1-500个字符之间' }
-            ]}
-          >
-            <Input.TextArea rows={4} placeholder="请输入评论内容" />
-          </Form.Item>
-
-          <div className="flex gap-4">
-            <Form.Item
-              layout="horizontal"
-              name="reviewStatus"
-              label="审核状态"
-              rules={[{ required: true, message: '请选择状态' }]}
-              style={{ flex: 1, width: 80 }}
-            >
-              <Select placeholder="请选择状态">
-                {statusOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item name="top" layout="horizontal" label="是否置顶" style={{ flex: 1, textAlign: 'center' }}>
-              <Select placeholder="是否置顶">
-                {topOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+        {/* 搜索和筛选 */}
+        <Card className="mb-6 border border-gray-100 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-4">
+            <Search
+              placeholder="搜索评论内容或作者"
+              allowClear
+              enterButton={<SearchOutlined />}
+              onSearch={handleSearch}
+              style={{ width: 300 }}
+            />
+            <Select placeholder="按状态筛选" allowClear style={{ width: 150 }} onChange={handleStatusChange}>
+              {statusOptions.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+            <Select placeholder="按文章筛选" allowClear style={{ width: 150 }} onChange={handleArticleChange}>
+              {/* 这里可以动态加载文章列表，暂时留空 */}
+            </Select>
           </div>
-        </Form>
-      </Modal>
+        </Card>
 
-      {/* 查看评论模态框 */}
-      <Modal
-        title="评论详情"
-        open={isViewModalVisible}
-        onCancel={() => setIsViewModalVisible(false)}
-        width={800}
-        footer={[
-          <Button key="close" onClick={() => setIsViewModalVisible(false)}>
-            关闭
-          </Button>
-        ]}
-      >
-        {currentComment && (
-          <div className="space-y-6">
-            <div>
-              <Text className="text-gray-600">{currentComment.content}</Text>
+        {/* 评论列表 */}
+        <Card className="border border-gray-100 shadow-sm">
+          <Table
+            columns={columns}
+            dataSource={comments}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              showSizeChanger: true,
+              placement: ['bottomCenter'],
+              pageSizeOptions: ['10', '20', '50'],
+              pageSize: pagination.pageSize,
+              current: pagination.pageNum,
+              total: pagination.total,
+              showTotal: (total) => `共 ${total} 条评论`,
+              onChange: (pageNum, pageSize) => {
+                setPagination((prev) => ({
+                  ...prev,
+                  pageNum: pageNum,
+                  pageSize: pageSize
+                }));
+                void fetchComments(pageNum, pageSize);
+              }
+            }}
+          />
+        </Card>
+
+        {/* 添加/编辑评论模态框 */}
+        <Modal
+          title={isEditing ? '编辑评论' : '添加评论'}
+          open={isModalVisible}
+          onOk={handleSaveComment}
+          onCancel={() => setIsModalVisible(false)}
+          width={600}
+          okText="保存"
+          cancelText="取消"
+        >
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{
+              reviewStatus: ArticleReviewStatusEnum.APPROVED,
+              top: AllowTopEnum.NOT_TOP
+            }}
+          >
+            <Form.Item
+              name="content"
+              label="评论内容"
+              rules={[
+                { required: true, message: '请输入评论内容' },
+                { min: 1, max: 500, message: '评论内容长度应在1-500个字符之间' }
+              ]}
+            >
+              <Input.TextArea rows={4} placeholder="请输入评论内容" />
+            </Form.Item>
+
+            <div className="flex gap-4">
+              <Form.Item
+                layout="horizontal"
+                name="reviewStatus"
+                label="审核状态"
+                rules={[{ required: true, message: '请选择状态' }]}
+                style={{ flex: 1, width: 80 }}
+              >
+                <Select placeholder="请选择状态">
+                  {statusOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="top" layout="horizontal" label="是否置顶" style={{ flex: 1, textAlign: 'center' }}>
+                <Select placeholder="是否置顶">
+                  {topOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
             </div>
-            <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
+          </Form>
+        </Modal>
+
+        {/* 查看评论模态框 */}
+        <Modal
+          title="评论详情"
+          open={isViewModalVisible}
+          onCancel={() => setIsViewModalVisible(false)}
+          width={800}
+          footer={[
+            <Button key="close" onClick={() => setIsViewModalVisible(false)}>
+              关闭
+            </Button>
+          ]}
+        >
+          {currentComment && (
+            <div className="space-y-6">
+              <div>
+                <Text className="text-gray-600">{currentComment.content}</Text>
+              </div>
+              <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
               <span className="flex items-center gap-1">
                 <UserOutlined /> {currentComment.nickname}
               </span>
-              <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1">
                 <FileTextOutlined /> {currentComment.articleTitle}
               </span>
-              <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1">
                 <CalendarOutlined /> {formatDateTimeShort(currentComment.createTime)}
               </span>
-              <Tag color={getStatusColor(currentComment.reviewStatus)}>
-                {CommentStatusMap[currentComment.reviewStatus] || currentComment.reviewStatus}
-              </Tag>
-              <Tag color={currentComment.top === CommentTopStatus.TOP ? 'red' : 'default'}>
-                {currentComment.top === CommentTopStatus.TOP
-                  ? CommentTopMap[CommentTopStatus.TOP]
-                  : CommentTopMap[CommentTopStatus.NOT_TOP]}
-              </Tag>
-            </div>
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">统计信息</h4>
-              <div className="flex gap-4">
-                <span>点赞数: {currentComment.likeCount}</span>
+                <Tag color={getStatusColor(currentComment.reviewStatus)}>
+                  {CommentStatusMap[currentComment.reviewStatus] || currentComment.reviewStatus}
+                </Tag>
+                <Tag color={currentComment.top === CommentTopStatus.TOP ? 'red' : 'default'}>
+                  {currentComment.top === CommentTopStatus.TOP
+                    ? CommentTopMap[CommentTopStatus.TOP]
+                    : CommentTopMap[CommentTopStatus.NOT_TOP]}
+                </Tag>
+              </div>
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-2">统计信息</h4>
+                <div className="flex gap-4">
+                  <span>点赞数: {currentComment.likeCount}</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </Modal>
+          )}
+        </Modal>
 
-      {/* 拒绝评论模态框 */}
-      <Modal
-        title="拒绝评论"
-        open={isRejectModalVisible}
-        onOk={handleRejectComment}
-        onCancel={() => setIsRejectModalVisible(false)}
-        width={500}
-        okText="确定"
-        cancelText="取消"
-      >
-        <Form layout="vertical">
-          <Form.Item
-            label="拒绝理由"
-            rules={[
-              { required: true, message: '请输入拒绝理由' },
-              { min: 1, max: 200, message: '拒绝理由长度应在1-200个字符之间' }
-            ]}
-          >
-            <Input.TextArea
-              rows={4}
-              placeholder="请输入拒绝理由"
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+        {/* 拒绝评论模态框 */}
+        <Modal
+          title="拒绝评论"
+          open={isRejectModalVisible}
+          onOk={handleRejectComment}
+          onCancel={() => setIsRejectModalVisible(false)}
+          width={500}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Form layout="vertical">
+            <Form.Item
+              label="拒绝理由"
+              rules={[
+                { required: true, message: '请输入拒绝理由' },
+                { min: 1, max: 200, message: '拒绝理由长度应在1-200个字符之间' }
+              ]}
+            >
+              <Input.TextArea
+                rows={4}
+                placeholder="请输入拒绝理由"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
+    </>
   );
 };
 export default AdminComments;
+

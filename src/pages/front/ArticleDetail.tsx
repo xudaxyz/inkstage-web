@@ -505,28 +505,28 @@ const ArticleDetail: React.FC = () => {
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col bg-white font-sans">
-        <Header/>
+        <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
             <p className="text-gray-600">正在加载文章详情...</p>
           </div>
         </main>
-        <Footer/>
+        <Footer />
       </div>
     );
   }
   if (error || !article) {
-    return <ErrorBoundary error={error || '文章不存在'}/>;
+    return <ErrorBoundary error={error || '文章不存在'} />;
   }
   return (
     <>
       <Helmet>
-        <title>{article ? `${truncateTitle(article.title)} - InkStage` : 'InkStage-web'}</title>
+        <title>{article ? `${truncateTitle(article.title)} - InkStage` : 'InkStage'}</title>
       </Helmet>
       <div className="flex min-h-screen flex-col bg-white font-sans">
         {/* 顶部导航栏 */}
-        <Header/>
+        <Header />
 
         {/* 删除确认对话框 */}
         <Modal
@@ -556,7 +556,7 @@ const ArticleDetail: React.FC = () => {
                     size="large"
                     onClick={handleLike}
                     loading={likeLoading}
-                    icon={article.isLiked ? <LikeTwoTone/> : <LikeOutlined/>}
+                    icon={article.isLiked ? <LikeTwoTone /> : <LikeOutlined />}
                   />
                 </Tooltip>
                 <span className="text-xs text-gray-500">{article.likeCount || 0}</span>
@@ -569,7 +569,7 @@ const ArticleDetail: React.FC = () => {
                     size="large"
                     onClick={handleCollect}
                     loading={collectLoading}
-                    icon={article.isCollected ? <StarTwoTone/> : <StarOutlined/>}
+                    icon={article.isCollected ? <StarTwoTone /> : <StarOutlined />}
                   />
                 </Tooltip>
                 <span className="text-xs text-gray-500">{article.collectionCount || 0}</span>
@@ -580,7 +580,7 @@ const ArticleDetail: React.FC = () => {
                     type="text"
                     variant="outlined"
                     size="large"
-                    icon={<MessageOutlined/>}
+                    icon={<MessageOutlined />}
                     onClick={() => document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' })}
                   />
                 </Tooltip>
@@ -593,7 +593,7 @@ const ArticleDetail: React.FC = () => {
                     variant="outlined"
                     size="large"
                     onClick={handleShare}
-                    icon={<ShareAltOutlined/>}
+                    icon={<ShareAltOutlined />}
                   />
                 </Tooltip>
 
@@ -603,7 +603,7 @@ const ArticleDetail: React.FC = () => {
                     type="text"
                     variant="outlined"
                     size="large"
-                    icon={<ExclamationCircleOutlined/>}
+                    icon={<ExclamationCircleOutlined />}
                     onClick={handleReport}
                   />
                 </Tooltip>
@@ -653,19 +653,19 @@ const ArticleDetail: React.FC = () => {
                     <div className="flex items-center gap-4 text-sm">
                       <Tooltip title="阅读量">
                         <div className="flex items-center gap-2">
-                          <EyeOutlined className="text-gray-400"/>
+                          <EyeOutlined className="text-gray-400" />
                           <span>{article.readCount || 0}</span>
                         </div>
                       </Tooltip>
                       <Tooltip title="点赞数">
                         <div className="flex items-center gap-2">
-                          <LikeOutlined className={`${article.isLiked ? 'text-red-500' : 'text-gray-400'}`}/>
+                          <LikeOutlined className={`${article.isLiked ? 'text-red-500' : 'text-gray-400'}`} />
                           <span>{article.likeCount || 0}</span>
                         </div>
                       </Tooltip>
                       <Tooltip title="评论数">
                         <div className="flex items-center gap-1">
-                          <MessageOutlined className="text-gray-400"/>
+                          <MessageOutlined className="text-gray-400" />
                           <span>{article.commentCount || 0}</span>
                         </div>
                       </Tooltip>
@@ -682,13 +682,13 @@ const ArticleDetail: React.FC = () => {
                         items: [
                           {
                             key: 'edit',
-                            icon: <EditOutlined/>,
+                            icon: <EditOutlined />,
                             label: '修改',
                             onClick: handleEdit
                           },
                           {
                             key: 'delete',
-                            icon: <DeleteOutlined/>,
+                            icon: <DeleteOutlined />,
                             label: '删除',
                             onClick: handleDelete
                           }
@@ -700,7 +700,7 @@ const ArticleDetail: React.FC = () => {
                         type="text"
                         className="text-gray-400 dark:text-gray-200 hover:text-gray-600 transition-colors"
                       >
-                        管理 <DownOutlined/>
+                        管理 <DownOutlined />
                       </Button>
                     </Dropdown>
                   )}
@@ -727,7 +727,7 @@ const ArticleDetail: React.FC = () => {
 
                 {/* 文章内容 */}
                 <div ref={contentRef}>
-                  <ArticleContent content={article.content || ''}/>
+                  <ArticleContent content={article.content || ''} />
                 </div>
 
                 {/* 文章标签 */}
@@ -753,7 +753,7 @@ const ArticleDetail: React.FC = () => {
                     <div className="hidden sm:flex sm:items-center sm:justify-between gap-4">
                       {/* 左侧：本文收录于xxx专栏 */}
                       <div className="flex items-center gap-2 min-w-0">
-                        <BookTwoTone style={{ color: 'blue' }}/>
+                        <BookTwoTone style={{ color: 'blue' }} />
                         <span className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
                           本文收录于{' '}
                           <a
@@ -775,7 +775,7 @@ const ArticleDetail: React.FC = () => {
                             onClick={() => columnNeighbor.prev?.id && navigate(ROUTES.ARTICLE_DETAIL(columnNeighbor.prev.id))}
                             className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-cyan-400 transition-colors min-w-0"
                           >
-                            <ArrowLeftOutlined className="shrink-0"/>
+                            <ArrowLeftOutlined className="shrink-0" />
                             <span className="truncate max-w-48">{columnNeighbor.prev.title}</span>
                           </button>
                         ) : (
@@ -790,7 +790,7 @@ const ArticleDetail: React.FC = () => {
                             className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-cyan-400 transition-colors min-w-0"
                           >
                             <span className="truncate max-w-48">{columnNeighbor.next.title}</span>
-                            <ArrowRightOutlined className="shrink-0"/>
+                            <ArrowRightOutlined className="shrink-0" />
                           </button>
                         ) : (
                           <div className="text-sm text-gray-400 whitespace-nowrap">已是最后一篇</div>
@@ -802,7 +802,7 @@ const ArticleDetail: React.FC = () => {
                     <div className="flex flex-col gap-4 sm:hidden">
                       {/* 第一行：专栏信息 */}
                       <div className="flex items-center gap-2 min-w-0">
-                        <BookTwoTone style={{ color: 'blue' }}/>
+                        <BookTwoTone style={{ color: 'blue' }} />
                         <span
                           className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap hover:text-cyan-500">
                           本文收录于{' '}
@@ -825,7 +825,7 @@ const ArticleDetail: React.FC = () => {
                             onClick={() => columnNeighbor.prev?.id && navigate(ROUTES.ARTICLE_DETAIL(columnNeighbor.prev.id))}
                             className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-cyan-400 transition-colors min-w-0"
                           >
-                            <ArrowLeftOutlined className="shrink-0"/>
+                            <ArrowLeftOutlined className="shrink-0" />
                             <span className="truncate max-w-36">{columnNeighbor.prev.title}</span>
                           </button>
                         ) : (
@@ -840,7 +840,7 @@ const ArticleDetail: React.FC = () => {
                             className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-cyan-400 transition-colors min-w-0"
                           >
                             <span className="truncate max-w-36">{columnNeighbor.next.title}</span>
-                            <ArrowRightOutlined className="shrink-0"/>
+                            <ArrowRightOutlined className="shrink-0" />
                           </button>
                         ) : (
                           <div className="text-sm text-gray-400 whitespace-nowrap">已是最后一篇</div>
@@ -858,7 +858,7 @@ const ArticleDetail: React.FC = () => {
                     size="large"
                     shape="round"
                     loading={likeLoading}
-                    icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''}/>}
+                    icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''} />}
                     className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none px-4 md:px-6`}
                   >
                     <span className="md:hidden">{article.likeCount || 0}</span>
@@ -869,7 +869,7 @@ const ArticleDetail: React.FC = () => {
                     size="large"
                     shape="round"
                     loading={collectLoading}
-                    icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''}/>}
+                    icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''} />}
                     className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none px-4 md:px-6`}
                   >
                     <span className="md:hidden">{article.collectionCount || 0}</span>
@@ -879,7 +879,7 @@ const ArticleDetail: React.FC = () => {
                     onClick={handleShare}
                     size="large"
                     shape="round"
-                    icon={<ShareAltOutlined/>}
+                    icon={<ShareAltOutlined />}
                     className="text-gray-600 border-gray-200 flex-1 md:flex-none px-4 md:px-6"
                   >
                     <span className="hidden md:inline">分享</span>
@@ -936,13 +936,13 @@ const ArticleDetail: React.FC = () => {
                     <div className="text-center text-sm text-gray-500 dark:text-gray-400">
                       <p className="mt-2">{article.signature || '暂无简介'}</p>
                     </div>
-                    <Divider className="my-6"/>
+                    <Divider className="my-6" />
                     {isLoggedIn && user?.id && article?.userId && (
                       <Button
                         type={isFollowing ? 'default' : 'primary'}
                         loading={followLoading}
                         onClick={handleFollow}
-                        icon={isFollowing ? <CheckOutlined/> : <PlusOutlined/>}
+                        icon={isFollowing ? <CheckOutlined /> : <PlusOutlined />}
                         className={`w-[60%] py-2 rounded-lg shadow-sm hover:shadow-md transition-colors ${
                           isFollowing
                             ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-300'
@@ -1034,7 +1034,7 @@ const ArticleDetail: React.FC = () => {
                       variant={'text'}
                       color={'cyan'}
                       shape="circle"
-                      icon={<UpOutlined/>}
+                      icon={<UpOutlined />}
                       onClick={scrollToTop}
                       className="shadow-lg hover:shadow-xl transition-all duration-300"
                       size="large"
@@ -1079,7 +1079,7 @@ const ArticleDetail: React.FC = () => {
               size="middle"
               type="text"
               loading={likeLoading}
-              icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''}/>}
+              icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''} />}
               className={`${article.isLiked ? 'text-red-500' : 'text-gray-600'}`}
             >
               {article.likeCount || 0}
@@ -1089,7 +1089,7 @@ const ArticleDetail: React.FC = () => {
               size="middle"
               type="text"
               loading={collectLoading}
-              icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''}/>}
+              icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''} />}
               className={`${article.isCollected ? 'text-yellow-500' : 'text-gray-600'}`}
             >
               {article.collectionCount || 0}
@@ -1097,7 +1097,7 @@ const ArticleDetail: React.FC = () => {
             <Button
               size="middle"
               type="text"
-              icon={<MessageOutlined/>}
+              icon={<MessageOutlined />}
               className="text-gray-600"
               onClick={() => document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' })}
             >
@@ -1106,7 +1106,7 @@ const ArticleDetail: React.FC = () => {
             <Button
               size="middle"
               type="text"
-              icon={<ShareAltOutlined/>}
+              icon={<ShareAltOutlined />}
               className="text-gray-600"
               onClick={handleShare}
             >
@@ -1116,7 +1116,7 @@ const ArticleDetail: React.FC = () => {
         </div>
 
         {/* 页脚信息 */}
-        <Footer/>
+        <Footer />
 
         {/* 底部安全区域padding */}
         <div className="h-16 lg:hidden"></div>
