@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import React, { lazy, Suspense } from 'react';
+import { Helmet } from 'react-helmet-async';
 // 导入布局组件
 import ProfileLayout from '../layouts/ProfileLayout';
 import AdminLayout from '../layouts/AdminLayout';
@@ -47,7 +48,14 @@ const AdminSettings = lazy(() => import('../pages/admin/AdminSettings'));
 
 const AppRoutes = (): React.ReactNode => {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">加载中...</div>}>
+    <Suspense fallback={
+      <>
+        <Helmet>
+          <title>加载中... - InkStage</title>
+        </Helmet>
+        <div className="flex items-center justify-center min-h-screen">加载中...</div>
+      </>
+    }>
       <Routes>
         {/* 首页路由 */}
         <Route path="/" element={<Home />} />

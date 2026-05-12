@@ -21,9 +21,19 @@ import AuthErrorHandler from './components/common/AuthErrorHandler';
 
 import type { ReactNode } from 'react';
 
-function App (): ReactNode {
-  const { initAuth: initUserAuth } = useUserStore();
-  const { initAuth: initAdminAuth } = useAdminStore();
+function App(): ReactNode {
+  const {
+    initAuth: initUserAuth,
+    isLoggedIn: isUserLoggedIn,
+    checkTokenExpiry: checkUserTokenExpiry,
+    logout: userLogout
+  } = useUserStore();
+  const {
+    initAuth: initAdminAuth,
+    isAdminLoggedIn: isAdminLoggedIn,
+    checkTokenExpiry: checkAdminTokenExpiry,
+    logout: adminLogout
+  } = useAdminStore();
   const { error, hideError } = useAuthErrorStore();
   const currentTheme = useTheme();
 
@@ -35,6 +45,41 @@ function App (): ReactNode {
       document.documentElement.classList.remove('dark');
     }
   }, [currentTheme]);
+
+  // 页面可见性变化监听 - 解决Safari后台冻结问题
+  useEffect(() => {
+    const handleVisibilityChange = (): void => {
+      if (document.hidden) {
+        // 页面进入后台，停止定时器
+        useUserStore.getState().stopTokenExpiryCheck();
+        useAdminStore.getState().stopTokenExpiryCheck();
+      } else {
+        // 页面恢复前台，检查token状态
+        // 检查用户token
+        if (isUserLoggedIn && checkUserTokenExpiry()) {
+          // token已过期，执行登出
+          userLogout();
+        } else {
+          // 重新启动定时器
+          useUserStore.getState().startTokenExpiryCheck();
+        }
+
+        // 检查管理员token
+        if (isAdminLoggedIn && checkAdminTokenExpiry()) {
+          // token已过期，执行登出
+          adminLogout();
+        } else {
+          // 重新启动定时器
+          useAdminStore.getState().startTokenExpiryCheck();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return (): void => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isUserLoggedIn, checkUserTokenExpiry, userLogout, isAdminLoggedIn, checkAdminTokenExpiry, adminLogout]);
 
   useEffect(() => {
     // 初始化登录状态

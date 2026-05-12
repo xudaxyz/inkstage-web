@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Button, Card, Divider, Dropdown, List, message, Modal, notification, Tag, Tooltip } from 'antd';
 import { Helmet } from 'react-helmet-async';
 import { formatDateTimeShort, getTagColor } from '../../utils';
@@ -756,14 +756,12 @@ const ArticleDetail: React.FC = () => {
                         <BookTwoTone style={{ color: 'blue' }} />
                         <span className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
                           本文收录于{' '}
-                          <a
-                            href={ROUTES.COLUMN_DETAIL(columnNeighbor.columnId)}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <Link
+                            to={ROUTES.COLUMN_DETAIL(columnNeighbor.columnId)}
                             className="font-semibold text-gray-700 dark:text-gray-200 hover:text-cyan-500 transition-colors"
                           >
                             {columnNeighbor.columnName}
-                          </a>{' '}
+                          </Link>{' '}
                           专栏
                         </span>
                       </div>
@@ -803,17 +801,14 @@ const ArticleDetail: React.FC = () => {
                       {/* 第一行：专栏信息 */}
                       <div className="flex items-center gap-2 min-w-0">
                         <BookTwoTone style={{ color: 'blue' }} />
-                        <span
-                          className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap hover:text-cyan-500">
+                        <span className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap hover:text-cyan-500">
                           本文收录于{' '}
-                          <a
-                            href={ROUTES.COLUMN_DETAIL(columnNeighbor.columnId)}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <Link
+                            to={ROUTES.COLUMN_DETAIL(columnNeighbor.columnId)}
                             className="font-semibold text-gray-700 dark:text-gray-200 transition-colors"
                           >
                             {columnNeighbor.columnName}
-                          </a>{' '}
+                          </Link>{' '}
                           专栏
                         </span>
                       </div>

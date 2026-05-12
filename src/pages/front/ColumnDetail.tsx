@@ -29,12 +29,20 @@ import columnService from '../../services/columnService';
 import { getRelativeTime } from '../../utils';
 import { useUserStore } from '../../store';
 
+// 专栏标题截断函数
+const truncateColumnName = (name: string, maxLength: number = 20): string => {
+  if (name.length <= maxLength) {
+    return name;
+  }
+  return name.substring(0, maxLength) + '...';
+};
+
 const ColumnDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useUserStore();
   const [columnDetail, setColumnDetail] = useState<ColumnDetailVO | null>(null);
   const [hotColumns, setHotColumns] = useState<ColumnListVO[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [sortType, setSortType] = useState<'ASC' | 'DESC'>('ASC');
   const [isSubscribed, setIsSubscribed] = useState(false);
 
@@ -194,7 +202,7 @@ const ColumnDetailPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{columnDetail?.name || '专栏详情'} - InkStage</title>
+        <title>{columnDetail ? `《${truncateColumnName(columnDetail.name)}》 - InkStage` : 'InkStage'}</title>
       </Helmet>
       <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800 font-sans">
         <Header />

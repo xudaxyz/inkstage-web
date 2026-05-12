@@ -27,12 +27,14 @@ const queryClient = new QueryClient({
   }
 });
 
+const helmetContext = {};
+
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
   createRoot(rootElement).render(
     <StrictMode>
-      <HelmetProvider>
+      <HelmetProvider context={helmetContext}>
         <QueryClientProvider client={queryClient}>
           {import.meta.env.PROD ? (
             <Sentry.ErrorBoundary fallback={<div className="text-center p-8">应用程序出现错误，请刷新页面重试</div>}>

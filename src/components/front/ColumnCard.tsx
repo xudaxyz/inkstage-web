@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar } from 'antd';
 import { BookOutlined, EyeOutlined, UserOutlined, StarOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import LazyImage from '../common/LazyImage';
 import { ROUTES } from '../../constants/routes';
 import type { ColumnListVO } from '../../types/column';
@@ -18,7 +19,7 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
       <div
         className="flex gap-3 p-2 bg-white dark:bg-gray-800 rounded-lg border-b border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
         <div className="w-20 h-12 aspect-auto rounded-md overflow-hidden">
-          <a href={ROUTES.COLUMN_DETAIL(id)} target="_blank" rel="noopener noreferrer">
+          <Link to={ROUTES.COLUMN_DETAIL(id)}>
             {coverImage ? (
               <LazyImage
                 src={coverImage}
@@ -31,19 +32,17 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
                 <span className="text-white text-xl font-bold px-2 text-center truncate">{name}</span>
               </div>
             )}
-          </a>
+          </Link>
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <h3
             className="text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 line-clamp-1 mb-2">
-            <a
-              href={ROUTES.COLUMN_DETAIL(id)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to={ROUTES.COLUMN_DETAIL(id)}
               className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               {name}
-            </a>
+            </Link>
           </h3>
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
             <Avatar src={avatar} size={14} icon={<UserOutlined/>} className="shrink-0"/>
@@ -72,7 +71,7 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
     <div
       className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <div className="aspect-video overflow-hidden">
-        <a href={ROUTES.COLUMN_DETAIL(id)} target="_blank" rel="noopener noreferrer">
+        <Link to={ROUTES.COLUMN_DETAIL(id)}>
           {coverImage ? (
             <LazyImage
               src={coverImage}
@@ -85,18 +84,16 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
               <span className="text-white text-4xl font-bold px-4 text-center">{name}</span>
             </div>
           )}
-        </a>
+        </Link>
       </div>
       <div className="p-4">
         <h3 className="text-lg font-semibold hover:text-cyan-500 text-gray-800 dark:text-gray-200 mb-2 line-clamp-1">
-          <a
-            href={ROUTES.COLUMN_DETAIL(id)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to={ROUTES.COLUMN_DETAIL(id)}
             className="hover:text-cyan-500 dark:hover:text-cyan-500 transition-colors"
           >
             {name}
-          </a>
+          </Link>
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">{description}</p>
         <div className="flex items-center justify-between">
