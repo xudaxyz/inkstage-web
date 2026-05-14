@@ -7,12 +7,12 @@ import { HelmetProvider } from 'react-helmet-async';
 import * as Sentry from '@sentry/react';
 // React Query 配置
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-// 只有在生产环境才初始化Sentry, 目前无需使用sentry
+import ErrorFallback from './components/common/ErrorFallback';
+
 if (import.meta.env.PROD) {
   // Sentry.init({
-    // dsn: 'https://your-dsn@sentry.io/your-project',
-    // 简化Sentry配置，移除需要额外安装的集成
-    // tracesSampleRate: 1.0
+  // dsn: 'https://your-dsn@sentry.io/your-project',
+  // tracesSampleRate: 1.0
   // });
 }
 
@@ -37,7 +37,7 @@ if (rootElement) {
       <HelmetProvider context={helmetContext}>
         <QueryClientProvider client={queryClient}>
           {import.meta.env.PROD ? (
-            <Sentry.ErrorBoundary fallback={<div className="text-center p-8">应用程序出现错误，请刷新页面重试</div>}>
+            <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
               <App />
             </Sentry.ErrorBoundary>
           ) : (

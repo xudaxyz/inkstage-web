@@ -1,6 +1,7 @@
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ConfigProvider, theme } from 'antd';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 // 导入路由配置
 import AppRoutes from './routes';
@@ -25,19 +26,28 @@ function App(): ReactNode {
   const {
     initAuth: initUserAuth,
     isLoggedIn: isUserLoggedIn,
-    checkTokenExpiry: checkUserTokenExpiry,
-    logout: userLogout
+    checkTokenExpiry: checkUserTokenExpiry
   } = useUserStore();
   const {
     initAuth: initAdminAuth,
     isAdminLoggedIn: isAdminLoggedIn,
-    checkTokenExpiry: checkAdminTokenExpiry,
-    logout: adminLogout
+    checkTokenExpiry: checkAdminTokenExpiry
   } = useAdminStore();
   const { error, hideError } = useAuthErrorStore();
   const currentTheme = useTheme();
+  const queryClient = useQueryClient();
 
-  // 监听主题变化
+  const isUserLoggedInRef = useRef(isUserLoggedIn);
+  const isAdminLoggedInRef = useRef(isAdminLoggedIn);
+
+  useEffect(() => {
+    isUserLoggedInRef.current = isUserLoggedIn;
+  }, [isUserLoggedIn]);
+
+  useEffect(() => {
+    isAdminLoggedInRef.current = isAdminLoggedIn;
+  }, [isAdminLoggedIn]);
+
   useEffect(() => {
     if (currentTheme === 'dark') {
       document.documentElement.classList.add('dark');
@@ -46,7 +56,7 @@ function App(): ReactNode {
     }
   }, [currentTheme]);
 
-  // 页面可见性变化监听 - 解决Safari后台冻结问题
+  // 页面可见性变化监听
   useEffect(() => {
     const handleVisibilityChange = (): void => {
       if (document.hidden) {
@@ -54,24 +64,25 @@ function App(): ReactNode {
         useUserStore.getState().stopTokenExpiryCheck();
         useAdminStore.getState().stopTokenExpiryCheck();
       } else {
-        // 页面恢复前台，检查token状态
-        // 检查用户token
-        if (isUserLoggedIn && checkUserTokenExpiry()) {
-          // token已过期，执行登出
-          userLogout();
+        if (isUserLoggedInRef.current && checkUserTokenExpiry()) {
+          useUserStore.getState().refreshToken().catch(() => {});
         } else {
-          // 重新启动定时器
           useUserStore.getState().startTokenExpiryCheck();
         }
 
-        // 检查管理员token
-        if (isAdminLoggedIn && checkAdminTokenExpiry()) {
-          // token已过期，执行登出
-          adminLogout();
+        if (isAdminLoggedInRef.current && checkAdminTokenExpiry()) {
+          useAdminStore.getState().refreshToken().catch(() => {});
         } else {
-          // 重新启动定时器
           useAdminStore.getState().startTokenExpiryCheck();
         }
+
+        if (!websocketService.isConnected()) {
+          websocketService.reconnect().catch((err) => {
+            console.error('WebSocket重连失败:', err);
+          });
+        }
+
+        queryClient.invalidateQueries();
       }
     };
 
@@ -79,7 +90,7 @@ function App(): ReactNode {
     return (): void => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isUserLoggedIn, checkUserTokenExpiry, userLogout, isAdminLoggedIn, checkAdminTokenExpiry, adminLogout]);
+  }, [checkUserTokenExpiry, checkAdminTokenExpiry, queryClient]);
 
   useEffect(() => {
     // 初始化登录状态

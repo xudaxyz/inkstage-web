@@ -6,15 +6,25 @@ class WebSocketService {
   private stompClient: Stomp.Client | null = null;
   private messageHandlers: Map<WebSocketEvent, MessageHandler[]> = new Map();
 
+  isConnected(): boolean {
+    return this.stompClient?.active ?? false;
+  }
+
   connect(): Promise<void> {
+    if (this.isConnected()) {
+      return Promise.resolve();
+    }
+
     return new Promise((resolve, reject) => {
       try {
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
         const socket = new SockJS(`${baseUrl}/ws`);
         this.stompClient = new Stomp.Client({
           webSocketFactory: (): WebSocket => socket,
+          reconnectDelay: 5000,
+          heartbeatIncoming: 10000,
+          heartbeatOutgoing: 10000,
           onConnect: (): void => {
-            // 订阅用户通知
             const userId = localStorage.getItem('userId');
             if (userId) {
               this.stompClient?.subscribe(`/user/${userId}/notification/new`, (message) => {
@@ -29,6 +39,9 @@ class WebSocketService {
           onStompError: (error): void => {
             console.error('WebSocket connection error:', error);
             reject(error);
+          },
+          onWebSocketClose: (): void => {
+            console.log('WebSocket connection closed');
           }
         });
         this.stompClient.activate();
@@ -37,6 +50,11 @@ class WebSocketService {
         reject(error);
       }
     });
+  }
+
+  reconnect(): Promise<void> {
+    this.disconnect();
+    return this.connect();
   }
 
   disconnect(): void {
