@@ -7,10 +7,9 @@ import notificationService from '../../../services/notificationService';
 import { type Notification } from '../../../types/notification';
 import websocketService from '../../../services/websocketService';
 import { NotificationType, NotificationTypeMap, ReadStatus } from '../../../types/enums';
-import { formatTimeShort } from '../../../utils';
+import { formatTimeShort, normalizePageResponse } from '../../../utils';
 import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
 import { useInfiniteScroll } from '../../../hooks';
-import type { ApiPageResponse } from '../../../types/common';
 import {
   useDeleteNotification,
   useMarkAllAsRead,
@@ -49,7 +48,7 @@ const Notifications: React.FC = () => {
   ];
   // 通知列表无限滚动fetcher
   const notificationsFetcher = useCallback(
-    async (pageNum: number, pageSize: number): Promise<ApiPageResponse<Notification>> => {
+    async (pageNum: number, pageSize: number) => {
       const notificationType =
         selectedType === NotificationType.ALL
           ? undefined
@@ -58,7 +57,6 @@ const Notifications: React.FC = () => {
       if (response.code !== 200) {
         throw new Error(response.message || '获取通知列表失败');
       }
-      // 转换后端数据格式
       const record = response.data === null ? [] : response.data.record;
       const formattedNotifications = record.map(
         (item: {
@@ -81,17 +79,11 @@ const Notifications: React.FC = () => {
           actionUrl: item.actionUrl
         })
       );
-      return {
-        record: formattedNotifications,
-        total: response.data.total || 0,
-        pageNum: response.data.pageNum || pageNum,
-        pageSize: response.data.pageSize || pageSize,
-        pages: response.data.pages || 0,
-        isFirstPage: response.data.isFirstPage || pageNum === 1,
-        isLastPage: response.data.isLastPage || false,
-        prePage: response.data.prePage || pageNum - 1,
-        nextPage: response.data.nextPage || pageNum + 1
-      };
+      return normalizePageResponse<Notification>(
+        { ...response.data, record: formattedNotifications },
+        pageNum,
+        pageSize
+      );
     },
     [selectedType]
   );

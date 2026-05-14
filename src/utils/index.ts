@@ -23,3 +23,6 @@ export * from './errorHandler';
 
 // 标签工具
 export * from './tagUtils';
+
+// 分页工具
+export * from './pageUtils';

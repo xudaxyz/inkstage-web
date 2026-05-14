@@ -28,7 +28,7 @@ import {
   ArticleVisibleEnum,
   ArticleVisibleMap
 } from '../../../types/enums';
-import { formatDateTimeShort } from '../../../utils';
+import { formatDateTimeShort ,computePageResponse } from '../../../utils';
 import type { ApiPageResponse } from '../../../types/common';
 
 // 文章类型定义
@@ -86,17 +86,7 @@ const MyCreations: React.FC = () => {
         commentCount: item.commentCount || 0
       }));
       setTotal(response.data.total);
-      return {
-        record: formattedArticles,
-        total: response.data.total,
-        pageNum: pageNum,
-        pageSize: pageSize,
-        pages: Math.ceil(response.data.total / pageSize),
-        isFirstPage: pageNum === 1,
-        isLastPage: pageNum * pageSize >= response.data.total,
-        prePage: pageNum > 1 ? pageNum - 1 : 1,
-        nextPage: pageNum * pageSize < response.data.total ? pageNum + 1 : pageNum
-      };
+      return computePageResponse(formattedArticles, response.data.total, pageNum, pageSize);
     } else {
       throw new Error(response.message || '获取文章列表失败');
     }

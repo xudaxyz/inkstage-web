@@ -24,9 +24,8 @@ import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { ROUTES } from '../../constants/routes';
 import type { ColumnDetailVO, ColumnListVO } from '../../types/column';
 import type { ColumnArticleListVO } from '../../types/article';
-import type { ApiPageResponse } from '../../types/common';
 import columnService from '../../services/columnService';
-import { getRelativeTime } from '../../utils';
+import { getRelativeTime, normalizePageResponse, emptyPageResponse  } from '../../utils';
 import { useUserStore } from '../../store';
 
 // 专栏标题截断函数
@@ -50,35 +49,14 @@ const ColumnDetailPage: React.FC = () => {
 
   const articlesPageSize = 10;
 
-  const articlesFetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<ColumnArticleListVO>> => {
+  const articlesFetcher = useCallback(async (pageNum: number, pageSize: number) => {
     if (!id) {
-      return {
-        record: [],
-        total: 0,
-        pageNum: 1,
-        pageSize,
-        pages: 0,
-        isFirstPage: true,
-        isLastPage: true,
-        prePage: 1,
-        nextPage: 1
-      };
+      return emptyPageResponse<ColumnArticleListVO>(pageSize);
     }
 
     const response = await columnService.getColumnArticles(Number(id), pageNum, pageSize, sortType);
     if (response.code === 200 && response.data) {
-      const data = response.data;
-      return {
-        total: data.total || 0,
-        record: data.record || [],
-        pageNum: data.pageNum || pageNum,
-        pageSize: data.pageSize || pageSize,
-        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
-        isFirstPage: data.isFirstPage ?? (data.pageNum === 1),
-        isLastPage: data.isLastPage ?? ((data.pageNum || 1) >= (data.pages || 1)),
-        prePage: data.prePage || 1,
-        nextPage: data.nextPage || ((data.pageNum || 1) + 1)
-      };
+      return normalizePageResponse<ColumnArticleListVO>(response.data, pageNum, pageSize);
     }
     throw new Error(response.message || '获取专栏文章失败');
   }, [id, sortType]);

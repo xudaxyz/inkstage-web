@@ -6,7 +6,7 @@ import { ClockCircleOutlined, DeleteOutlined, EyeOutlined, MoreOutlined, SearchO
 import { ROUTES } from '../../../constants/routes';
 import readingHistoryService from '../../../services/readingHistoryService';
 import { type ReadingHistory } from '../../../types/readingHistory';
-import { formatDateOnly, formatTimeShort } from '../../../utils';
+import { formatDateOnly, formatTimeShort, computePageResponse } from '../../../utils';
 import { useTheme } from '../../../store';
 
 const ReadingHistories: React.FC = () => {
@@ -22,17 +22,7 @@ const ReadingHistories: React.FC = () => {
     const response = await readingHistoryService.getReadingHistoryList(pageNum, pageSize);
     if (response.code === 200 && response.data) {
       setTotal(response.data.total);
-      return {
-        record: response.data.record,
-        total: response.data.total,
-        pageNum: pageNum,
-        pageSize: pageSize,
-        pages: Math.ceil(response.data.total / pageSize),
-        isFirstPage: pageNum === 1,
-        isLastPage: pageNum * pageSize >= response.data.total,
-        prePage: pageNum > 1 ? pageNum - 1 : 1,
-        nextPage: pageNum * pageSize < response.data.total ? pageNum + 1 : pageNum
-      };
+      return computePageResponse(response.data.record, response.data.total, pageNum, pageSize);
     } else {
       throw new Error(response.message || '获取阅读历史失败');
     }

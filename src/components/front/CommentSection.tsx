@@ -7,8 +7,7 @@ import CommentInput from './CommentInput';
 import InfiniteScrollContainer from '../common/InfiniteScrollContainer';
 import { useInfiniteScroll } from '../../hooks';
 import type { FrontArticleCommentList } from '../../types/comment';
-import type { ApiPageResponse } from '../../types/common';
-import { sortComments } from '../../utils';
+import { sortComments, normalizePageResponse } from '../../utils';
 
 // 评论组件属性接口
 interface CommentSectionProps {
@@ -29,7 +28,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const { commentCount, sortBy, setSortBy } = useCommentStore();
   // 评论列表无限滚动fetcher
   const commentsFetcher = useCallback(
-    async (pageNum: number, pageSize: number): Promise<ApiPageResponse<FrontArticleCommentList>> => {
+    async (pageNum: number, pageSize: number) => {
       const response = await getComments({
         articleId,
         pageNum: pageNum,
@@ -39,20 +38,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       if (response.code !== 200) {
         throw new Error(response.message || '评论加载失败');
       }
-      // 处理评论排序，确保置顶评论始终显示在最上面
       const comments = response.data === null ? [] : response.data.record;
       const formattedComments = sortComments(comments, sortBy);
-      return {
-        record: formattedComments,
-        total: response.data?.total || 0,
-        pageNum: response.data?.pageNum || pageNum,
-        pageSize: response.data?.pageSize || pageSize,
-        pages: response.data?.pages || 0,
-        isFirstPage: response.data?.isFirstPage || pageNum === 1,
-        isLastPage: response.data?.isLastPage || false,
-        prePage: response.data?.prePage || pageNum - 1,
-        nextPage: response.data?.nextPage || pageNum + 1
-      };
+      return normalizePageResponse<FrontArticleCommentList>(
+        { ...response.data, record: formattedComments },
+        pageNum,
+        pageSize
+      );
     },
     [articleId, sortBy]
   );

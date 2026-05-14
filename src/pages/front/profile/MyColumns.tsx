@@ -19,27 +19,30 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../../constants/routes';
 import columnService from '../../../services/columnService';
-import type { ColumnDetailVO, MyColumnVO } from '../../../types/column';
+import type { MyColumnVO } from '../../../types/column';
 import type { ColumnArticleListVO } from '../../../types/article';
 import type { VisibleStatus } from '../../../types/enums';
-import type { ApiPageResponse } from '../../../types/common';
+import { normalizePageResponse, emptyPageResponse } from '../../../utils';
 
 const MyColumns: React.FC = () => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
   const [selectedColumn, setSelectedColumn] = useState<MyColumnVO | null>(null);
-  const [columnArticles, setColumnArticles] = useState<ColumnArticleListVO[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [searchArticleText, setSearchArticleText] = useState('');
   const [operationLoading, setOperationLoading] = useState(false);
-  const [, setColumnDetail] = useState<ColumnDetailVO | null>(null);
 
   const searchRef = useRef(searchText);
   const columnIdRef = useRef<number | null>(null);
+  const searchArticleRef = useRef(searchArticleText);
 
   useEffect(() => {
     searchRef.current = searchText;
   }, [searchText]);
+
+  useEffect(() => {
+    searchArticleRef.current = searchArticleText;
+  }, [searchArticleText]);
 
   useEffect(() => {
     if (selectedColumn) {
@@ -52,21 +55,10 @@ const MyColumns: React.FC = () => {
   const columnsPageSize = 20;
   const articlesPageSize = 10;
 
-  const columnsFetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<MyColumnVO>> => {
+  const columnsFetcher = useCallback(async (pageNum: number, pageSize: number) => {
     const response = await columnService.getMyColumns(searchRef.current, pageNum, pageSize);
     if (response.code === 200) {
-      const data = response.data;
-      return {
-        record: data.record || [],
-        total: data.total || 0,
-        pageNum: data.pageNum || pageNum,
-        pageSize: data.pageSize || pageSize,
-        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
-        isFirstPage: data.isFirstPage ?? (data.pageNum === 1),
-        isLastPage: data.isLastPage ?? ((data.pageNum || 1) >= (data.pages || 1)),
-        prePage: data.prePage || 1,
-        nextPage: data.nextPage || ((data.pageNum || 1) + 1)
-      };
+      return normalizePageResponse<MyColumnVO>(response.data, pageNum, pageSize);
     }
     throw new Error(response.message || '获取专栏列表失败');
   }, []);
@@ -76,37 +68,20 @@ const MyColumns: React.FC = () => {
     threshold: 0.1
   });
 
-  const articlesFetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<ColumnArticleListVO>> => {
+  const articlesFetcher = useCallback(async (pageNum: number, pageSize: number) => {
     if (!columnIdRef.current) {
-      return {
-        record: [],
-        total: 0,
-        pageNum: 1,
-        pageSize,
-        pages: 0,
-        isFirstPage: true,
-        isLastPage: true,
-        prePage: 1,
-        nextPage: 1
-      };
+      return emptyPageResponse<ColumnArticleListVO>(pageSize);
     }
 
-    const response = await columnService.getColumnArticles(columnIdRef.current, pageNum, pageSize);
+    const keyword = searchArticleRef.current;
+    const response = keyword
+      ? await columnService.searchColumnArticles(columnIdRef.current, keyword, pageNum, pageSize)
+      : await columnService.getColumnArticles(columnIdRef.current, pageNum, pageSize);
+
     if (response.code === 200) {
-      const data = response.data;
-      return {
-        total: data.total || 0,
-        record: data.record || [],
-        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
-        pageNum: data.pageNum || pageNum,
-        pageSize: data.pageSize || pageSize,
-        isFirstPage: data.isFirstPage ?? (data.pageNum === 1),
-        isLastPage: data.isLastPage ?? ((data.pageNum || 1) >= (data.pages || 1)),
-        prePage: data.prePage || 1,
-        nextPage: data.nextPage || ((data.pageNum || 1) + 1)
-      };
+      return normalizePageResponse<ColumnArticleListVO>(response.data, pageNum, pageSize);
     }
-    throw new Error(response.message || '获取我的专栏文章失败');
+    throw new Error(response.message || (keyword ? '搜索专栏文章失败' : '获取我的专栏文章失败'));
   }, []);
 
   const articlesInfiniteScroll = useInfiniteScroll<ColumnArticleListVO>(articlesFetcher, {
@@ -125,24 +100,16 @@ const MyColumns: React.FC = () => {
     articlesScrollRef.current = articlesInfiniteScroll;
   }, [articlesInfiniteScroll]);
 
-  const refreshCurrentColumn = useCallback(async (): Promise<void> => {
-    articlesScrollRef.current.refresh();
-  }, []);
-
   useEffect(() => {
     columnsScrollRef.current.refresh();
   }, [searchText]);
 
   useEffect(() => {
     if (selectedColumn) {
-      articlesScrollRef.current.refresh();
       const fetchDetail = async (): Promise<void> => {
         setDetailLoading(true);
         try {
-          const response = await columnService.getColumnDetail(selectedColumn.id);
-          if (response.code === 200 && response.data) {
-            setColumnDetail(response.data);
-          }
+          await columnService.getColumnDetail(selectedColumn.id);
         } catch (error) {
           console.error('获取专栏详情失败:', error);
         } finally {
@@ -150,15 +117,14 @@ const MyColumns: React.FC = () => {
         }
       };
       fetchDetail().then();
-    } else {
-      setColumnDetail(null);
-      setColumnArticles([]);
     }
   }, [selectedColumn]);
 
   useEffect(() => {
-    setColumnArticles(articlesInfiniteScroll.data);
-  }, [articlesInfiniteScroll.data]);
+    if (selectedColumn) {
+      articlesScrollRef.current.refresh();
+    }
+  }, [searchArticleText, selectedColumn]);
 
   const totalArticles = columnsInfiniteScroll.data.reduce((sum, col) => sum + (col.articleCount || 0), 0);
   const totalSubscriptions = columnsInfiniteScroll.data.reduce((sum, col) => sum + (col.subscriptionCount || 0), 0);
@@ -169,7 +135,7 @@ const MyColumns: React.FC = () => {
 
   const handleBackToColumns = useCallback((): void => {
     setSelectedColumn(null);
-    setColumnArticles([]);
+    setSearchArticleText('');
     articlesInfiniteScroll.refresh();
   }, [articlesInfiniteScroll]);
 
@@ -197,11 +163,11 @@ const MyColumns: React.FC = () => {
       if (response.code !== 200 || !response.data) {
         throw new Error(response.message || '移出文章失败');
       }
-      await refreshCurrentColumn();
+      articlesInfiniteScroll.refresh();
     } finally {
       setOperationLoading(false);
     }
-  }, [selectedColumn, refreshCurrentColumn]);
+  }, [selectedColumn, articlesInfiniteScroll]);
 
   const handleDeleteArticle = useCallback(async (articleId: number): Promise<void> => {
     if (!selectedColumn) return;
@@ -211,11 +177,11 @@ const MyColumns: React.FC = () => {
       if (response.code !== 200) {
         throw new Error(response.message || '删除文章失败');
       }
-      await refreshCurrentColumn();
+      articlesInfiniteScroll.refresh();
     } finally {
       setOperationLoading(false);
     }
-  }, [selectedColumn, refreshCurrentColumn]);
+  }, [selectedColumn, articlesInfiniteScroll]);
 
   const handleMoveArticleToColumn = useCallback(async (articleId: number, targetColumnId: number): Promise<void> => {
     setOperationLoading(true);
@@ -224,11 +190,11 @@ const MyColumns: React.FC = () => {
       if (response.code !== 200 || !response.data) {
         throw new Error(response.message || '移动文章失败');
       }
-      await refreshCurrentColumn();
+      articlesInfiniteScroll.refresh();
     } finally {
       setOperationLoading(false);
     }
-  }, [refreshCurrentColumn]);
+  }, [articlesInfiniteScroll]);
 
   const handleToggleVisibility = useCallback(async (visible: VisibleStatus): Promise<void> => {
     if (!selectedColumn) return;
@@ -272,14 +238,6 @@ const MyColumns: React.FC = () => {
       }
     });
   }, [doDeleteColumn]);
-
-  const filteredArticles = columnArticles.filter((article) => {
-    if (!searchArticleText) return true;
-    return (
-      article.title.includes(searchArticleText) ||
-      (article.summary && article.summary.includes(searchArticleText))
-    );
-  });
 
   return (
     <>
@@ -385,7 +343,7 @@ const MyColumns: React.FC = () => {
           ) : (
             <ColumnDetailSection
               column={selectedColumn}
-              articles={filteredArticles}
+              articlesInfiniteScroll={articlesInfiniteScroll}
               allColumns={columnsInfiniteScroll.data}
               onEditColumn={() => handleEditColumn(selectedColumn.id)}
               onCreateArticle={handleCreateArticle}
@@ -395,7 +353,6 @@ const MyColumns: React.FC = () => {
               onDeleteArticle={handleDeleteArticle}
               onMoveArticleToColumn={handleMoveArticleToColumn}
               onToggleVisibility={handleToggleVisibility}
-              onRefresh={refreshCurrentColumn}
             />
           )
         ) : (

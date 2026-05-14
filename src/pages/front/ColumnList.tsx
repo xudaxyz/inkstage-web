@@ -9,7 +9,7 @@ import ColumnCard from '../../components/front/ColumnCard';
 import InfiniteScrollContainer from '../../components/common/InfiniteScrollContainer';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import type { ColumnListVO } from '../../types/column';
-import type { ApiPageResponse } from '../../types/common';
+import { normalizePageResponse } from '../../utils';
 import { ROUTES } from '../../constants/routes';
 import columnService from '../../services/columnService';
 
@@ -33,7 +33,7 @@ const ColumnListPage: React.FC = () => {
     searchRef.current = debouncedKeyword;
   }, [debouncedKeyword]);
 
-  const fetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<ColumnListVO>> => {
+  const fetcher = useCallback(async (pageNum: number, pageSize: number) => {
     const response = await columnService.getColumns({
       keyword: searchRef.current,
       pageNum,
@@ -41,18 +41,7 @@ const ColumnListPage: React.FC = () => {
     });
 
     if (response.code === 200 && response.data) {
-      const data = response.data;
-      return {
-        record: data.record || [],
-        total: data.total || 0,
-        pageNum: data.pageNum || pageNum,
-        pageSize: data.pageSize || pageSize,
-        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
-        isFirstPage: (data.pageNum || pageNum) === 1,
-        isLastPage: data.isLastPage || ((data.pageNum || pageNum) * (data.pageSize || pageSize) >= (data.total || 0)),
-        prePage: (data.pageNum || pageNum) > 1 ? (data.pageNum || pageNum) - 1 : 1,
-        nextPage: data.nextPage || ((data.pageNum || pageNum) + 1)
-      };
+      return normalizePageResponse<ColumnListVO>(response.data, pageNum, pageSize);
     }
     throw new Error(response.message || '获取专栏列表失败');
   }, []);

@@ -9,8 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../../constants/routes';
 import columnService from '../../../services/columnService';
 import type { MyColumnSubscriptionVO } from '../../../types/column';
-import type { ApiPageResponse } from '../../../types/common';
-import { getRelativeTime } from '../../../utils';
+import { getRelativeTime, normalizePageResponse } from '../../../utils';
 
 const MySubscriptions: React.FC = () => {
   const navigate = useNavigate();
@@ -23,21 +22,10 @@ const MySubscriptions: React.FC = () => {
 
   const pageSize = 20;
 
-  const subscriptionFetcher = useCallback(async (pageNum: number, pageSize: number): Promise<ApiPageResponse<MyColumnSubscriptionVO>> => {
+  const subscriptionFetcher = useCallback(async (pageNum: number, pageSize: number) => {
     const response = await columnService.getMySubscriptions(pageNum, pageSize, searchRef.current);
     if (response.code === 200) {
-      const data = response.data || [];
-      return {
-        record: data.record || [],
-        total: data.total || 0,
-        pages: data.pages || Math.ceil((data.total || 0) / pageSize),
-        pageNum: data.pageNum || pageNum,
-        pageSize: data.pageSize || pageSize,
-        isFirstPage: data.isFirstPage ?? (data.pageNum === 1),
-        isLastPage: data.isLastPage ?? ((data.pageNum || 1) >= (data.pages || 1)),
-        prePage: data.prePage || 1,
-        nextPage: data.nextPage || ((data.pageNum || 1) + 1)
-      };
+      return normalizePageResponse<MyColumnSubscriptionVO>(response.data, pageNum, pageSize);
     }
     throw new Error(response.message || '获取订阅列表失败');
   }, []);

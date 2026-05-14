@@ -24,9 +24,8 @@ import {
 import { ROUTES } from '../../../constants/routes';
 import articleService from '../../../services/articleService';
 import { type MyArticleCollectionList } from '../../../types/article';
-import { type ApiPageResponse } from '../../../types/common';
 import { ArticleOriginalMap, DefaultStatusEnum } from '../../../types/enums';
-import { formatDateTimeShort } from '../../../utils';
+import { formatDateTimeShort, computePageResponse } from '../../../utils';
 import { useTheme } from '../../../store';
 
 // 收藏夹类型定义
@@ -71,7 +70,7 @@ const MyCollections: React.FC = () => {
   const pageSize = 10;
   // 收藏文章列表获取函数
   const fetcher = useCallback(
-    async (pageNum: number, pageSize: number): Promise<ApiPageResponse<MyArticleCollectionList>> => {
+    async (pageNum: number, pageSize: number) => {
       const folderId =
         selectedFolderRef.current === 'all'
           ? undefined
@@ -114,17 +113,7 @@ const MyCollections: React.FC = () => {
           folderId: result.folderId,
           folderName: result.folderName
         }));
-        return {
-          record: formattedCollections,
-          total: response.data.total,
-          pageNum: pageNum,
-          pageSize: pageSize,
-          pages: Math.ceil(response.data.total / pageSize),
-          isFirstPage: pageNum === 1,
-          isLastPage: pageNum * pageSize >= response.data.total,
-          prePage: pageNum > 1 ? pageNum - 1 : 1,
-          nextPage: pageNum * pageSize < response.data.total ? pageNum + 1 : pageNum
-        };
+        return computePageResponse(formattedCollections, response.data.total, pageNum, pageSize);
       } else {
         throw new Error(response.message || '获取收藏文章失败');
       }

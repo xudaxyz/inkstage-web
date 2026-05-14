@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Button, Dropdown, message, Modal } from 'antd';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Dropdown, message, Modal, Spin } from 'antd';
 import {
   BookOutlined,
   CalendarOutlined,
@@ -17,15 +17,17 @@ import {
   UnorderedListOutlined
 } from '@ant-design/icons';
 import LazyImage from '../../../components/common/LazyImage';
+import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
 import { getRelativeTime } from '../../../utils';
 import type { MyColumnVO } from '../../../types/column';
 import type { ColumnArticleListVO } from '../../../types/article';
+import type { InfiniteScrollResult } from '../../../types/infiniteScroll';
 import { VisibleStatus } from '../../../types/enums';
 import columnService from '../../../services/columnService';
 
 interface ColumnDetailSectionProps {
   column: MyColumnVO;
-  articles: ColumnArticleListVO[];
+  articlesInfiniteScroll: InfiniteScrollResult<ColumnArticleListVO>;
   allColumns: MyColumnVO[];
   onEditColumn: () => void;
   onCreateArticle: () => void;
@@ -35,47 +37,53 @@ interface ColumnDetailSectionProps {
   onDeleteArticle: (articleId: number) => Promise<void>;
   onMoveArticleToColumn: (articleId: number, targetColumnId: number) => Promise<void>;
   onToggleVisibility: (visible: VisibleStatus) => Promise<void>;
-  onRefresh: () => void;
 }
 
 const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
-                                                                   column,
-                                                                   articles,
-                                                                   allColumns,
-                                                                   onEditColumn,
-                                                                   onCreateArticle,
-                                                                   onViewArticle,
-                                                                   onEditArticle,
-                                                                   onRemoveArticleFromColumn,
-                                                                   onDeleteArticle,
-                                                                   onMoveArticleToColumn,
-                                                                   onToggleVisibility,
-                                                                   onRefresh
-                                                                 }) => {
+                                                                    column,
+                                                                    articlesInfiniteScroll,
+                                                                    allColumns,
+                                                                    onEditColumn,
+                                                                    onCreateArticle,
+                                                                    onViewArticle,
+                                                                    onEditArticle,
+                                                                    onRemoveArticleFromColumn,
+                                                                    onDeleteArticle,
+                                                                    onMoveArticleToColumn,
+                                                                    onToggleVisibility
+                                                                  }) => {
   const [isSortMode, setIsSortMode] = useState(false);
+  const [sortArticlesLoading, setSortArticlesLoading] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [localArticles, setLocalArticles] = useState<ColumnArticleListVO[]>(articles);
+  const [localArticles, setLocalArticles] = useState<ColumnArticleListVO[]>([]);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const originalArticlesRef = useRef<ColumnArticleListVO[]>(articles);
+  const originalArticlesRef = useRef<ColumnArticleListVO[]>([]);
+  const refreshRef = useRef(articlesInfiniteScroll.refresh);
+  refreshRef.current = articlesInfiniteScroll.refresh;
 
-  // 同步外部articles变化到本地状态（非排序模式下）
-  React.useEffect(() => {
-    if (!isSortMode) {
-      setLocalArticles(articles);
-      originalArticlesRef.current = articles;
+  const articleTotal = articlesInfiniteScroll.total;
+
+  const handleEnterSortMode = useCallback(async () => {
+    setSortArticlesLoading(true);
+    try {
+      const response = await columnService.getColumnArticles(column.id, 1, 9999, 'ASC');
+      if (response.code === 200 && response.data) {
+        const allArticles = response.data.record || [];
+        originalArticlesRef.current = [...allArticles];
+        setLocalArticles([...allArticles]);
+        setIsSortMode(true);
+      } else {
+        message.error('加载文章数据失败');
+      }
+    } catch {
+      message.error('加载文章数据失败');
+    } finally {
+      setSortArticlesLoading(false);
     }
-  }, [articles, isSortMode]);
+  }, [column.id]);
 
-  // 进入排序模式
-  const handleEnterSortMode = useCallback(() => {
-    originalArticlesRef.current = [...articles];
-    setLocalArticles([...articles]);
-    setIsSortMode(true);
-  }, [articles]);
-
-  // 取消排序
   const handleCancelSort = useCallback(() => {
     setLocalArticles([...originalArticlesRef.current]);
     setIsSortMode(false);
@@ -83,7 +91,6 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
     setDragOverIndex(null);
   }, []);
 
-  // 确认排序并保存
   const handleConfirmSort = useCallback(async () => {
     setIsSaving(true);
     try {
@@ -92,7 +99,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
       if (response.code === 200 && response.data) {
         message.success('排序已保存');
         setIsSortMode(false);
-        onRefresh();
+        refreshRef.current();
       } else {
         message.error('排序保存失败');
       }
@@ -101,7 +108,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
     } finally {
       setIsSaving(false);
     }
-  }, [localArticles, column.id, onRefresh]);
+  }, [localArticles, column.id]);
 
   const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -137,6 +144,13 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
     setDraggedIndex(null);
     setDragOverIndex(null);
   }, [draggedIndex, localArticles]);
+
+  useEffect(() => {
+    if (!isSortMode) {
+      setLocalArticles([]);
+      originalArticlesRef.current = [];
+    }
+  }, [isSortMode]);
 
   const otherColumns = useMemo(() => {
     return allColumns.filter(col => col.id !== column.id);
@@ -175,13 +189,13 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
         try {
           await onRemoveArticleFromColumn(articleId);
           message.success('文章已移出专栏');
-          onRefresh();
+          refreshRef.current();
         } catch {
           message.error('移出文章失败');
         }
       }
     });
-  }, [column.name, onRemoveArticleFromColumn, onRefresh]);
+  }, [column.name, onRemoveArticleFromColumn]);
 
   const handleDeleteArticle = useCallback((articleId: number): void => {
     Modal.confirm({
@@ -197,13 +211,13 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
         try {
           await onDeleteArticle(articleId);
           message.success('文章已移至回收站');
-          onRefresh();
+          refreshRef.current();
         } catch {
           message.error('删除文章失败');
         }
       }
     });
-  }, [onDeleteArticle, onRefresh]);
+  }, [onDeleteArticle]);
 
   const handleMoveArticle = useCallback((articleId: number, targetColumnId: number, articleTitle: string): void => {
     const targetColumn = allColumns.find(col => col.id === targetColumnId);
@@ -222,13 +236,13 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
         try {
           await onMoveArticleToColumn(articleId, targetColumnId);
           message.success('文章已移动到「' + targetColumn.name + '」');
-          onRefresh();
+          refreshRef.current();
         } catch {
           message.error('移动文章失败');
         }
       }
     });
-  }, [allColumns, onMoveArticleToColumn, onRefresh]);
+  }, [allColumns, onMoveArticleToColumn]);
 
   const renderVisibilityMenu = useCallback(() => {
     const items = [
@@ -236,7 +250,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
         key: 'sort',
         label: '文章排序',
         icon: <UnorderedListOutlined/>,
-        onClick: (): void => handleEnterSortMode()
+        onClick: (): void => { handleEnterSortMode().then(); }
       },
       {
         key: 'public',
@@ -314,6 +328,87 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
     };
   }, [otherColumns, onViewArticle, onEditArticle, handleMoveArticle, handleRemoveArticle, handleDeleteArticle]);
 
+  const renderArticleItem = useCallback((article: ColumnArticleListVO) => (
+    <div
+      key={article.id}
+      className="relative pl-8 pb-6 group cursor-pointer"
+    >
+      <div
+        className="absolute left-0 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full -translate-x-2 group-hover:bg-purple-500 group-hover:scale-125 transition-all duration-300 shadow-sm"/>
+      <div
+        className="absolute left-0 top-4 w-0.5 h-full bg-gray-300 dark:bg-gray-600 group-hover:bg-purple-500 dark:group-hover:bg-purple-500 transition-colors duration-300"/>
+
+      <div
+        className="flex items-start justify-between gap-4 group-hover:-translate-x-1 transition-transform duration-300">
+        <div className="flex-1 min-w-0">
+          <h3
+            className="text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors duration-300 cursor-pointer"
+            onClick={() => onViewArticle(article.id)}
+          >
+            {article.title}
+          </h3>
+
+          {article.summary && (
+            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+              {article.summary}
+            </p>
+          )}
+
+          <div className="flex items-center gap-5 text-xs text-gray-400">
+            <span
+              className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
+              <EyeOutlined size={14}/>
+              {article.readCount}
+            </span>
+            <span
+              className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
+              <MessageOutlined size={14}/>
+              {article.commentCount}
+            </span>
+            <span
+              className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
+              <LikeOutlined size={14}/>
+              {article.likeCount}
+            </span>
+            <span className="flex items-center gap-1">
+              <CalendarOutlined size={14}/>
+              {getRelativeTime(article.publishTime)}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {article.coverImage && (
+            <div
+              className="w-40 h-24 rounded-lg overflow-hidden shrink-0 hidden sm:block group-hover:shadow-[0_4px_15px_rgba(139,92,246,0.3)] transition-shadow duration-300 cursor-pointer"
+              onClick={() => onViewArticle(article.id)}
+            >
+              <LazyImage
+                src={article.coverImage}
+                alt={article.title}
+                className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-95 transition-all duration-500"
+              />
+            </div>
+          )}
+
+          <div className="self-end">
+            <Dropdown
+              key="more"
+              menu={getArticleActionsMenu(article)}
+              trigger={['click']}
+            >
+              <Button
+                icon={<MoreOutlined/>}
+                size="small"
+                type="text"
+              />
+            </Dropdown>
+          </div>
+        </div>
+      </div>
+    </div>
+  ), [onViewArticle, getArticleActionsMenu]);
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg">
       {/* 封面图区域 */}
@@ -335,7 +430,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
           {/* 简介 */}
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">{column.description}</p>
 
-          {/* 第四层：左侧元数据，右侧操作按钮 */}
+          {/* 左侧元数据，右侧操作按钮 */}
           <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
             {/* 左侧：元数据 */}
             <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
@@ -373,11 +468,10 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
           </div>
         </div>
 
-        {/* 文章列表 */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
           <div className="flex items-center border-b border-gray-100 justify-between pb-6">
             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-              {isSortMode ? '拖拽排序中' : `专栏文章 (${articles.length})`}
+              {isSortMode ? '拖拽排序中' : `专栏文章 (${articleTotal})`}
             </h3>
             {isSortMode ? (
               <div className="flex items-center gap-3">
@@ -407,126 +501,129 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
             )}
           </div>
 
-          <div className="space-y-0">
-            {localArticles.map((article, index) => (
-              <div
-                key={article.id}
-                className={`relative pb-6 group transition-all duration-300 ${
-                  isSortMode ? 'pl-8 cursor-grab active:cursor-grabbing' : 'pl-8'
-                } ${
-                  draggedIndex === index ? 'opacity-50 scale-95' : ''
-                } ${dragOverIndex === index ? 'border-t-4 border-purple-500 -mt-4 pt-4' : ''}`}
-                draggable={isSortMode}
-                onDragStart={isSortMode ? (e): void => handleDragStart(e, index) : undefined}
-                onDragOver={isSortMode ? (e): void => handleDragOver(e, index) : undefined}
-                onDragLeave={isSortMode ? handleDragLeave : undefined}
-                onDrop={isSortMode ? (e): void => handleDrop(e, index) : undefined}
-              >
-                {/* 时间轴圆点 */}
-                <div
-                  className={`absolute left-0 top-0 w-4 h-4 rounded-full -translate-x-2 transition-all duration-300 shadow-sm ${
-                    isSortMode
-                      ? 'bg-purple-500'
-                      : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-purple-500 group-hover:scale-125'
-                  }`}/>
-                {/* 时间轴线 */}
-                <div
-                  className={`absolute left-0 top-4 w-0.5 h-full transition-colors duration-300 ${
-                    isSortMode
-                      ? 'bg-purple-500'
-                      : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-purple-500 dark:group-hover:bg-purple-500'
-                  }`}/>
+          {isSortMode ? (
+            sortArticlesLoading ? (
+              <div className="flex justify-center items-center py-20">
+                <Spin size="large" tip="加载文章数据中..."/>
+              </div>
+            ) : (
+              <div className="space-y-0">
+                {localArticles.map((article, index) => (
+                  <div
+                    key={article.id}
+                    className={`relative pb-6 group transition-all duration-300 pl-8 cursor-grab active:cursor-grabbing ${
+                      draggedIndex === index ? 'opacity-50 scale-95' : ''
+                    } ${dragOverIndex === index ? 'border-t-5 border-red-500 -mt-4 pt-4' : ''}`}
+                    draggable
+                    onDragStart={(e): void => handleDragStart(e, index)}
+                    onDragOver={(e): void => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e): void => handleDrop(e, index)}
+                  >
+                    <div
+                      className="absolute left-0 top-0 w-4 h-4 bg-purple-500 rounded-full -translate-x-2 transition-all duration-300 shadow-sm"/>
+                    <div
+                      className="absolute left-0 top-4 w-0.5 h-full bg-purple-500 transition-colors duration-300"/>
 
-                <div
-                  className="flex items-start justify-between gap-4 group-hover:-translate-x-1 transition-transform duration-300">
-                  <div className="flex-1 min-w-0">
-                    {/* 标题行 - 包含拖拽手柄和标题 */}
-                    <div className="flex items-center gap-2 mb-2">
-                      {/* 拖拽手柄 - 仅排序模式显示在标题左侧 */}
-                      {isSortMode && (
-                        <UnorderedListOutlined className="text-gray-400 text-lg cursor-grab shrink-0"/>
-                      )}
-                      <h3
-                        className="text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors duration-300 cursor-pointer"
-                        onClick={() => onViewArticle(article.id)}
-                      >
-                        {article.title}
-                      </h3>
-                    </div>
+                    <div
+                      className="flex items-start justify-between gap-4 group-hover:-translate-x-1 transition-transform duration-300">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <UnorderedListOutlined className="text-gray-400 text-lg cursor-grab shrink-0"/>
+                          <h3
+                            className="text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors duration-300 cursor-pointer"
+                            onClick={() => onViewArticle(article.id)}
+                          >
+                            {article.title}
+                          </h3>
+                        </div>
 
-                    {/* 简介 */}
-                    {article.summary && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-                        {article.summary}
-                      </p>
-                    )}
+                        {article.summary && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+                            {article.summary}
+                          </p>
+                        )}
 
-                    {/* 元数据 */}
-                    <div className="flex items-center gap-5 text-xs text-gray-400">
-                      <span
-                        className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
-                        <EyeOutlined size={14}/>
-                        {article.readCount}
-                      </span>
-                      <span
-                        className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
-                        <MessageOutlined size={14}/>
-                        {article.commentCount}
-                      </span>
-                      <span
-                        className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
-                        <LikeOutlined size={14}/>
-                        {article.likeCount}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CalendarOutlined size={14}/>
-                        {getRelativeTime(article.publishTime)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 右侧：封面图和操作按钮 */}
-                  <div className="flex items-center gap-3">
-                    {/* 封面图 */}
-                    {article.coverImage && (
-                      <div
-                        className="w-40 h-24 rounded-lg overflow-hidden shrink-0 hidden sm:block group-hover:shadow-[0_4px_15px_rgba(139,92,246,0.3)] transition-shadow duration-300 cursor-pointer"
-                        onClick={() => onViewArticle(article.id)}
-                      >
-                        <LazyImage
-                          src={article.coverImage}
-                          alt={article.title}
-                          className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-95 transition-all duration-500"
-                        />
+                        <div className="flex items-center gap-5 text-xs text-gray-400">
+                          <span
+                            className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
+                            <EyeOutlined size={14}/>
+                            {article.readCount}
+                          </span>
+                          <span
+                            className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
+                            <MessageOutlined size={14}/>
+                            {article.commentCount}
+                          </span>
+                          <span
+                            className="flex items-center gap-1 group-hover:text-purple-500 transition-colors duration-300">
+                            <LikeOutlined size={14}/>
+                            {article.likeCount}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <CalendarOutlined size={14}/>
+                            {getRelativeTime(article.publishTime)}
+                          </span>
+                        </div>
                       </div>
-                    )}
 
-                    {/* 操作按钮 */}
-                    <div className="self-end">
-                      <Dropdown
-                        key="more"
-                        menu={getArticleActionsMenu(article)}
-                        trigger={['click']}
-                      >
-                        <Button
-                          icon={<MoreOutlined/>}
-                          size="small"
-                          type="text"
-                        />
-                      </Dropdown>
+                      <div className="flex items-center gap-3">
+                        {article.coverImage && (
+                          <div
+                            className="w-40 h-24 rounded-lg overflow-hidden shrink-0 hidden sm:block group-hover:shadow-[0_4px_15px_rgba(139,92,246,0.3)] transition-shadow duration-300 cursor-pointer"
+                            onClick={() => onViewArticle(article.id)}
+                          >
+                            <LazyImage
+                              src={article.coverImage}
+                              alt={article.title}
+                              className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-95 transition-all duration-500"
+                            />
+                          </div>
+                        )}
+
+                        <div className="self-end">
+                          <Dropdown
+                            key="more"
+                            menu={getArticleActionsMenu(article)}
+                            trigger={['click']}
+                          >
+                            <Button
+                              icon={<MoreOutlined/>}
+                              size="small"
+                              type="text"
+                            />
+                          </Dropdown>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                ))}
 
-            {/* 空状态 */}
-            {articles.length === 0 && (
-              <div className="text-center py-10">
-                <p className="text-gray-500 dark:text-gray-400">暂无文章，试试新建一篇吧</p>
+                {localArticles.length === 0 && (
+                  <div className="text-center py-10">
+                    <p className="text-gray-500 dark:text-gray-400">暂无文章，试试新建一篇吧</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            )
+          ) : (
+            <InfiniteScrollContainer
+              infiniteScroll={articlesInfiniteScroll}
+              renderItem={renderArticleItem}
+              emptyContent={
+                <div className="text-center py-10">
+                  <p className="text-gray-500 dark:text-gray-400">暂无文章，试试新建一篇吧</p>
+                </div>
+              }
+              loadingContent={
+                <div className="flex justify-center items-center py-10">
+                  <Spin size="default"/>
+                </div>
+              }
+              itemGap="0"
+              noMoreText="已经到底啦 ~"
+            />
+          )}
         </div>
       </div>
     </div>
