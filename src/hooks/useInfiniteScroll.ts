@@ -108,7 +108,7 @@ export function useInfiniteScroll<T>(
       clearTimeout(retryTimer);
       setRetryTimer(null);
     }
-    (async (): Promise<void> => {
+    void (async (): Promise<void> => {
       await loadData(1, true);
     })();
   }, [loadData, retryTimer]);
@@ -127,7 +127,7 @@ export function useInfiniteScroll<T>(
   // 自动加载：当元素进入视口时加载更多
   useEffect(() => {
     if (autoLoad && inView && hasMoreRef.current && !isLoadingRef.current && !isLoadingMoreRef.current) {
-      (async (): Promise<void> => {
+      void (async (): Promise<void> => {
         await loadData(pageRef.current + 1, false);
       })();
     }
@@ -135,7 +135,7 @@ export function useInfiniteScroll<T>(
   // 初始加载
   useEffect(() => {
     if (data.length === 0 && !isLoadingRef.current && !isError) {
-      (async (): Promise<void> => {
+      void (async (): Promise<void> => {
         await loadData(1, true);
       })();
     }
