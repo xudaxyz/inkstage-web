@@ -18,7 +18,7 @@ export interface TemplateVariable {
 export interface ArticlePublishParam {
   username: string;
   articleTitle: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -32,7 +32,7 @@ export const ArticlePublishParam = {
 export interface ArticleLikeParam {
   username: string;
   articleTitle: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -46,7 +46,7 @@ export const ArticleLikeParam = {
 export interface ArticleCollectionParam {
   collectorName: string;
   articleTitle: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -61,7 +61,7 @@ export interface ArticleCommentParam {
   username: string;
   articleTitle: string;
   commentContent: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -77,7 +77,7 @@ export const ArticleCommentParam = {
 export interface CommentReplyParam {
   username: string;
   commentContent: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -90,7 +90,7 @@ export const CommentReplyParam = {
 
 export interface CommentLikeParam {
   username: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -121,7 +121,7 @@ export const MessageParam = {
 // [系统通知]
 export interface ReportParam {
   reportedContent: string;
-  relatedId: number;
+  relatedId: string;
 }
 
 export const ReportParam = {
@@ -131,7 +131,7 @@ export const ReportParam = {
 
 export interface ReportResultParam {
   handleResult: string;
-  relatedId: number;
+  relatedId: string;
 }
 
 export const ReportResultParam = {
@@ -181,7 +181,7 @@ export const UserStatusChangeParam = {
 // [文章审核]
 export interface ArticleReviewApproveParam {
   articleTitle: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -194,7 +194,7 @@ export const ArticleReviewApproveParam = {
 export interface ArticleReviewRejectParam {
   articleTitle: string;
   reason: string;
-  articleId: number;
+  articleId: string;
 }
 
 export const ArticleReviewRejectParam = {
@@ -205,7 +205,7 @@ export const ArticleReviewRejectParam = {
 
 export interface ArticleReviewReprocessParam {
   articleTitle: string;
-  articleId: number;
+  articleId: string;
 }
 
 export const ArticleReviewReprocessParam = {
@@ -216,7 +216,7 @@ export const ArticleReviewReprocessParam = {
 export interface ArticleOfflineParam {
   articleTitle: string;
   reason: string;
-  articleId: number;
+  articleId: string;
 }
 
 export const ArticleOfflineParam = {
@@ -227,7 +227,7 @@ export const ArticleOfflineParam = {
 
 export interface ArticleOnlineParam {
   articleTitle: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -239,7 +239,7 @@ export const ArticleOnlineParam = {
 
 export interface ArticleTopParam {
   articleTitle: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -251,7 +251,7 @@ export const ArticleTopParam = {
 
 export interface ArticleRecommendParam {
   articleTitle: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -263,7 +263,7 @@ export const ArticleRecommendParam = {
 
 export interface ArticleDeleteParam {
   articleTitle: string;
-  articleId: number;
+  articleId: string;
   reason: string;
 }
 
@@ -276,7 +276,7 @@ export const ArticleDeleteParam = {
 // [评论审核]
 export interface CommentReviewRejectParam {
   reason: string;
-  articleId: number;
+  articleId: string;
 }
 
 export const CommentReviewRejectParam = {
@@ -285,7 +285,7 @@ export const CommentReviewRejectParam = {
 } as const;
 
 export interface CommentTopParam {
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -296,9 +296,9 @@ export const CommentTopParam = {
 
 // [专栏管理]
 export interface ColumnSubscriptionParam {
-  columnId: number;
+  columnId: string;
   columnName: string;
-  subscriberId: number;
+  subscriberId: string;
   subscriberName: string;
   actionUrl: string;
 }
@@ -312,10 +312,10 @@ export const ColumnSubscriptionParam = {
 } as const;
 
 export interface ColumnArticlePublishParam {
-  columnId: number;
+  columnId: string;
   columnName: string;
   articleTitle: string;
-  articleId: number;
+  articleId: string;
   articleUrl: string;
 }
 
@@ -328,7 +328,7 @@ export const ColumnArticlePublishParam = {
 } as const;
 
 export interface ColumnDisabledParam {
-  columnId: number;
+  columnId: string;
   columnName: string;
   reason: string;
 }
@@ -340,7 +340,7 @@ export const ColumnDisabledParam = {
 } as const;
 
 export interface ColumnRestoredParam {
-  columnId: number;
+  columnId: string;
   columnName: string;
   actionUrl: string;
 }
@@ -354,7 +354,7 @@ export const ColumnRestoredParam = {
 // [系统管理]
 export interface TagDeleteParam {
   tagName: string;
-  tagId: number;
+  tagId: string;
 }
 
 export const TagDeleteParam = {

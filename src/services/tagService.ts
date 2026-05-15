@@ -9,9 +9,9 @@ import type {
 } from '../types/tag';
 
 // 参数验证函数
-const validateIdParam = (id: number): void => {
-  if (id == null || id <= 0) {
-    throw new Error('ID必须是正整数');
+const validateIdParam = (id: string): void => {
+  if (!id || id.trim() === '') {
+    throw new Error('ID不能为空');
   }
 };
 
@@ -57,7 +57,7 @@ export const getActiveTags = async (): Promise<ApiResponse<FrontTag[]>> => {
  * @param id 标签ID
  * @returns 标签信息
  */
-export const getTagById = async (id: number): Promise<ApiResponse<FrontTag>> => {
+export const getTagById = async (id: string): Promise<ApiResponse<FrontTag>> => {
   validateIdParam(id);
   return await apiClient.get(API_ENDPOINTS.FRONT.TAG.DETAIL(id));
 };
@@ -68,7 +68,7 @@ export const getTagById = async (id: number): Promise<ApiResponse<FrontTag>> => 
  * @param articleId 文章ID
  * @returns 标签列表
  */
-export const getTagsByArticleId = async (articleId: number): Promise<ApiResponse<FrontTag[]>> => {
+export const getTagsByArticleId = async (articleId: string): Promise<ApiResponse<FrontTag[]>> => {
   validateIdParam(articleId);
   return await apiClient.get(API_ENDPOINTS.FRONT.TAG.BY_ARTICLE(articleId));
 };
@@ -105,7 +105,7 @@ const admin = {
    * @param tag 标签信息
    * @returns 更新后的标签信息
    */
-  updateTag: async (id: number, tag: TagCreateUpdateParams): Promise<ApiResponse<AdminTag>> => {
+  updateTag: async (id: string, tag: TagCreateUpdateParams): Promise<ApiResponse<AdminTag>> => {
     validateIdParam(id);
     validateTagParams(tag);
     return await apiClient.put(API_ENDPOINTS.ADMIN.TAG.UPDATE(id), tag);
@@ -116,7 +116,7 @@ const admin = {
    * @param id 标签ID
    * @returns 响应结果
    */
-  deleteTag: async (id: number): Promise<ApiResponse<void>> => {
+  deleteTag: async (id: string): Promise<ApiResponse<void>> => {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.ADMIN.TAG.DELETE(id));
   },
@@ -127,7 +127,7 @@ const admin = {
    * @param status 状态
    * @returns 更新后的标签信息
    */
-  updateTagStatus: async (id: number, status: StatusEnum): Promise<ApiResponse<AdminTag>> => {
+  updateTagStatus: async (id: string, status: StatusEnum): Promise<ApiResponse<AdminTag>> => {
     validateIdParam(id);
     if (!Object.values(StatusEnum).includes(status)) {
       throw new Error('标签状态无效');

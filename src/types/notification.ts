@@ -3,11 +3,11 @@ import type { ApiPageResponse } from './common';
 
 // 通知类型定义
 export interface Notification {
-  id: number;
+  id: string;
   notificationType: NotificationType;
   title: string;
   content: string;
-  relatedId: number;
+  relatedId: string;
   actionUrl: string;
   readStatus: ReadStatus;
   createTime: string;
@@ -15,7 +15,7 @@ export interface Notification {
 
 // 通知设置类型定义
 export interface NotificationSetting {
-  userId: number;
+  userId: string;
   // [文章互动]
   articlePublishNotification: boolean;
   articleLikeNotification: boolean;

@@ -14,28 +14,28 @@ export const API_ENDPOINTS = {
 
     // 文章相关
     ARTICLE: {
-      DETAIL: (id: number): string => `/front/article/${id}`, // 获取文章详情
+      DETAIL: (id: string): string => `/front/article/${id}`, // 获取文章详情
       CREATE: '/front/article/create', // 创建文章
-      UPDATE: (id: number): string => `/front/article/update/${id}`, // 更新文章
-      SAVE_DRAFT: (id?: number): string => `/front/article/draft/${id}`, // 保存草稿
-      DELETE: (id: number): string => `/front/article/delete/${id}`, // 删除文章
-      PERMANENT_DELETE: (id: number): string => `/front/article/permanent-delete/${id}`, // 彻底删除文章
-      USER_ARTICLES: (userId: number): string => `/front/article/user/${userId}`, // 获取用户文章列表
+      UPDATE: (id: string): string => `/front/article/update/${id}`, // 更新文章
+      SAVE_DRAFT: (id?: string): string => `/front/article/draft/${id}`, // 保存草稿
+      DELETE: (id: string): string => `/front/article/delete/${id}`, // 删除文章
+      PERMANENT_DELETE: (id: string): string => `/front/article/permanent-delete/${id}`, // 彻底删除文章
+      USER_ARTICLES: (userId: string): string => `/front/article/user/${userId}`, // 获取用户文章列表
       USER_RELATED: '/front/article/user-related', // 获取作者相关文章
-      LIKE: (id: number): string => `/front/article/like/${id}`, // 点赞文章
-      UNLIKE: (id: number): string => `/front/article/like/${id}`, // 取消点赞
-      LIKE_STATUS: (id: number): string => `/front/article/like/${id}/status`, // 检查点赞状态
+      LIKE: (id: string): string => `/front/article/like/${id}`, // 点赞文章
+      UNLIKE: (id: string): string => `/front/article/like/${id}`, // 取消点赞
+      LIKE_STATUS: (id: string): string => `/front/article/like/${id}/status`, // 检查点赞状态
       COLLECT: '/front/article/collect', // 收藏文章
-      UN_COLLECT: (id: number): string => `/front/article/un-collect/${id}`, // 取消收藏
-      COLLECT_STATUS: (id: number): string => `/front/article/collect/${id}/status`, // 检查收藏状态
-      INCREMENT_READ: (id: number): string => `/front/article/read/${id}`, // 增加阅读数
+      UN_COLLECT: (id: string): string => `/front/article/un-collect/${id}`, // 取消收藏
+      COLLECT_STATUS: (id: string): string => `/front/article/collect/${id}/status`, // 检查收藏状态
+      INCREMENT_READ: (id: string): string => `/front/article/read/${id}`, // 增加阅读数
       MY_ARTICLES: '/front/article/my-articles', // 获取我的文章列表
       COLLECTIONS: {
         LIST: '/front/article/collections', // 获取收藏文章列表
         FOLDERS: '/front/article/collections/folders', // 获取收藏文件夹列表
         CREATE_FOLDER: '/front/article/collections/folders', // 创建收藏文件夹
-        UPDATE_FOLDER: (folderId: number): string => `/front/article/collections/folders/${folderId}`, // 更新收藏文件夹
-        DELETE_FOLDER: (folderId: number): string => `/front/article/collections/folders/${folderId}`, // 删除收藏文件夹
+        UPDATE_FOLDER: (folderId: string): string => `/front/article/collections/folders/${folderId}`, // 更新收藏文件夹
+        DELETE_FOLDER: (folderId: string): string => `/front/article/collections/folders/${folderId}`, // 删除收藏文件夹
         MOVE: '/front/article/collections/move', // 移动收藏文章
         TOTAL: '/front/article/collections/total' // 获取总收藏数
       }
@@ -44,27 +44,27 @@ export const API_ENDPOINTS = {
     // 用户相关
     USER: {
       PROFILE: '/front/user/profile', // 获取/更新用户资料
-      PUBLIC_PROFILE: (userId: number): string => `/front/user/profile/${userId}`, // 获取用户公开资料
+      PUBLIC_PROFILE: (userId: string): string => `/front/user/profile/${userId}`, // 获取用户公开资料
       UPDATE_USERNAME: '/front/user/username', // 修改用户名
       USERNAME_MODIFICATION_TIME_LEFT: '/front/user/username/modification-time-left', // 获取修改用户名的剩余时间
-      FOLLOW: (userId: number): string => `/front/user/follow/${userId}`, // 关注用户
-      UNFOLLOW: (userId: number): string => `/front/user/unfollow/${userId}`, // 取消关注用户
-      FOLLOW_STATUS: (userId: number): string => `/front/user/follow/status/${userId}` // 检查关注状态
+      FOLLOW: (userId: string): string => `/front/user/follow/${userId}`, // 关注用户
+      UNFOLLOW: (userId: string): string => `/front/user/unfollow/${userId}`, // 取消关注用户
+      FOLLOW_STATUS: (userId: string): string => `/front/user/follow/status/${userId}` // 检查关注状态
     },
 
     // 标签相关
     TAG: {
       ACTIVE: '/front/tag/active', // 获取激活状态的标签
       ALL: '/front/tag', // 获取所有标签
-      DETAIL: (id: number): string => `/front/tag/${id}`, // 根据ID获取标签
-      BY_ARTICLE: (articleId: number): string => `/front/tag/article/${articleId}` // 根据文章ID获取标签
+      DETAIL: (id: string): string => `/front/tag/${id}`, // 根据ID获取标签
+      BY_ARTICLE: (articleId: string): string => `/front/tag/article/${articleId}` // 根据文章ID获取标签
     },
 
     // 分类相关
     CATEGORY: {
       ACTIVE: '/front/category/active', // 获取激活状态的分类
       ALL: '/front/category', // 获取所有分类
-      DETAIL: (id: number): string => `/front/category/${id}` // 根据ID获取分类
+      DETAIL: (id: string): string => `/front/category/${id}` // 根据ID获取分类
     },
 
     // 评论相关
@@ -72,9 +72,9 @@ export const API_ENDPOINTS = {
       LIST: '/front/comment/list', // 获取评论列表
       CREATE: '/front/comment/create', // 创建评论
       UPDATE: '/front/comment/update', // 更新评论
-      DELETE: (id: number): string => `/front/comment/delete/${id}`, // 删除评论
-      LIKE: (id: number): string => `/front/comment/like/${id}`, // 点赞评论
-      DISLIKE: (id: number): string => `/front/comment/dislike/${id}`, // 点踩评论
+      DELETE: (id: string): string => `/front/comment/delete/${id}`, // 删除评论
+      LIKE: (id: string): string => `/front/comment/like/${id}`, // 点赞评论
+      DISLIKE: (id: string): string => `/front/comment/dislike/${id}`, // 点踩评论
       REPLIES: '/front/comment/replies' // 获取子评论列表
     },
 
@@ -82,9 +82,9 @@ export const API_ENDPOINTS = {
     READING_HISTORY: {
       LIST: '/front/reading-history/get', // 获取阅读历史列表
       SAVE: '/front/reading-history/save', // 保存阅读历史
-      DELETE: (articleId: number): string => `/front/reading-history/delete/${articleId}`, // 删除单条阅读历史
+      DELETE: (articleId: string): string => `/front/reading-history/delete/${articleId}`, // 删除单条阅读历史
       CLEAR: '/front/reading-history/delete/all', // 清空阅读历史
-      DETAIL: (articleId: number): string => `/front/reading-history/${articleId}`, // 获取单篇文章的阅读历史
+      DETAIL: (articleId: string): string => `/front/reading-history/${articleId}`, // 获取单篇文章的阅读历史
       BATCH: '/front/reading-history/batch' // 批量获取阅读历史
     },
 
@@ -92,9 +92,9 @@ export const API_ENDPOINTS = {
     NOTIFICATION: {
       LIST: '/front/notification/list', // 获取通知列表
       LIST_PAGE: '/front/notification/list/page', // 分页获取通知列表
-      MARK_READ: (id: number): string => `/front/notification/read/${id}`, // 标记通知为已读
+      MARK_READ: (id: string): string => `/front/notification/read/${id}`, // 标记通知为已读
       MARK_ALL_READ: '/front/notification/read/all', // 标记所有通知为已读
-      DELETE: (id: number): string => `/front/notification/delete/${id}`, // 删除通知
+      DELETE: (id: string): string => `/front/notification/delete/${id}`, // 删除通知
       UNREAD_COUNT: '/front/notification/unread/count', // 获取未读通知数量
       SYNC_UNREAD: '/front/notification/unread/sync', // 同步未读通知数量
       SETTING: {
@@ -111,7 +111,7 @@ export const API_ENDPOINTS = {
       HOT_WORDS: '/front/search/hot-words', // 获取热门搜索词
       HISTORY: {
         LIST: '/front/search/history', // 获取搜索历史
-        DELETE: (id: number): string => `/front/search/history/delete/${id}`, // 删除搜索历史
+        DELETE: (id: string): string => `/front/search/history/delete/${id}`, // 删除搜索历史
         CLEAR: '/front/search/history/clear' // 清空搜索历史
       }
     },
@@ -132,13 +132,13 @@ export const API_ENDPOINTS = {
     // 专栏相关
     COLUMN: {
       CREATE: '/front/column/create', // 创建专栏
-      UPDATE: (id: number): string => `/front/column/update/${id}`, // 更新专栏
-      UPDATE_VISIBLE: (id: number): string => `/front/column/update/visible/${id}`, // 更新专栏可见性
-      DELETE: (id: number): string => `/front/column/delete/${id}`, // 删除专栏
+      UPDATE: (id: string): string => `/front/column/update/${id}`, // 更新专栏
+      UPDATE_VISIBLE: (id: string): string => `/front/column/update/visible/${id}`, // 更新专栏可见性
+      DELETE: (id: string): string => `/front/column/delete/${id}`, // 删除专栏
       LIST: '/front/column/list', // 获取专栏列表
-      DETAIL: (id: number): string => `/front/column/${id}`, // 获取专栏详情
-      DETAIL_ARTICLES: (id: number): string => `/front/column/${id}/articles`, // 获取专栏详情（分页文章列表）
-      ARTICLE_SEARCH: (id: number): string => `/front/column/${id}/articles/search`, // 搜索专栏内文章
+      DETAIL: (id: string): string => `/front/column/${id}`, // 获取专栏详情
+      DETAIL_ARTICLES: (id: string): string => `/front/column/${id}/articles`, // 获取专栏详情（分页文章列表）
+      ARTICLE_SEARCH: (id: string): string => `/front/column/${id}/articles/search`, // 搜索专栏内文章
       HOT: '/front/column/hot', // 获取热门专栏
       MY: '/front/column/my', // 获取我的专栏
       MY_OPTIONS: '/front/column/my/options', // 获取我的专栏选项（仅ID和名称）
@@ -152,11 +152,11 @@ export const API_ENDPOINTS = {
       ARTICLE_INFO: '/front/column/article/info', // 获取文章所属的专栏信息
       ARTICLE_NEIGHBOR: '/front/column/article/neighbor', // 获取文章在专栏中的上下篇文章
       // 订阅相关
-      SUBSCRIBE: (id: number): string => `/front/column/subscribe/${id}`, // 订阅专栏
-      UNSUBSCRIBE: (id: number): string => `/front/column/unsubscribe/${id}`, // 取消订阅
-      SUBSCRIBE_STATUS: (id: number): string => `/front/column/subscribe/status/${id}`, // 检查订阅状态
+      SUBSCRIBE: (id: string): string => `/front/column/subscribe/${id}`, // 订阅专栏
+      UNSUBSCRIBE: (id: string): string => `/front/column/unsubscribe/${id}`, // 取消订阅
+      SUBSCRIBE_STATUS: (id: string): string => `/front/column/subscribe/status/${id}`, // 检查订阅状态
       MY_SUBSCRIPTIONS: '/front/column/subscribe/list', // 获取我的订阅专栏列表
-      SUBSCRIBER_COUNT: (id: number): string => `/front/column/subscribe/count/${id}` // 获取专栏订阅数
+      SUBSCRIBER_COUNT: (id: string): string => `/front/column/subscribe/count/${id}` // 获取专栏订阅数
     }
   },
 
@@ -171,76 +171,76 @@ export const API_ENDPOINTS = {
     // 举报相关
     REPORT: {
       LIST: '/admin/report/list', // 获取举报列表
-      DETAIL: (id: number): string => `/admin/report/get/${id}`, // 获取举报详情
-      HANDLE: (id: number): string => `/admin/report/handle/${id}` // 处理举报
+      DETAIL: (id: string): string => `/admin/report/get/${id}`, // 获取举报详情
+      HANDLE: (id: string): string => `/admin/report/handle/${id}` // 处理举报
     },
 
     // 用户管理
     USER: {
       LIST: '/admin/user/list', // 分页获取用户
-      DETAIL: (id: number): string => `/admin/user/detail/${id}`, // 获取用户详情
+      DETAIL: (id: string): string => `/admin/user/detail/${id}`, // 获取用户详情
       PROFILE: '/admin/user/profile', // 获取当前管理员个人资料
-      DELETE: (id: number): string => `/admin/user/delete/${id}`, // 删除用户
-      UPDATE: (id: number): string => `/admin/user/update/${id}`, // 更新用户
-      UPDATE_STATUS: (id: number): string => `/admin/user/update-status/${id}`, // 更新用户状态
-      UPDATE_ROLE: (id: number): string => `/admin/user/update-role/${id}` // 更新用户角色
+      DELETE: (id: string): string => `/admin/user/delete/${id}`, // 删除用户
+      UPDATE: (id: string): string => `/admin/user/update/${id}`, // 更新用户
+      UPDATE_STATUS: (id: string): string => `/admin/user/update-status/${id}`, // 更新用户状态
+      UPDATE_ROLE: (id: string): string => `/admin/user/update-role/${id}` // 更新用户角色
     },
 
     // 文章管理
     ARTICLE: {
       LIST_PAGE: '/admin/article/list', // 分页获取文章
-      GET: (id: number): string => `/admin/article/detail/${id}`, // 获取文章详情
-      DELETE: (id: number): string => `/admin/article/delete/${id}`, // 删除文章
-      PERMANENT_DELETE: (id: number): string => `/admin/article/permanent-delete/${id}`, // 彻底删除文章
-      UPDATE: (id: number): string => `/admin/article/update/${id}`, // 更新文章
-      UPDATE_STATUS: (id: number): string => `/admin/article/update/article-status/${id}`, // 更新文章状态
-      APPROVE: (id: number): string => `/admin/article/approve/${id}`, // 审核通过文章
-      REJECT: (id: number): string => `/admin/article/reject/${id}`, // 审核拒绝文章
-      REPROCESS: (id: number): string => `/admin/article/reprocess/${id}`, // 重新审核文章
-      TOP: (id: number): string => `/admin/article/top/${id}`, // 置顶文章
-      CANCEL_TOP: (id: number): string => `/admin/article/cancel-top/${id}`, // 取消置顶文章
-      RECOMMEND: (id: number): string => `/admin/article/recommend/${id}`, // 推荐文章
-      CANCEL_RECOMMEND: (id: number): string => `/admin/article/cancel-recommend/${id}` // 取消推荐文章
+      GET: (id: string): string => `/admin/article/detail/${id}`, // 获取文章详情
+      DELETE: (id: string): string => `/admin/article/delete/${id}`, // 删除文章
+      PERMANENT_DELETE: (id: string): string => `/admin/article/permanent-delete/${id}`, // 彻底删除文章
+      UPDATE: (id: string): string => `/admin/article/update/${id}`, // 更新文章
+      UPDATE_STATUS: (id: string): string => `/admin/article/update/article-status/${id}`, // 更新文章状态
+      APPROVE: (id: string): string => `/admin/article/approve/${id}`, // 审核通过文章
+      REJECT: (id: string): string => `/admin/article/reject/${id}`, // 审核拒绝文章
+      REPROCESS: (id: string): string => `/admin/article/reprocess/${id}`, // 重新审核文章
+      TOP: (id: string): string => `/admin/article/top/${id}`, // 置顶文章
+      CANCEL_TOP: (id: string): string => `/admin/article/cancel-top/${id}`, // 取消置顶文章
+      RECOMMEND: (id: string): string => `/admin/article/recommend/${id}`, // 推荐文章
+      CANCEL_RECOMMEND: (id: string): string => `/admin/article/cancel-recommend/${id}` // 取消推荐文章
     },
 
     // 评论管理
     COMMENT: {
       LIST_PAGE: '/admin/comment/list', // 分页获取评论
-      DELETE: (id: number): string => `/admin/comment/delete/${id}`, // 删除评论
-      UPDATE: (id: number): string => `/admin/comment/update/${id}`, // 更新评论
-      UPDATE_STATUS: (id: number): string => `/admin/comment/update-status/${id}`, // 更新评论状态
-      UPDATE_TOP: (id: number): string => `/admin/comment/update-top/${id}` // 更新评论置顶状态
+      DELETE: (id: string): string => `/admin/comment/delete/${id}`, // 删除评论
+      UPDATE: (id: string): string => `/admin/comment/update/${id}`, // 更新评论
+      UPDATE_STATUS: (id: string): string => `/admin/comment/update-status/${id}`, // 更新评论状态
+      UPDATE_TOP: (id: string): string => `/admin/comment/update-top/${id}` // 更新评论置顶状态
     },
 
     // 标签管理
     TAG: {
       LIST: '/admin/tag/list', // 分页获取标签
       CREATE: '/admin/tag/add', // 添加标签
-      UPDATE: (id: number): string => `/admin/tag/update/${id}`, // 更新标签
-      DELETE: (id: number): string => `/admin/tag/delete/${id}`, // 删除标签
-      UPDATE_STATUS: (id: number): string => `/admin/tag/status/${id}` // 更新标签状态
+      UPDATE: (id: string): string => `/admin/tag/update/${id}`, // 更新标签
+      DELETE: (id: string): string => `/admin/tag/delete/${id}`, // 删除标签
+      UPDATE_STATUS: (id: string): string => `/admin/tag/status/${id}` // 更新标签状态
     },
 
     // 分类管理
     CATEGORY: {
       LIST: '/admin/category/list', // 分页获取分类
       CREATE: '/admin/category/add', // 添加分类
-      UPDATE: (id: number): string => `/admin/category/update/${id}`, // 更新分类
-      DELETE: (id: number): string => `/admin/category/delete/${id}`, // 删除分类
-      UPDATE_STATUS: (id: number): string => `/admin/category/status/${id}` // 更新分类状态
+      UPDATE: (id: string): string => `/admin/category/update/${id}`, // 更新分类
+      DELETE: (id: string): string => `/admin/category/delete/${id}`, // 删除分类
+      UPDATE_STATUS: (id: string): string => `/admin/category/status/${id}` // 更新分类状态
     },
 
     // 通知模板管理
     NOTIFICATION_TEMPLATE: {
       CREATE: '/admin/notification-templates/create', // 创建通知模板
-      UPDATE: (id: number): string => `/admin/notification-templates/update/${id}`, // 更新通知模板
-      DELETE: (id: number): string => `/admin/notification-templates/delete/${id}`, // 删除通知模板
-      DETAIL: (id: number): string => `/admin/notification-templates/detail/${id}`, // 获取模板详情
+      UPDATE: (id: string): string => `/admin/notification-templates/update/${id}`, // 更新通知模板
+      DELETE: (id: string): string => `/admin/notification-templates/delete/${id}`, // 删除通知模板
+      DETAIL: (id: string): string => `/admin/notification-templates/detail/${id}`, // 获取模板详情
       DETAIL_BY_CODE: (code: string): string => `/admin/notification-templates/detail/code/${code}`, // 根据编码获取模板
       LIST: '/admin/notification-templates/list', // 分页查询模板列表
       ALL: '/admin/notification-templates/all', // 获取所有模板
-      ENABLE: (id: number): string => `/admin/notification-templates/enable/${id}`, // 启用模板
-      DISABLE: (id: number): string => `/admin/notification-templates/disable/${id}`, // 禁用模板
+      ENABLE: (id: string): string => `/admin/notification-templates/enable/${id}`, // 启用模板
+      DISABLE: (id: string): string => `/admin/notification-templates/disable/${id}`, // 禁用模板
       CHECK_CODE: '/admin/notification-templates/check-code', // 检查编码是否存在
       PREVIEW: (code: string): string => `/admin/notification-templates/preview/${code}`, // 预览模板渲染效果
       SEND: '/admin/notification-templates/send' // 手动发送通知

@@ -2,12 +2,12 @@ import type { ApiPageResponse } from './common';
 
 // 阅读历史类型定义
 export interface ReadingHistory {
-    id: number;
-    articleId: number;
+    id: string;
+    articleId: string;
     title: string;
     summary: string;
     coverImage?: string;
-    userId: number;
+    userId: string;
     nickname: string;
     avatar: string;
     progress: number;
@@ -20,7 +20,7 @@ export interface ReadingHistory {
 
 // 阅读历史请求参数类型
 export interface ReadingHistoryRequest {
-    articleId: number;
+    articleId: string;
     progress: number;
     duration: number;
     scrollPosition: number;

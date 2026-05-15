@@ -6,9 +6,9 @@ import useCommentStore from '../../store/CommentStore';
 const { TextArea } = Input;
 
 interface CommentInputProps {
-  articleId: number;
-  parentId?: number;
-  currentUserId?: number;
+  articleId: string;
+  parentId?: string;
+  currentUserId?: string;
   currentUserNickname?: string;
   currentUserAvatar?: string;
   onSubmitSuccess?: () => void;

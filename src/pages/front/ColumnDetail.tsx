@@ -54,7 +54,7 @@ const ColumnDetailPage: React.FC = () => {
       return emptyPageResponse<ColumnArticleListVO>(pageSize);
     }
 
-    const response = await columnService.getColumnArticles(Number(id), pageNum, pageSize, sortType);
+    const response = await columnService.getColumnArticles(id, pageNum, pageSize, sortType);
     if (response.code === 200 && response.data) {
       return normalizePageResponse<ColumnArticleListVO>(response.data, pageNum, pageSize);
     }
@@ -76,7 +76,7 @@ const ColumnDetailPage: React.FC = () => {
     setLoading(true);
 
     Promise.all([
-      columnService.getColumnDetail(Number(id)),
+      columnService.getColumnDetail(id),
       columnService.getHotColumns(3)
     ]).then(([detailRes, hotRes]) => {
       if (detailRes.code === 200 && detailRes.data) {
@@ -99,7 +99,7 @@ const ColumnDetailPage: React.FC = () => {
     if (!id) return;
 
     if (user) {
-      columnService.checkSubscribeStatus(Number(id)).then((response) => {
+      columnService.checkSubscribeStatus(id).then((response) => {
         if (response.code === 200 && response.data !== undefined) {
           setIsSubscribed(response.data);
         }
@@ -120,8 +120,8 @@ const ColumnDetailPage: React.FC = () => {
     if (!id) return;
     try {
       const response = isSubscribed
-        ? await columnService.unsubscribeColumn(Number(id))
-        : await columnService.subscribeColumn(Number(id));
+        ? await columnService.unsubscribeColumn(id)
+        : await columnService.subscribeColumn(id);
       if (response.code === 200) {
         setIsSubscribed(!isSubscribed);
         message.success(isSubscribed ? '已取消订阅' : '订阅成功');
@@ -180,7 +180,7 @@ const ColumnDetailPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{columnDetail ? `《${truncateColumnName(columnDetail.name)}》 - InkStage` : 'InkStage'}</title>
+        <title>{columnDetail ? `《${truncateColumnName(columnDetail.name)}》专栏 - InkStage` : 'InkStage'}</title>
       </Helmet>
       <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800 font-sans">
         <Header />

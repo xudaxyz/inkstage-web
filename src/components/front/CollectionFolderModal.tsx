@@ -6,11 +6,11 @@ import type { CollectionFolder } from '../../hooks/useCollection';
 interface CollectionFolderModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (folderId: number) => void;
+  onSave: (folderId: string) => void;
   folders: CollectionFolder[];
   loading: boolean;
-  selectedFolderId: number;
-  onSelectFolder: (folderId: number) => void;
+  selectedFolderId: string;
+  onSelectFolder: (folderId: string) => void;
   onCreateFolder: (folderName: string) => Promise<boolean>;
 }
 
@@ -53,7 +53,7 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
   };
 
   const handleSave = (): void => {
-    if (selectedFolderId === 0) {
+    if (!selectedFolderId) {
       message.error('请选择收藏夹').then();
       return;
     }

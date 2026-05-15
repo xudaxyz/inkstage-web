@@ -12,7 +12,7 @@ import { AuthTypeEnum, GenderEnum, UserRoleEnum } from '../types/enums';
 export interface UserState {
     // 前台用户状态
     user: {
-        id: number | null;
+        id: string | null;
         username: string | null;
         email: string | null;
         avatar?: string;
@@ -30,7 +30,7 @@ export interface UserState {
     rememberMe: boolean;
     // 方法
     setUser: (userData: {
-        id: number | null;
+        id: string | null;
         username: string | null;
         email: string | null;
         avatar?: string;
@@ -58,7 +58,7 @@ export interface UserState {
             refresh_token: string;
             expires_in: number;
             userInfo: {
-                id: number;
+                id: string;
                 username: string;
                 email: string;
                 avatar?: string;
@@ -87,7 +87,7 @@ export interface UserState {
             refresh_token: string;
             expires_in: number;
             userInfo: {
-                id: number;
+                id: string;
                 username: string;
                 email: string;
                 avatar?: string;
@@ -173,7 +173,7 @@ export const useUserStore = create<UserState>()(
             rememberMe: false,
             // 设置用户状态方法
             setUser: (userData: {
-                id: number | null;
+                id: string | null;
                 username: string | null;
                 email: string | null;
                 avatar?: string;
@@ -184,7 +184,7 @@ export const useUserStore = create<UserState>()(
                 birthDate?: string;
                 location?: string;
                 role?: UserRoleEnum;
-            }, accessToken: string = '', refreshToken: string = '', expiresIn: number = 3600, rememberMe: boolean = false): void => {
+            }, accessToken: string = '', refreshToken: string = '', expiresIn: number = 3601, rememberMe: boolean = false): void => {
                 const expiresAt = Date.now() + expiresIn * 1000;
                 set({
                     user: userData,
@@ -237,7 +237,7 @@ export const useUserStore = create<UserState>()(
                     refresh_token: string;
                     expires_in: number;
                     userInfo: {
-                        id: number;
+                        id: string;
                         username: string;
                         email: string;
                         avatar?: string;
@@ -284,7 +284,7 @@ export const useUserStore = create<UserState>()(
                     refresh_token: string;
                     expires_in: number;
                     userInfo: {
-                        id: number;
+                        id: string;
                         username: string;
                         email: string;
                         avatar?: string;
@@ -474,10 +474,10 @@ export const useUser = (): UserState['user'] => useUserStore((state) => state.us
 export const useIsLoggedIn = (): boolean => useUserStore((state) => state.isLoggedIn);
 export const useIsLoading = (): boolean => useUserStore((state) => state.isLoading);
 export const useAccessTokenExpiresAt = (): number | null => useUserStore((state) => state.accessTokenExpiresAt);
-export const useUserId = (): number | null => useUserStore((state) => state.user.id);
+export const useUserId = (): string | null => useUserStore((state) => state.user.id);
 export const useUserRole = (): string | undefined => useUserStore((state) => state.user.role);
 export const useUserInfo = (): {
-    id: number | null;
+    id: string | null;
     username: string | null;
     email: string | null;
     avatar?: string;

@@ -41,8 +41,8 @@ export interface DistributionDataVO {
 
 // 活动数据
 export interface ActivityStatVO {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   nickname: string;
   action: string;
   target: string;

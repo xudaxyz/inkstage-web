@@ -7,9 +7,9 @@ import type {
     SearchHistoryData
 } from '../types/search';
 // 参数验证函数
-const validateIdParam = (id: number): void => {
-    if (id == null || id <= 0) {
-        throw new Error('ID必须是正整数');
+const validateIdParam = (id: string): void => {
+    if (!id || id.trim() === '') {
+        throw new Error('ID不能为空');
     }
 };
 const validateSearchParams = (params: SearchArticlesParams): void => {
@@ -50,7 +50,7 @@ const searchService = {
         return await apiClient.get(API_ENDPOINTS.FRONT.SEARCH.HISTORY.LIST);
     },
     // 删除搜索历史
-    deleteSearchHistory: async (id: number): Promise<ApiResponse<void>> => {
+    deleteSearchHistory: async (id: string): Promise<ApiResponse<void>> => {
         validateIdParam(id);
         return await apiClient.delete(
             API_ENDPOINTS.FRONT.SEARCH.HISTORY.DELETE(id)

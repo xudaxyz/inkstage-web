@@ -31,11 +31,11 @@ interface ColumnDetailSectionProps {
   allColumns: MyColumnVO[];
   onEditColumn: () => void;
   onCreateArticle: () => void;
-  onViewArticle: (articleId: number) => void;
-  onEditArticle: (articleId: number) => void;
-  onRemoveArticleFromColumn: (articleId: number) => Promise<void>;
-  onDeleteArticle: (articleId: number) => Promise<void>;
-  onMoveArticleToColumn: (articleId: number, targetColumnId: number) => Promise<void>;
+  onViewArticle: (articleId: string) => void;
+  onEditArticle: (articleId: string) => void;
+  onRemoveArticleFromColumn: (articleId: string) => Promise<void>;
+  onDeleteArticle: (articleId: string) => Promise<void>;
+  onMoveArticleToColumn: (articleId: string, targetColumnId: string) => Promise<void>;
   onToggleVisibility: (visible: VisibleStatus) => Promise<void>;
 }
 
@@ -174,7 +174,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
     });
   }, [column.name, onToggleVisibility]);
 
-  const handleRemoveArticle = useCallback((articleId: number, articleTitle: string): void => {
+  const handleRemoveArticle = useCallback((articleId: string, articleTitle: string): void => {
     Modal.confirm({
       title: '确认移出文章',
       content: (
@@ -197,7 +197,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
     });
   }, [column.name, onRemoveArticleFromColumn]);
 
-  const handleDeleteArticle = useCallback((articleId: number): void => {
+  const handleDeleteArticle = useCallback((articleId: string): void => {
     Modal.confirm({
       title: '删除该文章？',
       content: (
@@ -219,7 +219,7 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
     });
   }, [onDeleteArticle]);
 
-  const handleMoveArticle = useCallback((articleId: number, targetColumnId: number, articleTitle: string): void => {
+  const handleMoveArticle = useCallback((articleId: string, targetColumnId: string, articleTitle: string): void => {
     const targetColumn = allColumns.find(col => col.id === targetColumnId);
     if (!targetColumn) return;
 

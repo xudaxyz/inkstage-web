@@ -38,7 +38,7 @@ const CreateArticle: React.FC = () => {
   const isDarkMode = theme === 'dark';
   const { toggleTheme } = useAppStore();
   const [form] = Form.useForm();
-  const [, setSelectedTags] = useState<number[]>([]);
+  const [, setSelectedTags] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<{ value: string; label: string }[]>([]);
   const [coverImage, setCoverImage] = useState<string>('');
   const [, setFileList] = useState<UploadFile[]>([]);
@@ -48,7 +48,7 @@ const CreateArticle: React.FC = () => {
   const [summary, setSummary] = useState('');
   const [editorContent, setEditorContent] = useState('');
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
-  const [myColumns, setMyColumns] = useState<{ id: number; name: string }[]>([]);
+  const [myColumns, setMyColumns] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -109,7 +109,7 @@ const CreateArticle: React.FC = () => {
     // 加载文章详情
     const loadArticleDetail = async (id: string): Promise<void> => {
       try {
-        const articleRes = await articleService.getArticleDetail(parseInt(id));
+        const articleRes = await articleService.getArticleDetail(id);
         if (articleRes.code === 200 && articleRes.data) {
           const article = articleRes.data;
           // 填充表单数据
@@ -154,8 +154,7 @@ const CreateArticle: React.FC = () => {
   }, [isEditMode, articleId, form]);
   // 处理标签选择
   const handleTagChange = (values: string[]): void => {
-    // 分离已存在的标签ID和新输入的标签名称
-    const existingTags = values.filter((v) => !isNaN(Number(v))).map((v) => parseInt(v));
+    const existingTags = values.filter((v) => availableTags.some((t) => t.value === v));
     setSelectedTags(existingTags);
   };
   // 处理表单提交
@@ -177,23 +176,18 @@ const CreateArticle: React.FC = () => {
       // 处理已存在的标签和新标签
       if (values.tags) {
         for (const tagValue of values.tags) {
-          if (!isNaN(Number(tagValue))) {
-            // 已存在的标签，只包含id和name
-            const tagId = parseInt(tagValue);
-            const tag = availableTags.find((t) => t.value === tagValue);
-            if (tag) {
-              tags.push({
-                id: tagId,
-                name: tag.label,
-                slug: '',
-                description: '',
-                status: StatusEnum.ENABLED
-              });
-            }
-          } else {
-            // 新标签，只包含name
+          const tag = availableTags.find((t) => t.value === tagValue);
+          if (tag) {
             tags.push({
-              id: 0, // 0表示新标签
+              id: tagValue,
+              name: tag.label,
+              slug: '',
+              description: '',
+              status: StatusEnum.ENABLED
+            });
+          } else {
+            tags.push({
+              id: '',
               name: tagValue,
               slug: '',
               description: '',
@@ -221,8 +215,8 @@ const CreateArticle: React.FC = () => {
         content: editorContent,
         contentHtml: editorContent,
         summary: summary,
-        categoryId: parseInt(values.category),
-        columnId: values.column ? parseInt(values.column) : undefined,
+        categoryId: values.category,
+        columnId: values.column || undefined,
         tags: tags,
         coverImage: coverImageUrl || coverImage,
         status: ArticleStatusEnum.PUBLISHED,
@@ -235,7 +229,7 @@ const CreateArticle: React.FC = () => {
       };
       let result;
       if (isEditMode && articleId) {
-        result = await articleService.updateArticle(Number(articleId), articleData);
+        result = await articleService.updateArticle(articleId, articleData);
       } else {
         result = await articleService.createArticle(articleData);
       }
@@ -266,12 +260,12 @@ const CreateArticle: React.FC = () => {
       }
       const values = await form.validateFields();
       const articleData = {
-        id: Number(articleId),
+        id: articleId,
         title: values.title || '未命名文章',
         content: editorContent,
         contentHtml: editorContent,
         summary: summary,
-        categoryId: parseInt(values.category || '0'), // 默认分类
+        categoryId: values.category || '',
         tags: [], // 草稿文章不保存标签
         coverImage: serverCoverImageUrl || coverImage,
         status: ArticleStatusEnum.DRAFT,

@@ -33,7 +33,7 @@ import type { ApiPageResponse } from '../../../types/common';
 
 // 文章类型定义
 interface Article {
-  id: number;
+  id: string;
   title: string;
   summary: string;
   publishTime: string;
@@ -55,7 +55,7 @@ const MyCreations: React.FC = () => {
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
   const [currentStatus, setCurrentStatus] = useState<ArticleStatusEnum>(ArticleStatusEnum.ALL);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [deleteArticleId, setDeleteArticleId] = useState<number>();
+  const [deleteArticleId, setDeleteArticleId] = useState<string>();
   const [deleteArticleStatus, setDeleteArticleStatus] = useState<ArticleStatusEnum>();
   const [total, setTotal] = useState(0);
   const statusRef = useRef(currentStatus);
@@ -117,7 +117,7 @@ const MyCreations: React.FC = () => {
     refresh();
   }, [currentStatus, debouncedSearchText, refresh]);
   // 分享文章
-  const handleShare = (articleId: number): void => {
+  const handleShare = (articleId: string): void => {
     // 实现分享逻辑
     void message.success('分享功能已触发');
     // 可以添加复制链接到剪贴板的功能
@@ -132,11 +132,11 @@ const MyCreations: React.FC = () => {
       });
   };
   // 编辑文章
-  const handleEdit = (articleId: number): void => {
+  const handleEdit = (articleId: string): void => {
     navigate(ROUTES.EDIT_ARTICLE(articleId));
   };
   // 打开删除确认对话框
-  const showDeleteConfirm = (articleId: number, articleStatus: ArticleStatusEnum): void => {
+  const showDeleteConfirm = (articleId: string, articleStatus: ArticleStatusEnum): void => {
     setDeleteArticleId(articleId);
     setDeleteArticleStatus(articleStatus);
     setDeleteModalVisible(true);
@@ -154,7 +154,7 @@ const MyCreations: React.FC = () => {
       if (articleStatus === ArticleStatusEnum.RECYCLE) {
         response = await articleService.permanentDeleteArticle(deleteArticleId);
       } else {
-        response = await articleService.deleteArticle(Number(deleteArticleId));
+        response = await articleService.deleteArticle(deleteArticleId);
       }
       if (response.code !== 200) {
         message.error(response.message);

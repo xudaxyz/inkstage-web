@@ -8,7 +8,7 @@ import { ROUTES } from '../constants/navigation';
  */
 export const useAuth = (): {
   user: {
-    id: number | null;
+    id: string | null;
     username: string | null;
     email: string | null;
     avatar?: string;
@@ -37,7 +37,7 @@ export const useAuth = (): {
       refresh_token: string;
       expires_in: number;
       userInfo: {
-        id: number;
+        id: string;
         username: string;
         email: string;
         avatar?: string;
@@ -67,7 +67,7 @@ export const useAuth = (): {
       refresh_token: string;
       expires_in: number;
       userInfo: {
-        id: number;
+        id: string;
         username: string;
         email: string;
         avatar?: string;
@@ -122,7 +122,7 @@ export const useAuth = (): {
       refresh_token: string;
       expires_in: number;
       userInfo: {
-        id: number;
+        id: string;
         username: string;
         email: string;
         avatar?: string;

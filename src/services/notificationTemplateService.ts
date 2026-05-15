@@ -9,9 +9,9 @@ import type {
 } from '../types/notificationTemplate';
 import type { NotificationType, StatusEnum } from '../types/enums';
 // 参数验证函数
-const validateIdParam = (id: number): void => {
-  if (id == null || id <= 0) {
-    throw new Error('ID必须是正整数');
+const validateIdParam = (id: string): void => {
+  if (!id || id.trim() === '') {
+    throw new Error('ID不能为空');
   }
 };
 
@@ -38,19 +38,19 @@ const notificationTemplateService = {
   },
 
   // 更新通知模板
-  updateTemplate: async (id: number, template: NotificationTemplate): Promise<ApiResponse<boolean>> => {
+  updateTemplate: async (id: string, template: NotificationTemplate): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.put(API_ENDPOINTS.ADMIN.NOTIFICATION_TEMPLATE.UPDATE(id), template);
   },
 
   // 删除通知模板
-  deleteTemplate: async (id: number): Promise<ApiResponse<boolean>> => {
+  deleteTemplate: async (id: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.ADMIN.NOTIFICATION_TEMPLATE.DELETE(id));
   },
 
   // 获取模板详情
-  getTemplateById: async (id: number): Promise<ApiResponse<AdminNotificationTemplate>> => {
+  getTemplateById: async (id: string): Promise<ApiResponse<AdminNotificationTemplate>> => {
     validateIdParam(id);
     return await apiClient.get(API_ENDPOINTS.ADMIN.NOTIFICATION_TEMPLATE.DETAIL(id));
   },
@@ -80,13 +80,13 @@ const notificationTemplateService = {
   },
 
   // 启用模板
-  enableTemplate: async (id: number): Promise<ApiResponse<boolean>> => {
+  enableTemplate: async (id: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.put(API_ENDPOINTS.ADMIN.NOTIFICATION_TEMPLATE.ENABLE(id));
   },
 
   // 禁用模板
-  disableTemplate: async (id: number): Promise<ApiResponse<boolean>> => {
+  disableTemplate: async (id: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.put(API_ENDPOINTS.ADMIN.NOTIFICATION_TEMPLATE.DISABLE(id));
   },

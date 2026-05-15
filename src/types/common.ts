@@ -1,3 +1,5 @@
+export type ID = string;
+
 // API响应基础类型
 export interface ApiResponse<T = unknown> {
     code: number;

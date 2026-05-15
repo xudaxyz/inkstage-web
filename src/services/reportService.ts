@@ -7,7 +7,7 @@ const validateReportParams = (report: ReportCreateDTO): boolean => {
   if (!report.reportedType) {
     throw new Error('被举报对象类型不能为空');
   }
-  if (!report.reportedId || report.reportedId <= 0) {
+  if (!report.reportedId) {
     throw new Error('被举报对象ID不能为空');
   }
   if (!report.reportType) {
@@ -19,9 +19,9 @@ const validateReportParams = (report: ReportCreateDTO): boolean => {
   return true;
 };
 
-const validateIdParam = (id: number): boolean => {
-  if (id <= 0) {
-    throw new Error('ID必须是大于0的数字');
+const validateIdParam = (id: string): boolean => {
+  if (!id || id.trim() === '') {
+    throw new Error('ID不能为空');
   }
   return true;
 };
@@ -29,7 +29,7 @@ const validateIdParam = (id: number): boolean => {
 // 举报 API 服务
 const reportService = {
   // 创建举报
-  createReport: async (report: ReportCreateDTO): Promise<ApiResponse<number>> => {
+  createReport: async (report: ReportCreateDTO): Promise<ApiResponse<string>> => {
     validateReportParams(report);
     return await apiClient.post(API_ENDPOINTS.FRONT.REPORT.CREATE, report);
   },
@@ -53,14 +53,14 @@ const reportService = {
   },
 
   // 后台获取举报详情
-  adminGetReportById: async (id: number): Promise<ApiResponse<AdminReportVO>> => {
+  adminGetReportById: async (id: string): Promise<ApiResponse<AdminReportVO>> => {
     validateIdParam(id);
     return await apiClient.get(API_ENDPOINTS.ADMIN.REPORT.DETAIL(id));
   },
 
   // 后台处理举报
   adminHandleReport: async (
-    id: number,
+    id: string,
     handleData: {
       reportStatus: ReportStatusEnum;
       handleResult?: HandleReportResultEnum;

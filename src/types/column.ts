@@ -3,7 +3,7 @@ import type { ApiPageResponse } from './common';
 
 // 专栏列表VO
 export interface ColumnListVO {
-  id: number;
+  id: string;
   name: string;
   slug?: string;
   description: string;
@@ -23,7 +23,7 @@ export interface ColumnListVO {
 
 // 专栏详情VO
 export interface ColumnDetailVO {
-  id: number;
+  id: string;
   name: string;
   slug?: string;
   description: string;
@@ -34,7 +34,7 @@ export interface ColumnDetailVO {
   sortOrder?: number;
   status: StatusEnum;
   visible?: VisibleStatus;
-  userId: number;
+  userId: string;
   nickname: string;
   avatar: string;
   signature?: string;
@@ -44,7 +44,7 @@ export interface ColumnDetailVO {
 
 // 我的专栏VO
 export interface MyColumnVO {
-  id: number;
+  id: string;
   name: string;
   slug?: string;
   description: string;
@@ -61,7 +61,7 @@ export interface MyColumnVO {
 
 // 我的订阅专栏VO
 export interface MyColumnSubscriptionVO {
-  id: number;
+  id: string;
   name: string;
   slug?: string;
   description: string;
@@ -89,30 +89,30 @@ export interface ColumnCreateDTO {
 // 专栏查询DTO
 export interface ColumnQueryDTO {
   keyword?: string;
-  userId?: number;
+  userId?: string;
   pageNum?: number;
   pageSize?: number;
 }
 
 // 添加文章到专栏DTO
 export interface AddArticleToColumnDTO {
-  columnId: number;
-  articleId: number;
+  columnId: string;
+  articleId: string;
   sortOrder?: number;
 }
 
 // 更新文章排序DTO
 export interface UpdateColumnArticleSortDTO {
-  columnId: number;
-  articleId: number;
+  columnId: string;
+  articleId: string;
   sortOrder: number;
 }
 
 // 文章专栏关联
 export interface ArticleColumn {
-  id: number;
-  articleId: number;
-  columnId: number;
+  id: string;
+  articleId: string;
+  columnId: string;
   sortOrder: number;
   createTime: string;
   updateTime: string;
@@ -120,13 +120,13 @@ export interface ArticleColumn {
 
 // 专栏内文章上下篇VO
 export interface NeighborArticleVO {
-  id: number;
+  id: string;
   title: string;
 }
 
 // 专栏文章上下篇结果VO
 export interface ColumnNeighborVO {
-  columnId: number;
+  columnId: string;
   columnName: string;
   prev: NeighborArticleVO | null;
   next: NeighborArticleVO | null;

@@ -3,7 +3,7 @@ import type { ApiPageResponse } from './common';
 
 // 前台分类接口
 export interface FrontendCategory {
-  id: number;
+  id: string;
   name: string;
   slug?: string;
   description?: string;
@@ -13,10 +13,10 @@ export interface FrontendCategory {
 
 // 后台分类接口
 export interface AdminCategory {
-  id: number;
+  id: string;
   name: string;
   slug: string;
-  parentId?: number;
+  parentId?: string;
   sortOrder?: number;
   description: string;
   articleCount: number;

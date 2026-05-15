@@ -3,7 +3,7 @@ import type { ApiPageResponse } from './common';
 
 // 评论查询参数
 export interface CommentQueryParams {
-  articleId: number;
+  articleId: string;
   pageNum?: number;
   pageSize?: number;
   offset?: number;
@@ -12,21 +12,21 @@ export interface CommentQueryParams {
 
 // 评论创建参数
 export interface CommentCreateParams {
-  articleId: number;
-  parentId?: number;
+  articleId: string;
+  parentId?: string;
   content: string;
 }
 
 // 前台评论更新参数
 export interface CommentUpdateParams {
-  id: number;
+  id: string;
   content: string;
 }
 
 // 前台评论列表
 export interface FrontArticleCommentList {
-  id: number;
-  parentId: number;
+  id: string;
+  parentId: string;
   content: string;
   floor: string;
   likeCount: number;
@@ -37,9 +37,9 @@ export interface FrontArticleCommentList {
   topOrder: number;
   createTime: string;
   updateTime: string;
-  articleId: number;
+  articleId: string;
   articleTitle: string;
-  userId: number;
+  userId: string;
   nickname: string;
   avatar?: string;
   gender?: number;
@@ -48,15 +48,15 @@ export interface FrontArticleCommentList {
   userStatus?: UserStatusEnum;
   replies?: FrontArticleCommentList[];
   // 被回复用户信息
-  repliedUserId?: number;
+  repliedUserId?: string;
   repliedUserName?: string;
   repliedUserAvatar?: string;
 }
 
 // 后台评论管理
 export interface AdminArticleCommentList {
-  id: number;
-  parentId: number;
+  id: string;
+  parentId: string;
   content: string;
   floor: string;
   likeCount: number;
@@ -66,9 +66,9 @@ export interface AdminArticleCommentList {
   topOrder: number;
   createTime: string;
   updateTime: string;
-  articleId: number;
+  articleId: string;
   articleTitle: string;
-  userId: number;
+  userId: string;
   nickname: string;
   avatar?: string;
   gender?: number;

@@ -10,7 +10,7 @@ import type { CommentStatusEnum } from './enums';
 
 // 用户信息类型定义
 export interface UserInfo {
-    id: number;
+    id: string;
     username: string;
     nickname: string;
     email: string;
@@ -30,7 +30,7 @@ export interface UserInfo {
 
 // 后台用户管理相关类型
 export interface AdminUserArticle {
-    id: number;
+    id: string;
     title: string;
     summary: string;
     articleStatus: ArticleStatusEnum;
@@ -42,8 +42,8 @@ export interface AdminUserArticle {
 }
 
 export interface AdminUserComment {
-    id: number;
-    articleId: number;
+    id: string;
+    articleId: string;
     articleTitle: string;
     content: string;
     status: CommentStatusEnum;
@@ -54,7 +54,7 @@ export interface AdminUserComment {
 }
 
 export interface AdminUser {
-    id: number;
+    id: string;
     username: string;
     nickname: string;
     email: string;
@@ -100,7 +100,7 @@ export type PageResult<T> = ApiPageResponse<T>;
 
 // 热门用户类型
 export interface HotUser {
-  id: number;
+  id: string;
   nickname: string;
   avatar: string;
   articleCount: number;

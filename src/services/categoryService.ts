@@ -3,9 +3,9 @@ import type { ApiResponse } from '../types/common';
 import type { AdminCategory, CategoryPageResponse, FrontendCategory } from '../types/category';
 import { StatusEnum } from '../types/enums'; // 参数验证函数
 // 参数验证函数
-const validateIdParam = (id: number): boolean => {
-  if (id <= 0) {
-    throw new Error('ID必须是大于0的数字');
+const validateIdParam = (id: string): boolean => {
+  if (!id || id.trim() === '') {
+    throw new Error('ID不能为空');
   }
   return true;
 };
@@ -41,7 +41,7 @@ const validateCategoryParams = (
   if (category.description && category.description.length > 200) {
     throw new Error('分类描述不能超过200个字符');
   }
-  if (category.parentId && category.parentId <= 0) {
+  if (category.parentId && !category.parentId) {
     throw new Error('父分类ID必须是大于0的数字');
   }
   if (category.sortOrder && category.sortOrder < 0) {
@@ -75,7 +75,7 @@ const categoryService = {
    * @param id 分类ID
    * @returns 分类信息
    */
-  getCategoryById: async (id: number): Promise<ApiResponse<FrontendCategory>> => {
+  getCategoryById: async (id: string): Promise<ApiResponse<FrontendCategory>> => {
     validateIdParam(id);
     return await apiClient.get(API_ENDPOINTS.FRONT.CATEGORY.DETAIL(id));
   },
@@ -118,7 +118,7 @@ const categoryService = {
    * @returns 更新后的分类信息
    */
   adminUpdateCategory: async (
-    id: number,
+    id: string,
     category: Omit<AdminCategory, 'id' | 'articleCount' | 'createTime' | 'updateTime'>
   ): Promise<ApiResponse<AdminCategory>> => {
     validateIdParam(id);
@@ -131,7 +131,7 @@ const categoryService = {
    * @param id 分类ID
    * @returns 响应结果
    */
-  adminDeleteCategory: async (id: number): Promise<ApiResponse<void>> => {
+  adminDeleteCategory: async (id: string): Promise<ApiResponse<void>> => {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.ADMIN.CATEGORY.DELETE(id));
   },
@@ -142,7 +142,7 @@ const categoryService = {
    * @param status 状态
    * @returns 更新后的分类信息
    */
-  adminUpdateCategoryStatus: async (id: number, status: StatusEnum): Promise<ApiResponse<AdminCategory>> => {
+  adminUpdateCategoryStatus: async (id: string, status: StatusEnum): Promise<ApiResponse<AdminCategory>> => {
     validateIdParam(id);
     validateStatusParam(status);
     return await apiClient.put(API_ENDPOINTS.ADMIN.CATEGORY.UPDATE_STATUS(id), null, {

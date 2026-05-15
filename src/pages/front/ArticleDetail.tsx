@@ -193,7 +193,7 @@ const ArticleDetail: React.FC = () => {
     const duration = Math.round((Date.now() - readingStartTimeRef.current) / 60000); // 转换为分钟
     try {
       await readingHistoryService.saveReadingHistory({
-        articleId: Number(id),
+        articleId: id,
         progress,
         duration,
         scrollPosition
@@ -206,8 +206,8 @@ const ArticleDetail: React.FC = () => {
   // 当文章ID变化时获取文章详情和增加阅读量
   useEffect(() => {
     if (id) {
-      void fetchArticleDetail(Number(id));
-      void incrementReadCount(Number(id));
+      void fetchArticleDetail(id);
+      void incrementReadCount(id);
     }
     // 重置阅读开始时间
     readingStartTimeRef.current = Date.now();
@@ -220,14 +220,14 @@ const ArticleDetail: React.FC = () => {
   // 当文章数据变化时获取作者相关文章
   useEffect(() => {
     if (article && id) {
-      void fetchRelatedArticles(article.userId, Number(id));
+      void fetchRelatedArticles(article.userId, id);
     }
   }, [article, id, fetchRelatedArticles]);
 
   // 当文章数据变化时获取专栏上下篇文章
   useEffect(() => {
     if (article && id) {
-      columnService.getColumnNeighborArticles(Number(id)).then((response) => {
+      columnService.getColumnNeighborArticles(id).then((response) => {
         if (response.code === 200) {
           setColumnNeighbor(response.data);
         }
@@ -281,7 +281,7 @@ const ArticleDetail: React.FC = () => {
         return;
       }
       // 不能关注自己
-      if (user?.id && Number(user.id) === article.userId) {
+      if (user?.id && user.id === article.userId) {
         setIsFollowing(false);
         return;
       }
@@ -308,7 +308,7 @@ const ArticleDetail: React.FC = () => {
       return;
     }
     // 不能关注自己
-    if (user?.id && Number(user.id) === article.userId) {
+    if (user?.id && user.id === article.userId) {
       message.info('不能关注自己');
       return;
     }
@@ -360,17 +360,14 @@ const ArticleDetail: React.FC = () => {
       message.info('请先登录');
       return;
     }
-    const articleId = Number(id);
-    if (isNaN(articleId)) {
+    if (!id) {
       message.error('文章ID无效');
       return;
     }
     if (article.isLiked) {
-      // 取消点赞
-      await unLikeArticle(articleId);
+      await unLikeArticle(id);
     } else {
-      // 点赞
-      await likeArticle(articleId);
+      await likeArticle(id);
     }
   };
 
@@ -379,24 +376,19 @@ const ArticleDetail: React.FC = () => {
       message.info('请先登录');
       return;
     }
-    // 检查文章ID是否有效
-    const articleId = Number(id);
-    if (isNaN(articleId)) {
+    if (!id) {
       message.error('文章ID无效');
       return;
     }
     if (article.isCollected) {
-      // 取消收藏
-      await unCollectArticle(articleId);
+      await unCollectArticle(id);
       notification.success({
         title: '取消收藏成功',
         duration: 2,
         placement: 'top'
       });
     } else {
-      // 默认收藏到默认文件夹
-      await collectArticle(articleId);
-      // 显示收藏成功提示，并提供选择收藏夹的选项
+      await collectArticle(id);
       notification.success({
         title: '收藏成功',
         description: (
@@ -410,7 +402,7 @@ const ArticleDetail: React.FC = () => {
               >
                 点击查看
               </Button>
-              <Button type="link" onClick={() => openFolderModal(articleId)} style={{ marginLeft: 0, padding: 0 }}>
+              <Button type="link" onClick={() => openFolderModal(id)} style={{ marginLeft: 0, padding: 0 }}>
                 选择其他收藏夹
               </Button>
             </div>
@@ -423,13 +415,12 @@ const ArticleDetail: React.FC = () => {
   };
 
   // 保存收藏到指定文件夹
-  const handleSaveToFolder = async (folderId: number): Promise<void> => {
-    const articleId = Number(id);
-    if (isNaN(articleId)) {
+  const handleSaveToFolder = async (folderId: string): Promise<void> => {
+    if (!id) {
       message.error('文章ID无效');
       return;
     }
-    const success = await moveCollection(articleId, folderId);
+    const success = await moveCollection(id, folderId);
     if (success) {
       notification.success({
         title: '移动成功',
@@ -442,7 +433,7 @@ const ArticleDetail: React.FC = () => {
   };
 
   // 打开文件夹选择模态框
-  const openFolderModal = async (articleId: number): Promise<void> => {
+  const openFolderModal = async (articleId: string): Promise<void> => {
     if (!articleId) {
       message.error('文章ID不存在');
       return;
@@ -473,7 +464,9 @@ const ArticleDetail: React.FC = () => {
   };
   // 处理文章编辑
   const handleEdit = (): void => {
-    navigate(ROUTES.EDIT_ARTICLE(Number(id)));
+    if (id) {
+      navigate(ROUTES.EDIT_ARTICLE(id));
+    }
   };
   // 处理文章删除
   const handleDelete = (): void => {
@@ -487,7 +480,7 @@ const ArticleDetail: React.FC = () => {
         message.error('文章ID不存在');
         return;
       }
-      const result = await articleService.deleteArticle(Number(id));
+      const result = await articleService.deleteArticle(id);
       if (result.code === 200) {
         message.success('文章删除成功');
         // 跳转到首页
@@ -501,7 +494,7 @@ const ArticleDetail: React.FC = () => {
     }
   };
   // 检查当前用户是否是文章作者
-  const isArticleUser = user && user.id && article && Number(user.id) === article.userId;
+  const isArticleUser = user && user.id && article && user.id === article.userId;
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col bg-white font-sans">
@@ -801,7 +794,8 @@ const ArticleDetail: React.FC = () => {
                       {/* 第一行：专栏信息 */}
                       <div className="flex items-center gap-2 min-w-0">
                         <BookTwoTone style={{ color: 'blue' }} />
-                        <span className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap hover:text-cyan-500">
+                        <span
+                          className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap hover:text-cyan-500">
                           本文收录于{' '}
                           <Link
                             to={ROUTES.COLUMN_DETAIL(columnNeighbor.columnId)}
@@ -884,8 +878,8 @@ const ArticleDetail: React.FC = () => {
                 {/* 评论区 */}
                 <div id="comment-section">
                   <CommentSection
-                    articleId={Number(id)}
-                    currentUserId={isLoggedIn ? Number(user.id) : undefined}
+                    articleId={id || ''}
+                    currentUserId={isLoggedIn && user.id ? user.id : undefined}
                     currentUserNickname={user.nickname}
                     currentUserAvatar={user.avatar}
                     onCommentCountChange={updateCommentCount}
@@ -1059,8 +1053,8 @@ const ArticleDetail: React.FC = () => {
           visible={reportModalVisible}
           onClose={() => setReportModalVisible(false)}
           reportedType={ReportTargetTypeEnum.ARTICLE}
-          relatedId={Number(id)} // 文章id
-          reportedId={Number(article?.userId)}
+          relatedId={id}
+          reportedId={article?.userId}
           reportedName={article?.nickname}
           reportedContent={article?.title}
         />

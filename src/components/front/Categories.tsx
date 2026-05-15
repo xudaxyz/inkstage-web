@@ -6,13 +6,13 @@ import type { FrontendCategory } from '../../types/category';
 interface CategoriesProps {
   categories?: FrontendCategory[];
   onSelect?: (category: FrontendCategory | '全部') => void;
-  selectedId?: number | undefined;
+  selectedId?: string | undefined;
 }
 
 const Categories: React.FC<CategoriesProps> = ({
   categories = [],
   onSelect,
-  selectedId = 0 // 默认全部分类
+  selectedId = ''
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -22,8 +22,8 @@ const Categories: React.FC<CategoriesProps> = ({
 
   // 计算当前选中的分类名称
   const selectedCategory = useMemo(() => {
-    const category = categories.find((c) => c.id === selectedId) || { id: 0, name: '全部' };
-    return selectedId === 0 ? '全部' : category.name;
+    const category = categories.find((c) => c.id === selectedId) || { id: '', name: '全部' };
+    return !selectedId ? '全部' : category.name;
   }, [selectedId, categories]);
 
   // 检测滚动位置

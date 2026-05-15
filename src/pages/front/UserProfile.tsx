@@ -24,7 +24,7 @@ import { ROUTES } from '../../constants/routes';
 
 // 作者信息类型定义
 interface UserInfo {
-  id: number;
+  id: string;
   nickname: string;
   avatar: string;
   coverImage: string;
@@ -50,7 +50,7 @@ const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const { user: currentUser, isLoggedIn } = useUserStore();
   const [user, setUser] = useState<UserInfo>({
-    id: 0,
+    id: '',
     nickname: '',
     avatar: '',
     coverImage: '',
@@ -77,7 +77,7 @@ const UserProfile: React.FC = () => {
       if (id) {
         try {
           setLoading(true);
-          const userData = await getUserPublicProfile(Number(id));
+          const userData = await getUserPublicProfile(id);
           // 验证userData是否存在
           if (userData.code !== 200) {
             message.error(userData.message || '用户不存在');
@@ -86,7 +86,7 @@ const UserProfile: React.FC = () => {
           const userInfo = userData.data;
           // 转换数据格式
           const formattedUser: UserInfo = {
-            id: userInfo.id || 0,
+            id: userInfo.id || '',
             nickname: userInfo.nickname || '未知用户',
             avatar: userInfo.avatar || '',
             coverImage: userInfo.coverImage || '',
@@ -110,7 +110,7 @@ const UserProfile: React.FC = () => {
           message.error('获取用户资料失败');
           // 重置为默认值，避免页面显示异常
           setUser({
-            id: 0,
+            id: '',
             nickname: '未知用户',
             avatar: '',
             coverImage: '',
@@ -138,7 +138,7 @@ const UserProfile: React.FC = () => {
       if (id) {
         try {
           setArticlesLoading(true);
-          const response = await articleService.getUserArticles(Number(id));
+          const response = await articleService.getUserArticles(id);
           if (response && response.data && response.data.record) {
             setArticles(response.data.record);
           }

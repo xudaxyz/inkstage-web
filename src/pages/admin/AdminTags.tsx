@@ -115,7 +115,7 @@ const AdminTags: React.FC = () => {
   };
 
   // 删除标签
-  const handleDeleteTag = async (id: number): Promise<void> => {
+  const handleDeleteTag = async (id: string): Promise<void> => {
     try {
       const response = await tagService.admin.deleteTag(id);
       if (response.code === 200) {
@@ -131,7 +131,7 @@ const AdminTags: React.FC = () => {
   };
 
   // 切换标签状态
-  const handleToggleStatus = async (id: number, status: StatusEnum): Promise<void> => {
+  const handleToggleStatus = async (id: string, status: StatusEnum): Promise<void> => {
     try {
       // 先更新本地状态，提供即时反馈
       const updatedTags = tags.map((tag) =>

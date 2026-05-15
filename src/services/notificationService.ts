@@ -4,9 +4,9 @@ import { NotificationType } from '../types/enums';
 import type { NotificationListResponse, NotificationSetting } from '../types/notification';
 
 // 参数验证函数
-const validateIdParam = (id: number): void => {
-  if (id == null || id <= 0) {
-    throw new Error('ID必须是正整数');
+const validateIdParam = (id: string): void => {
+  if (!id || id.trim() === '') {
+    throw new Error('ID不能为空');
   }
 };
 
@@ -20,8 +20,8 @@ const validatePageParams = (pageNum: number, pageSize: number): void => {
 };
 
 const validateNotificationSetting = (setting: NotificationSetting): void => {
-  if (setting.userId == null || setting.userId <= 0) {
-    throw new Error('用户ID必须是正整数');
+  if (!setting.userId) {
+    throw new Error('用户ID不能为空');
   }
 };
 
@@ -39,7 +39,7 @@ const notificationService = {
   },
 
   // 标记通知为已读
-  markAsRead: async (id: number): Promise<ApiResponse<boolean>> => {
+  markAsRead: async (id: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.put(API_ENDPOINTS.FRONT.NOTIFICATION.MARK_READ(id));
   },
@@ -50,7 +50,7 @@ const notificationService = {
   },
 
   // 删除通知
-  deleteNotification: async (id: number): Promise<ApiResponse<boolean>> => {
+  deleteNotification: async (id: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.FRONT.NOTIFICATION.DELETE(id));
   },

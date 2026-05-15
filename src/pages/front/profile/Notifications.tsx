@@ -60,13 +60,13 @@ const Notifications: React.FC = () => {
       const record = response.data === null ? [] : response.data.record;
       const formattedNotifications = record.map(
         (item: {
-          id: number;
+          id: string;
           notificationType: NotificationType;
           title: string;
           content: string;
           createTime: string;
           readStatus: ReadStatus;
-          relatedId: number;
+          relatedId: string;
           actionUrl: string;
         }) => ({
           id: item.id,
@@ -113,7 +113,7 @@ const Notifications: React.FC = () => {
   );
   // 标记通知为已读 - 包装store方法并添加消息提示
   const markAsRead = useCallback(
-    async (id: number): Promise<void> => {
+    async (id: string): Promise<void> => {
       const success = await markAsReadStore(id);
       if (success) {
         // 同时更新 infinite scroll 的数据
@@ -142,7 +142,7 @@ const Notifications: React.FC = () => {
   }, [markAllAsReadStore, notifications, setData]);
   // 删除通知 - 包装store方法并添加消息提示
   const deleteNotification = useCallback(
-    async (id: number): Promise<void> => {
+    async (id: string): Promise<void> => {
       const success = await deleteNotificationStore(id);
       if (success) {
         // 同时更新 infinite scroll 的数据

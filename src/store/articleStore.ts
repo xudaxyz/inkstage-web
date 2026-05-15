@@ -7,19 +7,19 @@ export interface ArticleState {
     article: ArticleDetailInfo | null;
     loading: boolean;
     error: string | null;
-    relatedArticles: Array<{ id: number; title: string; publishTime: string }>;
+    relatedArticles: Array<{ id: string; title: string; publishTime: string }>;
     relatedArticlesLoading: boolean;
     likeLoading: boolean;
     collectLoading: boolean;
 
     // 操作方法
-    fetchArticleDetail: (id: number) => Promise<void>;
-    fetchRelatedArticles: (userId: number, articleId: number) => Promise<void>;
-    incrementReadCount: (articleId: number) => Promise<void>;
-    likeArticle: (articleId: number) => Promise<void>;
-    unLikeArticle: (articleId: number) => Promise<void>;
-    collectArticle: (articleId: number) => Promise<void>;
-    unCollectArticle: (articleId: number) => Promise<void>;
+    fetchArticleDetail: (id: string) => Promise<void>;
+    fetchRelatedArticles: (userId: string, articleId: string) => Promise<void>;
+    incrementReadCount: (articleId: string) => Promise<void>;
+    likeArticle: (articleId: string) => Promise<void>;
+    unLikeArticle: (articleId: string) => Promise<void>;
+    collectArticle: (articleId: string) => Promise<void>;
+    unCollectArticle: (articleId: string) => Promise<void>;
     updateCommentCount: (count: number) => void;
     reset: () => void;
 }
@@ -35,7 +35,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   collectLoading: false,
 
   // 获取文章详情
-  fetchArticleDetail: async (id: number): Promise<void> => {
+  fetchArticleDetail: async (id: string): Promise<void> => {
     set({ loading: true, error: null });
     try {
       const response = await articleService.getArticleDetail(id);
@@ -51,7 +51,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 获取作者相关文章
-  fetchRelatedArticles: async (userId: number, articleId: number): Promise<void> => {
+  fetchRelatedArticles: async (userId: string, articleId: string): Promise<void> => {
     set({ relatedArticlesLoading: true });
     try {
       const response = await articleService.getUserRelatedArticles(userId, articleId);
@@ -72,7 +72,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 增加文章阅读量
-  incrementReadCount: async (articleId: number): Promise<void> => {
+  incrementReadCount: async (articleId: string): Promise<void> => {
     try {
       await articleService.incrementReadCount(articleId);
     } catch (error) {
@@ -81,7 +81,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 点赞文章
-  likeArticle: async (articleId: number): Promise<void> => {
+  likeArticle: async (articleId: string): Promise<void> => {
     const article = get().article;
     if (!article) return;
 
@@ -123,7 +123,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 取消点赞
-  unLikeArticle: async (articleId: number): Promise<void> => {
+  unLikeArticle: async (articleId: string): Promise<void> => {
     const article = get().article;
     if (!article) return;
 
@@ -165,7 +165,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 收藏文章
-  collectArticle: async (articleId: number): Promise<void> => {
+  collectArticle: async (articleId: string): Promise<void> => {
     const article = get().article;
     if (!article) return;
 
@@ -207,7 +207,7 @@ export const useArticleStore = create<ArticleState>((set, get) => ({
   },
 
   // 取消收藏
-  unCollectArticle: async (articleId: number): Promise<void> => {
+  unCollectArticle: async (articleId: string): Promise<void> => {
     const article = get().article;
     if (!article) return;
 
@@ -280,7 +280,7 @@ export const useRelatedArticles = (): ArticleState['relatedArticles'] => useArti
 export const useRelatedArticlesLoading = () : boolean => useArticleStore((state) => state.relatedArticlesLoading);
 export const useLikeLoading = () : boolean => useArticleStore((state) => state.likeLoading);
 export const useCollectLoading = () : boolean => useArticleStore((state) => state.collectLoading);
-export const useArticleId = () : number | undefined => useArticleStore((state) => state.article?.id);
+export const useArticleId = () : string | undefined => useArticleStore((state) => state.article?.id);
 export const useArticleTitle = () : string | undefined => useArticleStore((state) => state.article?.title);
 export const useArticleContent = () : string | undefined => useArticleStore((state) => state.article?.content);
 export const useArticleStats = (): { likeCount: number; commentCount: number; collectionCount: number; readCount: number; isLiked: boolean; isCollected: boolean } => useArticleStore((state) => ({

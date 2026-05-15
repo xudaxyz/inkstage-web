@@ -178,7 +178,7 @@ const AdminNotifications: React.FC = () => {
     setIsViewModalVisible(true);
   };
   // 删除模板
-  const handleDeleteTemplate = async (id: number): Promise<void> => {
+  const handleDeleteTemplate = async (id: string): Promise<void> => {
     try {
       setLoading(true);
       const response = await notificationTemplateService.deleteTemplate(id);
@@ -203,7 +203,7 @@ const AdminNotifications: React.FC = () => {
     }
   };
   // 切换模板状态
-  const handleToggleStatus = async (id: number, currentStatus: StatusEnum): Promise<void> => {
+  const handleToggleStatus = async (id: string, currentStatus: StatusEnum): Promise<void> => {
     try {
       setLoading(true);
       const newStatus = currentStatus === StatusEnum.ENABLED ? StatusEnum.DISABLED : StatusEnum.ENABLED;

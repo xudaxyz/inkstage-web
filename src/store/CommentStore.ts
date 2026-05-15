@@ -26,13 +26,13 @@ interface CommentState {
     setIsSubmitting: (isSubmitting: boolean) => void;
 
     // 方法
-    fetchComments: (articleId: number, pageNum: number) => Promise<void>;
+    fetchComments: (articleId: string, pageNum: number) => Promise<void>;
     createComment: (params: CommentCreateParams) => Promise<boolean>;
     updateComment: (params: CommentUpdateParams) => Promise<boolean>;
-    deleteComment: (commentId: number) => Promise<boolean>;
-    toggleLike: (commentId: number) => Promise<void>;
-    toggleDislike: (commentId: number) => Promise<void>;
-    refreshComments: (articleId: number) => Promise<void>;
+    deleteComment: (commentId: string) => Promise<boolean>;
+    toggleLike: (commentId: string) => Promise<void>;
+    toggleDislike: (commentId: string) => Promise<void>;
+    refreshComments: (articleId: string) => Promise<void>;
 }
 
 const useCommentStore = create<CommentState>((set, get) => {
@@ -54,7 +54,7 @@ const useCommentStore = create<CommentState>((set, get) => {
         setPageNum: (pageNum: number): void => set({ pageNum }),
         setIsSubmitting: (isSubmitting: boolean): void => set({ isSubmitting }),
 
-        fetchComments: async (articleId: number, pageNum: number): Promise<void> => {
+        fetchComments: async (articleId: string, pageNum: number): Promise<void> => {
             const sortBy = get().sortBy;
 
             try {
@@ -102,7 +102,7 @@ const useCommentStore = create<CommentState>((set, get) => {
             return response.code === 200;
         },
 
-        deleteComment: async (commentId: number): Promise<boolean> => {
+        deleteComment: async (commentId: string): Promise<boolean> => {
             get().setIsSubmitting(true);
             const response = await commentService.deleteComment(commentId);
 
@@ -115,7 +115,7 @@ const useCommentStore = create<CommentState>((set, get) => {
 
         },
 
-        toggleLike: async (commentId: number): Promise<void> => {
+        toggleLike: async (commentId: string): Promise<void> => {
             try {
                 // 乐观更新
                 const currentComments = get().comments;
@@ -136,7 +136,7 @@ const useCommentStore = create<CommentState>((set, get) => {
             }
         },
 
-        toggleDislike: async (commentId: number): Promise<void> => {
+        toggleDislike: async (commentId: string): Promise<void> => {
             try {
                 // 乐观更新
                 const currentComments = get().comments;
@@ -157,7 +157,7 @@ const useCommentStore = create<CommentState>((set, get) => {
             }
         },
 
-        refreshComments: async (articleId: number): Promise<void> => {
+        refreshComments: async (articleId: string): Promise<void> => {
             await get().fetchComments(articleId, 1);
         }
     };

@@ -3,11 +3,11 @@ export type WebSocketEvent = 'notification' | 'unreadCount';
 
 // 通知类型
 export interface NotificationMessage {
-  id: number;
+  id: string;
   type: string;
   title: string;
   content: string;
-  relatedId: number;
+  relatedId: string;
   actionUrl: string;
   readStatus: string;
   createTime: string;

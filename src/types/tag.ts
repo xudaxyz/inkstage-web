@@ -3,7 +3,7 @@ import type { ApiPageResponse } from './common';
 
 // 前台标签接口
 export interface FrontTag {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   description: string;
@@ -14,12 +14,12 @@ export interface FrontTag {
 
 // 后台标签接口
 export interface AdminTag {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   description: string;
   articleCount: number;
-  userId: number;
+  userId: string;
   usageCount: number;
   status: StatusEnum;
   createTime?: string;

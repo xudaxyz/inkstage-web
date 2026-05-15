@@ -100,12 +100,12 @@ const AdminArticles: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<ArticleStatusEnum | undefined>();
-  const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [selectedTop, setSelectedTop] = useState<AllowTopEnum | undefined>();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [isPermanentDeleteModalVisible, setIsPermanentDeleteModalVisible] = useState(false);
-  const [articleToDelete, setArticleToDelete] = useState<number | null>(null);
+  const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
   const [currentArticle, setCurrentArticle] = useState<AdminArticleDetail | null>(null);
   const [rejectForm] = Form.useForm();
   const [pagination, setPagination] = useState({
@@ -113,7 +113,7 @@ const AdminArticles: React.FC = () => {
     pageSize: 10,
     total: 0
   });
-  const [categories, setCategories] = useState<Array<{ value: number; label: string }>>([]);
+  const [categories, setCategories] = useState<Array<{ value: string; label: string }>>([]);
   const [tags, setTags] = useState<Array<{ value: string; label: string }>>([]);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
@@ -125,12 +125,12 @@ const AdminArticles: React.FC = () => {
         const params = {
           pageNum,
           pageSize,
-          categoryId: 0,
+          categoryId: '',
           keyword: searchText,
           articleStatus: selectedStatus,
           topStatus: selectedTop
         };
-        if (selectedCategory !== undefined && selectedCategory !== 0) {
+        if (selectedCategory !== undefined && selectedCategory !== '') {
           params.categoryId = selectedCategory;
         }
         const response = await articleService.admin.getArticlesByPage(params);
@@ -176,7 +176,7 @@ const AdminArticles: React.FC = () => {
     setSelectedStatus(value);
     setPagination((prev) => ({ ...prev, pageNum: 1 }));
   };
-  const handleCategoryChange = (value: number | null): void => {
+  const handleCategoryChange = (value: string | null): void => {
     setSelectedCategory(value === null ? undefined : value);
     setPagination((prev) => ({ ...prev, pageNum: 1 }));
   };
@@ -272,7 +272,7 @@ const AdminArticles: React.FC = () => {
     }
   };
   // 删除文章
-  const handleDeleteArticle = async (id: number): Promise<void> => {
+  const handleDeleteArticle = async (id: string): Promise<void> => {
     try {
       const response = await articleService.admin.deleteArticle(id);
       if (response.code === 200 && response.data) {
@@ -354,7 +354,7 @@ const AdminArticles: React.FC = () => {
     rejectForm.resetFields();
   };
   // 处理下架/上架文章
-  const handleOfflineArticle = async (id: number, currentStatus: ArticleStatusEnum): Promise<void> => {
+  const handleOfflineArticle = async (id: string, currentStatus: ArticleStatusEnum): Promise<void> => {
     try {
       const targetStatus =
         currentStatus === ArticleStatusEnum.OFFLINE ? ArticleStatusEnum.PUBLISHED : ArticleStatusEnum.OFFLINE;
@@ -374,7 +374,7 @@ const AdminArticles: React.FC = () => {
     }
   };
   // 处理置顶/取消置顶文章
-  const handleTopArticle = async (id: number, currentTopStatus: AllowTopEnum): Promise<void> => {
+  const handleTopArticle = async (id: string, currentTopStatus: AllowTopEnum): Promise<void> => {
     try {
       const response =
         currentTopStatus === AllowTopEnum.TOP
@@ -391,7 +391,7 @@ const AdminArticles: React.FC = () => {
     }
   };
   // 处理推荐/取消文章
-  const handleRecommendArticle = async (id: number, currentRecommendStatus: RecommendedEnum): Promise<void> => {
+  const handleRecommendArticle = async (id: string, currentRecommendStatus: RecommendedEnum): Promise<void> => {
     try {
       const response =
         currentRecommendStatus === RecommendedEnum.RECOMMENDED

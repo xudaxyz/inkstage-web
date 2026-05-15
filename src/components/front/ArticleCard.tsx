@@ -6,12 +6,12 @@ import LazyImage from '../common/LazyImage';
 import { ROUTES } from '../../constants/routes';
 
 interface Article {
-  id: number;
+  id: string;
   title: string;
   summary: string;
   coverImage?: string;
   nickname: string;
-  userId: number;
+  userId: string;
   avatar: string;
   likeCount: number;
   readCount: number;

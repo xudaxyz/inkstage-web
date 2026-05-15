@@ -41,7 +41,7 @@ const CreateColumn: React.FC = () => {
 
   // 加载专栏详情
   useEffect(() => {
-    const loadColumnDetail = async (id: number): Promise<void> => {
+    const loadColumnDetail = async (id: string): Promise<void> => {
       try {
         setLoading(true);
         // 先使用我的专栏列表获取，找到对应的专栏
@@ -76,7 +76,7 @@ const CreateColumn: React.FC = () => {
     };
 
     if (isEditMode && columnId) {
-      loadColumnDetail(Number(columnId)).then();
+      loadColumnDetail(columnId).then();
     }
   }, [isEditMode, columnId, form]);
 
@@ -105,7 +105,7 @@ const CreateColumn: React.FC = () => {
       };
 
       if (isEditMode && columnId) {
-        const response = await columnService.updateColumn(Number(columnId), columnData);
+        const response = await columnService.updateColumn(columnId, columnData);
         if (response.code === 200 && response.data) {
           message.success('专栏更新成功！');
           navigate(getReturnPath());

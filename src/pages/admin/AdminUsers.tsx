@@ -90,7 +90,7 @@ const AdminUsers: React.FC = () => {
   });
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editUser, setEditUser] = useState<AdminUser | null>(null);
   const [editLoading, setEditLoading] = useState(false);
@@ -241,7 +241,7 @@ const AdminUsers: React.FC = () => {
     }
   };
   // 打开删除确认模态框
-  const handleOpenDeleteModal = (id: number): void => {
+  const handleOpenDeleteModal = (id: string): void => {
     setUserToDelete(id);
     setDeleteModalVisible(true);
   };

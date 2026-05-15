@@ -11,11 +11,11 @@ import { ROUTES } from '../../constants/routes';
 
 interface ReplyItemProps {
   reply: FrontArticleCommentList;
-  articleId: number;
-  currentUserId?: number;
+  articleId: string;
+  currentUserId?: string;
   currentUserNickname?: string;
   currentUserAvatar?: string;
-  topCommentId: number;
+  topCommentId: string;
 }
 
 const ReplyItem: React.FC<ReplyItemProps> = ({
@@ -64,7 +64,6 @@ const ReplyItem: React.FC<ReplyItemProps> = ({
               <span className="font-bold text-[#373A40] dark:text-gray-200 text-sm">{reply.nickname}</span>
             )}
             {reply.parentId &&
-              reply.parentId !== 0 &&
               reply.repliedUserName &&
               reply.parentId !== topCommentId &&
               reply.repliedUserId && (

@@ -12,7 +12,7 @@ import { type AuthTypeEnum, GenderEnum, UserRoleEnum } from '../types/enums';
 export interface AdminState {
   // 后台用户状态
   adminUser: {
-    id: number | null;
+    id: string | null;
     username: string | null;
     email: string | null;
     avatar?: string;
@@ -31,7 +31,7 @@ export interface AdminState {
   // 方法
   setAdminUser: (
     userData: {
-      id: number | null;
+      id: string | null;
       username: string | null;
       email: string | null;
       avatar?: string;
@@ -58,7 +58,7 @@ export interface AdminState {
       refresh_token: string;
       expires_in: number;
       userInfo: {
-        id: number;
+        id: string;
         username: string;
         email: string;
         avatar?: string;
@@ -137,7 +137,7 @@ export const useAdminStore = create<AdminState>()(
       // 设置管理员用户状态方法
       setAdminUser: (
         userData: {
-          id: number | null;
+          id: string | null;
           username: string | null;
           email: string | null;
           avatar?: string;
@@ -151,7 +151,7 @@ export const useAdminStore = create<AdminState>()(
         },
         accessToken: string = '',
         refreshToken: string = '',
-        expiresIn: number = 3600,
+        expiresIn: number = 3601,
         rememberMe: boolean = false
       ): void => {
         const expiresAt = Date.now() + expiresIn * 1000;
@@ -208,7 +208,7 @@ export const useAdminStore = create<AdminState>()(
           refresh_token: string;
           expires_in: number;
           userInfo: {
-            id: number;
+            id: string;
             username: string;
             email: string;
             avatar?: string;
@@ -384,10 +384,10 @@ export const useIsAdminLoggedIn = (): boolean => useAdminStore((state) => state.
 export const useIsAdminLoading = (): boolean => useAdminStore((state) => state.isLoading);
 export const useAdminAccessTokenExpiresAt = (): number | null =>
   useAdminStore((state) => state.adminAccessTokenExpiresAt);
-export const useAdminUserId = (): number | null => useAdminStore((state) => state.adminUser.id);
+export const useAdminUserId = (): string | null => useAdminStore((state) => state.adminUser.id);
 export const useAdminUserRole = (): string | undefined => useAdminStore((state) => state.adminUser.role);
 export const useAdminUserInfo = (): {
-  id: number | null;
+  id: string | null;
   username: string | null;
   email: string | null;
   avatar?: string;

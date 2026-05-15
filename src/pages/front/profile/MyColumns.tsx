@@ -33,7 +33,7 @@ const MyColumns: React.FC = () => {
   const [operationLoading, setOperationLoading] = useState(false);
 
   const searchRef = useRef(searchText);
-  const columnIdRef = useRef<number | null>(null);
+  const columnIdRef = useRef<string | null>(null);
   const searchArticleRef = useRef(searchArticleText);
 
   useEffect(() => {
@@ -139,7 +139,7 @@ const MyColumns: React.FC = () => {
     articlesInfiniteScroll.refresh();
   }, [articlesInfiniteScroll]);
 
-  const handleEditColumn = useCallback((columnId: number): void => {
+  const handleEditColumn = useCallback((columnId: string): void => {
     navigate(`${ROUTES.EDIT_COLUMN(columnId)}?from=my`);
   }, [navigate]);
 
@@ -147,15 +147,15 @@ const MyColumns: React.FC = () => {
     navigate(ROUTES.CREATE_ARTICLE);
   }, [navigate]);
 
-  const handleViewArticle = useCallback((articleId: number): void => {
+  const handleViewArticle = useCallback((articleId: string): void => {
     navigate(ROUTES.ARTICLE_DETAIL(articleId));
   }, [navigate]);
 
-  const handleEditArticle = useCallback((articleId: number): void => {
+  const handleEditArticle = useCallback((articleId: string): void => {
     navigate(ROUTES.EDIT_ARTICLE(articleId));
   }, [navigate]);
 
-  const handleRemoveArticleFromColumn = useCallback(async (articleId: number): Promise<void> => {
+  const handleRemoveArticleFromColumn = useCallback(async (articleId: string): Promise<void> => {
     if (!selectedColumn) return;
     setOperationLoading(true);
     try {
@@ -169,7 +169,7 @@ const MyColumns: React.FC = () => {
     }
   }, [selectedColumn, articlesInfiniteScroll]);
 
-  const handleDeleteArticle = useCallback(async (articleId: number): Promise<void> => {
+  const handleDeleteArticle = useCallback(async (articleId: string): Promise<void> => {
     if (!selectedColumn) return;
     setOperationLoading(true);
     try {
@@ -183,7 +183,7 @@ const MyColumns: React.FC = () => {
     }
   }, [selectedColumn, articlesInfiniteScroll]);
 
-  const handleMoveArticleToColumn = useCallback(async (articleId: number, targetColumnId: number): Promise<void> => {
+  const handleMoveArticleToColumn = useCallback(async (articleId: string, targetColumnId: string): Promise<void> => {
     setOperationLoading(true);
     try {
       const response = await columnService.moveArticleToColumn(articleId, targetColumnId);
@@ -210,7 +210,7 @@ const MyColumns: React.FC = () => {
     }
   }, [selectedColumn, columnsInfiniteScroll]);
 
-  const doDeleteColumn = useCallback(async (columnId: number): Promise<void> => {
+  const doDeleteColumn = useCallback(async (columnId: string): Promise<void> => {
     try {
       const response = await columnService.deleteColumn(columnId);
       if (response.code === 200 && response.data) {
@@ -227,7 +227,7 @@ const MyColumns: React.FC = () => {
     }
   }, [columnsInfiniteScroll, selectedColumn, handleBackToColumns]);
 
-  const handleDeleteColumn = useCallback(async (columnId: number): Promise<void> => {
+  const handleDeleteColumn = useCallback(async (columnId: string): Promise<void> => {
     Modal.confirm({
       title: '确认删除',
       content: '确定要删除这个专栏吗？删除后将无法恢复！',

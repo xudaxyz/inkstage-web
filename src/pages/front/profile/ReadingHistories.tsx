@@ -70,9 +70,9 @@ const ReadingHistories: React.FC = () => {
     }
   };
   // 删除单个历史
-  const handleDeleteSingle = async (articleId: number): Promise<void> => {
+  const handleDeleteSingle = async (articleId: string): Promise<void> => {
     try {
-      const response = await readingHistoryService.deleteReadingHistory(Number(articleId));
+      const response = await readingHistoryService.deleteReadingHistory(articleId);
       if (response.code === 200) {
         message.success('已删除阅读历史');
         // 重新加载数据
@@ -86,7 +86,7 @@ const ReadingHistories: React.FC = () => {
     }
   };
   // 继续阅读
-  const handleContinueReading = (articleId: number): void => {
+  const handleContinueReading = (articleId: string): void => {
     // 跳转到文章详情页
     window.open(ROUTES.ARTICLE_DETAIL(articleId), '_blank');
   };

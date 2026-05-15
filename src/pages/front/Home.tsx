@@ -87,8 +87,8 @@ const useTags = (): UseQueryResult<FrontTag[], Error> => {
 };
 const Home: React.FC = () => {
   // 状态管理
-  const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
-  const [selectedTag, setSelectedTag] = useState<number | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
   const [isContentChanging, setIsContentChanging] = useState(false);
   // 搜索参数
   const [searchParams, setSearchParams] = useSearchParams();
@@ -158,7 +158,7 @@ const Home: React.FC = () => {
   } = useInfiniteScroll<IndexArticleList>(articlesFetcher, {
     pageSize: INFINITE_SCROLL_PAGE_SIZE,
     threshold: 0.1,
-    autoRetry: selectedCategory === 0 && !selectedTag && !keyword
+    autoRetry: !selectedCategory && !selectedTag && !keyword
   });
   // 当搜索关键词、分类或标签变化时刷新文章列表
   useEffect(() => {
@@ -192,7 +192,7 @@ const Home: React.FC = () => {
   // 处理分类选择
   const handleCategorySelect = (category: FrontendCategory | '全部'): void => {
     if (category === '全部') {
-      setSelectedCategory(0);
+      setSelectedCategory('');
     } else {
       setSelectedCategory(category.id);
     }

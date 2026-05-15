@@ -8,8 +8,8 @@ interface ReportModalProps {
   visible: boolean;
   onClose: () => void;
   reportedType: ReportTargetTypeEnum;
-  relatedId: number;
-  reportedId: number;
+  relatedId?: string;
+  reportedId: string;
   reportedName: string;
   reportedContent: string;
 }
@@ -34,7 +34,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
         reportedId,
         reportedName,
         reportedContent,
-        relatedId: relatedId,
+        relatedId: relatedId || '',
         reportType: values.reportType,
         reason: values.reason,
         evidence: values.evidence,

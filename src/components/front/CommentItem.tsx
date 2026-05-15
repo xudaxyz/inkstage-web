@@ -23,8 +23,8 @@ import { ROUTES } from '../../constants/routes';
 
 interface CommentItemProps {
   comment: FrontArticleCommentList;
-  articleId: number;
-  currentUserId?: number;
+  articleId: string;
+  currentUserId?: string;
   currentUserNickname?: string;
   currentUserAvatar?: string;
 }
@@ -40,7 +40,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   currentUserNickname,
   currentUserAvatar
 }) => {
-  const [showReplyForm, setShowReplyForm] = useState<{ [key: number]: boolean }>({});
+  const [showReplyForm, setShowReplyForm] = useState<{ [key: string]: boolean }>({});
   const [isExpanded, setIsExpanded] = useState(true);
   const [isRepliesExpanded, setIsRepliesExpanded] = useState(false);
   const [isLoadingReplies, setIsLoadingReplies] = useState(false);
@@ -59,13 +59,13 @@ const CommentItem: React.FC<CommentItemProps> = ({
     needsRepliesRefreshRef.current = needsRepliesRefresh;
   }, [needsRepliesRefresh]);
   const { toggleLike, toggleDislike, deleteComment, refreshComments } = useCommentStore();
-  const handleReply = (commentId: number): void => {
+  const handleReply = (commentId: string): void => {
     setShowReplyForm((prev) => ({
       ...prev,
       [commentId]: !prev[commentId]
     }));
   };
-  const handleDelete = async (commentId: number): Promise<void> => {
+  const handleDelete = async (commentId: string): Promise<void> => {
     const success = await deleteComment(commentId);
     if (success) {
       await refreshComments(articleId);

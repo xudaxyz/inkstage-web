@@ -11,8 +11,8 @@ import { sortComments, normalizePageResponse } from '../../utils';
 
 // 评论组件属性接口
 interface CommentSectionProps {
-  articleId: number;
-  currentUserId?: number;
+  articleId: string;
+  currentUserId?: string;
   currentUserNickname?: string;
   currentUserAvatar?: string;
   onCommentCountChange?: (newCount: number) => void;

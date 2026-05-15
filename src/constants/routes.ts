@@ -10,7 +10,7 @@ export const ROUTES = {
   REGISTER: '/register',
 
   // 用户相关
-  USER_PROFILE: (id: number): string => `/user/${id}`,
+  USER_PROFILE: (id: string): string => `/user/${id}`,
 
   // 用户个人中心
   PROFILE: '/profile',
@@ -24,9 +24,9 @@ export const ROUTES = {
   MY_SUBSCRIPTIONS: '/profile/subscriptions',
 
   // 文章相关
-  ARTICLE_DETAIL: (id: number): string => `/article/${id}`,
+  ARTICLE_DETAIL: (id: string): string => `/article/${id}`,
   CREATE_ARTICLE: '/create-article',
-  EDIT_ARTICLE: (id: number): string => `/edit-article/${id}`,
+  EDIT_ARTICLE: (id: string): string => `/edit-article/${id}`,
 
   // 管理后台
   ADMIN_DASHBOARD: '/admin',
@@ -38,9 +38,9 @@ export const ROUTES = {
 
   // 专栏相关
   COLUMN_LIST: '/columns',
-  COLUMN_DETAIL: (id: number): string => `/column/${id}`,
+  COLUMN_DETAIL: (id: string): string => `/column/${id}`,
   CREATE_COLUMN: '/create-column',
-  EDIT_COLUMN: (id: number): string => `/edit-column/${id}`,
+  EDIT_COLUMN: (id: string): string => `/edit-column/${id}`,
 
   // 其他
   SEARCH: '/search'

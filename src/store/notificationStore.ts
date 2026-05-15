@@ -13,9 +13,9 @@ export interface NotificationState {
   // 操作
   fetchUnreadCount: () => Promise<void>;
   setUnreadCount: (count: number) => void;
-  markAsRead: (id: number) => Promise<boolean>;
+  markAsRead: (id: string) => Promise<boolean>;
   markAllAsRead: () => Promise<boolean>;
-  deleteNotification: (id: number) => Promise<boolean>;
+  deleteNotification: (id: string) => Promise<boolean>;
   setNotifications: (notifications: Notification[]) => void;
   resetError: () => void;
 }
@@ -51,7 +51,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
 
   // 标记通知为已读
-  markAsRead: async (id: number): Promise<boolean> => {
+  markAsRead: async (id: string): Promise<boolean> => {
     const { notifications, unreadCount, setNotifications, setUnreadCount } = get();
 
     // 保存原始状态用于回滚
@@ -112,7 +112,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
 
   // 删除通知
-  deleteNotification: async (id: number): Promise<boolean> => {
+  deleteNotification: async (id: string): Promise<boolean> => {
     const { notifications, unreadCount, setNotifications, setUnreadCount } = get();
 
     // 保存原始状态用于回滚
@@ -158,9 +158,9 @@ export const useUnreadCount = () : number => useNotificationStore((state) => sta
 export const useNotifications = () : Notification[] => useNotificationStore((state) => state.notifications);
 export const useNotificationLoading = () :boolean => useNotificationStore((state) => state.isLoading);
 export const useNotificationError = (): string | null => useNotificationStore((state) => state.error);
-export const useMarkAsRead = (): (id: number) => Promise<boolean> => useNotificationStore((state) => state.markAsRead);
+export const useMarkAsRead = (): (id: string) => Promise<boolean> => useNotificationStore((state) => state.markAsRead);
 export const useMarkAllAsRead = (): () => Promise<boolean> => useNotificationStore((state) => state.markAllAsRead);
-export const useDeleteNotification = (): (id: number) => Promise<boolean> => useNotificationStore((state) => state.deleteNotification);
+export const useDeleteNotification = (): (id: string) => Promise<boolean> => useNotificationStore((state) => state.deleteNotification);
 export const useSetUnreadCount = (): (count: number) => void => useNotificationStore((state) => state.setUnreadCount);
 export const useSetNotifications = (): (notifications: Notification[]) => void => useNotificationStore((state) => state.setNotifications);
 export const useFetchUnreadCount = (): () => Promise<void> => useNotificationStore((state) => state.fetchUnreadCount);

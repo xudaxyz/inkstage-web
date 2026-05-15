@@ -44,7 +44,7 @@ export function sortComments (
  */
 export function updateCommentStatus (
   comments: FrontArticleCommentList[],
-  commentId: number,
+  commentId: string,
   updateFn: (comment: FrontArticleCommentList) => FrontArticleCommentList
 ): FrontArticleCommentList[] {
   return comments.map(comment => {

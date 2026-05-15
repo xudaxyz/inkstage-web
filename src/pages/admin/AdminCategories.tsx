@@ -117,7 +117,7 @@ const AdminCategories: React.FC = () => {
   };
 
   // 删除分类
-  const handleDeleteCategory = async (id: number): Promise<void> => {
+  const handleDeleteCategory = async (id: string): Promise<void> => {
     try {
       const response = await categoryService.adminDeleteCategory(id);
       if (response.code === 200) {
@@ -133,7 +133,7 @@ const AdminCategories: React.FC = () => {
   };
 
   // 切换分类状态
-  const handleToggleStatus = async (id: number, status: StatusEnum): Promise<void> => {
+  const handleToggleStatus = async (id: string, status: StatusEnum): Promise<void> => {
     try {
       // 先更新本地状态，提供即时反馈
       const updatedCategories = categories.map((category) =>

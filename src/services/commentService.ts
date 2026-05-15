@@ -10,8 +10,8 @@ import type {
 } from '../types/comment';
 // 参数验证函数
 const validateCommentQueryParams = (params: CommentQueryParams): void => {
-    if (params.articleId == null || params.articleId <= 0) {
-        throw new Error('文章ID必须是正整数');
+    if (!params.articleId) {
+        throw new Error('文章ID不能为空');
     }
     if (params.pageNum != null && params.pageNum <= 0) {
         throw new Error('页码必须是正整数');
@@ -27,27 +27,27 @@ const validateCommentQueryParams = (params: CommentQueryParams): void => {
     }
 };
 const validateCommentCreateParams = (params: CommentCreateParams): void => {
-    if (params.articleId == null || params.articleId <= 0) {
-        throw new Error('文章ID必须是正整数');
+    if (!params.articleId) {
+        throw new Error('文章ID不能为空');
     }
-    if (params.parentId != null && params.parentId <= 0) {
-        throw new Error('父评论ID必须是正整数');
+    if (params.parentId != null && !params.parentId) {
+        throw new Error('父评论ID不能为空');
     }
     if (!params.content || params.content.trim().length === 0) {
         throw new Error('评论内容不能为空');
     }
 };
 const validateCommentUpdateParams = (params: CommentUpdateParams): void => {
-    if (params.id == null || params.id <= 0) {
-        throw new Error('评论ID必须是正整数');
+    if (!params.id) {
+        throw new Error('评论ID不能为空');
     }
     if (!params.content || params.content.trim().length === 0) {
         throw new Error('评论内容不能为空');
     }
 };
-const validateIdParam = (id: number): void => {
-    if (id == null || id <= 0) {
-        throw new Error('ID必须是正整数');
+const validateIdParam = (id: string): void => {
+    if (!id || id.trim() === '') {
+        throw new Error('ID不能为空');
     }
 };
 // 获取评论列表
@@ -66,23 +66,23 @@ export const updateComment = async (params: CommentUpdateParams): Promise<ApiRes
     return await apiClient.put(API_ENDPOINTS.FRONT.COMMENT.UPDATE, params);
 };
 // 删除评论
-export const deleteComment = async (id: number): Promise<ApiResponse<boolean>> => {
+export const deleteComment = async (id: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.FRONT.COMMENT.DELETE(id));
 };
 // 点赞评论
-export const likeComment = async (id: number): Promise<ApiResponse<boolean>> => {
+export const likeComment = async (id: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.post(API_ENDPOINTS.FRONT.COMMENT.LIKE(id));
 };
 // 点踩评论
-export const dislikeComment = async (id: number): Promise<ApiResponse<boolean>> => {
+export const dislikeComment = async (id: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.post(API_ENDPOINTS.FRONT.COMMENT.DISLIKE(id));
 };
 
 // 获取子评论列表
-export const getReplies = async (parentId: number, pageNum: number = 1, pageSize: number = 10, sortBy: 'hot' | 'new' = 'hot'): Promise<ApiResponse<FrontArticleCommentResponse>> => {
+export const getReplies = async (parentId: string, pageNum: number = 1, pageSize: number = 10, sortBy: 'hot' | 'new' = 'hot'): Promise<ApiResponse<FrontArticleCommentResponse>> => {
     validateIdParam(parentId);
     if (pageNum <= 0) {
         throw new Error('页码必须是正整数');
@@ -117,8 +117,8 @@ const commentService = {
             pageNum?: number;
             pageSize?: number;
             keyword?: string;
-            articleId?: number;
-            userId?: number;
+            articleId?: string;
+            userId?: string;
             status?: CommentStatusEnum;
         } = {}): Promise<ApiResponse<AdminArticleCommentResponse>> => {
             if (params.pageNum != null && params.pageNum <= 0) {
@@ -127,16 +127,16 @@ const commentService = {
             if (params.pageSize != null && params.pageSize <= 0) {
                 throw new Error('每页数量必须是正整数');
             }
-            if (params.articleId != null && params.articleId <= 0) {
-                throw new Error('文章ID必须是正整数');
+            if (params.articleId != null && !params.articleId) {
+                throw new Error('文章ID不能为空');
             }
-            if (params.userId != null && params.userId <= 0) {
-                throw new Error('用户ID必须是正整数');
+            if (params.userId != null && !params.userId) {
+                throw new Error('用户ID不能为空');
             }
             return await apiClient.post(API_ENDPOINTS.ADMIN.COMMENT.LIST_PAGE, params);
         },
         // 更新评论状态
-        updateCommentStatus: async (id: number, reviewStatus: CommentStatusEnum, reviewReason?: string): Promise<ApiResponse<boolean>> => {
+        updateCommentStatus: async (id: string, reviewStatus: CommentStatusEnum, reviewReason?: string): Promise<ApiResponse<boolean>> => {
             validateIdParam(id);
             return await apiClient.put(API_ENDPOINTS.ADMIN.COMMENT.UPDATE_STATUS(id), null, {
                 params: {
@@ -146,12 +146,12 @@ const commentService = {
             });
         },
         // 更新评论置顶状态
-        updateCommentTop: async (id: number, top: CommentTopStatus): Promise<ApiResponse<boolean>> => {
+        updateCommentTop: async (id: string, top: CommentTopStatus): Promise<ApiResponse<boolean>> => {
             validateIdParam(id);
             return await apiClient.put(API_ENDPOINTS.ADMIN.COMMENT.UPDATE_TOP(id), null, { params: { top } });
         },
         // 更新评论信息
-        updateComment: async (id: number, content?: string, top?: CommentTopStatus, reviewStatus?: CommentStatusEnum, reviewReason?: string): Promise<ApiResponse<boolean>> => {
+        updateComment: async (id: string, content?: string, top?: CommentTopStatus, reviewStatus?: CommentStatusEnum, reviewReason?: string): Promise<ApiResponse<boolean>> => {
             validateIdParam(id);
             return await apiClient.put(API_ENDPOINTS.ADMIN.COMMENT.UPDATE(id), null, {
                 params: {
@@ -163,7 +163,7 @@ const commentService = {
             });
         },
         // 删除评论
-        deleteComment: async (id: number): Promise<ApiResponse<boolean>> => {
+        deleteComment: async (id: string): Promise<ApiResponse<boolean>> => {
             validateIdParam(id);
             return await apiClient.delete(API_ENDPOINTS.ADMIN.COMMENT.DELETE(id));
         }

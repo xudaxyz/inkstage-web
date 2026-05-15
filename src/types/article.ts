@@ -13,13 +13,13 @@ import {
 
 // 文章类型定义
 export interface Article {
-  id?: number;
+  id?: string;
   title: string;
   content: string;
   summary: string;
   contentHtml: string;
-  categoryId: number;
-  columnId?: number;
+  categoryId: string;
+  columnId?: string;
   tags?: FrontTag[];
   coverImage?: string;
   status: ArticleStatusEnum;
@@ -43,13 +43,13 @@ export interface Article {
 
 // 文章列表项类型
 export interface IndexArticleList {
-  id: number;
+  id: string;
   title: string;
   summary: string;
   coverImage: string;
   avatar: string;
   nickname: string;
-  userId: number;
+  userId: string;
   readCount: number;
   likeCount: number;
   commentCount: number;
@@ -58,10 +58,10 @@ export interface IndexArticleList {
 
 // 我的文章列表项类型
 export interface MyArticleList {
-  id: number;
+  id: string;
   title: string;
   summary: string;
-  userId: number;
+  userId: string;
   readCount: number;
   likeCount: number;
   commentCount: number;
@@ -75,12 +75,12 @@ export interface MyArticleList {
 
 // 我的文章收藏列表项类型
 export interface MyArticleCollectionList {
-  collectionId: number; // 收藏id
-  articleId: number; // 文章id
+  collectionId: string;
+  articleId: string;
   title: string;
   summary: string;
   coverImage: string;
-  userId: number;
+  userId: string;
   nickname: string;
   avatar: string; // 作者头像
   categoryName: string;
@@ -92,13 +92,13 @@ export interface MyArticleCollectionList {
   likeCount: number;
   commentCount: number;
   collectionStatus: ArticleCollectionStatusEnum;
-  folderId: number;
+  folderId: string;
   folderName: string;
 }
 
 // 专栏文章列表类型
 export interface ColumnArticleListVO {
-  id: number;
+  id: string;
   title: string;
   summary: string;
   coverImage?: string;
@@ -109,8 +109,8 @@ export interface ColumnArticleListVO {
   readCount: number;
   likeCount: number;
   commentCount: number;
-  userId: number;
-  categoryId?: number;
+  userId: string;
+  categoryId?: string;
   avatar: string;
   nickname: string;
   categoryName?: string;
@@ -119,7 +119,7 @@ export interface ColumnArticleListVO {
 
 // 轮播图文章类型
 export interface BannerArticle {
-  id: number;
+  id: string;
   title: string;
   summary: string;
   coverImage: string;
@@ -127,20 +127,20 @@ export interface BannerArticle {
 
 // 最新文章类型
 export interface LatestArticle {
-  id: number;
+  id: string;
   title: string;
   publishTime: string;
 }
 
 // 前台文章详情类型
 export interface ArticleDetailInfo {
-  id: number;
+  id: string;
   title: string;
   content: string;
   contentHtml: string;
   summary: string;
   coverImage: string;
-  columnId?: number;
+  columnId?: string;
   allowComment: AllowStatusEnum;
   allowForward: AllowStatusEnum;
   visible: ArticleVisibleEnum;
@@ -156,24 +156,24 @@ export interface ArticleDetailInfo {
   shareCount: number;
   isLiked: boolean;
   isCollected: boolean;
-  userId: number;
+  userId: string;
   nickname: string;
   avatar: string;
   signature: string;
   gender: GenderEnum;
   articleCount: number;
   followerCount: number;
-  categoryId: number;
+  categoryId: string;
   categoryName: string;
   tags: FrontTag[];
 }
 
 // 热门文章类型
 export interface HotArticle {
-  id: number;
+  id: string;
   title: string;
   nickname: string;
-  userId: number;
+  userId: string;
   avatar: string;
   readCount: number;
   likeCount: number;
@@ -186,7 +186,7 @@ export interface HotArticle {
 
 // 后台文章类型定义
 export interface AdminArticleList {
-  id: number;
+  id: string;
   title: string;
   nickname: string;
   categoryName: string;
@@ -204,7 +204,7 @@ export interface AdminArticleList {
 
 // 后台文章详情类型
 export interface AdminArticleDetail {
-  id: number;
+  id: string;
   title: string;
   summary: string;
   content: string;
@@ -231,10 +231,10 @@ export interface AdminArticleDetail {
   metaDescription: string;
   metaKeywords: string;
   // 用户
-  userId: number;
+  userId: string;
   nickname: string;
   // 分类
-  categoryId: number;
+  categoryId: string;
   categoryName: string;
   // 标签
   tags: FrontTag[];
@@ -244,7 +244,7 @@ export interface AdminArticleDetail {
 export interface UpdatedAdminArticleFields {
   title?: string;
   nickname?: string;
-  categoryId?: number;
+  categoryId?: string;
   tags?: FrontTag[];
   articleStatus?: ArticleStatusEnum;
   reviewStatus?: ArticleReviewStatusEnum;

@@ -7,9 +7,9 @@ import type {
 } from '../types/readingHistory';
 
 // 参数验证函数
-const validateIdParam = (id: number): void => {
-  if (id == null || id <= 0) {
-    throw new Error('ID必须是正整数');
+const validateIdParam = (id: string): void => {
+  if (!id || id.trim() === '') {
+    throw new Error('ID不能为空');
   }
 };
 
@@ -35,7 +35,7 @@ const validateReadingHistoryRequest = (data: ReadingHistoryRequest): void => {
   }
 };
 
-const validateArticleIdsParam = (articleIds: number[]): void => {
+const validateArticleIdsParam = (articleIds: string[]): void => {
   if (!Array.isArray(articleIds)) {
     throw new Error('文章ID必须是数组');
   }
@@ -57,7 +57,7 @@ const readingHistoryService = {
   },
 
   // 删除单条阅读历史
-  deleteReadingHistory: async (articleId: number): Promise<ApiResponse<boolean>> => {
+  deleteReadingHistory: async (articleId: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(articleId);
     return await apiClient.delete(API_ENDPOINTS.FRONT.READING_HISTORY.DELETE(articleId));
   },
@@ -68,13 +68,13 @@ const readingHistoryService = {
   },
 
   // 获取单篇文章的阅读历史
-  getReadingHistoryByArticleId: async (articleId: number): Promise<ApiResponse<ReadingHistory>> => {
+  getReadingHistoryByArticleId: async (articleId: string): Promise<ApiResponse<ReadingHistory>> => {
     validateIdParam(articleId);
     return await apiClient.get(API_ENDPOINTS.FRONT.READING_HISTORY.DETAIL(articleId));
   },
 
   // 批量获取阅读历史
-  getReadingHistoriesByArticleIds: async (articleIds: number[]): Promise<ApiResponse<ReadingHistory[]>> => {
+  getReadingHistoriesByArticleIds: async (articleIds: string[]): Promise<ApiResponse<ReadingHistory[]>> => {
     validateArticleIdsParam(articleIds);
     return await apiClient.post(API_ENDPOINTS.FRONT.READING_HISTORY.BATCH, articleIds);
   }

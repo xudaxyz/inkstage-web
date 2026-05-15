@@ -14,7 +14,7 @@ export type SearchArticlesData = ApiPageResponse<IndexArticleList>;
 
 // 热门搜索词的数据接口
 export interface HotWord {
-    id: number;
+    id: string;
     word: string;
     count: number;
 }
@@ -23,7 +23,7 @@ export type HotWordsData = HotWord[];
 
 // 搜索历史的数据接口
 export interface SearchHistory {
-    id: number;
+    id: string;
     keyword: string;
     searchTime: string;
 }

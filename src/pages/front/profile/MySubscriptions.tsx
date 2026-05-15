@@ -45,11 +45,11 @@ const MySubscriptions: React.FC = () => {
     subscriptionScrollRef.current.refresh();
   }, [searchText]);
 
-  const handleViewColumn = (columnId: number): void => {
+  const handleViewColumn = (columnId: string): void => {
     navigate(ROUTES.COLUMN_DETAIL(columnId));
   };
 
-  const handleUnsubscribe = useCallback(async (columnId: number): Promise<void> => {
+  const handleUnsubscribe = useCallback(async (columnId: string): Promise<void> => {
     const response = await columnService.unsubscribeColumn(columnId);
     if (response.code === 200 && response.data) {
       message.success('已取消订阅');

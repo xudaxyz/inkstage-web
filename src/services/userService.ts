@@ -9,9 +9,9 @@ import type {
 } from '../types/user';
 
 // 参数验证函数
-const validateIdParam = (id: number): void => {
-  if (id == null || id <= 0) {
-    throw new Error('ID必须是正整数');
+const validateIdParam = (id: string): void => {
+  if (!id || id.trim() === '') {
+    throw new Error('ID不能为空');
   }
 };
 
@@ -25,25 +25,25 @@ const validateAdminUserQuery = (params: AdminUserQuery): void => {
 };
 
 // 获取用户公开资料
-export const getUserPublicProfile = async (userId: number): Promise<ApiResponse<UserInfo>> => {
+export const getUserPublicProfile = async (userId: string): Promise<ApiResponse<UserInfo>> => {
   validateIdParam(userId);
   return await apiClient.get(API_ENDPOINTS.FRONT.USER.PUBLIC_PROFILE(userId));
 };
 
 // 关注用户
-export const followUser = async (userId: number): Promise<ApiResponse<boolean>> => {
+export const followUser = async (userId: string): Promise<ApiResponse<boolean>> => {
   validateIdParam(userId);
   return await apiClient.post(API_ENDPOINTS.FRONT.USER.FOLLOW(userId));
 };
 
 // 取消关注用户
-export const unfollowUser = async (userId: number): Promise<ApiResponse<boolean>> => {
+export const unfollowUser = async (userId: string): Promise<ApiResponse<boolean>> => {
   validateIdParam(userId);
   return await apiClient.post(API_ENDPOINTS.FRONT.USER.UNFOLLOW(userId));
 };
 
 // 检查关注状态
-export const checkFollowStatus = async (userId: number): Promise<ApiResponse<boolean>> => {
+export const checkFollowStatus = async (userId: string): Promise<ApiResponse<boolean>> => {
   validateIdParam(userId);
   return await apiClient.get(API_ENDPOINTS.FRONT.USER.FOLLOW_STATUS(userId));
 };
@@ -80,31 +80,31 @@ const admin = {
   },
 
   // 根据ID获取用户
-  getUserById: async (id: number): Promise<ApiResponse<AdminUser>> => {
+  getUserById: async (id: string): Promise<ApiResponse<AdminUser>> => {
     validateIdParam(id);
     return await apiClient.get(API_ENDPOINTS.ADMIN.USER.DETAIL(id));
   },
 
   // 删除用户
-  deleteUser: async (id: number): Promise<ApiResponse<void>> => {
+  deleteUser: async (id: string): Promise<ApiResponse<void>> => {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.ADMIN.USER.DELETE(id));
   },
 
   // 更新用户信息
-  updateUser: async (id: number, userData: Partial<AdminUser>): Promise<ApiResponse<AdminUser>> => {
+  updateUser: async (id: string, userData: Partial<AdminUser>): Promise<ApiResponse<AdminUser>> => {
     validateIdParam(id);
     return await apiClient.put(API_ENDPOINTS.ADMIN.USER.UPDATE(id), userData);
   },
 
   // 更新用户状态
-  updateUserStatus: async (id: number, userStatus: UserStatusEnum): Promise<ApiResponse<AdminUser>> => {
+  updateUserStatus: async (id: string, userStatus: UserStatusEnum): Promise<ApiResponse<AdminUser>> => {
     validateIdParam(id);
     return await apiClient.put(API_ENDPOINTS.ADMIN.USER.UPDATE_STATUS(id), userStatus);
   },
 
   // 更新用户角色
-  updateUserRole: async (id: number, userRole: UserRoleEnum): Promise<ApiResponse<AdminUser>> => {
+  updateUserRole: async (id: string, userRole: UserRoleEnum): Promise<ApiResponse<AdminUser>> => {
     validateIdParam(id);
     return await apiClient.put(API_ENDPOINTS.ADMIN.USER.UPDATE_ROLE(id), userRole);
   }

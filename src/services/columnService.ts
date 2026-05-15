@@ -29,14 +29,14 @@ const columnService = {
   /**
    * 更新专栏
    */
-  async updateColumn(id: number, data: ColumnCreateDTO): Promise<ApiResponse<boolean>> {
+  async updateColumn(id: string, data: ColumnCreateDTO): Promise<ApiResponse<boolean>> {
     return await apiClient.put(API_ENDPOINTS.FRONT.COLUMN.UPDATE(id), data);
   },
 
   /**
    * 删除专栏
    */
-  async deleteColumn(id: number): Promise<ApiResponse<boolean>> {
+  async deleteColumn(id: string): Promise<ApiResponse<boolean>> {
     return await apiClient.delete(API_ENDPOINTS.FRONT.COLUMN.DELETE(id));
   },
 
@@ -50,7 +50,7 @@ const columnService = {
   /**
    * 获取专栏详情
    */
-  async getColumnDetail(id: number): Promise<ApiResponse<ColumnDetailVO>> {
+  async getColumnDetail(id: string): Promise<ApiResponse<ColumnDetailVO>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.DETAIL(id));
   },
 
@@ -61,7 +61,7 @@ const columnService = {
    * @param pageSize 每页数量
    * @param sortBy 排序方式：ASC/DESC
    */
-  async getColumnArticles(id: number, pageNum: number, pageSize: number, sortBy?: string): Promise<ApiResponse<PageResult<ColumnArticleListVO>>> {
+  async getColumnArticles(id: string, pageNum: number, pageSize: number, sortBy?: string): Promise<ApiResponse<PageResult<ColumnArticleListVO>>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.DETAIL_ARTICLES(id), {
       params: { pageNum, pageSize, sortBy: sortBy || 'ASC' }
     });
@@ -74,7 +74,7 @@ const columnService = {
    * @param pageNum 页码
    * @param pageSize 每页数量
    */
-  async searchColumnArticles(id: number, keyword: string, pageNum: number, pageSize: number): Promise<ApiResponse<PageResult<ColumnArticleListVO>>> {
+  async searchColumnArticles(id: string, keyword: string, pageNum: number, pageSize: number): Promise<ApiResponse<PageResult<ColumnArticleListVO>>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_SEARCH(id), {
       params: { keyword, pageNum, pageSize }
     });
@@ -103,7 +103,7 @@ const columnService = {
    * 获取当前用户的专栏选项（仅ID和名称）
    * 用于创建文章时选择专栏
    */
-  async getMyColumnOptions(): Promise<ApiResponse<{ id: number; name: string }[]>> {
+  async getMyColumnOptions(): Promise<ApiResponse<{ id: string; name: string }[]>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.MY_OPTIONS);
   },
 
@@ -117,14 +117,14 @@ const columnService = {
   /**
    * 从专栏移除文章
    */
-  async removeArticleFromColumn(columnId: number, articleId: number): Promise<ApiResponse<boolean>> {
+  async removeArticleFromColumn(columnId: string, articleId: string): Promise<ApiResponse<boolean>> {
     return await apiClient.delete(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_REMOVE, { params: { columnId, articleId } });
   },
 
   /**
    * 删除专栏中的文章(移除并将文章移至回收站)
    */
-  async deleteArticle(columnId: number, articleId: number): Promise<ApiResponse<boolean>> {
+  async deleteArticle(columnId: string, articleId: string): Promise<ApiResponse<boolean>> {
     return await apiClient.delete(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_DELETE, { params: { columnId, articleId } });
   },
 
@@ -138,7 +138,7 @@ const columnService = {
   /**
    * 移动文章到另一个专栏
    */
-  async moveArticleToColumn(articleId: number, newColumnId: number, sortOrder?: number): Promise<ApiResponse<boolean>> {
+  async moveArticleToColumn(articleId: string, newColumnId: string, sortOrder?: number): Promise<ApiResponse<boolean>> {
     return await apiClient.put(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_MOVE, null, {
       params: { articleId, newColumnId, sortOrder }
     });
@@ -147,7 +147,7 @@ const columnService = {
   /**
    * 更新专栏可见性
    */
-  async updateColumnVisible(id: number, visible: VisibleStatus): Promise<ApiResponse<boolean>> {
+  async updateColumnVisible(id: string, visible: VisibleStatus): Promise<ApiResponse<boolean>> {
     return await apiClient.put(API_ENDPOINTS.FRONT.COLUMN.UPDATE_VISIBLE(id), null, {
       params: { visible }
     });
@@ -156,14 +156,14 @@ const columnService = {
   /**
    * 检查文章是否在指定专栏中
    */
-  async checkArticleInColumn(columnId: number, articleId: number): Promise<ApiResponse<boolean>> {
+  async checkArticleInColumn(columnId: string, articleId: string): Promise<ApiResponse<boolean>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_CHECK, { params: { columnId, articleId } });
   },
 
   /**
    * 获取文章所属的专栏信息
    */
-  async getArticleColumn(articleId: number): Promise<ApiResponse<ArticleColumn>> {
+  async getArticleColumn(articleId: string): Promise<ApiResponse<ArticleColumn>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_INFO, { params: { articleId } });
   },
 
@@ -171,7 +171,7 @@ const columnService = {
    * 获取文章在专栏中的上下篇文章信息
    * @param articleId 文章ID
    */
-  async getColumnNeighborArticles(articleId: number): Promise<ApiResponse<ColumnNeighborVO | null>> {
+  async getColumnNeighborArticles(articleId: string): Promise<ApiResponse<ColumnNeighborVO | null>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_NEIGHBOR, { params: { articleId } });
   },
 
@@ -180,7 +180,7 @@ const columnService = {
    * @param columnId 专栏ID
    * @param articleIds 按新顺序排列的文章ID列表
    */
-  async batchUpdateColumnArticleSort(columnId: number, articleIds: number[]): Promise<ApiResponse<boolean>> {
+  async batchUpdateColumnArticleSort(columnId: string, articleIds: string[]): Promise<ApiResponse<boolean>> {
     return await apiClient.put(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_SORT_BATCH, articleIds, { params: { columnId } });
   },
 
@@ -200,28 +200,28 @@ const columnService = {
   /**
    * 增加专栏阅读量
    */
-  async incrementColumnReadCount(id: number): Promise<void> {
+  async incrementColumnReadCount(id: string): Promise<void> {
     await apiClient.post(API_ENDPOINTS.FRONT.COLUMN.DETAIL(id));
   },
 
   /**
    * 订阅专栏
    */
-  async subscribeColumn(id: number): Promise<ApiResponse<boolean>> {
+  async subscribeColumn(id: string): Promise<ApiResponse<boolean>> {
     return await apiClient.post(API_ENDPOINTS.FRONT.COLUMN.SUBSCRIBE(id));
   },
 
   /**
    * 取消订阅专栏
    */
-  async unsubscribeColumn(id: number): Promise<ApiResponse<boolean>> {
+  async unsubscribeColumn(id: string): Promise<ApiResponse<boolean>> {
     return await apiClient.delete(API_ENDPOINTS.FRONT.COLUMN.UNSUBSCRIBE(id));
   },
 
   /**
    * 检查订阅状态
    */
-  async checkSubscribeStatus(id: number): Promise<ApiResponse<boolean>> {
+  async checkSubscribeStatus(id: string): Promise<ApiResponse<boolean>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.SUBSCRIBE_STATUS(id));
   },
 
@@ -240,7 +240,7 @@ const columnService = {
   /**
    * 获取专栏订阅数
    */
-  async getSubscriberCount(id: number): Promise<ApiResponse<number>> {
+  async getSubscriberCount(id: string): Promise<ApiResponse<number>> {
     return await apiClient.get(API_ENDPOINTS.FRONT.COLUMN.SUBSCRIBER_COUNT(id));
   }
 };

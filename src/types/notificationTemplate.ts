@@ -3,7 +3,7 @@ import type { ApiPageResponse } from './common';
 
 // 通知模板类型定义
 export interface AdminNotificationTemplate {
-  id: number;
+  id: string;
   code: string;
   templateName: string;
   notificationType: NotificationType;
@@ -39,10 +39,10 @@ export interface ManualNotification {
   templateCode: string;
   variables: Record<string, object>;
   userType: 'all' | 'specific' | 'role';
-  userIds?: number[];
+  userIds?: string[];
   roleCode?: string;
-  relatedId?: number;
-  senderId?: number;
+  relatedId?: string;
+  senderId?: string;
 }
 
 // 模板预览

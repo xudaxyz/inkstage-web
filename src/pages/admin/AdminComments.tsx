@@ -56,7 +56,7 @@ const AdminComments: React.FC = () => {
     total: 0
   });
   const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
-  const [currentReviewCommentId, setCurrentReviewCommentId] = useState<number | null>(null);
+  const [currentReviewCommentId, setCurrentReviewCommentId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   // 获取评论列表
   const fetchComments = useCallback(
@@ -67,7 +67,7 @@ const AdminComments: React.FC = () => {
           pageNum: pageNum,
           pageSize: pageSize,
           keyword: searchText,
-          articleId: selectedArticleId ? parseInt(selectedArticleId) : undefined,
+          articleId: selectedArticleId || undefined,
           status: selectedStatus
         });
         if (response.code === 200 && response.data) {
@@ -144,7 +144,7 @@ const AdminComments: React.FC = () => {
     setIsViewModalVisible(true);
   };
   // 删除评论
-  const handleDeleteComment = async (id: number): Promise<void> => {
+  const handleDeleteComment = async (id: string): Promise<void> => {
     try {
       const response = await commentService.admin.deleteComment(id);
       if (response.code === 200) {
@@ -159,7 +159,7 @@ const AdminComments: React.FC = () => {
     }
   };
   // 更新评论置顶状态
-  const handleUpdateTop = async (id: number, shouldTop: boolean): Promise<void> => {
+  const handleUpdateTop = async (id: string, shouldTop: boolean): Promise<void> => {
     try {
       const top = shouldTop ? CommentTopStatus.TOP : CommentTopStatus.NOT_TOP;
       const response = await commentService.admin.updateCommentTop(id, top);
@@ -175,7 +175,7 @@ const AdminComments: React.FC = () => {
     }
   };
   // 审核评论通过
-  const handleApproveComment = async (id: number): Promise<void> => {
+  const handleApproveComment = async (id: string): Promise<void> => {
     try {
       const response = await commentService.admin.updateCommentStatus(id, CommentStatusEnum.APPROVED);
       if (response.code === 200) {
@@ -190,7 +190,7 @@ const AdminComments: React.FC = () => {
     }
   };
   // 打开拒绝评论模态框
-  const handleOpenRejectModal = (id: number): void => {
+  const handleOpenRejectModal = (id: string): void => {
     setCurrentReviewCommentId(id);
     setRejectReason('');
     setIsRejectModalVisible(true);

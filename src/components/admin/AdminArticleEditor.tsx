@@ -42,7 +42,7 @@ const recommendOptions = [
 interface AdminArticleEditorProps {
     visible: boolean;
     article: AdminArticleDetail | null;
-    categories: Array<{ value: number; label: string }>;
+    categories: Array<{ value: string; label: string }>;
     tags: Array<{ value: string; label: string }>;
     onClose: () => void;
     onSave: () => void;
@@ -80,7 +80,7 @@ const AdminArticleEditor: React.FC<AdminArticleEditorProps> = ({
             form.setFieldsValue({
                 title: article.title,
                 nickname: article.nickname,
-                category: category?.value || 0,
+                category: category?.value || '',
                 tags: tagIds,
                 status: article.articleStatus,
                 reviewStatus: article.reviewStatus,
@@ -116,23 +116,18 @@ const AdminArticleEditor: React.FC<AdminArticleEditorProps> = ({
 
                     // 处理已存在的标签和新标签
                     for (const tagValue of values.tags) {
-                        if (!isNaN(Number(tagValue))) {
-                            // 已存在的标签，只包含id和name
-                            const tagId = parseInt(tagValue);
-                            const tag = tags.find(t => t.value === tagValue);
-                            if (tag) {
-                                processedTags.push({
-                                    id: tagId,
-                                    name: tag.label,
-                                    slug: '',
-                                    description: '',
-                                    status: StatusEnum.ENABLED
-                                });
-                            }
-                        } else {
-                            // 新标签，只包含name
+                        const tag = tags.find(t => t.value === tagValue);
+                        if (tag) {
                             processedTags.push({
-                                id: 0, // 0表示新标签
+                                id: tagValue,
+                                name: tag.label,
+                                slug: '',
+                                description: '',
+                                status: StatusEnum.ENABLED
+                            });
+                        } else {
+                            processedTags.push({
+                                id: '',
                                 name: tagValue,
                                 slug: '',
                                 description: '',
@@ -154,8 +149,8 @@ const AdminArticleEditor: React.FC<AdminArticleEditorProps> = ({
                     }
                     // 分类
                     const category = categories.find(cat => cat.label === originalArticle.categoryName);
-                    if (Number(values.category) !== (category?.value || 0)) {
-                        updatedFields.categoryId = Number(values.category);
+                    if (values.category !== (category?.value || '')) {
+                        updatedFields.categoryId = values.category;
                     }
                     // 标签
                     const originalTagIds = originalArticle.tags?.map(tag => tag.id?.toString()) || [];

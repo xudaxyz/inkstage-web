@@ -43,7 +43,7 @@ const MyCollections: React.FC = () => {
   const theme = useTheme();
   const isDarkMode = theme === 'dark';
   const [folders, setFolders] = useState<CollectionFolder[]>([]);
-  const [defaultFolderId, setDefaultFolderId] = useState<number>(0);
+  const [defaultFolderId, setDefaultFolderId] = useState<string>('');
   const [selectedFolder, setSelectedFolder] = useState<string>('all');
   const [sortType, setSortType] = useState<SortType>('recent');
   const [searchText, setSearchText] = useState('');
@@ -55,8 +55,8 @@ const MyCollections: React.FC = () => {
   const [form] = Form.useForm();
   // 移动功能相关状态
   const [moveModalVisible, setMoveModalVisible] = useState(false);
-  const [selectedArticleId, setSelectedArticleId] = useState<number>(0);
-  const [selectedTargetFolderId, setSelectedTargetFolderId] = useState<number>(0);
+  const [selectedArticleId, setSelectedArticleId] = useState<string>('');
+  const [selectedTargetFolderId, setSelectedTargetFolderId] = useState<string>('');
   const [isMoving, setIsMoving] = useState(false);
   const [isCreateFolderForMove, setIsCreateFolderForMove] = useState(false);
   const [newFolderNameForMove, setNewFolderNameForMove] = useState('');
@@ -76,7 +76,7 @@ const MyCollections: React.FC = () => {
           ? undefined
           : selectedFolderRef.current === 'default'
             ? defaultFolderIdRef.current
-            : Number(selectedFolderRef.current);
+            : selectedFolderRef.current;
       const response = await articleService.getMyCollections({
         folderId: folderId,
         pageNum: pageNum,
@@ -132,18 +132,18 @@ const MyCollections: React.FC = () => {
       const response = await articleService.getCollectionFolders();
       if (response.code === 200 && response.data) {
         const formattedFolders: CollectionFolder[] = response.data.map(
-          (folder: { id: number; name: string; articleCount: number; defaultFolder: DefaultStatusEnum | string }) => ({
-            id: folder.id.toString(),
+          (folder: { id: string; name: string; articleCount: number; defaultFolder: DefaultStatusEnum | string }) => ({
+            id: folder.id,
             name: folder.name,
             count: folder.articleCount || 0,
-            isDefault: folder.defaultFolder === DefaultStatusEnum.YES || folder.defaultFolder === 'YES'
+            isDefault: folder.defaultFolder === DefaultStatusEnum.YES
           })
         );
         setFolders(formattedFolders);
         // 提取默认收藏夹ID
         const defaultFolder = formattedFolders.find((f) => f.isDefault);
         if (defaultFolder) {
-          setDefaultFolderId(Number(defaultFolder.id));
+          setDefaultFolderId(defaultFolder.id);
         }
       }
     } catch (err) {
@@ -180,7 +180,7 @@ const MyCollections: React.FC = () => {
   // 取消单个收藏
   const handleSingleDelete = async (articleId: string): Promise<void> => {
     try {
-      const result = await articleService.unCollectArticle(Number(articleId));
+      const result = await articleService.unCollectArticle(articleId);
       if (result.code !== 200) {
         message.error(result.message || '取消收藏失败');
         return;
@@ -237,9 +237,9 @@ const MyCollections: React.FC = () => {
     }
   };
   // 打开移动模态框
-  const handleOpenMoveModal = (articleId: number): void => {
+  const handleOpenMoveModal = (articleId: string): void => {
     setSelectedArticleId(articleId);
-    setSelectedTargetFolderId(0);
+    setSelectedTargetFolderId('');
     setIsCreateFolderForMove(false);
     setNewFolderNameForMove('');
     setNewFolderDescriptionForMove('');
@@ -251,11 +251,11 @@ const MyCollections: React.FC = () => {
   };
   // 处理移动操作
   const handleMoveArticle = async (): Promise<void> => {
-    if (selectedArticleId <= 0) {
+    if (!selectedArticleId) {
       message.error('文章ID无效');
       return;
     }
-    if (selectedTargetFolderId <= 0) {
+    if (!selectedTargetFolderId) {
       message.error('请选择目标收藏夹');
       return;
     }
@@ -285,7 +285,7 @@ const MyCollections: React.FC = () => {
   };
   // 处理创建新文件夹并移动
   const handleCreateFolderAndMove = async (): Promise<void> => {
-    if (selectedArticleId <= 0) {
+    if (!selectedArticleId) {
       message.error('文章ID无效');
       return;
     }
@@ -670,11 +670,11 @@ const MyCollections: React.FC = () => {
                   <div
                     key={folder.id}
                     className={`flex items-center p-3 rounded-lg cursor-pointer transition-all ${
-                      selectedTargetFolderId === Number(folder.id)
+                      selectedTargetFolderId === folder.id
                         ? 'bg-blue-50 border border-blue-200'
                         : 'hover:bg-gray-50'
                     }`}
-                    onClick={() => setSelectedTargetFolderId(Number(folder.id))}
+                    onClick={() => setSelectedTargetFolderId(folder.id)}
                   >
                     <FolderOutlined className={`mr-3 ${folder.isDefault ? 'text-blue-500' : 'text-gray-500'}`} />
                     <span className="text-gray-800">{folder.name}</span>

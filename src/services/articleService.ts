@@ -28,7 +28,7 @@ const validateArticleParams = (article: Partial<Article>): boolean => {
   if (!article.content || article.content.trim().length === 0) {
     throw new Error('文章内容不能为空');
   }
-  if (!article.categoryId || article.categoryId <= 0) {
+  if (!article.categoryId) {
     throw new Error('请选择文章分类');
   }
   return true;
@@ -42,9 +42,9 @@ const validatePageParams = (params: { pageNum?: number; pageSize?: number }): bo
   }
   return true;
 };
-const validateIdParam = (id: number): boolean => {
-  if (id <= 0) {
-    throw new Error('ID必须是大于0的数字');
+const validateIdParam = (id: string): boolean => {
+  if (!id || id.trim() === '') {
+    throw new Error('ID不能为空');
   }
   return true;
 };
@@ -56,7 +56,7 @@ const articleService = {
     return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.CREATE, article);
   },
   // 更新文章
-  updateArticle: async (id: number, article: Partial<Article>): Promise<ApiResponse<Article>> => {
+  updateArticle: async (id: string, article: Partial<Article>): Promise<ApiResponse<Article>> => {
     validateIdParam(id);
     if (article.title || article.content || article.categoryId) {
       validateArticleParams(article);
@@ -71,8 +71,8 @@ const articleService = {
       status: ArticleStatusEnum.DRAFT
     };
     if (article.id) {
-      validateIdParam(Number(article.id));
-      return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.SAVE_DRAFT(Number(article.id)), draftArticle);
+      validateIdParam(article.id);
+      return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.SAVE_DRAFT(article.id), draftArticle);
     } else {
       // 创建新文章时，移除可能存在的 id 属性
       const { ...newArticle } = draftArticle;
@@ -80,7 +80,7 @@ const articleService = {
     }
   },
   // 删除文章
-  deleteArticle: async (id: number): Promise<ApiResponse<void>> => {
+  deleteArticle: async (id: string): Promise<ApiResponse<void>> => {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.DELETE(id));
   },
@@ -122,8 +122,8 @@ const articleService = {
     query: {
       pageNum?: number;
       pageSize?: number;
-      categoryId?: number;
-      tagId?: number;
+      categoryId?: string;
+      tagId?: string;
       keyword?: string;
       sortBy?: string;
       sortOrder?: string;
@@ -157,13 +157,13 @@ const articleService = {
     return await apiClient.get(API_ENDPOINTS.FRONT.INDEX.LATEST_ARTICLES, { params: { limit } });
   },
   // 获取文章详情
-  getArticleDetail: async (id: number): Promise<ApiResponse<ArticleDetailInfo>> => {
+  getArticleDetail: async (id: string): Promise<ApiResponse<ArticleDetailInfo>> => {
     validateIdParam(id);
     return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.DETAIL(id));
   },
   // 获取用户文章列表
   getUserArticles: async (
-    userId: number,
+    userId: string,
     pageNum: number = 1,
     pageSize: number = 10
   ): Promise<ApiResponse<IndexArticleListResponse>> => {
@@ -178,8 +178,8 @@ const articleService = {
   },
   // 获取作者相关文章
   getUserRelatedArticles: async (
-    userId: number,
-    excludeArticleId: number,
+    userId: string,
+    excludeArticleId: string,
     limit: number = 3
   ): Promise<ApiResponse<IndexArticleList[]>> => {
     validateIdParam(userId);
@@ -196,24 +196,24 @@ const articleService = {
     });
   },
   // 点赞文章
-  likeArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
+  likeArticle: async (articleId: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(articleId);
     return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.LIKE(articleId));
   },
   // 取消点赞
-  unlikeArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
+  unlikeArticle: async (articleId: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(articleId);
     return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.UNLIKE(articleId));
   },
   // 检查点赞状态
-  checkLikeStatus: async (articleId: number): Promise<ApiResponse<boolean>> => {
+  checkLikeStatus: async (articleId: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(articleId);
     return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.LIKE_STATUS(articleId));
   },
   // 收藏文章
   collectArticle: async (params: {
-    articleId: number;
-    folderId?: number;
+    articleId: string;
+    folderId?: string;
     folderName?: string;
     folderDescription?: string;
   }): Promise<ApiResponse<boolean>> => {
@@ -230,17 +230,17 @@ const articleService = {
     return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.COLLECT, params);
   },
   // 取消收藏
-  unCollectArticle: async (articleId: number): Promise<ApiResponse<boolean>> => {
+  unCollectArticle: async (articleId: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(articleId);
     return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.UN_COLLECT(articleId));
   },
   // 检查收藏状态
-  checkCollectStatus: async (articleId: number): Promise<ApiResponse<boolean>> => {
+  checkCollectStatus: async (articleId: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(articleId);
     return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.COLLECT_STATUS(articleId));
   },
   // 增加文章阅读量
-  incrementReadCount: async (articleId: number): Promise<ApiResponse<number>> => {
+  incrementReadCount: async (articleId: string): Promise<ApiResponse<number>> => {
     validateIdParam(articleId);
     return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.INCREMENT_READ(articleId));
   },
@@ -262,7 +262,7 @@ const articleService = {
   },
   // 获取当前用户收藏文章列表
   getMyCollections: async (params: {
-    folderId?: number;
+    folderId?: string;
     keyword?: string;
     pageNum?: number;
     pageSize?: number;
@@ -279,7 +279,7 @@ const articleService = {
   getCollectionFolders: async (): Promise<
     ApiResponse<
       Array<{
-        id: number;
+        id: string;
         name: string;
         articleCount: number;
         defaultFolder: DefaultStatusEnum | string;
@@ -293,7 +293,7 @@ const articleService = {
     return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.TOTAL);
   },
   // 移动收藏文章到其他文件夹
-  moveCollectionArticle: async (articleId: number, targetFolderId: number): Promise<ApiResponse<boolean>> => {
+  moveCollectionArticle: async (articleId: string, targetFolderId: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(articleId);
     validateIdParam(targetFolderId);
     return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.MOVE, {
@@ -305,7 +305,7 @@ const articleService = {
   createCollectionFolder: async (params: {
     folderName: string;
     folderDescription?: string;
-  }): Promise<ApiResponse<number>> => {
+  }): Promise<ApiResponse<string>> => {
     if (!params || typeof params !== 'object') {
       throw new Error('参数必须是对象');
     }
@@ -322,7 +322,7 @@ const articleService = {
   },
   // 更新收藏文件夹
   updateCollectionFolder: async (
-    folderId: number,
+    folderId: string,
     name: string,
     description?: string
   ): Promise<ApiResponse<boolean>> => {
@@ -342,12 +342,12 @@ const articleService = {
     });
   },
   // 删除收藏文件夹
-  deleteCollectionFolder: async (folderId: number): Promise<ApiResponse<boolean>> => {
+  deleteCollectionFolder: async (folderId: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(folderId);
     return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.DELETE_FOLDER(folderId));
   },
   // 彻底删除文章
-  permanentDeleteArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+  permanentDeleteArticle: async (id: string): Promise<ApiResponse<boolean>> => {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.PERMANENT_DELETE(id));
   },
@@ -359,7 +359,7 @@ const articleService = {
         pageNum?: number;
         pageSize?: number;
         keyword?: string;
-        categoryId?: number;
+        categoryId?: string;
         articleStatus?: ArticleStatusEnum | null;
         topStatus?: AllowTopEnum | null;
       } = {}
@@ -372,39 +372,39 @@ const articleService = {
         pageNum: params.pageNum || 1,
         pageSize: params.pageSize || 10,
         keyword: params.keyword || '',
-        categoryId: params.categoryId || 0,
+        categoryId: params.categoryId || '',
         articleStatus: params.articleStatus || null,
         topStatus: params.topStatus || null
       };
       return await apiClient.post(API_ENDPOINTS.ADMIN.ARTICLE.LIST_PAGE, requestBody);
     },
     // 获取文章详情
-    getArticleById: async (id: number): Promise<ApiResponse<AdminArticleDetail>> => {
+    getArticleById: async (id: string): Promise<ApiResponse<AdminArticleDetail>> => {
       validateIdParam(id);
       return await apiClient.get(API_ENDPOINTS.ADMIN.ARTICLE.GET(id));
     },
     // 删除文章
-    deleteArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+    deleteArticle: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.delete(API_ENDPOINTS.ADMIN.ARTICLE.DELETE(id));
     },
     // 彻底删除文章
-    deleteArticlePermanently: async (id: number): Promise<ApiResponse<boolean>> => {
+    deleteArticlePermanently: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.delete(API_ENDPOINTS.ADMIN.ARTICLE.PERMANENT_DELETE(id));
     },
     // 更新文章状态
-    updateArticleStatus: async (id: number, articleStatus: ArticleStatusEnum): Promise<ApiResponse<Article>> => {
+    updateArticleStatus: async (id: string, articleStatus: ArticleStatusEnum): Promise<ApiResponse<Article>> => {
       validateIdParam(id);
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.UPDATE_STATUS(id), null, { params: { articleStatus } });
     },
     // 审核通过文章
-    approveArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+    approveArticle: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.APPROVE(id));
     },
     // 审核拒绝文章
-    rejectArticle: async (id: number, reason: string): Promise<ApiResponse<boolean>> => {
+    rejectArticle: async (id: string, reason: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       if (!reason || reason.trim().length === 0) {
         throw new Error('拒绝原因不能为空');
@@ -412,32 +412,32 @@ const articleService = {
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.REJECT(id), { reason });
     },
     // 重新审核文章
-    reprocessArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+    reprocessArticle: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.REPROCESS(id));
     },
     // 置顶文章
-    topArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+    topArticle: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.TOP(id));
     },
     // 取消置顶文章
-    cancelTopArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+    cancelTopArticle: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.CANCEL_TOP(id));
     },
     // 推荐文章
-    recommendArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+    recommendArticle: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.RECOMMEND(id));
     },
     // 取消推荐文章
-    cancelRecommendArticle: async (id: number): Promise<ApiResponse<boolean>> => {
+    cancelRecommendArticle: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.CANCEL_RECOMMEND(id));
     },
     // 更新文章
-    updateArticle: async (id: number, article: UpdatedAdminArticleFields): Promise<ApiResponse<boolean>> => {
+    updateArticle: async (id: string, article: UpdatedAdminArticleFields): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.UPDATE(id), article);
     }
