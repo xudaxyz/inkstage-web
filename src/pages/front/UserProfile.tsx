@@ -214,7 +214,16 @@ const UserProfile: React.FC = () => {
   };
 
   const renderArticleItem = (article: IndexArticleList): React.ReactNode => (
-    <div className="px-6 py-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300 group">
+    <div
+      className="px-6 py-6 group relative
+        transition-all duration-300 ease-out
+        hover:-translate-y-1 hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700
+        border-l-4 border-l-transparent
+        hover:border-l-cyan-400
+        before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1
+        before:transition-all before:duration-300
+        before:bg-transparent hover:before:bg-linear-to-b"
+    >
       <div className="flex flex-col md:flex-row gap-6">
         <div className="flex-1">
           <h3 className="text-xl hover:text-cyan-600 text-gray-800 dark:text-gray-300 font-semibold mb-3 leading-tight">
@@ -238,15 +247,15 @@ const UserProfile: React.FC = () => {
                 <span>{article.publishTime ? formatDateTimeShort(article.publishTime) : ''}</span>
               </div>
 
-              <div className="flex items-center gap-2  transition-colors">
+              <div className="flex items-center gap-2 group-hover:text-cyan-500 transition-colors duration-300">
                 <HeartOutlined size={16} />
                 <span>{article.likeCount}</span>
               </div>
-              <div className="flex items-center gap-2 transition-colors">
+              <div className="flex items-center gap-2 group-hover:text-cyan-500 transition-colors duration-300">
                 <MessageOutlined size={16} />
                 <span>{article.commentCount}</span>
               </div>
-              <div className="flex items-center gap-2 transition-colors">
+              <div className="flex items-center gap-2 group-hover:text-cyan-500 transition-colors duration-300">
                 <EyeOutlined size={16} />
                 <span>{article.readCount}</span>
               </div>
