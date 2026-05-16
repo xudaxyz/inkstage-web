@@ -14,7 +14,8 @@ import {
   PlusOutlined,
   StarOutlined,
   SwapOutlined,
-  UnorderedListOutlined
+  UnorderedListOutlined,
+  DoubleRightOutlined
 } from '@ant-design/icons';
 import LazyImage from '../../../components/common/LazyImage';
 import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
@@ -307,14 +308,14 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
         { type: 'divider' as const },
         {
           key: 'move',
-          label: '移动到',
+          label: '移至专栏',
           icon: <SwapOutlined/>,
           children: moveMenuItems
         },
         {
           key: 'remove',
-          label: '从专栏移出',
-          icon: <DeleteOutlined/>,
+          label: '移出专栏',
+          icon: <DoubleRightOutlined />,
           onClick: (): void => handleRemoveArticle(article.id, article.title)
         },
         {

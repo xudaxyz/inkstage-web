@@ -4,10 +4,13 @@ import { Avatar, Button, Card, Divider, Dropdown, List, message, Modal, notifica
 import { Helmet } from 'react-helmet-async';
 import { formatDateTimeShort, getTagColor } from '../../utils';
 import {
-  CheckOutlined,
   ArrowLeftOutlined,
   ArrowRightOutlined,
+  BookOutlined,
+  BookTwoTone,
+  CheckOutlined,
   DeleteOutlined,
+  DoubleRightOutlined,
   DownOutlined,
   EditOutlined,
   ExclamationCircleOutlined,
@@ -19,8 +22,7 @@ import {
   ShareAltOutlined,
   StarOutlined,
   StarTwoTone,
-  UpOutlined,
-  BookTwoTone
+  UpOutlined
 } from '@ant-design/icons';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
@@ -34,9 +36,10 @@ import articleService from '../../services/articleService';
 import readingHistoryService from '../../services/readingHistoryService';
 import { checkFollowStatus, followUser, unfollowUser } from '../../services/userService';
 import type { FrontTag } from '../../types/tag';
-import type { ColumnNeighborVO } from '../../types/column';
+import type { ArticleColumn, ColumnNeighborVO } from '../../types/column';
 import { ROUTES } from '../../constants/routes';
 import ReportModal from '../../components/front/ReportModal';
+import ColumnSelectModal from '../../components/front/ColumnSelectModal';
 import { ReportTargetTypeEnum } from '../../types/enums';
 import columnService from '../../services/columnService';
 // 标题截断函数
@@ -54,6 +57,8 @@ const ArticleDetail: React.FC = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [folderModalVisible, setFolderModalVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [columnModalVisible, setColumnModalVisible] = useState(false);
+  const [articleColumnInfo, setArticleColumnInfo] = useState<ArticleColumn | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   // 阅读历史相关状态
   const readingStartTimeRef = useRef<number>(0);
@@ -233,6 +238,13 @@ const ArticleDetail: React.FC = () => {
         }
       }).catch(() => {
         console.error('获取专栏上下篇文章失败');
+      });
+      columnService.getArticleColumn(id).then((response) => {
+        if (response.code === 200) {
+          setArticleColumnInfo(response.data);
+        }
+      }).catch(() => {
+        console.error('获取文章专栏信息失败');
       });
     }
   }, [article, id]);
@@ -680,12 +692,42 @@ const ArticleDetail: React.FC = () => {
                             onClick: handleEdit
                           },
                           {
+                            key: 'column',
+                            icon: <BookOutlined />,
+                            label: articleColumnInfo ? '移至专栏' : '加入专栏',
+                            onClick: () => setColumnModalVisible(true)
+                          },
+                          articleColumnInfo
+                            ? {
+                              key: 'removeColumn',
+                              icon: <DoubleRightOutlined />,
+                              label: '移出专栏',
+                              onClick: async (): Promise<void> => {
+                                try {
+                                  if (id) {
+                                    const response = await columnService.removeArticleFromColumn(articleColumnInfo.columnId, id);
+                                    if (response.code === 200) {
+                                      message.success('文章已移出专栏');
+                                      setArticleColumnInfo(null);
+                                      void fetchArticleDetail(id);
+                                    } else {
+                                      message.error(response.message || '操作失败');
+                                    }
+                                  }
+                                } catch {
+                                  message.error('移出专栏失败，请稍后重试');
+                                }
+                              }
+                            }
+                            : null,
+                          {
                             key: 'delete',
                             icon: <DeleteOutlined />,
                             label: '删除',
+                            danger: true,
                             onClick: handleDelete
                           }
-                        ]
+                        ].filter(Boolean)
                       }}
                       placement="bottomRight"
                     >
@@ -1057,6 +1099,19 @@ const ArticleDetail: React.FC = () => {
           reportedId={article?.userId}
           reportedName={article?.nickname}
           reportedContent={article?.title}
+        />
+
+        {/* 专栏选择模态框 */}
+        <ColumnSelectModal
+          visible={columnModalVisible}
+          articleId={id || ''}
+          onClose={() => setColumnModalVisible(false)}
+          onSuccess={() => {
+            setArticleColumnInfo(null);
+            if (id) {
+              void fetchArticleDetail(id);
+            }
+          }}
         />
 
         {/* 移动端浮动操作栏 */}

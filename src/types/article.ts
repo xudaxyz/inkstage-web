@@ -71,6 +71,8 @@ export interface MyArticleList {
   visible: ArticleVisibleEnum;
   original: ArticleOriginalEnum;
   top: AllowTopEnum;
+  columnId?: string;
+  columnName?: string;
 }
 
 // 我的文章收藏列表项类型

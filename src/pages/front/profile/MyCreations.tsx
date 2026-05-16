@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import {
+  BookOutlined,
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
@@ -12,12 +13,15 @@ import {
   MessageOutlined,
   MoreOutlined,
   SearchOutlined,
-  ShareAltOutlined
+  ShareAltOutlined,
+  DoubleRightOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import articleService from '../../../services/articleService';
+import columnService from '../../../services/columnService';
 import { type MyArticleList } from '../../../types/article';
 import { ROUTES } from '../../../constants/routes';
+import ColumnSelectModal from '../../../components/front/ColumnSelectModal';
 import {
   ArticleOriginalEnum,
   ArticleOriginalMap,
@@ -28,7 +32,7 @@ import {
   ArticleVisibleEnum,
   ArticleVisibleMap
 } from '../../../types/enums';
-import { formatDateTimeShort ,computePageResponse } from '../../../utils';
+import { computePageResponse, formatDateTimeShort } from '../../../utils';
 import type { ApiPageResponse } from '../../../types/common';
 
 // 文章类型定义
@@ -44,6 +48,8 @@ interface Article {
   readCount: number;
   likeCount: number;
   commentCount: number;
+  columnId?: string;
+  columnName?: string;
 }
 
 const MyCreations: React.FC = () => {
@@ -58,6 +64,8 @@ const MyCreations: React.FC = () => {
   const [deleteArticleId, setDeleteArticleId] = useState<string>();
   const [deleteArticleStatus, setDeleteArticleStatus] = useState<ArticleStatusEnum>();
   const [total, setTotal] = useState(0);
+  const [columnModalVisible, setColumnModalVisible] = useState(false);
+  const [columnArticleId, setColumnArticleId] = useState<string>('');
   const statusRef = useRef(currentStatus);
   const searchRef = useRef(debouncedSearchText);
   // 无限滚动配置
@@ -83,7 +91,9 @@ const MyCreations: React.FC = () => {
         reviewStatus: item.reviewStatus as ArticleReviewStatusEnum,
         readCount: item.readCount || 0,
         likeCount: item.likeCount || 0,
-        commentCount: item.commentCount || 0
+        commentCount: item.commentCount || 0,
+        columnId: item.columnId,
+        columnName: item.columnName
       }));
       setTotal(response.data.total);
       return computePageResponse(formattedArticles, response.data.total, pageNum, pageSize);
@@ -172,6 +182,25 @@ const MyCreations: React.FC = () => {
   const handleStatusChange = (articleStatus: ArticleStatusEnum): void => {
     setCurrentStatus(articleStatus);
   };
+  // 打开专栏选择弹窗
+  const handleOpenColumnModal = (articleId: string): void => {
+    setColumnArticleId(articleId);
+    setColumnModalVisible(true);
+  };
+  // 从专栏移除文章
+  const handleRemoveFromColumn = async (articleId: string, columnId: string): Promise<void> => {
+    try {
+      const response = await columnService.removeArticleFromColumn(columnId, articleId);
+      if (response.code === 200) {
+        message.success('文章已移出专栏');
+        refresh();
+      } else {
+        message.error(response.message || '操作失败');
+      }
+    } catch {
+      message.error('操作失败，请重试');
+    }
+  };
   // 获取状态文本
   const getStatusText = (status: string): string => {
     switch (status) {
@@ -200,7 +229,8 @@ const MyCreations: React.FC = () => {
         </div>
 
         {/* 状态标签和搜索区域 */}
-        <div className="border-b border-b-gray-200 dark:border-b-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
+        <div
+          className="border-b border-b-gray-200 dark:border-b-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
           {/* 状态标签 */}
           <div className="flex flex-wrap gap-2 md:gap-4 mb-2 sm:mb-0">
             {/* 全部文章 - 移动端单独一行 */}
@@ -320,7 +350,8 @@ const MyCreations: React.FC = () => {
               <div className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">{article.summary}</div>
 
               <div className="flex flex-wrap items-center justify-between gap-x-2 md:gap-x-4 gap-y-2">
-                <div className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-2 text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                <div
+                  className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-2 text-xs md:text-sm text-gray-500 dark:text-gray-400">
                   <Tag variant="solid" color={article.original === ArticleOriginalEnum.ORIGINAL ? 'gold' : 'green'}>
                     {ArticleOriginalMap[article.original] || ArticleOriginalEnum.OTHER}
                   </Tag>
@@ -344,6 +375,24 @@ const MyCreations: React.FC = () => {
                         <Button icon={<EditOutlined />} size="small" type="text" onClick={() => handleEdit(article.id)}>
                           编辑
                         </Button>
+                        <Button
+                          icon={<BookOutlined />}
+                          size="small"
+                          type="text"
+                          onClick={() => handleOpenColumnModal(article.id)}
+                        >
+                          {article.columnId ? '移至专栏' : '加入专栏'}
+                        </Button>
+                        {article.columnId && (
+                          <Button
+                            icon={<DoubleRightOutlined />}
+                            size="small"
+                            type="text"
+                            onClick={() => article.columnId && void handleRemoveFromColumn(article.id, article.columnId)}
+                          >
+                            移出专栏
+                          </Button>
+                        )}
                         <Button
                           icon={<ShareAltOutlined />}
                           size="small"
@@ -398,6 +447,16 @@ const MyCreations: React.FC = () => {
               : '确定要删除这篇文章吗？此操作不可撤销。'}
           </p>
         </Modal>
+
+        {/* 专栏选择模态框 */}
+        <ColumnSelectModal
+          visible={columnModalVisible}
+          articleId={columnArticleId}
+          onClose={() => setColumnModalVisible(false)}
+          onSuccess={() => {
+            refresh();
+          }}
+        />
       </div>
     </>
   );
