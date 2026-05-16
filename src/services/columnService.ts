@@ -7,7 +7,6 @@ import type {
   ColumnCreateDTO,
   ColumnQueryDTO,
   AddArticleToColumnDTO,
-  UpdateColumnArticleSortDTO,
   ArticleColumn,
   ColumnNeighborVO,
   MyColumnSubscriptionPageResponse
@@ -126,13 +125,6 @@ const columnService = {
    */
   async deleteArticle(columnId: string, articleId: string): Promise<ApiResponse<boolean>> {
     return await apiClient.delete(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_DELETE, { params: { columnId, articleId } });
-  },
-
-  /**
-   * 更新专栏中文章的排序
-   */
-  async updateArticleSort(data: UpdateColumnArticleSortDTO): Promise<ApiResponse<boolean>> {
-    return await apiClient.put(API_ENDPOINTS.FRONT.COLUMN.ARTICLE_SORT, data);
   },
 
   /**

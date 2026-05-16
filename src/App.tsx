@@ -82,7 +82,7 @@ function App(): ReactNode {
           });
         }
 
-        queryClient.invalidateQueries();
+        queryClient.invalidateQueries().then();
       }
     };
 

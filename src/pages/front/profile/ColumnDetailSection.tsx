@@ -98,11 +98,11 @@ const ColumnDetailSection: React.FC<ColumnDetailSectionProps> = ({
       const articleIds = localArticles.map(a => a.id);
       const response = await columnService.batchUpdateColumnArticleSort(column.id, articleIds);
       if (response.code === 200 && response.data) {
-        message.success('排序已保存');
+        message.success(response.message || '排序已保存');
         setIsSortMode(false);
         refreshRef.current();
       } else {
-        message.error('排序保存失败');
+        message.error(response.message || '排序保存失败');
       }
     } catch {
       message.error('排序保存失败');
