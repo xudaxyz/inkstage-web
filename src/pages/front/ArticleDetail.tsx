@@ -15,13 +15,13 @@ import {
   EditOutlined,
   ExclamationCircleOutlined,
   EyeOutlined,
+  LikeFilled,
   LikeOutlined,
-  LikeTwoTone,
   MessageOutlined,
   PlusOutlined,
   ShareAltOutlined,
+  StarFilled,
   StarOutlined,
-  StarTwoTone,
   UpOutlined
 } from '@ant-design/icons';
 import Header from '../../components/common/Header';
@@ -561,7 +561,7 @@ const ArticleDetail: React.FC = () => {
                     size="large"
                     onClick={handleLike}
                     loading={likeLoading}
-                    icon={article.isLiked ? <LikeTwoTone /> : <LikeOutlined />}
+                    icon={article.isLiked ? <LikeFilled style={{ color: 'red' }} /> : <LikeOutlined />}
                   />
                 </Tooltip>
                 <span className="text-xs text-gray-500">{article.likeCount || 0}</span>
@@ -574,7 +574,7 @@ const ArticleDetail: React.FC = () => {
                     size="large"
                     onClick={handleCollect}
                     loading={collectLoading}
-                    icon={article.isCollected ? <StarTwoTone /> : <StarOutlined />}
+                    icon={article.isCollected ? <StarFilled style={{ color: '#4096FF' }} /> : <StarOutlined />}
                   />
                 </Tooltip>
                 <span className="text-xs text-gray-500">{article.collectionCount || 0}</span>
@@ -664,8 +664,14 @@ const ArticleDetail: React.FC = () => {
                       </Tooltip>
                       <Tooltip title="点赞数">
                         <div className="flex items-center gap-2">
-                          <LikeOutlined className={`${article.isLiked ? 'text-red-500' : 'text-gray-400'}`} />
+                          {article.isLiked ? <LikeFilled style={{ color: 'red' }} /> : <LikeOutlined />}
                           <span>{article.likeCount || 0}</span>
+                        </div>
+                      </Tooltip>
+                      <Tooltip title="收藏数">
+                        <div className="flex items-center gap-2">
+                          {article.isCollected ? <StarFilled style={{ color: '#4096FF' }} /> : <StarOutlined />}
+                          <span>{article.collectionCount || 0}</span>
                         </div>
                       </Tooltip>
                       <Tooltip title="评论数">
@@ -888,9 +894,10 @@ const ArticleDetail: React.FC = () => {
                     onClick={handleLike}
                     size="large"
                     shape="round"
+                    variant="outlined"
+                    color={article.isLiked ? 'red' : 'default'}
                     loading={likeLoading}
-                    icon={<LikeOutlined className={article.isLiked ? 'text-red-500' : ''} />}
-                    className={`${article.isLiked ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none px-4 md:px-6`}
+                    icon={article.isLiked ? <LikeFilled style={{ color: 'red' }} /> : <LikeOutlined />}
                   >
                     <span className="md:hidden">{article.likeCount || 0}</span>
                     <span className="hidden md:inline">{article.isLiked ? '已点赞' : '点赞'}</span>
@@ -899,9 +906,10 @@ const ArticleDetail: React.FC = () => {
                     onClick={handleCollect}
                     size="large"
                     shape="round"
+                    variant="outlined"
+                    color={article.isCollected ? 'blue' : 'default'}
                     loading={collectLoading}
-                    icon={<StarOutlined className={article.isCollected ? 'text-yellow-500' : ''} />}
-                    className={`${article.isCollected ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-600 border-gray-200'} flex-1 md:flex-none px-4 md:px-6`}
+                    icon={article.isCollected ? <StarFilled style={{ color: '#4096FF' }} /> : <StarOutlined />}
                   >
                     <span className="md:hidden">{article.collectionCount || 0}</span>
                     <span className="hidden md:inline">{article.isCollected ? '已收藏' : '收藏'}</span>
@@ -911,7 +919,6 @@ const ArticleDetail: React.FC = () => {
                     size="large"
                     shape="round"
                     icon={<ShareAltOutlined />}
-                    className="text-gray-600 border-gray-200 flex-1 md:flex-none px-4 md:px-6"
                   >
                     <span className="hidden md:inline">分享</span>
                   </Button>
@@ -1121,7 +1128,8 @@ const ArticleDetail: React.FC = () => {
                   if (response.code === 200) {
                     setColumnNeighbor(response.data);
                   }
-                }).catch(() => {});
+                }).catch(() => {
+                });
               }
             } else {
               setArticleColumnInfo(null);
@@ -1170,7 +1178,6 @@ const ArticleDetail: React.FC = () => {
               className="text-gray-600"
               onClick={handleShare}
             >
-              分享
             </Button>
           </div>
         </div>

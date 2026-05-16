@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useEffectEvent, useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Button, Dropdown, message, Select, Spin } from 'antd';
+import { Avatar, Button, message, Select, Spin } from 'antd';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BookOutlined,
   ClockCircleOutlined,
-  CopyOutlined,
   EyeOutlined,
   LikeOutlined,
   MessageOutlined,
@@ -25,7 +24,7 @@ import { ROUTES } from '../../constants/routes';
 import type { ColumnDetailVO, ColumnListVO } from '../../types/column';
 import type { ColumnArticleListVO } from '../../types/article';
 import columnService from '../../services/columnService';
-import { getRelativeTime, normalizePageResponse, emptyPageResponse  } from '../../utils';
+import { emptyPageResponse, getRelativeTime, normalizePageResponse } from '../../utils';
 import { useUserStore } from '../../store';
 
 // 专栏标题截断函数
@@ -44,6 +43,7 @@ const ColumnDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [sortType, setSortType] = useState<'ASC' | 'DESC'>('ASC');
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const { isLoggedIn } = useUserStore();
 
   const navigate = useNavigate();
 
@@ -118,6 +118,10 @@ const ColumnDetailPage: React.FC = () => {
 
   const handleSubscribe = async (): Promise<void> => {
     if (!id) return;
+    if (!isLoggedIn) {
+      message.info('请先登录');
+      return;
+    }
     try {
       const response = isSubscribed
         ? await columnService.unsubscribeColumn(id)
@@ -145,15 +149,6 @@ const ColumnDetailPage: React.FC = () => {
       message.error('复制失败，请手动复制');
     }
   }, [columnUrl]);
-
-  const shareMenuItems = useMemo(() => [
-    {
-      key: 'copy',
-      label: '复制链接',
-      icon: <CopyOutlined />,
-      onClick: handleCopyLink
-    }
-  ], [handleCopyLink]);
 
   const handleCreateArticle = (): void => {
     navigate(ROUTES.CREATE_ARTICLE);
@@ -250,11 +245,12 @@ const ColumnDetailPage: React.FC = () => {
                       >
                         {isSubscribed ? '已订阅' : '订阅专栏'}
                       </Button>
-                      <Dropdown menu={{ items: shareMenuItems }} trigger={['click']}>
-                        <Button icon={<ShareAltOutlined />}>
-                          分享
-                        </Button>
-                      </Dropdown>
+                      <Button
+                        icon={<ShareAltOutlined />}
+                        onClick={handleCopyLink}
+                      >
+                        分享
+                      </Button>
                     </div>
                     {isColumnOwner && (
                       <Button variant="outlined" color="blue" icon={<PlusOutlined />} onClick={handleCreateArticle}>
