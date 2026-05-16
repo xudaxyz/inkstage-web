@@ -709,7 +709,7 @@ const ArticleDetail: React.FC = () => {
                                     if (response.code === 200) {
                                       message.success('文章已移出专栏');
                                       setArticleColumnInfo(null);
-                                      void fetchArticleDetail(id);
+                                      setColumnNeighbor(null);
                                     } else {
                                       message.error(response.message || '操作失败');
                                     }
@@ -1106,10 +1106,26 @@ const ArticleDetail: React.FC = () => {
           visible={columnModalVisible}
           articleId={id || ''}
           onClose={() => setColumnModalVisible(false)}
-          onSuccess={() => {
-            setArticleColumnInfo(null);
-            if (id) {
-              void fetchArticleDetail(id);
+          onSuccess={(result) => {
+            if (result) {
+              setArticleColumnInfo({
+                id: '',
+                articleId: id || '',
+                columnId: result.columnId,
+                sortOrder: 0,
+                createTime: '',
+                updateTime: ''
+              });
+              if (id) {
+                columnService.getColumnNeighborArticles(id).then((response) => {
+                  if (response.code === 200) {
+                    setColumnNeighbor(response.data);
+                  }
+                }).catch(() => {});
+              }
+            } else {
+              setArticleColumnInfo(null);
+              setColumnNeighbor(null);
             }
           }}
         />

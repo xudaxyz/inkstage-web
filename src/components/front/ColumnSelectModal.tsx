@@ -8,15 +8,15 @@ interface ColumnSelectModalProps {
   visible: boolean;
   articleId: string;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (result: { columnId: string; columnName: string } | null) => void;
 }
 
 const ColumnSelectModal: React.FC<ColumnSelectModalProps> = ({
-  visible,
-  articleId,
-  onClose,
-  onSuccess
-}) => {
+                                                               visible,
+                                                               articleId,
+                                                               onClose,
+                                                               onSuccess
+                                                             }) => {
   const [columns, setColumns] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [articleColumn, setArticleColumn] = useState<ArticleColumn | null>(null);
@@ -65,8 +65,9 @@ const ColumnSelectModal: React.FC<ColumnSelectModalProps> = ({
         articleId
       });
       if (response.code === 200) {
-        message.success('文章已加入专栏');
-        onSuccess();
+        message.success(response.message || '文章已加入专栏');
+        const selectedColumn = columns.find(c => c.id === selectedColumnId);
+        onSuccess(selectedColumn ? { columnId: selectedColumnId, columnName: selectedColumn.name } : null);
         onClose();
       } else {
         message.error(response.message || '操作失败');
@@ -88,7 +89,7 @@ const ColumnSelectModal: React.FC<ColumnSelectModalProps> = ({
       );
       if (response.code === 200) {
         message.success('文章已移出专栏');
-        onSuccess();
+        onSuccess(null);
         onClose();
       } else {
         message.error(response.message || '操作失败');
@@ -117,7 +118,8 @@ const ColumnSelectModal: React.FC<ColumnSelectModalProps> = ({
       );
       if (response.code === 200) {
         message.success('文章已移动到目标专栏');
-        onSuccess();
+        const targetColumn = columns.find(c => c.id === selectedColumnId);
+        onSuccess(targetColumn ? { columnId: selectedColumnId, columnName: targetColumn.name } : null);
         onClose();
       } else {
         message.error(response.message || '操作失败');
@@ -178,7 +180,8 @@ const ColumnSelectModal: React.FC<ColumnSelectModalProps> = ({
       <div className="space-y-4">
         {articleColumn && (
           <div className="px-3 py-2 bg-cyan-50 dark:bg-gray-700 rounded-lg text-sm text-cyan-700 dark:text-cyan-300">
-            当前专栏：<span className="font-medium">{columns.find(c => c.id === articleColumn.columnId)?.name || '未知专栏'}</span>
+            当前专栏：<span
+            className="font-medium">{columns.find(c => c.id === articleColumn.columnId)?.name || '未知专栏'}</span>
           </div>
         )}
 
@@ -203,10 +206,12 @@ const ColumnSelectModal: React.FC<ColumnSelectModalProps> = ({
                 onClick={() => setSelectedColumnId(column.id)}
               >
                 <div className="flex items-center">
-                  <FolderOutlined className={`mr-3 ${selectedColumnId === column.id ? 'text-cyan-500' : 'text-gray-500'}`} />
+                  <FolderOutlined
+                    className={`mr-3 ${selectedColumnId === column.id ? 'text-cyan-500' : 'text-gray-500'}`} />
                   <span className="text-gray-800 dark:text-gray-200">{column.name}</span>
                   {articleColumn && column.id === articleColumn.columnId && (
-                    <span className="ml-2 text-xs px-2 py-0.5 bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300 rounded-full">
+                    <span
+                      className="ml-2 text-xs px-2 py-0.5 bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300 rounded-full">
                       当前
                     </span>
                   )}
