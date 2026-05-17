@@ -25,8 +25,8 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   CommentOutlined,
-  DeleteOutlined,
   DeleteFilled,
+  DeleteOutlined,
   DislikeOutlined,
   DownOutlined,
   EditOutlined,
@@ -271,36 +271,36 @@ const AdminArticles: React.FC = () => {
       message.error('获取文章详情失败');
     }
   };
-  // 删除文章
-  const handleDeleteArticle = async (id: string): Promise<void> => {
+  // 移至回收站
+  const handleMoveToRecycleBin = async (id: string): Promise<void> => {
     try {
-      const response = await articleService.admin.deleteArticle(id);
+      const response = await articleService.admin.moveToRecycleBin(id);
       if (response.code === 200 && response.data) {
-        message.success('文章删除成功');
+        message.success(response.message || '文章已移至回收站');
         await fetchArticles(pagination.pageNum, pagination.pageSize);
       } else {
-        message.error('删除文章失败');
+        message.error(response.message || '操作失败');
       }
     } catch {
-      message.error('删除文章失败');
+      message.error('操作失败');
     }
   };
-  // 关闭彻底删除确认弹窗
-  const handleCancelPermanentDelete = (): void => {
+  // 关闭删除确认弹窗
+  const handleCancelDelete = (): void => {
     setIsPermanentDeleteModalVisible(false);
     setArticleToDelete(null);
   };
 
-  // 确认彻底删除文章
-  const handlePermanentDeleteArticle = async (): Promise<void> => {
+  // 确认删除文章（物理删除）
+  const handleDeleteArticle = async (): Promise<void> => {
     if (!articleToDelete) return;
     try {
-      const response = await articleService.admin.deleteArticlePermanently(articleToDelete);
+      const response = await articleService.admin.deleteArticle(articleToDelete);
       if (response.code === 200) {
-        message.success(response.message || '文章彻底删除成功');
+        message.success(response.message || '文章已删除');
         await fetchArticles(pagination.pageNum, pagination.pageSize);
       } else {
-        message.error(response.message || '彻底删除文章失败');
+        message.error(response.message || '删除文章失败');
       }
     } catch {
       message.error('删除文章失败');
@@ -622,24 +622,24 @@ const AdminArticles: React.FC = () => {
             )
           },
           {
-            key: 'delete',
+            key: 'moveToRecycleBin',
             label: (
               <Popconfirm
-                title="确定要删除这篇文章吗？"
-                description="删除后该文章将被移至该用户的回收站！"
-                onConfirm={() => handleDeleteArticle(record.id)}
+                title="确定要将这篇文章移至回收站吗？"
+                description="移至回收站后用户可以恢复"
+                onConfirm={() => handleMoveToRecycleBin(record.id)}
                 okText="确定"
                 cancelText="取消"
               >
-                <span className="flex items-center cursor-pointer text-red-400">
-                  <DeleteOutlined className="mr-2 text-red-500" />
-                  删除
+                <span className="flex items-center cursor-pointer text-orange-500">
+                  <DeleteOutlined className="mr-2 text-orange-500" />
+                  移至回收站
                 </span>
               </Popconfirm>
             )
           },
           {
-            key: 'permanentDelete',
+            key: 'delete',
             label: (
               <span
                 className="flex items-center cursor-pointer text-red-600"
@@ -649,7 +649,7 @@ const AdminArticles: React.FC = () => {
                 }}
               >
                 <DeleteFilled className="mr-2 text-red-500" />
-                彻底删除
+                删除
               </span>
             )
           }
@@ -1108,12 +1108,12 @@ const AdminArticles: React.FC = () => {
           </Form>
         </Modal>
 
-        {/* 彻底删除确认模态框 */}
+        {/* 删除确认模态框 */}
         <Modal
-          title="彻底删除文章"
+          title="删除文章"
           open={isPermanentDeleteModalVisible}
-          onOk={handlePermanentDeleteArticle}
-          onCancel={handleCancelPermanentDelete}
+          onOk={handleDeleteArticle}
+          onCancel={handleCancelDelete}
           width={450}
           okText="确定"
           cancelText="取消"
@@ -1124,7 +1124,8 @@ const AdminArticles: React.FC = () => {
           }}
         >
           <div className="text-center py-4">
-            <p className="text-lg font-medium text-gray-800 mb-2">确定要彻底删除这篇文章吗？删除后将无法恢复！</p>
+            <p
+              className="text-lg font-medium text-gray-800 mb-2">确定要删除这篇文章吗？此操作不可撤销，文章将被永久删除！</p>
           </div>
         </Modal>
       </div>
