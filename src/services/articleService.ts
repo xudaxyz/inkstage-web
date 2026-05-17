@@ -79,10 +79,20 @@ const articleService = {
       return await articleService.createArticle(newArticle);
     }
   },
+  // 移至回收站
+  moveToRecycleBin: async (id: string): Promise<ApiResponse<void>> => {
+    validateIdParam(id);
+    return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.MOVE_TO_RECYCLE_BIN(id));
+  },
   // 删除文章
   deleteArticle: async (id: string): Promise<ApiResponse<void>> => {
     validateIdParam(id);
     return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.DELETE(id));
+  },
+  // 恢复文章(从回收站恢复到原状态)
+  restoreArticle: async (id: string): Promise<ApiResponse<boolean>> => {
+    validateIdParam(id);
+    return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.RESTORE(id));
   },
   // 上传文章封面图片
   uploadArticleCoverImage: async (file: File): Promise<ApiResponse<string>> => {
@@ -346,11 +356,6 @@ const articleService = {
     validateIdParam(folderId);
     return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.DELETE_FOLDER(folderId));
   },
-  // 彻底删除文章
-  permanentDeleteArticle: async (id: string): Promise<ApiResponse<boolean>> => {
-    validateIdParam(id);
-    return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.PERMANENT_DELETE(id));
-  },
   // 管理员相关方法
   admin: {
     // 分页获取文章列表
@@ -383,15 +388,20 @@ const articleService = {
       validateIdParam(id);
       return await apiClient.get(API_ENDPOINTS.ADMIN.ARTICLE.GET(id));
     },
-    // 删除文章
+    // 移至回收站
+    moveToRecycleBin: async (id: string): Promise<ApiResponse<boolean>> => {
+      validateIdParam(id);
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.MOVE_TO_RECYCLE_BIN(id));
+    },
+    // 删除文章（物理删除）
     deleteArticle: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
       return await apiClient.delete(API_ENDPOINTS.ADMIN.ARTICLE.DELETE(id));
     },
-    // 彻底删除文章
-    deleteArticlePermanently: async (id: string): Promise<ApiResponse<boolean>> => {
+    // 恢复文章
+    restoreArticle: async (id: string): Promise<ApiResponse<boolean>> => {
       validateIdParam(id);
-      return await apiClient.delete(API_ENDPOINTS.ADMIN.ARTICLE.PERMANENT_DELETE(id));
+      return await apiClient.put(API_ENDPOINTS.ADMIN.ARTICLE.RESTORE(id));
     },
     // 更新文章状态
     updateArticleStatus: async (id: string, articleStatus: ArticleStatusEnum): Promise<ApiResponse<Article>> => {

@@ -7,6 +7,7 @@ import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import {
   BookOutlined,
   DeleteOutlined,
+  DoubleRightOutlined,
   EditOutlined,
   EyeOutlined,
   LikeOutlined,
@@ -14,7 +15,7 @@ import {
   MoreOutlined,
   SearchOutlined,
   ShareAltOutlined,
-  DoubleRightOutlined
+  UndoOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import articleService from '../../../services/articleService';
@@ -63,6 +64,8 @@ const MyCreations: React.FC = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteArticleId, setDeleteArticleId] = useState<string>();
   const [deleteArticleStatus, setDeleteArticleStatus] = useState<ArticleStatusEnum>();
+  const [restoreModalVisible, setRestoreModalVisible] = useState(false);
+  const [restoreArticleId, setRestoreArticleId] = useState<string>();
   const [total, setTotal] = useState(0);
   const [columnModalVisible, setColumnModalVisible] = useState(false);
   const [columnArticleId, setColumnArticleId] = useState<string>('');
@@ -156,26 +159,43 @@ const MyCreations: React.FC = () => {
     setDeleteModalVisible(false);
   };
   // 删除文章
-  const handleDelete = async (articleStatus: ArticleStatusEnum): Promise<void> => {
+  const handleDelete = async (): Promise<void> => {
     if (!deleteArticleId) return;
     try {
       let response;
-      // 回收站的文章调用彻底删除文章的方法
-      if (articleStatus === ArticleStatusEnum.RECYCLE) {
-        response = await articleService.permanentDeleteArticle(deleteArticleId);
-      } else {
+      if (deleteArticleStatus === ArticleStatusEnum.RECYCLE) {
         response = await articleService.deleteArticle(deleteArticleId);
+      } else {
+        response = await articleService.moveToRecycleBin(deleteArticleId);
       }
       if (response.code !== 200) {
         message.error(response.message);
       }
-      message.success(response.message || '文章已删除');
+      message.success(response.message || '操作成功');
       setDeleteModalVisible(false);
-      // 重新加载文章列表
       refresh();
-    } catch (error) {
-      message.error('删除失败，请重试');
-      console.error('删除文章失败:', error);
+    } catch {
+      message.error('操作失败，请重试');
+    }
+  };
+  // 打开恢复确认对话框
+  const showRestoreConfirm = (articleId: string): void => {
+    setRestoreArticleId(articleId);
+    setRestoreModalVisible(true);
+  };
+  // 恢复文章
+  const handleRestore = async (): Promise<void> => {
+    if (!restoreArticleId) return;
+    try {
+      const response = await articleService.restoreArticle(restoreArticleId);
+      if (response.code !== 200) {
+        message.error(response.message);
+      }
+      message.success(response.message || '恢复成功');
+      setRestoreModalVisible(false);
+      refresh();
+    } catch {
+      message.error('恢复失败，请重试');
     }
   };
   // 状态变化时刷新数据
@@ -401,15 +421,47 @@ const MyCreations: React.FC = () => {
                         >
                           分享
                         </Button>
-                        <Button
-                          icon={<DeleteOutlined />}
-                          size="small"
-                          type="text"
-                          danger
-                          onClick={() => showDeleteConfirm(article.id, article.articleStatus)}
-                        >
-                          {article.articleStatus === ArticleStatusEnum.RECYCLE ? '彻底删除' : '删除'}
-                        </Button>
+                        {article.articleStatus === ArticleStatusEnum.RECYCLE ? (
+                          <>
+                            <Button
+                              icon={<UndoOutlined />}
+                              size="small"
+                              type="text"
+                              onClick={() => showRestoreConfirm(article.id)}
+                            >
+                              恢复
+                            </Button>
+                            <Button
+                              icon={<DeleteOutlined />}
+                              size="small"
+                              type="text"
+                              danger
+                              onClick={() => showDeleteConfirm(article.id, article.articleStatus)}
+                            >
+                              删除
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              icon={<DeleteOutlined />}
+                              size="small"
+                              type="text"
+                              onClick={() => showDeleteConfirm(article.id, article.articleStatus)}
+                            >
+                              移至回收站
+                            </Button>
+                            <Button
+                              icon={<DeleteOutlined />}
+                              size="small"
+                              type="text"
+                              danger
+                              onClick={() => showDeleteConfirm(article.id, ArticleStatusEnum.RECYCLE)}
+                            >
+                              删除
+                            </Button>
+                          </>
+                        )}
                       </Space>
                     }
                     trigger="click"
@@ -430,22 +482,37 @@ const MyCreations: React.FC = () => {
 
         {/* 删除确认对话框 */}
         <Modal
-          title={deleteArticleStatus === ArticleStatusEnum.RECYCLE ? '彻底删除' : '确认删除'}
+          title={deleteArticleStatus === ArticleStatusEnum.RECYCLE ? '删除文章' : '移至回收站'}
           open={deleteModalVisible}
-          onOk={() => handleDelete(deleteArticleStatus as ArticleStatusEnum)}
+          onOk={() => handleDelete()}
           onCancel={handleDeleteCancel}
-          okText={deleteArticleStatus === ArticleStatusEnum.RECYCLE ? '彻底删除' : '确认删除'}
+          okText={deleteArticleStatus === ArticleStatusEnum.RECYCLE ? '删除' : '移至回收站'}
           okButtonProps={{
             type: 'primary',
-            danger: true
+            danger: deleteArticleStatus === ArticleStatusEnum.RECYCLE
           }}
           cancelText="取消"
         >
           <p>
             {deleteArticleStatus === ArticleStatusEnum.RECYCLE
-              ? '确定要彻底删除这篇文章吗？此操作不可撤销，将永久删除该文章。'
-              : '确定要删除这篇文章吗？此操作不可撤销。'}
+              ? '确定要删除这篇文章吗？此操作不可撤销，文章将被永久删除。'
+              : '确定要将这篇文章移至回收站吗？移至回收站后可以恢复。'}
           </p>
+        </Modal>
+
+        {/* 恢复确认对话框 */}
+        <Modal
+          title="恢复文章"
+          open={restoreModalVisible}
+          onOk={() => handleRestore()}
+          onCancel={() => setRestoreModalVisible(false)}
+          okText="恢复"
+          okButtonProps={{
+            type: 'primary'
+          }}
+          cancelText="取消"
+        >
+          <p>确定要恢复这篇文章吗？文章将恢复到删除前的状态。</p>
         </Modal>
 
         {/* 专栏选择模态框 */}

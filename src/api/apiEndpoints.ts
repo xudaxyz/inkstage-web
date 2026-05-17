@@ -18,8 +18,9 @@ export const API_ENDPOINTS = {
       CREATE: '/front/article/create', // 创建文章
       UPDATE: (id: string): string => `/front/article/update/${id}`, // 更新文章
       SAVE_DRAFT: (id?: string): string => `/front/article/draft/${id}`, // 保存草稿
+      MOVE_TO_RECYCLE_BIN: (id: string): string => `/front/article/move-to-recycle-bin/${id}`, // 移至回收站
       DELETE: (id: string): string => `/front/article/delete/${id}`, // 删除文章
-      PERMANENT_DELETE: (id: string): string => `/front/article/permanent-delete/${id}`, // 彻底删除文章
+      RESTORE: (id: string): string => `/front/article/restore/${id}`, // 恢复文章
       USER_ARTICLES: (userId: string): string => `/front/article/user/${userId}`, // 获取用户文章列表
       USER_RELATED: '/front/article/user-related', // 获取作者相关文章
       LIKE: (id: string): string => `/front/article/like/${id}`, // 点赞文章
@@ -189,8 +190,9 @@ export const API_ENDPOINTS = {
     ARTICLE: {
       LIST_PAGE: '/admin/article/list', // 分页获取文章
       GET: (id: string): string => `/admin/article/detail/${id}`, // 获取文章详情
+      MOVE_TO_RECYCLE_BIN: (id: string): string => `/admin/article/move-to-recycle-bin/${id}`, // 移至回收站
       DELETE: (id: string): string => `/admin/article/delete/${id}`, // 删除文章
-      PERMANENT_DELETE: (id: string): string => `/admin/article/permanent-delete/${id}`, // 彻底删除文章
+      RESTORE: (id: string): string => `/admin/article/restore/${id}`, // 恢复文章
       UPDATE: (id: string): string => `/admin/article/update/${id}`, // 更新文章
       UPDATE_STATUS: (id: string): string => `/admin/article/update/article-status/${id}`, // 更新文章状态
       APPROVE: (id: string): string => `/admin/article/approve/${id}`, // 审核通过文章
