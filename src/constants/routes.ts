@@ -8,6 +8,7 @@ export const ROUTES = {
   LOGIN: '/login',
   ADMIN_LOGIN: '/admin/login',
   REGISTER: '/register',
+  FORGOT_PASSWORD: '/forgot-password',
 
   // 用户相关
   USER_PROFILE: (id: string): string => `/user/${id}`,

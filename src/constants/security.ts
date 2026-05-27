@@ -9,6 +9,7 @@ export const SECURE_STORAGE_KEYS = {
   REFRESH_TOKEN: 'refresh_token',
   ACCESS_TOKEN_EXPIRES_AT: 'access_token_expires_at',
   REMEMBER_ME: 'remember_me',
+  REDIRECT_AFTER_LOGIN: 'redirect_after_login',
 
   // 后台用户
   ADMIN_ACCESS_TOKEN: 'admin_access_token',

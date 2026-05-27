@@ -1,11 +1,11 @@
-import { GenderEnum, UserRoleEnum } from './enums';
+import { GenderEnum, UserRoleEnum, UserStatusEnum } from './enums';
 import type { AuthTypeEnum } from './enums';
 
 // 验证码请求参数
 export interface SendCodeParams {
     account: string; // 邮箱或手机号
     type: 'email' | 'phone';
-    purpose: 'register';
+    purpose: 'register' | 'login' | 'forget';
 }
 
 // 验证码响应
@@ -37,6 +37,23 @@ export interface RefreshTokenParams {
     refresh_token: string;
 }
 
+// 修改密码请求参数
+export interface ChangePasswordParams {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
+
+// 重置密码请求参数（忘记密码）
+export interface ResetPasswordParams {
+    account: string;
+    authType: AuthTypeEnum;
+    code: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
 // 用户信息响应
 export interface UserInfo {
     id: string;
@@ -50,6 +67,8 @@ export interface UserInfo {
     birthDate: string,
     location: string,
     role?: UserRoleEnum;
+    status?: UserStatusEnum;
+    scheduledDeleteTime?: string;
 }
 
 // 文件上传参数

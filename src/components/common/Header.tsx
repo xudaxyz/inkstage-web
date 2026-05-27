@@ -25,6 +25,7 @@ import {
   useUser,
   useUserStore
 } from '../../store';
+import authService from '../../services/authService';
 import websocketService from '../../services/websocketService';
 import { ROUTES } from '../../constants/routes';
 
@@ -79,10 +80,16 @@ const Header: React.FC<HeaderProps> = ({ variant = 'default', breadcrumb, action
 
   const closeDropdown = (): void => setIsDropdownOpen(false);
 
-  const handleLogout = (): void => {
+  const handleLogout = async (): Promise<void> => {
+    try {
+      await authService.logout();
+    } catch {
+      // 即使后端登出失败也执行本地清理
+    }
     logout();
     closeDropdown();
     setIsMobileDrawerOpen(false);
+    window.location.replace('/');
   };
 
   const openMobileDrawer = (): void => setIsMobileDrawerOpen(true);

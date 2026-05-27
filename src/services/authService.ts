@@ -1,5 +1,13 @@
 import { API_ENDPOINTS, apiClient } from '../api';
-import type { LoginParams, RegisterParams, SendCodeResponse, TokenResponse, UserInfo } from '../types/auth';
+import type {
+  ChangePasswordParams,
+  LoginParams,
+  RegisterParams,
+  ResetPasswordParams,
+  SendCodeResponse,
+  TokenResponse,
+  UserInfo
+} from '../types/auth';
 import type { ApiResponse } from '../types/common';
 import { AuthOperationTypeEnum, AuthTypeEnum } from '../types/enums';
 // 参数验证函数
@@ -251,6 +259,64 @@ const authService = {
         'Content-Type': 'multipart/form-data'
       }
     });
+  },
+
+  /**
+   * 修改密码
+   */
+  changePassword: async (params: ChangePasswordParams): Promise<ApiResponse<null>> => {
+    if (!params.currentPassword) {
+      throw new Error('当前密码不能为空');
+    }
+    validatePassword(params.newPassword);
+    if (params.newPassword !== params.confirmPassword) {
+      throw new Error('两次输入的新密码不一致');
+    }
+    if (params.currentPassword === params.newPassword) {
+      throw new Error('新密码不能与当前密码相同');
+    }
+    return apiClient.post(API_ENDPOINTS.FRONT.USER.CHANGE_PASSWORD, params);
+  },
+
+  /**
+   * 退出登录
+   */
+  logout: async (): Promise<ApiResponse<null>> => {
+    return apiClient.post(API_ENDPOINTS.FRONT.AUTH.LOGOUT);
+  },
+
+  /**
+   * 重置密码（忘记密码）
+   */
+  resetPassword: async (params: ResetPasswordParams): Promise<ApiResponse<null>> => {
+    if (!params.account) {
+      throw new Error('账号不能为空');
+    }
+    if (!params.code) {
+      throw new Error('验证码不能为空');
+    }
+    validatePassword(params.newPassword);
+    if (params.newPassword !== params.confirmPassword) {
+      throw new Error('两次输入的新密码不一致');
+    }
+    return apiClient.post(API_ENDPOINTS.FRONT.AUTH.RESET_PASSWORD, params);
+  },
+
+  /**
+   * 删除账号
+   */
+  deleteAccount: async (password: string): Promise<ApiResponse<null>> => {
+    if (!password) {
+      throw new Error('密码不能为空');
+    }
+    return apiClient.delete(API_ENDPOINTS.FRONT.USER.DELETE_ACCOUNT, { params: { password } });
+  },
+
+  /**
+   * 恢复待删除账号（撤销注销申请）
+   */
+  restoreAccount: async (): Promise<ApiResponse<null>> => {
+    return apiClient.post(API_ENDPOINTS.FRONT.USER.RESTORE_ACCOUNT);
   }
 };
 

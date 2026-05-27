@@ -33,6 +33,7 @@ const AccountSettings = lazy(() => import('../pages/front/profile/AccountSetting
 // 导入认证组件
 const Login = lazy(() => import('../components/auth/Login'));
 const Register = lazy(() => import('../components/auth/Register'));
+const ForgotPassword = lazy(() => import('../components/auth/ForgotPassword'));
 const AdminLogin = lazy(() => import('../components/auth/AdminLogin'));
 
 // 导入后台页面
@@ -83,6 +84,7 @@ const AppRoutes = (): React.ReactNode => {
         {/* 登录注册路由 */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         {/* 写文章路由 */}
         <Route
           path="/create-article"

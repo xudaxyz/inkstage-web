@@ -7,12 +7,14 @@ import { Button, message } from 'antd';
 import { ROUTES } from '../../constants/navigation';
 // 私有路由组件，需要登录才能访问
 export const PrivateRoute = ({ children }: { children: React.ReactNode }): React.ReactNode => {
-  const { isLoggedIn } = useUserStore();
+  const { isLoggedIn, isLoggingOut } = useUserStore();
   const location = useLocation();
 
   if (!isLoggedIn) {
-    // 保存当前路径，登录后可以重定向回来
-    localStorage.setItem('redirect_after_login', location.pathname + location.search);
+    // 退出登录时不保存重定向路径，防止下次登录跳转到旧页面
+    if (!isLoggingOut) {
+      localStorage.setItem('redirect_after_login', location.pathname + location.search);
+    }
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
 

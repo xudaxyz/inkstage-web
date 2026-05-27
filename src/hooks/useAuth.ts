@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store';
 import type { AuthTypeEnum, GenderEnum, UserRoleEnum } from '../types/enums';
+import { UserStatusEnum } from '../types/enums';
 import { ROUTES } from '../constants/navigation';
 
 /**
@@ -19,6 +20,8 @@ export const useAuth = (): {
     birthDate?: string;
     location?: string;
     role?: UserRoleEnum;
+    status?: UserStatusEnum;
+    scheduledDeleteTime?: string;
   };
   isLoggedIn: boolean;
   isLoading: boolean;
@@ -48,6 +51,8 @@ export const useAuth = (): {
         birthDate?: string;
         location?: string;
         role?: UserRoleEnum;
+        status?: UserStatusEnum;
+        scheduledDeleteTime?: string;
       };
     };
   }>;
@@ -133,11 +138,18 @@ export const useAuth = (): {
         birthDate?: string;
         location?: string;
         role?: UserRoleEnum;
+        status?: UserStatusEnum;
+        scheduledDeleteTime?: string;
       };
     };
   }> => {
     const result = await login(params);
     if (result.code === 200) {
+      // 检查用户是否处于待删除状态, 如果是则不自动导航, 由 Login 组件处理弹窗
+      const userStatus = useUserStore.getState().user.status;
+      if (userStatus === UserStatusEnum.PENDING_DELETE) {
+        return result;
+      }
       // 登录成功后处理重定向
       const redirectPath = localStorage.getItem('redirect_after_login');
       if (redirectPath) {

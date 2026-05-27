@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Spin } from 'antd';
+import { message, Spin } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
@@ -86,6 +86,15 @@ const useTags = (): UseQueryResult<FrontTag[], Error> => {
   });
 };
 const Home: React.FC = () => {
+  // 消费 pending_message（账号注销等跨页面消息）
+  useEffect(() => {
+    const pendingMsg = localStorage.getItem('pending_message');
+    if (pendingMsg) {
+      localStorage.removeItem('pending_message');
+      message.warning({ content: pendingMsg, duration: 2 }).then();
+    }
+  }, []);
+
   // 状态管理
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);

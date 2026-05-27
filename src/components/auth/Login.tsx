@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { Button, Checkbox, Form, Input, message } from 'antd';
+import { Button, Checkbox, Form, Input, message, Modal } from 'antd';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import AuthLayout from '../../layouts/AuthLayout';
 import SlideCaptchaModal from './captcha/SlideCaptchaModal';
 import { useAuth } from '../../hooks';
-import { AuthTypeEnum } from '../../types/enums';
-import { getRandomCaptchaImage } from '../../utils';
+import { useUserStore } from '../../store';
+import { AuthTypeEnum, UserStatusEnum } from '../../types/enums';
+import { formatDate, getRandomCaptchaImage } from '../../utils';
 import { ROUTES } from '../../constants/navigation';
+import authService from '../../services/authService';
 
 // 登录表单数据类型
 interface LoginFormData {
@@ -23,6 +26,8 @@ interface LoginFormData {
 
 const Login: React.FC = () => {
   const { handleLogin, isLoading, sendCode } = useAuth();
+  const navigate = useNavigate();
+  const { logout: storeLogout } = useUserStore();
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState<AuthTypeEnum>(AuthTypeEnum.EMAIL);
   const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
@@ -30,6 +35,8 @@ const Login: React.FC = () => {
   const [form] = Form.useForm<LoginFormData>();
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [pendingDeleteModalVisible, setPendingDeleteModalVisible] = useState(false);
+  const [restoreLoading, setRestoreLoading] = useState(false);
 
   // 表单提交处理
   const handleFormSubmit = (values: LoginFormData): void => {
@@ -53,6 +60,14 @@ const Login: React.FC = () => {
 
       if (response.code !== 200) {
         message.error(response.message || '登录失败，请稍后重试！');
+        return;
+      }
+
+      // 检查用户是否处于待删除状态
+      const userStatus = useUserStore.getState().user.status;
+      if (userStatus === 'PENDING_DELETE') {
+        setPendingDeleteModalVisible(true);
+        return;
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -66,6 +81,36 @@ const Login: React.FC = () => {
       setCaptchaModalVisible(false);
       setFormData(null);
     }
+  };
+
+  // 恢复账号
+  const handleRestoreAccount = async (): Promise<void> => {
+    setRestoreLoading(true);
+    try {
+      const response = await authService.restoreAccount();
+      if (response.code === 200) {
+        message.success('您的账号已恢复，欢迎继续使用 InkStage！');
+        setPendingDeleteModalVisible(false);
+        // 更新用户状态
+        useUserStore.getState().updateUser({ status: UserStatusEnum.NORMAL, scheduledDeleteTime: undefined });
+        navigate(ROUTES.HOME);
+      } else {
+        message.error(response.message || '恢复账号失败，请稍后重试');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        message.error(error.message || '恢复账号失败，请稍后重试');
+      }
+    } finally {
+      setRestoreLoading(false);
+    }
+  };
+
+  // 继续注销
+  const handleContinueDeletion = (): void => {
+    setPendingDeleteModalVisible(false);
+    storeLogout();
+    window.location.replace('/');
   };
 
   // 发送验证码
@@ -123,7 +168,8 @@ const Login: React.FC = () => {
         <Form form={form} onFinish={handleFormSubmit} layout="vertical" className="w-full">
           {/* 左侧登录，右侧注册链接 */}
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+            <h2
+              className="text-2xl font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
               请登录
             </h2>
             <div className="text-sm">
@@ -264,15 +310,51 @@ const Login: React.FC = () => {
 
           {/* 忘记密码 */}
           <div className="text-center">
-            <a
-              href="#"
+            <Link
+              to={ROUTES.FORGOT_PASSWORD}
               className="text-sm text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200"
             >
               <span className="text-blue-400 hover:text-blue-700">已有账号，忘记密码？</span>
-            </a>
+            </Link>
           </div>
         </Form>
       </AuthLayout>
+
+      {/* 账号注销期提示弹窗 */}
+      <Modal
+        title={
+          <span className="flex items-center text-orange-500">
+            <ExclamationCircleOutlined className="mr-2" /> 账号注销提醒
+          </span>
+        }
+        open={pendingDeleteModalVisible}
+        closable={false}
+        maskClosable={false}
+        keyboard={false}
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button onClick={handleContinueDeletion}>
+              继续注销
+            </Button>
+            <Button type="primary" loading={restoreLoading} onClick={handleRestoreAccount}>
+              恢复账号
+            </Button>
+          </div>
+        }
+      >
+        <div className="py-2">
+          <p className="text-gray-700 mb-3">
+            您的账号正处于注销冷静期，将于 <span className="font-semibold text-orange-500">
+              {useUserStore.getState().user.scheduledDeleteTime
+                ? formatDate(useUserStore.getState().user.scheduledDeleteTime ?? '')
+                : '30天后'}
+            </span> 被永久删除。
+          </p>
+          <p className="text-gray-500 text-sm">
+            如果您改变主意，可以点击「恢复账号」撤销注销申请。注销期间您仍可正常使用账号。
+          </p>
+        </div>
+      </Modal>
     </>
   );
 };

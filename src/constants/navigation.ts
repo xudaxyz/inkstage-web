@@ -8,6 +8,7 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   REGISTER: '/register',
+  FORGOT_PASSWORD: '/forgot-password',
   ARTICLE_DETAIL: '/article',
   USER_PROFILE: '/user',
   RANKINGS: '/rankings',

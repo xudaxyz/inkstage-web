@@ -48,6 +48,9 @@ export const API_ENDPOINTS = {
       PUBLIC_PROFILE: (userId: string): string => `/front/user/profile/${userId}`, // 获取用户公开资料
       UPDATE_USERNAME: '/front/user/username', // 修改用户名
       USERNAME_MODIFICATION_TIME_LEFT: '/front/user/username/modification-time-left', // 获取修改用户名的剩余时间
+      CHANGE_PASSWORD: '/front/user/change-password', // 修改密码
+      DELETE_ACCOUNT: '/front/user/delete', // 删除账号
+      RESTORE_ACCOUNT: '/front/user/restore-account', // 恢复待删除账号
       FOLLOW: (userId: string): string => `/front/user/follow/${userId}`, // 关注用户
       UNFOLLOW: (userId: string): string => `/front/user/unfollow/${userId}`, // 取消关注用户
       FOLLOW_STATUS: (userId: string): string => `/front/user/follow/status/${userId}` // 检查关注状态
@@ -122,7 +125,9 @@ export const API_ENDPOINTS = {
       SEND_CODE: '/auth/send-code', // 发送验证码
       REGISTER: '/auth/register', // 用户注册
       LOGIN: '/auth/login', // 用户登录
-      REFRESH_TOKEN: '/auth/refresh-token' // 刷新令牌
+      REFRESH_TOKEN: '/auth/refresh-token', // 刷新令牌
+      RESET_PASSWORD: '/auth/reset-password', // 重置密码(忘记密码)
+      LOGOUT: '/auth/logout' // 退出登录
     },
 
     // 举报相关

@@ -1,5 +1,5 @@
 // 从各模块导入状态管理
-import { useUserStore, useUser, useIsLoggedIn, useIsLoading, useAccessTokenExpiresAt, useUserId, useUserRole, useUserInfo } from './userStore';
+import { useUserStore, useUser, useIsLoggedIn, useIsLoggingOut, useIsLoading, useAccessTokenExpiresAt, useUserId, useUserRole, useUserInfo } from './userStore';
 import type { UserState } from './userStore';
 import { useAppStore, useTheme, useAppLoading } from './appStore';
 import type { AppState } from './appStore';
@@ -14,7 +14,7 @@ export type RootState = UserState & AppState & ArticleState & NotificationState;
 
 // 导出所有状态管理相关内容
 export {
-  useUserStore, useUser, useIsLoggedIn, useIsLoading, useAccessTokenExpiresAt, useUserId, useUserRole, useUserInfo,
+  useUserStore, useUser, useIsLoggedIn, useIsLoggingOut, useIsLoading, useAccessTokenExpiresAt, useUserId, useUserRole, useUserInfo,
   useAppStore, useTheme, useAppLoading,
   useCommentStore, useComments, useCommentCount, useSortBy, useCommentLoading, useCommentPage, useIsSubmitting,
   useArticleStore, useArticle, useArticleLoading, useArticleError, useRelatedArticles, useRelatedArticlesLoading, useLikeLoading, useCollectLoading, useArticleId, useArticleTitle, useArticleContent, useArticleStats,

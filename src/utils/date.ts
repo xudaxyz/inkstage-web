@@ -30,13 +30,13 @@ export const formatDate = (
     const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
 
     if (isNaN(dateObj.getTime())) {
-      return '无效日期';
+      return '未知日期';
     }
 
     return new Intl.DateTimeFormat(locale, options).format(dateObj);
   } catch (error) {
     console.error('日期格式化失败:', error);
-    return '无效日期';
+    return '未知日期';
   }
 };
 
