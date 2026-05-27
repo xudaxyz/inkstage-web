@@ -384,7 +384,7 @@ const MyCollections: React.FC = () => {
                   <div className="flex items-center px-3 justify-between mb-3">
                     <div className="flex items-center">
                       <FolderOutlined className="mr-2" />
-                      <span className="font-medium text-secondary-500 dark:text-gray-300">我的收藏夹</span>
+                      <span className="font-normal dark:text-gray-300">我的收藏夹</span>
                     </div>
                     <Button type="text" size="small" onClick={() => setShowFolderList(!showFolderList)}>
                       {showFolderList ? (
@@ -400,7 +400,7 @@ const MyCollections: React.FC = () => {
                     <div className="space-y-1 pl-2 pr-3">
                       {/* 默认收藏夹 */}
                       <div
-                        className={`flex items-center px-4 p-2 rounded-lg cursor-pointer ${selectedFolder === 'default' ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'hover:bg-secondary-50 dark:hover:bg-gray-800'}`}
+                        className={`flex items-center px-4 p-2 rounded-lg cursor-pointer ${selectedFolder === 'default' ? 'bg-primary-50 dark:bg-primary-900/20 text-cyan-600' : 'hover:bg-secondary-50 dark:hover:bg-gray-800'}`}
                         onClick={() => setSelectedFolder('default')}
                       >
                         <FolderOutlined className="mr-2" />
@@ -414,11 +414,11 @@ const MyCollections: React.FC = () => {
                         .map((folder) => (
                           <div
                             key={folder.id}
-                            className={`flex items-center p-2 rounded-lg cursor-pointer ${selectedFolder === folder.id ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'hover:bg-secondary-50 dark:hover:bg-gray-800'}`}
+                            className={`flex items-center px-4 p-2 rounded-lg cursor-pointer ${selectedFolder === folder.id ? 'bg-primary-50 dark:bg-primary-900/20 text-cyan-500' : 'hover:bg-secondary-50 dark:hover:bg-gray-800'}`}
                             onClick={() => setSelectedFolder(folder.id)}
                           >
                             <FolderOutlined className="mr-2" />
-                            <span className="flex-1">{folder.name}</span>
+                            <span className="flex-1 truncate">{folder.name}</span>
                             <span>{folder.count}</span>
                           </div>
                         ))}
