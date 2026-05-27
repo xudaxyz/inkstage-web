@@ -28,12 +28,22 @@ import {
 import websocketService from '../../services/websocketService';
 import { ROUTES } from '../../constants/routes';
 
-const Header: React.FC = () => {
+type HeaderVariant = 'default' | 'editor';
+
+interface HeaderProps {
+  variant?: HeaderVariant;
+  /** editor 模式下的面包屑文字，如 "写文章"、"创建专栏" */
+  breadcrumb?: string;
+  /** editor 模式下的操作按钮区域 */
+  actions?: React.ReactNode;
+}
+
+const Header: React.FC<HeaderProps> = ({ variant = 'default', breadcrumb, actions }) => {
   const theme = useTheme();
   const { toggleTheme } = useAppStore();
   const isDarkMode = theme === 'dark';
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -45,6 +55,8 @@ const Header: React.FC = () => {
   const isLoggedIn = useIsLoggedIn();
   const user = useUser();
   const { logout } = useUserStore();
+
+  const isEditor = variant === 'editor';
 
   const activeNavItem = React.useMemo((): string => {
     const path = location.pathname;
@@ -88,6 +100,26 @@ const Header: React.FC = () => {
     }
   };
 
+  useEffect((): void => {
+    if (isLoggedIn) {
+      setTimeout(fetchUnreadCount, 0);
+    }
+  }, [isLoggedIn, fetchUnreadCount]);
+
+  useEffect((): (() => void) => {
+    if (!isLoggedIn) return (): void => {
+    };
+    const handleUnreadCount = (data: unknown): void => {
+      if (typeof data === 'number') {
+        setUnreadCount(data);
+      }
+    };
+    websocketService.on('unreadCount', handleUnreadCount);
+    return (): void => {
+      websocketService.off('unreadCount', handleUnreadCount);
+    };
+  }, [isLoggedIn, setUnreadCount]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent): void => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -100,25 +132,19 @@ const Header: React.FC = () => {
     };
   }, []);
 
-  useEffect((): void => {
-    if (isLoggedIn) {
-      setTimeout(fetchUnreadCount, 0);
-    }
-  }, [isLoggedIn, fetchUnreadCount]);
+  // 头像渲染
+  const renderUserAvatar = (): React.ReactNode => (
+    <div
+      className="w-8 h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white hover:scale-110 transition-all duration-300">
+      <img
+        src={user.avatar || '/assets/images/default-avatar.jpg'}
+        alt={user.nickname || ''}
+        className="w-full h-full rounded-full object-cover"
+      />
+    </div>
+  );
 
-  useEffect((): (() => void) => {
-    if (!isLoggedIn) return (): void => {};
-    const handleUnreadCount = (data: unknown): void => {
-      if (typeof data === 'number') {
-        setUnreadCount(data);
-      }
-    };
-    websocketService.on('unreadCount', handleUnreadCount);
-    return (): void => {
-      websocketService.off('unreadCount', handleUnreadCount);
-    };
-  }, [isLoggedIn, setUnreadCount]);
-
+  // 导航项渲染
   const renderNavItems = (isMobile: boolean): React.ReactNode => (
     <>
       {navItems.map((item) => (
@@ -134,39 +160,128 @@ const Header: React.FC = () => {
             {item.label}
           </Link>
           {!isMobile && activeNavItem === item.key && (
-            <div className="-bottom-1 left-0 right-0 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-50"></div>
+            <div
+              className="-bottom-1 left-0 right-0 bg-primary-600 rounded-full transition-all duration-300 ease-in-out z-50"></div>
           )}
         </div>
       ))}
     </>
   );
 
-  const renderSearchBox = (size: 'small' | 'middle', className: string): React.ReactNode => (
-    <Input
-      placeholder="搜索..."
-      prefix={<SearchOutlined />}
-      size={size}
-      value={searchKeyword}
-      onChange={(e) => setSearchKeyword(e.target.value)}
-      onPressEnter={handleSearch}
-      className={className}
-    />
-  );
-
-  const renderUserAvatar = (): React.ReactNode => (
-    <div className="w-8 h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white hover:scale-110 transition-all duration-300">
-      {user.avatar ? (
-        <img src={user.avatar} alt={user.nickname || ''} className="w-full h-full rounded-full object-cover" />
-      ) : (
-        <img
-          src="/assets/images/default-avatar.jpg"
-          alt={user.nickname || ''}
-          className="w-full h-full rounded-full object-cover"
-        />
-      )}
+  // 主题切换
+  const renderThemeSwitch = (): React.ReactNode => (
+    <div className="flex items-center gap-2">
+      {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
+      <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" />
     </div>
   );
 
+  // 通知铃铛(仅 default 模式)
+  const renderNotificationBell = (): React.ReactNode => {
+    if (!isLoggedIn) return null;
+    return (
+      <Link
+        to={ROUTES.NOTIFICATIONS}
+        className="flex items-center text-gray-700 dark:text-white hover:text-primary-600 transition-colors duration-200"
+      >
+        {unreadCount > 0 ? (
+          <Badge count={unreadCount} size="small">
+            <BellTwoTone style={{ fontSize: '18px' }} />
+          </Badge>
+        ) : (
+          <BellTwoTone style={{ fontSize: '18px' }} />
+        )}
+      </Link>
+    );
+  };
+
+  // 用户区域(桌面端)
+  const renderUserSection = (): React.ReactNode => {
+    if (isLoggedIn) {
+      return (
+        <div className="relative" ref={dropdownRef}>
+          <div
+            className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition-opacity duration-200"
+            onClick={toggleDropdown}
+          >
+            {renderUserAvatar()}
+            <span className="text-purple-600 dark:text-white font-medium inline-block max-w-25 truncate">
+              {user.nickname}
+            </span>
+          </div>
+
+          {isDropdownOpen && (
+            <div
+              className="absolute -right-6 mt-2 w-32 bg-white dark:bg-gray-900 rounded-xl shadow-sm py-2 z-50 transition-all duration-200 origin-top-right border border-gray-50 dark:border-gray-800">
+              <Link
+                to={ROUTES.PROFILE}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
+                onClick={closeDropdown}
+              >
+                <UserOutlined className="text-gray-400 dark:text-gray-200" />
+                <span className="text-gray-700 dark:text-gray-200">个人中心</span>
+              </Link>
+              <Link
+                to={ROUTES.MY_CREATIONS}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
+                onClick={closeDropdown}
+              >
+                <FileTextOutlined className="text-gray-400 dark:text-gray-200" />
+                <span className="text-gray-700 dark:text-gray-200">我的创作</span>
+              </Link>
+              <Link
+                to={ROUTES.MY_COLLECTIONS}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
+                onClick={closeDropdown}
+              >
+                <StarOutlined className="text-gray-400 dark:text-gray-200" />
+                <span className="text-gray-700 dark:text-gray-200">我的收藏</span>
+              </Link>
+              <Link
+                to={ROUTES.ACCOUNT_SETTINGS}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
+                onClick={closeDropdown}
+              >
+                <SettingOutlined className="text-gray-400 dark:text-gray-200" />
+                <span className="text-gray-700 dark:text-gray-200">账号设置</span>
+              </Link>
+              <div className="border-t border-gray-50 my-1 mx-3"></div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-200 dark:hover:bg-red-900/20 transition-colors duration-200 rounded-lg mx-1"
+              >
+                <LogoutOutlined className="text-red-400" />
+                <span>退出登录</span>
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-4">
+        <Link
+          to={ROUTES.LOGIN}
+          className="text-gray-700 dark:text-white hover:text-primary-600 font-medium transition-colors duration-200 px-4"
+        >
+          登录
+        </Link>
+        <Link to={ROUTES.REGISTER}>
+          <Button
+            color="danger"
+            variant="solid"
+            size="middle"
+            shape="round"
+            className="rounded-full px-6 bg-linear-to-r text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border-none"
+          >
+            注册
+          </Button>
+        </Link>
+      </div>
+    );
+  };
+
+  // 移动端抽屉
   const renderMobileDrawer = (): React.ReactNode => (
     <Drawer placement="right" onClose={closeMobileDrawer} open={isMobileDrawerOpen} size={180} className="md:hidden">
       {isLoggedIn ? (
@@ -175,17 +290,33 @@ const Header: React.FC = () => {
             {renderUserAvatar()}
             <span className="text-lg font-medium text-gray-800 dark:text-white">{user.nickname}</span>
           </div>
-          <div className="flex justify-start">
-            <Link to={ROUTES.CREATE_ARTICLE} onClick={closeMobileDrawer}>
-              <Button type="text" block className="mb-3 rounded-lg">
-                <EditOutlined /> 写文章
-              </Button>
-            </Link>
-          </div>
+          {!isEditor && (
+            <div className="flex justify-start">
+              <Link to={ROUTES.CREATE_ARTICLE} onClick={closeMobileDrawer}>
+                <Button type="text" block className="mb-3 rounded-lg">
+                  <EditOutlined /> 写文章
+                </Button>
+              </Link>
+            </div>
+          )}
           <div className="flex justify-start">
             <Link to={ROUTES.PROFILE} onClick={closeMobileDrawer}>
               <Button type="text" block className="mb-3 rounded-lg">
                 <UserOutlined /> 个人中心
+              </Button>
+            </Link>
+          </div>
+          <div className="flex justify-start">
+            <Link to={ROUTES.MY_CREATIONS} onClick={closeMobileDrawer}>
+              <Button type="text" block className="mb-3 rounded-lg">
+                <FileTextOutlined /> 我的创作
+              </Button>
+            </Link>
+          </div>
+          <div className="flex justify-start">
+            <Link to={ROUTES.MY_COLLECTIONS} onClick={closeMobileDrawer}>
+              <Button type="text" block className="mb-3 rounded-lg">
+                <StarOutlined /> 我的收藏
               </Button>
             </Link>
           </div>
@@ -196,12 +327,17 @@ const Header: React.FC = () => {
               </Button>
             </Link>
           </div>
+          <div className="flex justify-start">
+            <Link to={ROUTES.ACCOUNT_SETTINGS} onClick={closeMobileDrawer}>
+              <Button type="text" block className="mb-3 rounded-lg">
+                <SettingOutlined /> 账号设置
+              </Button>
+            </Link>
+          </div>
           <div className="flex justify-start mb-3 px-4">
-            <div className="flex items-center justify-center">
-              <div className="flex items-center gap-3">
-                {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
-                <Switch checked={isDarkMode} onChange={handleThemeToggle} size="default" className="md:ml-4 sm:ml-2" />
-              </div>
+            <div className="flex items-center gap-3">
+              {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
+              <Switch checked={isDarkMode} onChange={handleThemeToggle} size="default" />
             </div>
           </div>
           <Divider />
@@ -211,11 +347,7 @@ const Header: React.FC = () => {
         </>
       ) : (
         <>
-          <Link
-            to={ROUTES.LOGIN}
-            onClick={closeMobileDrawer}
-            className="text-gray-200 mb-3 dark:text-white hover:text-primary-600 font-medium transition-colors duration-200 rounded-lg"
-          >
+          <Link to={ROUTES.LOGIN} onClick={closeMobileDrawer}>
             <Button
               block
               type="default"
@@ -230,7 +362,6 @@ const Header: React.FC = () => {
               登录
             </Button>
           </Link>
-
           <Link to={ROUTES.REGISTER} onClick={closeMobileDrawer}>
             <Button
               color="danger"
@@ -245,13 +376,10 @@ const Header: React.FC = () => {
               注册
             </Button>
           </Link>
-          {/* 主题切换 */}
-          <div className="mt-4 ">
-            <div className="flex items-center justify-center">
-              <div className="flex items-center gap-3">
-                {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
-                <Switch checked={isDarkMode} onChange={handleThemeToggle} size="default" className="ml-2" />
-              </div>
+          <div className="mt-4">
+            <div className="flex items-center justify-center gap-3">
+              {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
+              <Switch checked={isDarkMode} onChange={handleThemeToggle} size="default" />
             </div>
           </div>
         </>
@@ -260,26 +388,55 @@ const Header: React.FC = () => {
   );
 
   return (
-    <header className="h-18 bg-white/80 dark:bg-gray-800 backdrop-blur-sm border-b border-gray-200 dark:border-b dark:border-gray-700 dark:shadow-sm flex items-center px-4 sm:px-6 lg:px-[5%] sticky top-0 z-50 shadow-sm">
+    <header
+      className="h-16 bg-white/80 dark:bg-gray-800 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 flex items-center px-4 sm:px-6 lg:px-[5%] sticky top-0 z-50 shadow-sm">
       {/* Logo */}
       <Link to={ROUTES.HOME} className="flex items-center transition-colors duration-200 shrink-0">
-        <span className="text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide">
+        <span
+          className="text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide">
           InkStage
         </span>
       </Link>
 
-      {/* 导航项 - 桌面端 */}
-      <nav className="hidden md:flex items-center gap-10 whitespace-nowrap ml-8 mr-8">{renderNavItems(false)}</nav>
-
-      {/* 导航项 - 移动端 */}
-      <div className="flex items-center md:hidden ml-4">{renderNavItems(true)}</div>
+      {/* 左侧：导航菜单(default)或 面包屑(editor) */}
+      {isEditor ? (
+        breadcrumb && (
+          <div className="flex items-center ml-2">
+            <span className="mx-1 md:mx-2 text-sm md:text-base text-gray-400 hidden sm:block">\</span>
+            <span className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-300 hidden sm:block">
+              {breadcrumb}
+            </span>
+          </div>
+        )
+      ) : (
+        <>
+          {/* 导航项 - 桌面端 */}
+          <nav className="hidden md:flex items-center gap-10 whitespace-nowrap ml-8 mr-8">
+            {renderNavItems(false)}
+          </nav>
+          {/* 导航项 - 移动端 */}
+          <div className="flex items-center md:hidden ml-4">{renderNavItems(true)}</div>
+        </>
+      )}
 
       {/* 右侧区域 - 移动端 */}
-      <div className="flex items-center gap-2 sm:gap-2 ml-auto md:hidden overflow-x-auto">
-        {/* 搜索框 */}
-        <div className="flex-1 min-w-0 max-w-25 md:max-w-25 sm:max-w-50">
-          {renderSearchBox('middle', 'rounded-full')}
-        </div>
+      <div className="flex items-center gap-2 ml-auto md:hidden overflow-x-auto">
+        {/* editor 模式：操作按钮 */}
+        {isEditor && actions && <div className="flex items-center gap-1">{actions}</div>}
+        {/* default 模式：搜索框 */}
+        {!isEditor && (
+          <div className="flex-1 min-w-0 max-w-25 sm:max-w-50">
+            <Input
+              placeholder="搜索..."
+              prefix={<SearchOutlined />}
+              size="middle"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              onPressEnter={handleSearch}
+              className="rounded-full"
+            />
+          </div>
+        )}
         {/* 菜单按钮 */}
         <button
           className="flex items-center text-gray-700 dark:text-white shrink-0 ml-2 mr-2"
@@ -292,30 +449,32 @@ const Header: React.FC = () => {
 
       {/* 右侧区域 - 桌面端 */}
       <div className="hidden md:flex items-center gap-6 ml-auto">
-        {/* 搜索框 */}
-        <div className="w-36 md:w-60 lg:w-80 xl:w-96">
-          <Input
-            placeholder="搜索..."
-            prefix={<SearchOutlined />}
-            size="middle"
-            onPressEnter={(e) => {
-              const keyword = e.currentTarget.value.trim();
-              if (keyword) {
-                navigate(
-                  {
-                    pathname: '/',
-                    search: `?keyword=${encodeURIComponent(keyword)}`
-                  },
-                  { replace: true }
-                );
-              }
-            }}
-            className="rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-300 focus:border-primary-500 focus:ring-0 transition-all duration-200"
-          />
-        </div>
+        {/* 搜索框(仅 default 模式) */}
+        {!isEditor && (
+          <div className="w-36 md:w-60 lg:w-80 xl:w-96 dark:text-gray-400">
+            <Input
+              placeholder="搜索..."
+              prefix={<SearchOutlined />}
+              size="middle"
+              onPressEnter={(e) => {
+                const keyword = e.currentTarget.value.trim();
+                if (keyword) {
+                  navigate(
+                    {
+                      pathname: '/',
+                      search: `?keyword=${encodeURIComponent(keyword)}`
+                    },
+                    { replace: true }
+                  );
+                }
+              }}
+              className="rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-300 focus:border-primary-500 focus:ring-0 transition-all duration-200"
+            />
+          </div>
+        )}
 
-        {/* 写文章按钮 */}
-        {isLoggedIn && (
+        {/* 写文章按钮(仅 default 模式) */}
+        {!isEditor && isLoggedIn && (
           <Link to={ROUTES.CREATE_ARTICLE}>
             <Button
               type="primary"
@@ -328,110 +487,20 @@ const Header: React.FC = () => {
           </Link>
         )}
 
-        {/* 主题切换按钮 */}
-        <div className="flex items-center gap-2">
-          {isDarkMode ? <MoonOutlined /> : <SunOutlined />}
-          <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" />
-        </div>
+        {/* editor 模式操作按钮 */}
+        {isEditor && actions && <div className="flex items-center gap-2">{actions}</div>}
 
-        {/* 通知图标 */}
-        {isLoggedIn && (
-          <Link
-            to={ROUTES.NOTIFICATIONS}
-            className="flex items-center text-gray-700 dark:text-white hover:text-primary-600 transition-colors duration-200"
-          >
-            {unreadCount > 0 ? (
-              <Badge count={unreadCount} size="small">
-                <BellTwoTone style={{ fontSize: '18px' }} />
-              </Badge>
-            ) : (
-              <BellTwoTone style={{ fontSize: '18px' }} />
-            )}
-          </Link>
-        )}
+        {/* 主题切换 */}
+        {renderThemeSwitch()}
 
-        {/* 用户信息下拉菜单 */}
-        {isLoggedIn ? (
-          <div className="relative" ref={dropdownRef}>
-            <div
-              className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition-opacity duration-200"
-              onClick={toggleDropdown}
-            >
-              {renderUserAvatar()}
-              <span className="text-purple-600 dark:text-white font-medium inline-block max-w-25 truncate">
-                {user.nickname}
-              </span>
-            </div>
+        {/* 通知铃铛(仅 default 模式) */}
+        {!isEditor && renderNotificationBell()}
 
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-900 rounded-xl shadow-sm py-2 z-50 transition-all duration-200 origin-top-right border border-gray-50 dark:border-gray-800">
-                <Link
-                  to={ROUTES.PROFILE}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
-                  onClick={closeDropdown}
-                >
-                  <UserOutlined className="text-gray-400 dark:text-gray-200" />
-                  <span className="text-gray-700 dark:text-gray-200">个人中心</span>
-                </Link>
-                <Link
-                  to={ROUTES.MY_CREATIONS}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
-                  onClick={closeDropdown}
-                >
-                  <FileTextOutlined className="text-gray-400 dark:text-gray-200" />
-                  <span className="text-gray-700 dark:text-gray-200">我的创作</span>
-                </Link>
-                <Link
-                  to={ROUTES.MY_COLLECTIONS}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
-                  onClick={closeDropdown}
-                >
-                  <StarOutlined className="text-gray-400 dark:text-gray-200" />
-                  <span className="text-gray-700 dark:text-gray-200">我的收藏</span>
-                </Link>
-                <Link
-                  to={ROUTES.ACCOUNT_SETTINGS}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 w-full rounded-lg mx-1"
-                  onClick={closeDropdown}
-                >
-                  <SettingOutlined className="text-gray-400 dark:text-gray-200" />
-                  <span className="text-gray-700 dark:text-gray-200">账号设置</span>
-                </Link>
-                <div className="border-t border-gray-50 my-1 mx-3"></div>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 rounded-lg mx-1"
-                >
-                  <LogoutOutlined className="text-red-400" />
-                  <span>退出登录</span>
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center gap-4">
-            <Link
-              to={ROUTES.LOGIN}
-              className="text-gray-700 dark:text-white hover:text-primary-600 font-medium transition-colors duration-200 px-4"
-            >
-              登录
-            </Link>
-            <Link to={ROUTES.REGISTER}>
-              <Button
-                color="danger"
-                variant="solid"
-                size="middle"
-                shape="round"
-                className="rounded-full px-6 bg-linear-to-r text-white font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border-none"
-              >
-                注册
-              </Button>
-            </Link>
-          </div>
-        )}
+        {/* 用户区域 */}
+        {renderUserSection()}
       </div>
 
-      {/* 移动端右侧抽屉 */}
+      {/* 移动端抽屉 */}
       {renderMobileDrawer()}
     </header>
   );

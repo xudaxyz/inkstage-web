@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import type { UploadFile } from 'antd';
-import { Button, Card, Form, Input, message, Spin, Switch } from 'antd';
+import { Button, Card, Form, Input, message, Spin } from 'antd';
 import { Helmet } from 'react-helmet-async';
-import { MoonOutlined, SunOutlined, SwapLeftOutlined } from '@ant-design/icons';
+import { SwapLeftOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useAppStore, useTheme, useUserStore } from '../../store';
 import ColumnCoverUploader from '../../components/upload/ColumnCoverUploader';
+import Header from '../../components/common/Header';
 import { ROUTES } from '../../constants/routes';
 import columnService from '../../services/columnService';
 import type { ColumnCreateDTO, MyColumnVO } from '../../types/column';
 
 const CreateColumn: React.FC = () => {
-  const theme = useTheme();
-  const isDarkMode = theme === 'dark';
-  const { toggleTheme } = useAppStore();
   const [form] = Form.useForm();
   const [coverImage, setCoverImage] = useState<string>('');
   const [serverCoverImageUrl, setServerCoverImageUrl] = useState<string>('');
@@ -22,7 +19,6 @@ const CreateColumn: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { user } = useUserStore();
   const { columnId } = useParams<{ columnId: string }>();
   const isEditMode = !!columnId;
   const location = useLocation();
@@ -32,11 +28,6 @@ const CreateColumn: React.FC = () => {
   // 确定返回的目标路径
   const getReturnPath = (): string => {
     return from === 'my' ? ROUTES.MY_COLUMNS : ROUTES.COLUMN_LIST;
-  };
-
-  // 切换主题模式
-  const handleThemeToggle = (): void => {
-    toggleTheme();
   };
 
   // 加载专栏详情
@@ -67,9 +58,8 @@ const CreateColumn: React.FC = () => {
             }
           }
         }
-      } catch (err) {
-        console.error('获取专栏详情失败:', err);
-        message.error('获取专栏详情失败，请重试');
+      } catch {
+        message.error('获取专栏详情失败！');
       } finally {
         setLoading(false);
       }
@@ -121,9 +111,8 @@ const CreateColumn: React.FC = () => {
           message.error(response.message || '创建专栏失败');
         }
       }
-    } catch (error) {
-      console.error('提交专栏失败:', error);
-      message.error(isEditMode ? '更新失败，请重试' : '创建失败，请重试');
+    } catch {
+      message.error(isEditMode ? '更新失败，请稍后再试！' : '创建失败，请稍后再试！');
     } finally {
       setIsSubmitting(false);
     }
@@ -135,30 +124,13 @@ const CreateColumn: React.FC = () => {
         <title>{isEditMode ? '编辑专栏 - InkStage' : '创建专栏 - InkStage'}</title>
       </Helmet>
       <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-800">
-        <header
-          className="h-14 md:h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-3 md:px-[5%] sticky top-0 z-30 shadow-sm shrink-0">
-          <div className="flex items-center">
-            <span
-              className="text-lg md:text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide cursor-pointer hover:opacity-80 transition-opacity duration-200"
-              onClick={() => navigate(ROUTES.HOME)}
-            >
-              InkStage
-            </span>
-            <span className="mx-1 md:mx-2 items-center text-sm md:text-base text-gray-400 hidden sm:block">\</span>
-            <span
-              className="text-sm md:text-base items-center font-medium text-gray-800 dark:text-gray-300 hidden sm:block">
-              {isEditMode ? '编辑专栏' : '创建专栏'}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-5 ml-auto">
-            <div className="flex items-center gap-2">
-              {isDarkMode ? <MoonOutlined/> : <SunOutlined/>}
-              <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" className="hidden sm:block"/>
-            </div>
-            <div className="flex items-center gap-1 md:gap-2">
+        <Header
+          variant="editor"
+          breadcrumb={isEditMode ? '编辑专栏' : '创建专栏'}
+          actions={
+            <>
               <Button
-                icon={<SwapLeftOutlined/>}
+                icon={<SwapLeftOutlined />}
                 onClick={() => navigate(getReturnPath())}
                 className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                 size="middle"
@@ -172,42 +144,20 @@ const CreateColumn: React.FC = () => {
                 className="bg-green-600 hover:bg-green-700"
                 size="middle"
               >
-                <span className="hidden md:inline">{isEditMode ? '保存修改' : '创建专栏'}</span>
+                <span className="hidden md:inline">{isEditMode ? '保存修改' : '创建'}</span>
               </Button>
-            </div>
-
-            {user && (
-              <div className="flex items-center gap-2 md:gap-3">
-                <div
-                  className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.nickname || ''}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-xs md:text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
-                  )}
-                </div>
-                <span className="text-purple-600 font-medium text-sm hidden lg:inline-block truncate max-w-25">
-                  {user.nickname}
-                </span>
-              </div>
-            )}
-          </div>
-        </header>
+            </>
+          }
+        />
 
         <div className="flex-1 px-[5%] bg-white dark:bg-gray-800">
           <Card
             variant="borderless"
-            style={{
-              backgroundColor: isDarkMode ? '#364153' : 'transparent'
-            }}
+            className="dark:bg-[#364153]"
           >
             {loading && (
               <div className="flex justify-center items-center py-20">
-                <Spin size="large"/>
+                <Spin size="large" />
               </div>
             )}
             <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ display: loading ? 'none' : 'block' }}>

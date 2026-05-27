@@ -1,22 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import type { UploadFile } from 'antd';
-import { Button, Card, Form, Input, message, Modal, Radio, Select, Switch } from 'antd';
+import { Button, Card, Form, Input, message, Modal, Radio, Select } from 'antd';
 import { Helmet } from 'react-helmet-async';
-import {
-  EyeOutlined,
-  MoonOutlined,
-  SaveOutlined,
-  SendOutlined,
-  SunOutlined,
-  SwapLeftOutlined
-} from '@ant-design/icons';
+import { EyeOutlined, SaveOutlined, SendOutlined, SwapLeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import articleService from '../../services/articleService';
 import tagService from '../../services/tagService';
 import columnService from '../../services/columnService';
 import { type FrontTag } from '../../types/tag';
 import categoryService from '../../services/categoryService';
-import { useAppStore, useTheme, useUserStore } from '../../store';
 import {
   AllowStatusEnum,
   AllowTopEnum,
@@ -27,6 +19,7 @@ import {
   StatusEnum
 } from '../../types/enums';
 import RichTextEditor from '../../components/editor/RichTextEditor';
+import Header from '../../components/common/Header';
 import './CreateArticle.css';
 import ArticleCoverUploader from '../../components/upload/ArticleCoverUploader';
 import { ROUTES } from '../../constants/navigation';
@@ -34,9 +27,6 @@ import { ROUTES } from '../../constants/navigation';
 
 const { Option } = Select;
 const CreateArticle: React.FC = () => {
-  const theme = useTheme();
-  const isDarkMode = theme === 'dark';
-  const { toggleTheme } = useAppStore();
   const [form] = Form.useForm();
   const [, setSelectedTags] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<{ value: string; label: string }[]>([]);
@@ -56,13 +46,8 @@ const CreateArticle: React.FC = () => {
   const [previewTitle, setPreviewTitle] = useState('');
   const [previewCover, setPreviewCover] = useState('');
   const navigate = useNavigate();
-  const { user } = useUserStore();
   const { articleId } = useParams<{ articleId: string }>();
   const isEditMode = !!articleId;
-  // 切换主题模式
-  const handleThemeToggle = (): void => {
-    toggleTheme();
-  };
   // 加载分类和标签数据
   useEffect(() => {
     const loadCategoriesAndTags = async (): Promise<void> => {
@@ -309,34 +294,13 @@ const CreateArticle: React.FC = () => {
       </Helmet>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
         {/* 顶部导航栏 */}
-        <header
-          className="h-14 md:h-16 bg-white dark:bg-gray-800 border-b dark:border-b border-gray-200 dark:border-gray-700 flex items-center px-3 md:px-[5%] sticky top-0 z-30 shadow-sm">
-          {/* 左侧：Logo和标题 */}
-          <div className="flex items-center">
-            <span
-              className="text-lg md:text-xl font-bold bg-linear-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent tracking-wide cursor-pointer hover:opacity-80 transition-opacity duration-200"
-              onClick={() => navigate(ROUTES.HOME)}
-            >
-              InkStage
-            </span>
-            <span className="mx-1 md:mx-2 items-center text-sm md:text-base text-gray-400 hidden sm:block">\</span>
-            <span
-              className="text-sm md:text-base items-center font-medium text-gray-800 dark:text-gray-300 hidden sm:block">
-              {isEditMode ? '编辑文章' : '写文章'}
-            </span>
-          </div>
-
-          {/* 右侧：操作按钮和用户信息 */}
-          <div className="flex items-center gap-2 md:gap-5 ml-auto">
-            {/* 主题切换按钮 */}
-            <div className="flex items-center gap-2">
-              {isDarkMode ? <MoonOutlined/> : <SunOutlined/>}
-              <Switch checked={isDarkMode} onChange={handleThemeToggle} size="small" className="hidden sm:block"/>
-            </div>
-            {/* 操作按钮 - 移动端使用图标按钮 */}
-            <div className="flex items-center gap-1 md:gap-2">
+        <Header
+          variant="editor"
+          breadcrumb={isEditMode ? '编辑文章' : '写文章'}
+          actions={
+            <>
               <Button
-                icon={<SwapLeftOutlined/>}
+                icon={<SwapLeftOutlined />}
                 onClick={() => navigate(ROUTES.HOME)}
                 className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                 size="middle"
@@ -346,7 +310,7 @@ const CreateArticle: React.FC = () => {
               <Button
                 color="cyan"
                 variant="solid"
-                icon={<SaveOutlined/>}
+                icon={<SaveOutlined />}
                 onClick={handleSaveDraft}
                 loading={isSubmitting}
                 className="hover:bg-blue-600"
@@ -356,7 +320,7 @@ const CreateArticle: React.FC = () => {
               </Button>
               <Button
                 type="primary"
-                icon={<SendOutlined/>}
+                icon={<SendOutlined />}
                 onClick={() => form.submit()}
                 loading={isSubmitting}
                 className="bg-green-600 hover:bg-green-700"
@@ -364,38 +328,15 @@ const CreateArticle: React.FC = () => {
               >
                 <span className="hidden md:inline">发布</span>
               </Button>
-            </div>
-
-            {/* 用户信息 */}
-            {user && (
-              <div className="flex items-center gap-2 md:gap-3">
-                <div
-                  className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.nickname || ''}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-xs md:text-sm font-medium">{user.nickname?.charAt(0) || 'U'}</span>
-                  )}
-                </div>
-                <span className="text-purple-600 font-medium text-sm hidden lg:inline-block truncate max-w-25">
-                  {user.nickname}
-                </span>
-              </div>
-            )}
-          </div>
-        </header>
+            </>
+          }
+        />
 
         {/* 主要内容区域 */}
         <div className="px-[5%] bg-white dark:bg-gray-800">
           <Card
             variant="borderless"
-            style={{
-              backgroundColor: `${isDarkMode ? '#364153' : 'transparent'}`
-            }}
+            className="dark:bg-[#364153]"
           >
             <Form form={form} layout="vertical" onFinish={handleSubmit}>
               {/* 第二层：文章标题 */}
@@ -429,7 +370,7 @@ const CreateArticle: React.FC = () => {
                     </Form.Item>
                   </div>
                   <Button
-                    icon={<EyeOutlined/>}
+                    icon={<EyeOutlined />}
                     onClick={handlePreview}
                     className=" bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 whitespace-nowrap mt-1 transition-all duration-200 shadow-sm"
                   >
@@ -687,7 +628,7 @@ const CreateArticle: React.FC = () => {
             {/* 预览封面图 */}
             {previewCover && (
               <div className="mb-6">
-                <img src={previewCover} alt="文章封面" className="w-full h-48 md:h-64 object-cover rounded"/>
+                <img src={previewCover} alt="文章封面" className="w-full h-48 md:h-64 object-cover rounded" />
               </div>
             )}
 
