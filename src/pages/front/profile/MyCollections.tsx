@@ -210,21 +210,39 @@ const MyCollections: React.FC = () => {
   }, [selectedFolder, sortType, searchText, defaultFolderId, refresh]);
   // 取消单个收藏
   const handleSingleDelete = async (articleId: string): Promise<void> => {
+    // 保存快照用于回滚
+    const prevData = infiniteScroll.data;
+    const prevFolders = [...folders];
+    const prevTotal = totalCollectionCount;
+
+    // 移除文章
+    infiniteScroll.setData(prevData.filter((item) => item.articleId !== articleId));
+    // 文件夹文章数 -1
+    setFolders(prevFolders.map(f => {
+      const collection = prevData.find(c => c.articleId === articleId);
+      if (collection && collection.folderId === f.id && f.articleCount > 0) {
+        return { ...f, articleCount: f.articleCount - 1 };
+      }
+      return f;
+    }));
+    // 总收藏数 -1
+    setTotalCollectionCount(Math.max(0, prevTotal - 1));
+
     try {
       const result = await articleService.unCollectArticle(articleId);
       if (result.code !== 200) {
+        // 如果后端取消收藏失败, 则数据回滚
+        infiniteScroll.setData(prevData);
+        setFolders(prevFolders);
+        setTotalCollectionCount(prevTotal);
         message.error(result.message || '取消收藏失败');
-        return;
       }
-      message.success(result.message || '已取消收藏');
-      // 重新加载数据
-      refresh();
-      // 重新获取文件夹列表和总收藏数
-      await fetchFolders();
-      await fetchTotalCollectionCount();
-    } catch (error) {
+    } catch {
+      // 回滚数据
+      infiniteScroll.setData(prevData);
+      setFolders(prevFolders);
+      setTotalCollectionCount(prevTotal);
       message.error('取消收藏失败，请重试');
-      console.error('取消收藏失败:', error);
     }
   };
   // 分享文章
@@ -335,25 +353,50 @@ const MyCollections: React.FC = () => {
   // 确认删除收藏夹
   const handleDeleteFolder = async (): Promise<void> => {
     if (!deletingFolder) return;
+    // 保存快照用于回滚
+    const prevFolders = [...folders];
+    const prevTotal = totalCollectionCount;
+    const prevSelectedFolder = selectedFolder;
+
+    // 从文件夹列表中移除
+    const updatedFolders = prevFolders.filter(f => f.id !== deletingFolder.id);
+    // 根据策略调整默认文件夹文章数和总收藏数
+    if (deleteStrategy === CONSTANTS.COLLECT_DELETE_STRATEGY_MOVE_TO_DEFAULT) {
+      updatedFolders.forEach(f => {
+        if (f.defaultFolder === DefaultStatusEnum.YES) {
+          f.articleCount += deletingFolder.articleCount;
+        }
+      });
+    } else {
+      setTotalCollectionCount(Math.max(0, prevTotal - deletingFolder.articleCount));
+    }
+    setFolders(updatedFolders);
+    // 如果删除的是当前选中的文件夹，切换到全部
+    if (prevSelectedFolder === deletingFolder.id) {
+      setSelectedFolder('all');
+    }
+    setIsDeleteModalVisible(false);
+
     setDeleteLoading(true);
     try {
       const response = await articleService.deleteCollectionFolder(deletingFolder.id, deleteStrategy);
-      if (response.code === 200) {
-        message.success('收藏夹删除成功');
-        setIsDeleteModalVisible(false);
-        // 如果删除的是当前选中的文件夹，切换到全部
-        if (selectedFolder === deletingFolder.id) {
-          setSelectedFolder('all');
+      if (response.code !== 200) {
+        // 回滚
+        setFolders(prevFolders);
+        setTotalCollectionCount(prevTotal);
+        if (prevSelectedFolder === deletingFolder.id) {
+          setSelectedFolder(prevSelectedFolder);
         }
-        refresh();
-        await fetchFolders();
-        await fetchTotalCollectionCount();
-      } else {
         message.error(response.message || '删除收藏夹失败');
       }
-    } catch (error) {
+    } catch {
+      // 回滚
+      setFolders(prevFolders);
+      setTotalCollectionCount(prevTotal);
+      if (prevSelectedFolder === deletingFolder.id) {
+        setSelectedFolder(prevSelectedFolder);
+      }
       message.error('删除收藏夹失败，请重试');
-      console.error('删除收藏夹失败:', error);
     } finally {
       setDeleteLoading(false);
     }
@@ -449,6 +492,24 @@ const MyCollections: React.FC = () => {
       message.error('请选择目标收藏夹');
       return;
     }
+    // 保存快照用于回滚
+    const prevData = infiniteScroll.data;
+    const prevFolders = [...folders];
+
+    // 从当前文件夹视图中移除文章
+    infiniteScroll.setData(prevData.filter((item) => item.articleId !== selectedArticleId));
+    // 源文件夹文章数 -1，目标文件夹文章数 +1
+    const movedCollection = prevData.find(c => c.articleId === selectedArticleId);
+    setFolders(prevFolders.map(f => {
+      if (movedCollection && movedCollection.folderId === f.id && f.articleCount > 0) {
+        return { ...f, articleCount: f.articleCount - 1 };
+      }
+      if (f.id === selectedTargetFolderId) {
+        return { ...f, articleCount: f.articleCount + 1 };
+      }
+      return f;
+    }));
+
     setIsMoving(true);
     try {
       const response = await articleService.moveCollectionArticle(selectedArticleId, selectedTargetFolderId);
@@ -471,13 +532,16 @@ const MyCollections: React.FC = () => {
           placement: 'top'
         });
         setMoveModalVisible(false);
-        // 重新加载数据
-        refresh();
-        await fetchFolders();
       } else {
+        // 回滚
+        infiniteScroll.setData(prevData);
+        setFolders(prevFolders);
         message.error(response.message || '移动失败');
       }
     } catch {
+      // 回滚
+      infiniteScroll.setData(prevData);
+      setFolders(prevFolders);
       message.error('移动失败，请重试');
     } finally {
       setIsMoving(false);
