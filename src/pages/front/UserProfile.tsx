@@ -19,7 +19,7 @@ import type { IndexArticleListResponse } from '../../services/articleService';
 import articleService from '../../services/articleService';
 import type { ApiPageResponse } from '../../types/common';
 import { followUser, getUserPublicProfile, unfollowUser } from '../../services/userService';
-import { GenderEnum } from '../../types/enums';
+import { GenderEnum, UserStatusEnum } from '../../types/enums';
 import { formatDateOnly, formatDateTimeShort } from '../../utils';
 import LazyImage from '../../components/common/LazyImage';
 import { useUserStore } from '../../store';
@@ -42,6 +42,7 @@ interface UserInfo {
   commentCount: number;
   followerCount: number;
   followingCount: number;
+  status?: UserStatusEnum;
   socialLinks: {
     github?: string;
     twitter?: string;
@@ -74,6 +75,7 @@ const UserProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showFullSignature, setShowFullSignature] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [isCancelled, setIsCancelled] = useState(false);
   // 获取作者信息
   useEffect(() => {
     const fetchUserProfile = async (): Promise<void> => {
@@ -88,20 +90,23 @@ const UserProfile: React.FC = () => {
           }
           const userInfo = userData.data;
           // 转换数据格式
+          const isCancelledUser = userInfo.status === UserStatusEnum.CANCELLED;
+          setIsCancelled(isCancelledUser);
           const formattedUser: UserInfo = {
             id: userInfo.id || '',
-            nickname: userInfo.nickname || '未知用户',
-            avatar: userInfo.avatar || '',
-            coverImage: userInfo.coverImage || '',
-            signature: userInfo.signature || '',
-            gender: userInfo.gender || GenderEnum.UNKNOWN,
-            location: userInfo.location || '',
+            nickname: isCancelledUser ? '已注销用户' : (userInfo.nickname || '未知用户'),
+            avatar: isCancelledUser ? '' : (userInfo.avatar || ''),
+            coverImage: isCancelledUser ? '' : (userInfo.coverImage || ''),
+            signature: isCancelledUser ? '' : (userInfo.signature || ''),
+            gender: GenderEnum.UNKNOWN,
+            location: isCancelledUser ? '' : (userInfo.location || ''),
             joinTime: userInfo.registerTime ? formatDateOnly(userInfo.registerTime) : '',
             articleCount: userInfo.articleCount || 0,
             likeCount: userInfo.likeCount || 0,
             commentCount: userInfo.commentCount || 0,
             followerCount: userInfo.followerCount || 0,
             followingCount: userInfo.followCount || 0,
+            status: isCancelledUser ? UserStatusEnum.CANCELLED : UserStatusEnum.NORMAL,
             socialLinks: {}
           };
           setUser(formattedUser);
@@ -110,7 +115,7 @@ const UserProfile: React.FC = () => {
           }
         } catch {
           message.error('获取用户资料失败或用户不存在');
-          // 重置为默认值，避免页面显示异常
+          setIsCancelled(false);
           setUser({
             id: '',
             nickname: '未知用户',
@@ -344,6 +349,7 @@ const UserProfile: React.FC = () => {
                   }}
                 >
                   {/* 关注按钮 */}
+                  {!isCancelled && (
                   <div className="absolute bottom-6 right-6">
                     <Button
                       type={isFollowing ? 'default' : 'primary'}
@@ -354,6 +360,7 @@ const UserProfile: React.FC = () => {
                       {isFollowing ? '已关注' : '关注'}
                     </Button>
                   </div>
+                  )}
 
                   {/* 用户信息叠加在封面图片上 */}
                   <div

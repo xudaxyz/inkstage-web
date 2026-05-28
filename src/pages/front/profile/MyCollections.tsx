@@ -649,7 +649,7 @@ const MyCollections: React.FC = () => {
                     <div className="flex items-center">
                       {isSortMode ? (
                         <>
-                          <SortAscendingOutlined className="mr-2" />
+                          <SortAscendingOutlined style={{ fontSize: '14px' }} className="mr-2" />
                           <span className="font-normal dark:text-gray-300">排序</span>
                         </>
                       ) : (
@@ -672,7 +672,7 @@ const MyCollections: React.FC = () => {
                     ) : (
                       <div className="flex items-center gap-1">
                         <Button type="text" size="small" onClick={handleEnterSortMode} title="排序">
-                          <SortAscendingOutlined style={{ fontSize: '13px' }} />
+                          <SortAscendingOutlined style={{ fontSize: '14px' }} />
                         </Button>
                         <Button type="text" size="small" onClick={() => setShowFolderList(!showFolderList)}>
                           {showFolderList ? (

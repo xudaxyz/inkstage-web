@@ -305,11 +305,11 @@ const authService = {
   /**
    * 删除账号
    */
-  deleteAccount: async (password: string): Promise<ApiResponse<null>> => {
-    if (!password) {
+  deleteAccount: async (params: { password: string; cleanContent?: boolean; cleanInteraction?: boolean }): Promise<ApiResponse<null>> => {
+    if (!params.password) {
       throw new Error('密码不能为空');
     }
-    return apiClient.delete(API_ENDPOINTS.FRONT.USER.DELETE_ACCOUNT, { params: { password } });
+    return apiClient.delete(API_ENDPOINTS.FRONT.USER.DELETE_ACCOUNT, { data: params });
   },
 
   /**

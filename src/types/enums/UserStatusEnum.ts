@@ -4,7 +4,8 @@ export const UserStatusEnum = {
   DISABLED: 'DISABLED',
   NORMAL: 'NORMAL',
   PENDING: 'PENDING',
-  PENDING_DELETE: 'PENDING_DELETE'
+  PENDING_DELETE: 'PENDING_DELETE',
+  CANCELLED: 'CANCELLED'
 } as const;
 
 export type UserStatusEnum = typeof UserStatusEnum[keyof typeof UserStatusEnum];
@@ -14,7 +15,8 @@ export const UserStatusEnumLabel: Record<UserStatusEnum, string> = {
   [UserStatusEnum.DISABLED]: '禁用',
   [UserStatusEnum.NORMAL]: '正常',
   [UserStatusEnum.PENDING]: '待审核',
-  [UserStatusEnum.PENDING_DELETE]: '待删除'
+  [UserStatusEnum.PENDING_DELETE]: '待删除',
+  [UserStatusEnum.CANCELLED]: '已注销'
 };
 
 // 从代码获取用户状态枚举

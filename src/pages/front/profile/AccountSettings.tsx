@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Card, Form, Input, List, message, Modal } from 'antd';
+import { Alert, Button, Card, Checkbox, Form, Input, List, message, Modal } from 'antd';
 import type { RuleObject } from 'antd/es/form';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +39,8 @@ const AccountSettings: React.FC = () => {
   const [deleteAccountForm] = Form.useForm();
   const [deleteSuccessAlert, setDeleteSuccessAlert] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [cleanContent, setCleanContent] = useState(false);
+  const [cleanInteraction, setCleanInteraction] = useState(false);
 
   // 页面加载时检测 PENDING_DELETE 状态（用户刷新页面的情况）
   useEffect(() => {
@@ -139,10 +141,16 @@ const AccountSettings: React.FC = () => {
     try {
       const values = await deleteAccountForm.validateFields();
       setDeleteAccountLoading(true);
-      const response = await authService.deleteAccount(values.password);
+      const response = await authService.deleteAccount({
+        password: values.password,
+        cleanContent,
+        cleanInteraction
+      });
       if (response.code === 200) {
         setDeleteAccountOpen(false);
         deleteAccountForm.resetFields();
+        setCleanContent(false);
+        setCleanInteraction(false);
         setDeleteSuccessAlert(true);
         setCountdown(10);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -387,18 +395,55 @@ const AccountSettings: React.FC = () => {
         onCancel={() => {
           setDeleteAccountOpen(false);
           deleteAccountForm.resetFields();
+          setCleanContent(false);
+          setCleanInteraction(false);
         }}
         confirmLoading={deleteAccountLoading}
-        okText="确认删除"
+        okText="确认注销"
         cancelText="取消"
         okButtonProps={{ danger: true }}
+        width={520}
       >
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-red-600 dark:text-red-400 font-medium mb-1">警告：此操作不可恢复！</p>
-          <p className="text-red-500 dark:text-red-400 text-sm">
-            删除后您的所有数据将被永久清除，包括文章、评论、收藏等。
+        <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+          <p className="text-orange-600 dark:text-orange-400 font-medium mb-1">注销账号提醒</p>
+          <p className="text-orange-500 dark:text-orange-400 text-sm">
+            提交注销申请后，账号将进入30天冷静期。冷静期内您可随时登录恢复账号，30天后账号将被永久注销且无法恢复。
           </p>
         </div>
+
+        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <p className="text-gray-700 dark:text-gray-300 font-medium mb-3">注销时，是否同时清除您的内容？</p>
+          <div className="space-y-3">
+            <Checkbox
+              checked={cleanContent}
+              onChange={(e) => setCleanContent(e.target.checked)}
+            >
+              <span className="text-gray-700 dark:text-gray-300">清除我的内容（文章、专栏、评论）</span>
+            </Checkbox>
+            <div className="ml-6 text-xs text-gray-500 dark:text-gray-400">
+              注销后立即不可见，30天后永久删除。冷静期内恢复账号可还原。
+            </div>
+
+            <Checkbox
+              checked={cleanInteraction}
+              onChange={(e) => setCleanInteraction(e.target.checked)}
+            >
+              <span className="text-gray-700 dark:text-gray-300">清除我的互动记录（点赞、收藏）</span>
+            </Checkbox>
+            <div className="ml-6 text-xs text-gray-500 dark:text-gray-400">
+              注销后立即清除，30天后永久删除。冷静期内恢复账号可还原。
+            </div>
+          </div>
+
+          {!cleanContent && !cleanInteraction && (
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                如不勾选，账户注销后您的文章相关内容将继续保留，作者显示为「已注销用户」。
+              </p>
+            </div>
+          )}
+        </div>
+
         <Form form={deleteAccountForm} layout="vertical">
           <Form.Item
             name="password"

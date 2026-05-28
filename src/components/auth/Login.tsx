@@ -332,8 +332,8 @@ const Login: React.FC = () => {
         maskClosable={false}
         keyboard={false}
         footer={
-          <div className="flex justify-end gap-3">
-            <Button onClick={handleContinueDeletion}>
+          <div className="flex justify-between gap-3">
+            <Button variant="solid" color="orange" onClick={handleContinueDeletion}>
               继续注销
             </Button>
             <Button type="primary" loading={restoreLoading} onClick={handleRestoreAccount}>
@@ -351,7 +351,7 @@ const Login: React.FC = () => {
             </span> 被永久删除。
           </p>
           <p className="text-gray-500 text-sm">
-            如果您改变主意，可以点击「恢复账号」撤销注销申请。注销期间您仍可正常使用账号。
+            如果您改变主意，可以点击「恢复账号」撤销注销申请。
           </p>
         </div>
       </Modal>

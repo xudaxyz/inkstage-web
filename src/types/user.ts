@@ -26,6 +26,7 @@ export interface UserInfo {
     followerCount: number;
     followCount: number;
     registerTime: string;
+    status: UserStatusEnum;
 }
 
 // 后台用户管理相关类型
