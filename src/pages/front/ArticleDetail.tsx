@@ -436,7 +436,18 @@ const ArticleDetail: React.FC = () => {
     if (success) {
       notification.success({
         title: '移动成功',
-        description: '文章已成功移动到指定收藏夹',
+        description: (
+          <div>
+            <span>文章已成功移动到指定收藏夹</span>
+            <Button
+              type="link"
+              size="small"
+              onClick={() => navigate(ROUTES.MY_COLLECTIONS)}
+            >
+              点击查看
+            </Button>
+          </div>
+        ),
         duration: 3,
         placement: 'top'
       });

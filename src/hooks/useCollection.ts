@@ -1,21 +1,19 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { message } from 'antd';
 import articleService from '../services/articleService';
-
-// 收藏文件夹类型定义
-export interface CollectionFolder {
-    id: string;
-    name: string;
-    articleCount: number;
-    defaultFolder: boolean;
-}
+import type { CollectionFolder } from '../types/article';
+import { ArticleCollectionStatusEnum, DefaultStatusEnum } from '../types/enums';
+import { CONSTANTS } from '../constants/common';
 
 // 文件夹API响应类型
 interface FolderApiResponse {
-    id: string;
-    name: string;
-    articleCount: number;
-    defaultFolder: number | string;
+  id: string;
+  name: string;
+  description: string;
+  articleCount: number;
+  sortOrder: number;
+  defaultFolder: DefaultStatusEnum;
+  status: ArticleCollectionStatusEnum;
 }
 
 const useCollection = (): {
@@ -28,7 +26,10 @@ const useCollection = (): {
   collectArticle: (articleId: string, folderId?: string) => Promise<boolean>;
   unCollectArticle: (articleId: string) => Promise<boolean>;
   moveCollection: (articleId: string, targetFolderId: string) => Promise<boolean>;
-  createFolder: (folderName: string) => Promise<boolean>;
+  createFolder: (name: string, description?: string, status?: ArticleCollectionStatusEnum) => Promise<boolean>;
+  updateFolder: (folderId: string, name: string, description?: string, status?: ArticleCollectionStatusEnum) => Promise<boolean>;
+  deleteFolder: (folderId: string, strategy?: string) => Promise<boolean>;
+  sortFolders: (folderIds: string[]) => Promise<boolean>;
   checkCollectionStatus: (articleId: string) => Promise<boolean>;
 } => {
   const [isCollecting, setIsCollecting] = useState(false);
@@ -36,22 +37,28 @@ const useCollection = (): {
   const [folders, setFolders] = useState<CollectionFolder[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<string>('');
 
+  // 格式化文件夹数据
+  const formatFolder = (folder: FolderApiResponse): CollectionFolder => ({
+    id: folder.id,
+    name: folder.name,
+    description: folder.description || '',
+    articleCount: folder.articleCount || 0,
+    sortOrder: folder.sortOrder || 0,
+    defaultFolder: folder.defaultFolder || DefaultStatusEnum.YES,
+    status: folder.status || ArticleCollectionStatusEnum.PUBLIC
+  });
+
   // 获取收藏文件夹列表
   const fetchFolders = useCallback(async (): Promise<CollectionFolder[]> => {
     setIsLoadingFolders(true);
     try {
       const response = await articleService.getCollectionFolders();
       if (response.code === 200 && response.data) {
-        const formattedFolders: CollectionFolder[] = response.data.map((folder: FolderApiResponse) => ({
-          id: folder.id,
-          name: folder.name,
-          articleCount: folder.articleCount || 0,
-          defaultFolder: folder.defaultFolder === 1 || folder.defaultFolder === 'YES'
-        }));
+        const formattedFolders: CollectionFolder[] = response.data.map(formatFolder);
         setFolders(formattedFolders);
 
         // 默认选择默认文件夹
-        const defaultFolder = response.data.find((folder: FolderApiResponse) => folder.defaultFolder === 1 || folder.defaultFolder === 'YES');
+        const defaultFolder = formattedFolders.find((folder) => folder.defaultFolder === DefaultStatusEnum.YES);
         if (defaultFolder) {
           setSelectedFolderId(defaultFolder.id);
         }
@@ -59,8 +66,7 @@ const useCollection = (): {
         return formattedFolders;
       }
       return [];
-    } catch (error) {
-      console.error('获取收藏文件夹失败:', error);
+    } catch {
       message.error('获取收藏文件夹失败');
       return [];
     } finally {
@@ -79,8 +85,7 @@ const useCollection = (): {
         message.error(response.message || '收藏失败');
         return false;
       }
-    } catch (error) {
-      console.error('收藏失败:', error);
+    } catch {
       message.error('收藏失败，请重试');
       return false;
     } finally {
@@ -99,8 +104,7 @@ const useCollection = (): {
         message.error(response.message || '取消收藏失败');
         return false;
       }
-    } catch (error) {
-      console.error('取消收藏失败:', error);
+    } catch {
       message.error('取消收藏失败，请重试');
       return false;
     } finally {
@@ -119,8 +123,7 @@ const useCollection = (): {
         message.error(response.message || '移动失败');
         return false;
       }
-    } catch (error) {
-      console.error('移动收藏失败:', error);
+    } catch {
       message.error('移动失败，请重试');
       return false;
     } finally {
@@ -129,20 +132,69 @@ const useCollection = (): {
   }, []);
 
   // 创建新收藏夹
-  const createFolder = useCallback(async (folderName: string): Promise<boolean> => {
+  const createFolder = useCallback(async (name: string, description?: string, status?: ArticleCollectionStatusEnum): Promise<boolean> => {
     try {
-      const response = await articleService.createCollectionFolder({ folderName });
+      const response = await articleService.createCollectionFolder({ name, description, status });
       if (response.code === 200 && response.data) {
-        // 重新获取文件夹列表
         await fetchFolders();
         return true;
       } else {
         message.error(response.message || '创建收藏夹失败');
         return false;
       }
-    } catch (error) {
-      console.error('创建收藏夹失败:', error);
+    } catch {
       message.error('创建收藏夹失败');
+      return false;
+    }
+  }, [fetchFolders]);
+
+  // 更新收藏夹
+  const updateFolder = useCallback(async (folderId: string, name: string, description?: string, status?: ArticleCollectionStatusEnum): Promise<boolean> => {
+    try {
+      const response = await articleService.updateCollectionFolder(folderId, { name, description, status });
+      if (response.code === 200) {
+        await fetchFolders();
+        return true;
+      } else {
+        message.error(response.message || '更新收藏夹失败');
+        return false;
+      }
+    } catch {
+      message.error('更新收藏夹失败');
+      return false;
+    }
+  }, [fetchFolders]);
+
+  // 删除收藏夹
+  const deleteFolder = useCallback(async (folderId: string, strategy: string = CONSTANTS.COLLECT_DELETE_STRATEGY_MOVE_TO_DEFAULT): Promise<boolean> => {
+    try {
+      const response = await articleService.deleteCollectionFolder(folderId, strategy);
+      if (response.code === 200) {
+        await fetchFolders();
+        return true;
+      } else {
+        message.error(response.message || '删除收藏夹失败');
+        return false;
+      }
+    } catch {
+      message.error('删除收藏夹失败');
+      return false;
+    }
+  }, [fetchFolders]);
+
+  // 批量更新收藏夹排序
+  const sortFolders = useCallback(async (folderIds: string[]): Promise<boolean> => {
+    try {
+      const response = await articleService.batchUpdateFolderSort(folderIds);
+      if (response.code === 200) {
+        await fetchFolders();
+        return true;
+      } else {
+        message.error(response.message || '排序更新失败');
+        return false;
+      }
+    } catch {
+      message.error('排序更新失败');
       return false;
     }
   }, [fetchFolders]);
@@ -155,8 +207,7 @@ const useCollection = (): {
         return response.data;
       }
       return false;
-    } catch (error) {
-      console.error('检查收藏状态失败:', error);
+    } catch {
       return false;
     }
   }, []);
@@ -172,6 +223,9 @@ const useCollection = (): {
     unCollectArticle,
     moveCollection,
     createFolder,
+    updateFolder,
+    deleteFolder,
+    sortFolders,
     checkCollectionStatus
   };
 };

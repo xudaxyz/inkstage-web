@@ -6,10 +6,21 @@ import {
   ArticleOriginalEnum,
   ArticleReviewStatusEnum,
   ArticleStatusEnum,
-  ArticleVisibleEnum,
+  ArticleVisibleEnum, DefaultStatusEnum,
   GenderEnum,
   RecommendedEnum
 } from './enums';
+
+// 收藏文件夹类型定义
+export interface CollectionFolder {
+  id: string;
+  name: string;
+  description: string;
+  articleCount: number;
+  sortOrder: number;
+  defaultFolder: DefaultStatusEnum;
+  status: ArticleCollectionStatusEnum;
+}
 
 // 文章类型定义
 export interface Article {

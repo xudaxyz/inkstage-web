@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Input, message, Modal, Spin } from 'antd';
-import { CheckOutlined, FolderAddOutlined, FolderOutlined } from '@ant-design/icons';
-import type { CollectionFolder } from '../../hooks/useCollection';
+import { Button, Input, message, Modal, Spin, Switch } from 'antd';
+import { CheckOutlined, FolderAddOutlined, FolderOutlined, LockOutlined } from '@ant-design/icons';
+import type { CollectionFolder } from '../../types/article';
+import { ArticleCollectionStatusEnum, DefaultStatusEnum } from '../../types/enums';
 
 interface CollectionFolderModalProps {
   visible: boolean;
@@ -11,7 +12,7 @@ interface CollectionFolderModalProps {
   loading: boolean;
   selectedFolderId: string;
   onSelectFolder: (folderId: string) => void;
-  onCreateFolder: (folderName: string) => Promise<boolean>;
+  onCreateFolder: (name: string, description?: string, status?: ArticleCollectionStatusEnum) => Promise<boolean>;
 }
 
 const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
@@ -25,11 +26,15 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
   onCreateFolder
 }) => {
   const [newFolderName, setNewFolderName] = useState('');
+  const [newFolderDescription, setNewFolderDescription] = useState('');
+  const [newFolderPublic, setNewFolderPublic] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setNewFolderName('');
+      setNewFolderDescription('');
+      setNewFolderPublic(true);
     }
   }, [visible]);
 
@@ -41,9 +46,12 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
 
     setIsCreating(true);
     try {
-      const success = await onCreateFolder(newFolderName);
+      const status = newFolderPublic ? ArticleCollectionStatusEnum.PUBLIC : ArticleCollectionStatusEnum.PRIVATE;
+      const success = await onCreateFolder(newFolderName, newFolderDescription || undefined, status);
       if (success) {
         setNewFolderName('');
+        setNewFolderDescription('');
+        setNewFolderPublic(true);
       }
     } catch (error) {
       console.error('创建收藏夹失败:', error);
@@ -89,9 +97,12 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
                   onClick={() => onSelectFolder(folder.id)}
                 >
                   <div className="flex items-center">
-                    <FolderOutlined className={`mr-3 ${folder.defaultFolder ? 'text-blue-500' : 'text-gray-500'}`} />
+                    <FolderOutlined className={`mr-3 ${folder.defaultFolder === DefaultStatusEnum.YES ? 'text-blue-500' : 'text-gray-500'}`} />
                     <span className="text-gray-800">{folder.name}</span>
-                    {folder.defaultFolder && (
+                    {folder.status === ArticleCollectionStatusEnum.PRIVATE && (
+                      <LockOutlined className="ml-1.5 text-xs text-gray-400" />
+                    )}
+                    {folder.defaultFolder === DefaultStatusEnum.YES && (
                       <span className="ml-2 text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">默认</span>
                     )}
                   </div>
@@ -108,23 +119,39 @@ const CollectionFolderModal: React.FC<CollectionFolderModalProps> = ({
         {/* 创建新收藏夹 */}
         <div className="pt-4 border-t border-gray-100">
           <h4 className="text-sm font-medium mb-3 text-gray-700">创建新收藏夹</h4>
-          <div className="flex gap-2">
-            <Input
-              placeholder="输入收藏夹名称"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              style={{ flex: 1 }}
-              size="middle"
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Input
+                placeholder="输入收藏夹名称"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                style={{ flex: 1 }}
+                size="middle"
+              />
+              <Button
+                type="primary"
+                size="middle"
+                onClick={handleCreateFolder}
+                loading={isCreating}
+                icon={<FolderAddOutlined />}
+              >
+                创建
+              </Button>
+            </div>
+            <Input.TextArea
+              placeholder="收藏夹描述（可选）"
+              value={newFolderDescription}
+              onChange={(e) => setNewFolderDescription(e.target.value)}
+              rows={2}
             />
-            <Button
-              type="primary"
-              size="middle"
-              onClick={handleCreateFolder}
-              loading={isCreating}
-              icon={<FolderAddOutlined />}
-            >
-              创建
-            </Button>
+            <div className="flex mt-2 items-center justify-start">
+              <span className="text-sm text-gray-500 mr-2">公开收藏夹</span>
+              <Switch
+                size="small"
+                checked={newFolderPublic}
+                onChange={setNewFolderPublic}
+              />
+            </div>
           </div>
         </div>
       </div>

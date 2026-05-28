@@ -6,13 +6,15 @@ import type {
   Article,
   ArticleDetailInfo,
   BannerArticle,
+  CollectionFolder,
   IndexArticleList,
   LatestArticle,
   MyArticleCollectionList,
   MyArticleList,
   UpdatedAdminArticleFields
 } from '../types/article';
-import { type AllowTopEnum, ArticleStatusEnum, DefaultStatusEnum } from '../types/enums';
+import { type AllowTopEnum, ArticleCollectionStatusEnum, ArticleStatusEnum } from '../types/enums';
+import { CONSTANTS } from '../constants/common';
 // 前台首页文章列表响应类型
 export type IndexArticleListResponse<T = IndexArticleList> = ApiPageResponse<T>;
 // 后台文章列表响应类型
@@ -224,8 +226,6 @@ const articleService = {
   collectArticle: async (params: {
     articleId: string;
     folderId?: string;
-    folderName?: string;
-    folderDescription?: string;
   }): Promise<ApiResponse<boolean>> => {
     if (!params || typeof params !== 'object') {
       throw new Error('参数必须是对象');
@@ -233,9 +233,6 @@ const articleService = {
     validateIdParam(params.articleId);
     if (params.folderId) {
       validateIdParam(params.folderId);
-    }
-    if (params.folderName && params.folderName.length > 50) {
-      throw new Error('文件夹名称不能超过50个字符');
     }
     return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.COLLECT, params);
   },
@@ -286,16 +283,7 @@ const articleService = {
     return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.LIST, { params });
   },
   // 获取用户的收藏文件夹列表
-  getCollectionFolders: async (): Promise<
-    ApiResponse<
-      Array<{
-        id: string;
-        name: string;
-        articleCount: number;
-        defaultFolder: DefaultStatusEnum | string;
-      }>
-    >
-  > => {
+  getCollectionFolders: async (): Promise<ApiResponse<CollectionFolder[]>> => {
     return await apiClient.get(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.FOLDERS);
   },
   // 获取用户的总收藏数
@@ -308,24 +296,25 @@ const articleService = {
     validateIdParam(targetFolderId);
     return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.MOVE, {
       articleId,
-      folderId: targetFolderId
+      targetFolderId
     });
   },
   // 创建收藏文件夹
   createCollectionFolder: async (params: {
-    folderName: string;
-    folderDescription?: string;
+    name: string;
+    description?: string;
+    status?: ArticleCollectionStatusEnum;
   }): Promise<ApiResponse<string>> => {
     if (!params || typeof params !== 'object') {
       throw new Error('参数必须是对象');
     }
-    if (!params.folderName || params.folderName.trim().length === 0) {
+    if (!params.name || params.name.trim().length === 0) {
       throw new Error('文件夹名称不能为空');
     }
-    if (params.folderName.length > 50) {
+    if (params.name.length > 50) {
       throw new Error('文件夹名称不能超过50个字符');
     }
-    if (params.folderDescription && params.folderDescription.length > 200) {
+    if (params.description && params.description.length > 200) {
       throw new Error('文件夹描述不能超过200个字符');
     }
     return await apiClient.post(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.CREATE_FOLDER, params);
@@ -333,28 +322,34 @@ const articleService = {
   // 更新收藏文件夹
   updateCollectionFolder: async (
     folderId: string,
-    name: string,
-    description?: string
+    params: {
+      name: string;
+      description?: string;
+      status?: ArticleCollectionStatusEnum;
+    }
   ): Promise<ApiResponse<boolean>> => {
     validateIdParam(folderId);
-    if (!name || name.trim().length === 0) {
+    if (!params.name || params.name.trim().length === 0) {
       throw new Error('文件夹名称不能为空');
     }
-    if (name.length > 50) {
+    if (params.name.length > 50) {
       throw new Error('文件夹名称不能超过50个字符');
     }
-    if (description && description.length > 200) {
+    if (params.description && params.description.length > 200) {
       throw new Error('文件夹描述不能超过200个字符');
     }
-    return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.UPDATE_FOLDER(folderId), {
-      name,
-      description
-    });
+    return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.UPDATE_FOLDER(folderId), params);
   },
   // 删除收藏文件夹
-  deleteCollectionFolder: async (folderId: string): Promise<ApiResponse<boolean>> => {
+  deleteCollectionFolder: async (folderId: string, strategy: string = CONSTANTS.COLLECT_DELETE_STRATEGY_MOVE_TO_DEFAULT): Promise<ApiResponse<boolean>> => {
     validateIdParam(folderId);
-    return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.DELETE_FOLDER(folderId));
+    return await apiClient.delete(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.DELETE_FOLDER(folderId), {
+      params: { strategy }
+    });
+  },
+  // 批量更新收藏文件夹排序
+  batchUpdateFolderSort: async (folderIds: string[]): Promise<ApiResponse<boolean>> => {
+    return await apiClient.put(API_ENDPOINTS.FRONT.ARTICLE.COLLECTIONS.SORT_FOLDERS, folderIds);
   },
   // 管理员相关方法
   admin: {

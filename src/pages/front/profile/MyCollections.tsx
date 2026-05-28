@@ -1,11 +1,26 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Card, Form, Input, message, Modal, notification, Popover, Space, Spin, Tag } from 'antd';
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  message,
+  Modal,
+  notification,
+  Popover,
+  Radio,
+  Space,
+  Spin,
+  Switch,
+  Tag
+} from 'antd';
 import { Helmet } from 'react-helmet-async';
 import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import {
   DeleteOutlined,
   DownOutlined,
+  EditOutlined,
   EyeOutlined,
   FlagOutlined,
   FolderAddOutlined,
@@ -13,28 +28,24 @@ import {
   FolderOpenOutlined,
   FolderOutlined,
   FolderTwoTone,
+  HolderOutlined,
   LikeOutlined,
+  LockOutlined,
   MessageOutlined,
   MoreOutlined,
   SearchOutlined,
   ShareAltOutlined,
+  SortAscendingOutlined,
   StarOutlined,
   UpOutlined
 } from '@ant-design/icons';
 import { ROUTES } from '../../../constants/routes';
 import articleService from '../../../services/articleService';
-import { type MyArticleCollectionList } from '../../../types/article';
-import { ArticleOriginalMap, DefaultStatusEnum } from '../../../types/enums';
-import { formatDateTimeShort, computePageResponse } from '../../../utils';
+import { type CollectionFolder, type MyArticleCollectionList } from '../../../types/article';
+import { ArticleCollectionStatusEnum, ArticleOriginalMap, DefaultStatusEnum } from '../../../types/enums';
+import { computePageResponse, formatDateTimeShort } from '../../../utils';
 import { useTheme } from '../../../store';
-
-// 收藏夹类型定义
-interface CollectionFolder {
-  id: string;
-  name: string;
-  count: number;
-  isDefault: boolean;
-}
+import { CONSTANTS } from '../../../constants/common';
 
 // 排序类型
 type SortType = 'recent' | 'mostLiked' | 'mostViewed';
@@ -47,7 +58,7 @@ const MyCollections: React.FC = () => {
   const [selectedFolder, setSelectedFolder] = useState<string>('all');
   const [sortType, setSortType] = useState<SortType>('recent');
   const [searchText, setSearchText] = useState('');
-  const [showFolderList, setShowFolderList] = useState(false);
+  const [showFolderList, setShowFolderList] = useState(true);
   const [totalCollectionCount, setTotalCollectionCount] = useState(0);
   const [loadingFolders, setLoadingFolders] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -61,6 +72,22 @@ const MyCollections: React.FC = () => {
   const [isCreateFolderForMove, setIsCreateFolderForMove] = useState(false);
   const [newFolderNameForMove, setNewFolderNameForMove] = useState('');
   const [newFolderDescriptionForMove, setNewFolderDescriptionForMove] = useState('');
+  // 编辑收藏夹相关状态
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<CollectionFolder | null>(null);
+  const [editFolderLoading, setEditFolderLoading] = useState(false);
+  const [editForm] = Form.useForm();
+  // 删除收藏夹相关状态
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [deletingFolder, setDeletingFolder] = useState<CollectionFolder | null>(null);
+  const [deleteStrategy, setDeleteStrategy] = useState<string>(CONSTANTS.COLLECT_DELETE_STRATEGY_MOVE_TO_DEFAULT);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  // 排序模式相关状态
+  const [isSortMode, setIsSortMode] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [localFolders, setLocalFolders] = useState<CollectionFolder[]>([]);
+  const originalFoldersRef = useRef<CollectionFolder[]>([]);
   // 无限滚动相关引用
   const selectedFolderRef = useRef(selectedFolder);
   const sortTypeRef = useRef(sortType);
@@ -130,18 +157,22 @@ const MyCollections: React.FC = () => {
     setLoadingFolders(true);
     try {
       const response = await articleService.getCollectionFolders();
+      console.log('getCollectionFolders', response);
       if (response.code === 200 && response.data) {
         const formattedFolders: CollectionFolder[] = response.data.map(
-          (folder: { id: string; name: string; articleCount: number; defaultFolder: DefaultStatusEnum | string }) => ({
+          (folder: CollectionFolder) => ({
             id: folder.id,
             name: folder.name,
-            count: folder.articleCount || 0,
-            isDefault: folder.defaultFolder === DefaultStatusEnum.YES
+            description: folder.description || '',
+            articleCount: folder.articleCount || 0,
+            sortOrder: folder.sortOrder || 0,
+            defaultFolder: folder.defaultFolder || DefaultStatusEnum.YES,
+            status: folder.status || ArticleCollectionStatusEnum.PUBLIC
           })
         );
         setFolders(formattedFolders);
         // 提取默认收藏夹ID
-        const defaultFolder = formattedFolders.find((f) => f.isDefault);
+        const defaultFolder = formattedFolders.find((f) => f.defaultFolder === DefaultStatusEnum.YES);
         if (defaultFolder) {
           setDefaultFolderId(defaultFolder.id);
         }
@@ -214,12 +245,18 @@ const MyCollections: React.FC = () => {
     setIsCreateModalVisible(false);
   };
   // 提交新建收藏夹表单
-  const handleCreateFolder = async (values: { folderName: string; folderDescription?: string }): Promise<void> => {
+  const handleCreateFolder = async (values: {
+    name: string;
+    description?: string;
+    isPublic?: boolean
+  }): Promise<void> => {
     setCreateFolderLoading(true);
     try {
+      const status = values.isPublic !== false ? ArticleCollectionStatusEnum.PUBLIC : ArticleCollectionStatusEnum.PRIVATE;
       const response = await articleService.createCollectionFolder({
-        folderName: values.folderName,
-        folderDescription: values.folderDescription
+        name: values.name,
+        description: values.description,
+        status
       });
       if (response.code === 200 && response.data) {
         message.success('收藏夹创建成功');
@@ -229,13 +266,166 @@ const MyCollections: React.FC = () => {
       } else {
         message.error(response.message || '创建收藏夹失败');
       }
-    } catch (error) {
+    } catch {
       message.error('创建收藏夹失败，请重试');
-      console.error('创建收藏夹失败:', error);
     } finally {
       setCreateFolderLoading(false);
     }
   };
+  // 打开编辑收藏夹模态框
+  const handleOpenEditModal = (folder: CollectionFolder): void => {
+    setEditingFolder(folder);
+    editForm.setFieldsValue({
+      name: folder.name,
+      description: folder.description,
+      isPublic: folder.status === ArticleCollectionStatusEnum.PUBLIC
+    });
+    setIsEditModalVisible(true);
+  };
+
+  // 关闭编辑收藏夹模态框
+  const handleCloseEditModal = (): void => {
+    setIsEditModalVisible(false);
+    setEditingFolder(null);
+  };
+
+  // 提交编辑收藏夹表单
+  const handleEditFolder = async (values: {
+    name: string;
+    description?: string;
+    isPublic?: boolean
+  }): Promise<void> => {
+    if (!editingFolder) return;
+    setEditFolderLoading(true);
+    try {
+      const status = values.isPublic ? ArticleCollectionStatusEnum.PUBLIC : ArticleCollectionStatusEnum.PRIVATE;
+      const response = await articleService.updateCollectionFolder(editingFolder.id, {
+        name: values.name,
+        description: values.description,
+        status
+      });
+      if (response.code === 200) {
+        message.success('收藏夹更新成功');
+        setIsEditModalVisible(false);
+        await fetchFolders();
+      } else {
+        message.error(response.message || '更新收藏夹失败');
+      }
+    } catch (error) {
+      message.error('更新收藏夹失败，请重试');
+      console.error('更新收藏夹失败:', error);
+    } finally {
+      setEditFolderLoading(false);
+    }
+  };
+
+  // 打开删除收藏夹模态框
+  const handleOpenDeleteModal = (folder: CollectionFolder): void => {
+    setDeletingFolder(folder);
+    setDeleteStrategy(CONSTANTS.COLLECT_DELETE_STRATEGY_MOVE_TO_DEFAULT);
+    setIsDeleteModalVisible(true);
+  };
+
+  // 关闭删除收藏夹模态框
+  const handleCloseDeleteModal = (): void => {
+    setIsDeleteModalVisible(false);
+    setDeletingFolder(null);
+  };
+
+  // 确认删除收藏夹
+  const handleDeleteFolder = async (): Promise<void> => {
+    if (!deletingFolder) return;
+    setDeleteLoading(true);
+    try {
+      const response = await articleService.deleteCollectionFolder(deletingFolder.id, deleteStrategy);
+      if (response.code === 200) {
+        message.success('收藏夹删除成功');
+        setIsDeleteModalVisible(false);
+        // 如果删除的是当前选中的文件夹，切换到全部
+        if (selectedFolder === deletingFolder.id) {
+          setSelectedFolder('all');
+        }
+        refresh();
+        await fetchFolders();
+        await fetchTotalCollectionCount();
+      } else {
+        message.error(response.message || '删除收藏夹失败');
+      }
+    } catch (error) {
+      message.error('删除收藏夹失败，请重试');
+      console.error('删除收藏夹失败:', error);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // 进入排序模式
+  const handleEnterSortMode = (): void => {
+    const nonDefaultFolders = folders.filter(f => f.defaultFolder !== DefaultStatusEnum.YES);
+    originalFoldersRef.current = [...nonDefaultFolders];
+    setLocalFolders([...nonDefaultFolders]);
+    setIsSortMode(true);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // 取消排序
+  const handleCancelSort = (): void => {
+    setLocalFolders([...originalFoldersRef.current]);
+    setIsSortMode(false);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // 确认排序
+  const handleConfirmSort = async (): Promise<void> => {
+    const folderIds = localFolders.map(f => f.id);
+    try {
+      const response = await articleService.batchUpdateFolderSort(folderIds);
+      if (response.code === 200) {
+        message.success('排序更新成功');
+        setIsSortMode(false);
+        await fetchFolders();
+      } else {
+        message.error(response.message || '排序更新失败');
+      }
+    } catch (error) {
+      message.error('排序更新失败，请重试');
+      console.error('排序更新失败:', error);
+    }
+  };
+
+  // 拖拽排序事件处理
+  const handleDragStart = (e: React.DragEvent, index: number): void => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number): void => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = (): void => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, index: number): void => {
+    e.preventDefault();
+    if (draggedIndex === null) return;
+    const newFolders = [...localFolders];
+    const draggedItem = newFolders[draggedIndex];
+    newFolders.splice(draggedIndex, 1);
+    newFolders.splice(index, 0, draggedItem);
+    setLocalFolders(newFolders);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   // 打开移动模态框
   const handleOpenMoveModal = (articleId: string): void => {
     setSelectedArticleId(articleId);
@@ -265,7 +455,18 @@ const MyCollections: React.FC = () => {
       if (response.code === 200 && response.data) {
         notification.success({
           title: '移动成功',
-          description: '文章已成功移动到指定收藏夹',
+          description: (
+            <div>
+              <span>文章已成功移动到指定收藏夹</span>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => setSelectedFolder(selectedTargetFolderId)}
+              >
+                点击查看
+              </Button>
+            </div>
+          ),
           duration: 3,
           placement: 'top'
         });
@@ -276,9 +477,8 @@ const MyCollections: React.FC = () => {
       } else {
         message.error(response.message || '移动失败');
       }
-    } catch (error) {
+    } catch {
       message.error('移动失败，请重试');
-      console.error('移动收藏失败:', error);
     } finally {
       setIsMoving(false);
     }
@@ -297,8 +497,8 @@ const MyCollections: React.FC = () => {
     try {
       // 创建新收藏夹
       const createResponse = await articleService.createCollectionFolder({
-        folderName: newFolderNameForMove,
-        folderDescription: newFolderDescriptionForMove
+        name: newFolderNameForMove,
+        description: newFolderDescriptionForMove
       });
       if (createResponse.code === 200 && createResponse.data) {
         const newFolderId = createResponse.data;
@@ -380,24 +580,50 @@ const MyCollections: React.FC = () => {
                     <span>新建收藏夹</span>
                   </div>
 
-                  {/* 我的收藏夹标题 */}
+                  {/* 我的收藏夹标题 / 排序模式标题 */}
                   <div className="flex items-center px-3 justify-between mb-3">
                     <div className="flex items-center">
-                      <FolderOutlined className="mr-2" />
-                      <span className="font-normal dark:text-gray-300">我的收藏夹</span>
-                    </div>
-                    <Button type="text" size="small" onClick={() => setShowFolderList(!showFolderList)}>
-                      {showFolderList ? (
-                        <UpOutlined style={{ fontSize: '14px' }} />
+                      {isSortMode ? (
+                        <>
+                          <SortAscendingOutlined className="mr-2" />
+                          <span className="font-normal dark:text-gray-300">排序</span>
+                        </>
                       ) : (
-                        <DownOutlined style={{ fontSize: '14px' }} />
+                        <>
+                          <FolderOutlined className="mr-2" />
+                          <span className="font-normal dark:text-gray-300">我的收藏夹</span>
+                        </>
                       )}
-                    </Button>
+                    </div>
+                    {isSortMode ? (
+                      <div className="flex items-center gap-1">
+                        <Button variant="text" color="primary" size="small" onClick={handleConfirmSort}
+                                className="text-xs text-green-600">
+                          确认
+                        </Button>
+                        <Button variant="text" color="gold" size="small" onClick={handleCancelSort} className="text-xs">
+                          取消
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <Button type="text" size="small" onClick={handleEnterSortMode} title="排序">
+                          <SortAscendingOutlined style={{ fontSize: '13px' }} />
+                        </Button>
+                        <Button type="text" size="small" onClick={() => setShowFolderList(!showFolderList)}>
+                          {showFolderList ? (
+                            <UpOutlined style={{ fontSize: '14px' }} />
+                          ) : (
+                            <DownOutlined style={{ fontSize: '14px' }} />
+                          )}
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* 我的收藏夹列表 */}
-                  {showFolderList && (
-                    <div className="space-y-1 pl-2 pr-3">
+                  {(showFolderList || isSortMode) && (
+                    <div className="space-y-1 pl-2 pr-3 max-h-80 overflow-y-auto scrollbar-thin">
                       {/* 默认收藏夹 */}
                       <div
                         className={`flex items-center px-4 p-2 rounded-lg cursor-pointer ${selectedFolder === 'default' ? 'bg-primary-50 dark:bg-primary-900/20 text-cyan-600' : 'hover:bg-secondary-50 dark:hover:bg-gray-800'}`}
@@ -405,23 +631,57 @@ const MyCollections: React.FC = () => {
                       >
                         <FolderOutlined className="mr-2" />
                         <span className="flex-1">默认收藏夹</span>
-                        <span>{folders.find((f) => f.isDefault)?.count || 0}</span>
+                        {folders.find((f) => f.defaultFolder === DefaultStatusEnum.YES)?.status === ArticleCollectionStatusEnum.PRIVATE && (
+                          <LockOutlined className="mr-1 text-xs text-gray-400" />
+                        )}
+                        <span>{folders.find((f) => f.defaultFolder === DefaultStatusEnum.YES)?.articleCount || 0}</span>
                       </div>
 
                       {/* 其他创建的收藏夹 */}
-                      {folders
-                        .filter((f) => !f.isDefault)
-                        .map((folder) => (
-                          <div
-                            key={folder.id}
-                            className={`flex items-center px-4 p-2 rounded-lg cursor-pointer ${selectedFolder === folder.id ? 'bg-primary-50 dark:bg-primary-900/20 text-cyan-500' : 'hover:bg-secondary-50 dark:hover:bg-gray-800'}`}
-                            onClick={() => setSelectedFolder(folder.id)}
-                          >
-                            <FolderOutlined className="mr-2" />
-                            <span className="flex-1 truncate">{folder.name}</span>
-                            <span>{folder.count}</span>
-                          </div>
-                        ))}
+                      {(isSortMode ? localFolders : folders.filter((f) => f.defaultFolder !== DefaultStatusEnum.YES)).map((folder, index) => (
+                        <div
+                          key={folder.id}
+                          className={`flex items-center px-4 p-2 rounded-lg cursor-pointer group ${
+                            selectedFolder === folder.id ? 'bg-primary-50 dark:bg-primary-900/20 text-cyan-500' : 'hover:bg-secondary-50 dark:hover:bg-gray-800'
+                          } ${isSortMode && dragOverIndex === index ? 'border-t-2 border-cyan-400' : ''}`}
+                          onClick={() => !isSortMode && setSelectedFolder(folder.id)}
+                          draggable={isSortMode}
+                          onDragStart={isSortMode ? (e): void => handleDragStart(e, index) : undefined}
+                          onDragOver={isSortMode ? (e): void => handleDragOver(e, index) : undefined}
+                          onDragLeave={isSortMode ? handleDragLeave : undefined}
+                          onDrop={isSortMode ? (e): void => handleDrop(e, index) : undefined}
+                        >
+                          {isSortMode && (
+                            <HolderOutlined className="mr-1 cursor-grab text-gray-400" />
+                          )}
+                          <FolderOutlined className="mr-2" />
+                          <span className="flex-1 truncate">{folder.name}</span>
+                          {folder.status === ArticleCollectionStatusEnum.PRIVATE && (
+                            <LockOutlined className="mr-1 text-xs text-gray-400" />
+                          )}
+                          {!isSortMode && (
+                            <>
+                              <span>{folder.articleCount}</span>
+                              <span className="ml-1 hidden group-hover:inline-flex items-center gap-1">
+                                <EditOutlined style={{ color: 'orange' }}
+                                              className="text-gray-400 hover:text-blue-500 text-xs"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOpenEditModal(folder);
+                                              }}
+                                />
+                                <DeleteOutlined style={{ color: 'red' }}
+                                                className="text-gray-400 hover:text-red-500 text-xs"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleOpenDeleteModal(folder);
+                                                }}
+                                />
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </>
@@ -432,7 +692,8 @@ const MyCollections: React.FC = () => {
           {/* 右侧文章列表 */}
           <div className="flex-1">
             {/* 排序和搜索区域 */}
-            <div className="border-b border-gray-200 dark:border-gray-700 flex flex-row sm:flex-row flex-wrap justify-between items-start sm:items-center pb-4 mb-6 gap-4">
+            <div
+              className="border-b border-gray-200 dark:border-gray-700 flex flex-row sm:flex-row flex-wrap justify-between items-start sm:items-center pb-4 mb-6 gap-4">
               {/* 排序选项 */}
               <div className="flex flex-wrap gap-2">
                 <Button
@@ -492,11 +753,14 @@ const MyCollections: React.FC = () => {
                     }
                   }}
                 >
-                  <div className={`flex ${collection.coverImage ? 'flex-col sm:flex-row' : 'flex-col'} items-start gap-4`}>
+                  <div
+                    className={`flex ${collection.coverImage ? 'flex-col sm:flex-row' : 'flex-col'} items-start gap-4`}>
                     <div className="flex-1">
                       <div className="flex items-center mb-2">
-                        <h3 className="text-base sm:text-xl font-semibold text-secondary-800 dark:text-white hover:text-primary-600 transition-colors duration-200 flex-1">
-                          <a href={ROUTES.ARTICLE_DETAIL(collection.articleId)} className="hover:underline" target="_blank" rel="noopener noreferrer">
+                        <h3
+                          className="text-base sm:text-xl font-semibold text-secondary-800 dark:text-white hover:text-primary-600 transition-colors duration-200 flex-1">
+                          <a href={ROUTES.ARTICLE_DETAIL(collection.articleId)} className="hover:underline"
+                             target="_blank" rel="noopener noreferrer">
                             {collection.title}
                           </a>
                         </h3>
@@ -504,7 +768,8 @@ const MyCollections: React.FC = () => {
                       <div className="text-sm text-secondary-500 dark:text-gray-300 mb-4 line-clamp-2">
                         {collection.summary}
                       </div>
-                      <div className="hidden sm:flex flex-wrap items-center gap-3 text-sm text-secondary-500 dark:text-gray-400">
+                      <div
+                        className="hidden sm:flex flex-wrap items-center gap-3 text-sm text-secondary-500 dark:text-gray-400">
                         <div className="flex-1 flex flex-wrap items-center gap-3">
                           <div className="flex items-center gap-2">
                             <Tag variant="solid" color="gold">
@@ -513,7 +778,8 @@ const MyCollections: React.FC = () => {
                             <span>{collection.categoryName || '无'}</span>
                           </div>
                           <div className="flex items-center">
-                            <img src={collection.avatar} alt={collection.nickname} className="w-5 h-5 rounded-full object-cover mr-2" />
+                            <img src={collection.avatar} alt={collection.nickname}
+                                 className="w-5 h-5 rounded-full object-cover mr-2" />
                             <span>{collection.nickname}</span>
                           </div>
                           <div className="flex items-center gap-3">
@@ -545,10 +811,12 @@ const MyCollections: React.FC = () => {
                                 <Button icon={<FlagOutlined />} size="small" type="text" onClick={handleReport}>
                                   举报
                                 </Button>
-                                <Button icon={<FolderOpenOutlined />} size="small" type="text" onClick={() => handleOpenMoveModal(collection.articleId)}>
+                                <Button icon={<FolderOpenOutlined />} size="small" type="text"
+                                        onClick={() => handleOpenMoveModal(collection.articleId)}>
                                   移动
                                 </Button>
-                                <Button icon={<DeleteOutlined />} size="small" type="text" danger onClick={() => handleSingleDelete(collection.articleId.toString())}>
+                                <Button icon={<DeleteOutlined />} size="small" type="text" danger
+                                        onClick={() => handleSingleDelete(collection.articleId.toString())}>
                                   取消收藏
                                 </Button>
                               </Space>
@@ -568,7 +836,8 @@ const MyCollections: React.FC = () => {
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
                           <div className="flex items-center">
-                            <img src={collection.avatar} alt={collection.nickname} className="w-5 h-5 rounded-full object-cover mr-2" />
+                            <img src={collection.avatar} alt={collection.nickname}
+                                 className="w-5 h-5 rounded-full object-cover mr-2" />
                             <span>{collection.nickname}</span>
                           </div>
                           <Space size={4}>
@@ -599,10 +868,12 @@ const MyCollections: React.FC = () => {
                                   <Button icon={<FlagOutlined />} size="small" type="text" onClick={handleReport}>
                                     举报
                                   </Button>
-                                  <Button icon={<FolderOpenOutlined />} size="small" type="text" onClick={() => handleOpenMoveModal(collection.articleId)}>
+                                  <Button icon={<FolderOpenOutlined />} size="small" type="text"
+                                          onClick={() => handleOpenMoveModal(collection.articleId)}>
                                     移动
                                   </Button>
-                                  <Button icon={<DeleteOutlined />} size="small" type="text" danger onClick={() => handleSingleDelete(collection.articleId.toString())}>
+                                  <Button icon={<DeleteOutlined />} size="small" type="text" danger
+                                          onClick={() => handleSingleDelete(collection.articleId.toString())}>
                                     取消收藏
                                   </Button>
                                 </Space>
@@ -617,7 +888,8 @@ const MyCollections: React.FC = () => {
                     </div>
                     {collection.coverImage && (
                       <div className="shrink-0 w-full sm:w-48 h-24 sm:h-28">
-                        <img src={collection.coverImage} alt={collection.title} className="w-full h-full object-cover rounded-lg" />
+                        <img src={collection.coverImage} alt={collection.title}
+                             className="w-full h-full object-cover rounded-lg" />
                       </div>
                     )}
                   </div>
@@ -635,11 +907,14 @@ const MyCollections: React.FC = () => {
         {/* 新建收藏夹模态框 */}
         <Modal title="新建收藏夹" open={isCreateModalVisible} onCancel={handleCloseCreateModal} footer={null}>
           <Form form={form} layout="vertical" onFinish={handleCreateFolder}>
-            <Form.Item name="folderName" label="收藏夹名称" rules={[{ required: true, message: '请输入收藏夹名称' }]}>
+            <Form.Item name="name" label="收藏夹名称" rules={[{ required: true, message: '请输入收藏夹名称' }]}>
               <Input placeholder="请输入收藏夹名称" />
             </Form.Item>
-            <Form.Item name="folderDescription" label="收藏夹描述">
+            <Form.Item name="description" label="收藏夹描述">
               <Input.TextArea placeholder="请输入收藏夹描述（可选）" rows={3} />
+            </Form.Item>
+            <Form.Item name="isPublic" label="公开收藏夹" valuePropName="checked" initialValue={true}>
+              <Switch />
             </Form.Item>
             <Form.Item>
               <div className="flex justify-end gap-2">
@@ -650,6 +925,60 @@ const MyCollections: React.FC = () => {
               </div>
             </Form.Item>
           </Form>
+        </Modal>
+
+        {/* 编辑收藏夹模态框 */}
+        <Modal title="编辑收藏夹" open={isEditModalVisible} onCancel={handleCloseEditModal} footer={null}>
+          <Form form={editForm} layout="vertical" onFinish={handleEditFolder}>
+            <Form.Item name="name" label="收藏夹名称" rules={[{ required: true, message: '请输入收藏夹名称' }]}>
+              <Input placeholder="请输入收藏夹名称" />
+            </Form.Item>
+            <Form.Item name="description" label="收藏夹描述">
+              <Input.TextArea placeholder="请输入收藏夹描述（可选）" rows={3} />
+            </Form.Item>
+            <Form.Item name="isPublic" label="公开收藏夹" valuePropName="checked">
+              <Switch checkedChildren="公开" unCheckedChildren="私密" />
+            </Form.Item>
+            <Form.Item>
+              <div className="flex justify-end gap-2">
+                <Button onClick={handleCloseEditModal}>取消</Button>
+                <Button type="primary" htmlType="submit" loading={editFolderLoading}>
+                  保存
+                </Button>
+              </div>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* 删除收藏夹确认模态框 */}
+        <Modal
+          title="删除收藏夹"
+          open={isDeleteModalVisible}
+          onCancel={handleCloseDeleteModal}
+          onOk={handleDeleteFolder}
+          okText="确认删除"
+          cancelText="取消"
+          okType="danger"
+          confirmLoading={deleteLoading}
+        >
+          {deletingFolder && (
+            <div className="space-y-4">
+              <p>确定要删除收藏夹「{deletingFolder.name}」吗？</p>
+              {deletingFolder.articleCount > 0 && (
+                <div>
+                  <p
+                    className="text-sm text-gray-500 mb-2">该收藏夹下有 {deletingFolder.articleCount} 篇收藏文章，请选择处理方式：</p>
+                  <Radio.Group value={deleteStrategy} onChange={(e) => setDeleteStrategy(e.target.value)}>
+                    <Space orientation="vertical">
+                      <Radio defaultChecked
+                             value={CONSTANTS.COLLECT_DELETE_STRATEGY_MOVE_TO_DEFAULT}>移至默认收藏夹</Radio>
+                      <Radio value={CONSTANTS.COLLECT_DELETE_STRATEGY_DELETE_COLLECTIONS}>同时取消收藏</Radio>
+                    </Space>
+                  </Radio.Group>
+                </div>
+              )}
+            </div>
+          )}
         </Modal>
 
         {/* 移动收藏模态框 */}
@@ -676,16 +1005,20 @@ const MyCollections: React.FC = () => {
                     }`}
                     onClick={() => setSelectedTargetFolderId(folder.id)}
                   >
-                    <FolderOutlined className={`mr-3 ${folder.isDefault ? 'text-blue-500' : 'text-gray-500'}`} />
+                    <FolderOutlined
+                      className={`mr-3 ${folder.defaultFolder === DefaultStatusEnum.YES ? 'text-blue-500' : 'text-gray-500'}`} />
                     <span className="text-gray-800">{folder.name}</span>
-                    {folder.isDefault && (
+                    {folder.defaultFolder === DefaultStatusEnum.YES && (
                       <span className="ml-2 text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">默认</span>
                     )}
+                    {folder.status === ArticleCollectionStatusEnum.PRIVATE && (
+                      <LockOutlined className="ml-1" style={{ fontSize: '12px' }} />)}
                   </div>
                 ))}
               </div>
               <div className="mt-4">
-                <Button type="text" icon={<FolderAddOutlined />} onClick={() => setIsCreateFolderForMove(true)}>
+                <Button variant="outlined" color="primary" icon={<FolderAddOutlined />}
+                        onClick={() => setIsCreateFolderForMove(true)}>
                   新建收藏夹
                 </Button>
               </div>

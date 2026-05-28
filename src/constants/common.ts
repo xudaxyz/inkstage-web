@@ -1,0 +1,6 @@
+// 通用常量
+export const CONSTANTS = {
+  // 收藏夹删除策略
+  COLLECT_DELETE_STRATEGY_MOVE_TO_DEFAULT: 'MOVE_TO_DEFAULT', // 移至默认文件夹
+  COLLECT_DELETE_STRATEGY_DELETE_COLLECTIONS: 'DELETE_COLLECTIONS' // 同步删除收藏夹中的内容(取消收藏)
+};

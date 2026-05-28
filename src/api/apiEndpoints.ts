@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
         CREATE_FOLDER: '/front/article/collections/folders', // 创建收藏文件夹
         UPDATE_FOLDER: (folderId: string): string => `/front/article/collections/folders/${folderId}`, // 更新收藏文件夹
         DELETE_FOLDER: (folderId: string): string => `/front/article/collections/folders/${folderId}`, // 删除收藏文件夹
+        SORT_FOLDERS: '/front/article/collections/folders/sort', // 批量更新收藏文件夹排序
         MOVE: '/front/article/collections/move', // 移动收藏文章
         TOTAL: '/front/article/collections/total' // 获取总收藏数
       }
