@@ -114,12 +114,10 @@ const ColumnCard: React.FC<ColumnCardProps> = ({ column, layout = 'vertical' }) 
           <span className="flex items-center gap-1">
               <EyeOutlined/>
             {readCount}
-            <span>阅读</span>
           </span>
           <span className="flex items-center gap-1">
             <StarOutlined/>
             {subscriptionCount}
-            <span>订阅</span>
           </span>
         </div>
       </div>
