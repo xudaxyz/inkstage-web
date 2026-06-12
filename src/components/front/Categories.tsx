@@ -154,7 +154,7 @@ const Categories: React.FC<CategoriesProps> = ({
       {/* 全部分类 - 固定在左侧 */}
       <span
         onClick={() => handleCategorySelect('全部')}
-        className={`px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap transform ${selectedCategory === '全部' ? 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md scale-105' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+        className={`px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap transform ${selectedCategory === '全部' ? 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md scale-105' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
       >
         全部
       </span>
@@ -171,7 +171,7 @@ const Categories: React.FC<CategoriesProps> = ({
             <span
               key={category.id}
               onClick={() => handleCategorySelect(category)}
-              className={`px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap transform ${selectedCategory === category.name ? 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md scale-105' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              className={`px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap transform ${selectedCategory === category.name ? 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md scale-105' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
             >
               {category.name}
             </span>
@@ -184,7 +184,7 @@ const Categories: React.FC<CategoriesProps> = ({
         <div className="flex items-center gap-1 ml-2">
           {/* 左箭头 */}
           <motion.button
-            className="z-10 bg-transparent p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+            className="z-10 bg-transparent p-1 hover:bg-gray-100 dark:bg-gray-400 dark:hover:bg-gray-200 rounded-full"
             onClick={() => handleScroll('left')}
             disabled={!canScrollLeft}
             initial={{ opacity: 0.1, scale: 0.8 }}
@@ -204,7 +204,7 @@ const Categories: React.FC<CategoriesProps> = ({
 
           {/* 右箭头 */}
           <motion.button
-            className="z-10 bg-transparent p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+            className="z-10 bg-transparent p-1 hover:bg-gray-100 dark:bg-gray-400 dark:hover:bg-gray-200 rounded-full"
             onClick={() => handleScroll('right')}
             disabled={!canScrollRight}
             initial={{ opacity: 0.1, scale: 0.8 }}

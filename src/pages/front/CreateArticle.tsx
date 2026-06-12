@@ -222,8 +222,8 @@ const CreateArticle: React.FC = () => {
         message.error(result.message || (isEditMode ? '文章更新失败！' : '文章发布失败！'));
       } else {
         message.success(result.message || (isEditMode ? '文章更新成功！' : '文章发布成功！'));
-        // 操作成功后回到首页
-        navigate(ROUTES.HOME);
+        const targetArticleId = isEditMode ? articleId : String(result.data);
+        navigate(`${ROUTES.ARTICLE_DETAIL}/${targetArticleId}`);
       }
     } catch (error) {
       console.error('提交文章失败:', error);

@@ -23,6 +23,12 @@ interface InfiniteScrollContainerProps<T> {
   loadMoreText?: string;
   /** 没有更多数据时显示的文字 */
   noMoreText?: string;
+  /**
+   * 布局模式
+   * - vertical: 垂直堆叠布局(默认)，使用 flex column
+   * - grid: 网格布局，由外层 className 控制布局，内部仅作为内容容器
+   */
+  layout?: 'vertical' | 'grid';
 }
 
 /**
@@ -30,17 +36,18 @@ interface InfiniteScrollContainerProps<T> {
  * 封装了无限滚动的通用UI逻辑
  */
 export function InfiniteScrollContainer<T>({
-  infiniteScroll,
-  renderItem,
-  emptyContent,
-  loadingContent,
-  loadingMoreContent,
-  className = '',
-  itemGap = '16px',
-  showLoadMoreButton = false,
-  loadMoreText = '加载更多',
-  noMoreText = ''
-}: InfiniteScrollContainerProps<T>): React.ReactNode {
+                                             infiniteScroll,
+                                             renderItem,
+                                             emptyContent,
+                                             loadingContent,
+                                             loadingMoreContent,
+                                             className = '',
+                                             itemGap = '16px',
+                                             showLoadMoreButton = false,
+                                             loadMoreText = '加载更多',
+                                             noMoreText = '',
+                                             layout = 'vertical'
+                                           }: InfiniteScrollContainerProps<T>): React.ReactNode {
   const { data, isLoading, isLoadingMore, isError, error, hasMore, loadMoreRef, refresh } = infiniteScroll;
 
   // 默认加载中内容
@@ -79,7 +86,14 @@ export function InfiniteScrollContainer<T>({
   return (
     <div className={className}>
       {/* 数据列表 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: itemGap }}>
+      {/* 根据布局模式选择不同的渲染方式 */}
+      {/* vertical模式：使用flex column垂直堆叠 */}
+      {/* grid模式：使用display: contents，让子元素直接参与外层grid布局 */}
+      <div style={{
+        display: layout === 'grid' ? 'contents' : 'flex',
+        flexDirection: 'column',
+        gap: itemGap
+      }}>
         {data.map((item, index) => (
           <React.Fragment key={index}>{renderItem(item, index)}</React.Fragment>
         ))}
